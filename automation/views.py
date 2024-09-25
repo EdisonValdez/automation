@@ -714,8 +714,6 @@ def destination_detail(request, destination_id):
     for ambassador in ambassadors:
         logger.info(f"Ambassador: {ambassador.username} {ambassador.id}")
 
-  
-    # Prepare ambassador details
     ambassador_details = [
         {
             'user_id': ambassador.id,
@@ -731,7 +729,7 @@ def destination_detail(request, destination_id):
 
     return render(request, 'automation/destination_detail.html', {
         'destination': destination,
-        'ambassador_details': ambassador_details  # Pass the list of ambassador details to the template
+        'ambassador_details': ambassador_details 
     })
 
 @login_required
@@ -770,18 +768,31 @@ def edit_destination(request):
         destination_id = request.POST.get('id')
         destination_name = request.POST.get('name')
         destination_country = request.POST.get('country')
-        logger.info(f"Received edit request for ID: {destination_id}, Name: {destination_name}, 'Country': {destination_country}")
+        ambassador_id = request.POST.get('ambassador_id')  # Get ambassador ID from the form
+        
+        logger.info(f"Received edit request for ID: {destination_id}, Name: {destination_name}, Country: {destination_country}, Ambassador: {ambassador_id}")
 
         try:
+            # Find the destination
             destination = Destination.objects.get(id=destination_id)
             destination.name = destination_name
             destination.country = destination_country
+
+            # Handle ambassador update/assignment
+            if ambassador_id:
+                try:
+                    ambassador = get_object_or_404(CustomUser, id=ambassador_id)
+            
+                    destination.ambassador = ambassador  # Assuming there's a ForeignKey or OneToOneField for ambassador
+                except User.DoesNotExist:
+                    return JsonResponse({'status': 'error', 'message': 'Ambassador not found.'})
+
             destination.save()
-            return JsonResponse({'status': 'success', 'message': 'Destination updated successfully.'})
+            return JsonResponse({'status': 'success', 'message': 'Destination and ambassador updated successfully.'})
         except Destination.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Destination not found.'})
+    
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
-
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())

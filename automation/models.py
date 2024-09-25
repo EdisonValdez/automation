@@ -1,6 +1,5 @@
 # models.py
-from django.contrib.auth.models import  Group, Permission, AbstractUser, PermissionsMixin, BaseUserManager
-from django.core.validators import RegexValidator
+from django.contrib.auth.models import  AbstractUser, BaseUserManager
 import uuid
 from django.db import models
 import logging

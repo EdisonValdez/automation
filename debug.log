@@ -15859,3 +15859,33 @@ INFO 2024-09-25 15:15:50,419 views 6320 23916 Received edit request for ID: 4, N
 INFO 2024-09-25 15:18:12,884 views 43272 28864 Received edit request for ID: 4, Name: España, Comunidad de Madrid, 'Country': Spain
 INFO 2024-09-25 15:18:12,885 views 43272 41420 Received edit request for ID: 4, Name: España, Comunidad de Madrid, 'Country': Spain
 INFO 2024-09-25 15:18:12,997 views 43272 41420 Received edit request for ID: 4, Name: España, Comunidad de Madrid, 'Country': Spain
+INFO 2024-09-25 16:32:54,262 views 57044 12500 Received edit request for ID: 4, Name: España, Comunidad de Madrid, 'Country': Spain
+INFO 2024-09-25 16:32:54,263 views 57044 54360 Received edit request for ID: 4, Name: España, Comunidad de Madrid, 'Country': Spain
+INFO 2024-09-25 16:32:54,266 views 57044 40416 Received edit request for ID: 4, Name: España, Comunidad de Madrid, 'Country': Spain
+INFO 2024-09-25 16:56:20,219 views 22128 30372 Accessing user_management view
+INFO 2024-09-25 16:56:20,222 views 22128 30372 Retrieved 3 users
+INFO 2024-09-25 16:56:26,380 views 22128 26796 Accessing edit_user view for user_id: 2
+INFO 2024-09-25 16:56:48,930 views 22128 39416 Accessing edit_user view for user_id: 2
+INFO 2024-09-25 16:56:48,944 views 22128 39416 User carmen has been updated successfully
+INFO 2024-09-25 16:56:48,994 views 22128 39416 Accessing user_management view
+INFO 2024-09-25 16:56:48,996 views 22128 39416 Retrieved 3 users
+INFO 2024-09-25 17:00:45,193 views 22128 22608 Received edit request for ID: 1, Name: Oporto, 'Country': Portugal
+INFO 2024-09-25 17:00:45,194 views 22128 27392 Received edit request for ID: 1, Name: Oporto, 'Country': Portugal
+INFO 2024-09-25 17:00:45,247 views 22128 22608 Received edit request for ID: 1, Name: Oporto, 'Country': Portugal
+INFO 2024-09-25 17:00:55,834 views 22128 27392 Destination: Oporto, Ambassadors Count: 0
+INFO 2024-09-25 17:00:58,567 views 22128 53336 Destination: España, Comunidad de Madrid, Ambassadors Count: 0
+INFO 2024-09-25 17:01:00,988 views 22128 15748 Destination: España, Catalunya, Ambassadors Count: 1
+INFO 2024-09-25 17:01:00,990 views 22128 15748 Ambassador: carmen 2
+INFO 2024-09-25 17:01:08,438 views 22128 11608 Destination: España, Catalunya, Ambassadors Count: 1
+INFO 2024-09-25 17:01:08,439 views 22128 11608 Ambassador: carmen 2
+INFO 2024-09-25 17:09:12,787 views 42736 44396 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: None
+INFO 2024-09-25 17:09:12,789 views 42736 56992 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: None
+INFO 2024-09-25 17:09:12,790 views 42736 392 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: None
+INFO 2024-09-25 17:12:02,183 views 42736 44396 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: 2
+INFO 2024-09-25 17:12:02,235 views 42736 44396 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: 2
+INFO 2024-09-25 17:12:02,285 views 42736 44396 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: 2
+INFO 2024-09-25 17:16:58,301 views 20152 11656 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: 2
+INFO 2024-09-25 17:16:58,302 views 20152 41640 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: 2
+INFO 2024-09-25 17:16:58,354 views 20152 11656 Received edit request for ID: 4, Name: España, Comunidad de Madrid, Country: Spain, Ambassador: 2
+INFO 2024-09-25 19:03:12,814 views 5000 14660 Accessing TaskDetailView for task 6
+INFO 2024-09-25 19:03:12,847 views 5000 14660 Retrieved task 6 with 60 businesses
