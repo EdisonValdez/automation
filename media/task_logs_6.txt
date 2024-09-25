@@ -1,0 +1,1179 @@
+Iniciando tarea de scraping 6
+Reading queries from file: C:\Users\Usuari\Desktop\projects\scraping\media\scraping_files\Spain-Madrid-3-lines_sPcBwEk.txt
+Successfully read 3 queries from file
+Total de consultas a procesar: 3
+Procesando consulta: Spain, Madrid, Spanish Restaurant
+Saved results for query 'Spain, Madrid, Spanish Restaurant' to C:\Users\Usuari\Desktop\projects\scraping\media\scraping_results\6\Spain,_Madrid,_Spanish_Restaurant.json
+Saving business data for task 6
+New business created: El Minibar (ID: 41)
+Additional data saved for business 41
+Starting enhancement, translation, and summarisation for business 41
+Enhanced and translated description for business 41 into spanish, eng
+Starting translation for business 41
+Completed translation for business 41 for all languages
+Completed enhancement, translation, and summarisation for business 41
+Translation task queued for business 41
+All business data processed and saved for business 41
+Downloaded and processed image 0 for business 41
+Downloaded and processed image 1 for business 41
+Downloaded and processed image 2 for business 41
+Downloaded and processed image 3 for business 41
+Downloaded and processed image 4 for business 41
+Downloaded and processed image 5 for business 41
+Downloaded and processed image 6 for business 41
+Set main image for business 41
+Saving business data for task 6
+New business created: La Mi Venta (ID: 42)
+Additional data saved for business 42
+Starting enhancement, translation, and summarisation for business 42
+Enhanced and translated description for business 42 into spanish, eng
+Starting translation for business 42
+Completed translation for business 42 for all languages
+Completed enhancement, translation, and summarisation for business 42
+Translation task queued for business 42
+All business data processed and saved for business 42
+Downloaded and processed image 0 for business 42
+Downloaded and processed image 1 for business 42
+Downloaded and processed image 2 for business 42
+Downloaded and processed image 3 for business 42
+Downloaded and processed image 4 for business 42
+Downloaded and processed image 5 for business 42
+Downloaded and processed image 6 for business 42
+Set main image for business 42
+Saving business data for task 6
+New business created: Taberna El Sur (ID: 43)
+Additional data saved for business 43
+Starting enhancement, translation, and summarisation for business 43
+Enhanced and translated description for business 43 into spanish, eng
+Starting translation for business 43
+Completed translation for business 43 for all languages
+Completed enhancement, translation, and summarisation for business 43
+Translation task queued for business 43
+All business data processed and saved for business 43
+Downloaded and processed image 0 for business 43
+Downloaded and processed image 1 for business 43
+Downloaded and processed image 2 for business 43
+Downloaded and processed image 3 for business 43
+Downloaded and processed image 4 for business 43
+Downloaded and processed image 5 for business 43
+Downloaded and processed image 6 for business 43
+Set main image for business 43
+Saving business data for task 6
+New business created: El Anciano Rey de los Vinos (ID: 44)
+Additional data saved for business 44
+Starting enhancement, translation, and summarisation for business 44
+Enhanced and translated description for business 44 into spanish, eng
+Starting translation for business 44
+Completed translation for business 44 for all languages
+Completed enhancement, translation, and summarisation for business 44
+Translation task queued for business 44
+All business data processed and saved for business 44
+Downloaded and processed image 0 for business 44
+Downloaded and processed image 1 for business 44
+Downloaded and processed image 2 for business 44
+Downloaded and processed image 3 for business 44
+Downloaded and processed image 4 for business 44
+Downloaded and processed image 5 for business 44
+Downloaded and processed image 6 for business 44
+Set main image for business 44
+Saving business data for task 6
+New business created: Taberna el Sur de Huertas (ID: 45)
+Additional data saved for business 45
+Starting enhancement, translation, and summarisation for business 45
+Enhanced and translated description for business 45 into spanish, eng
+Starting translation for business 45
+Completed translation for business 45 for all languages
+Completed enhancement, translation, and summarisation for business 45
+Translation task queued for business 45
+All business data processed and saved for business 45
+Downloaded and processed image 0 for business 45
+Downloaded and processed image 1 for business 45
+Downloaded and processed image 2 for business 45
+Downloaded and processed image 3 for business 45
+Downloaded and processed image 4 for business 45
+Downloaded and processed image 5 for business 45
+Downloaded and processed image 6 for business 45
+Set main image for business 45
+Saving business data for task 6
+New business created: Puerto Rico (ID: 46)
+Additional data saved for business 46
+Starting enhancement, translation, and summarisation for business 46
+Enhanced and translated description for business 46 into spanish, eng
+Starting translation for business 46
+Completed translation for business 46 for all languages
+Completed enhancement, translation, and summarisation for business 46
+Translation task queued for business 46
+All business data processed and saved for business 46
+Downloaded and processed image 0 for business 46
+Downloaded and processed image 1 for business 46
+Downloaded and processed image 2 for business 46
+Downloaded and processed image 3 for business 46
+Downloaded and processed image 4 for business 46
+Downloaded and processed image 5 for business 46
+Downloaded and processed image 6 for business 46
+Set main image for business 46
+Saving business data for task 6
+New business created: Bodega de la Ardosa (ID: 47)
+Additional data saved for business 47
+Starting enhancement, translation, and summarisation for business 47
+Enhanced and translated description for business 47 into spanish, eng
+Starting translation for business 47
+Completed translation for business 47 for all languages
+Completed enhancement, translation, and summarisation for business 47
+Translation task queued for business 47
+All business data processed and saved for business 47
+Downloaded and processed image 0 for business 47
+Downloaded and processed image 1 for business 47
+Downloaded and processed image 2 for business 47
+Downloaded and processed image 3 for business 47
+Downloaded and processed image 4 for business 47
+Downloaded and processed image 5 for business 47
+Downloaded and processed image 6 for business 47
+Set main image for business 47
+Saving business data for task 6
+New business created: Casa Alberto (ID: 48)
+Additional data saved for business 48
+Starting enhancement, translation, and summarisation for business 48
+Enhanced and translated description for business 48 into spanish, eng
+Starting translation for business 48
+Completed translation for business 48 for all languages
+Completed enhancement, translation, and summarisation for business 48
+Translation task queued for business 48
+All business data processed and saved for business 48
+Downloaded and processed image 0 for business 48
+Downloaded and processed image 1 for business 48
+Downloaded and processed image 2 for business 48
+Downloaded and processed image 3 for business 48
+Downloaded and processed image 4 for business 48
+Downloaded and processed image 5 for business 48
+Downloaded and processed image 6 for business 48
+Set main image for business 48
+Saving business data for task 6
+New business created: Tapa Tapa Montera (ID: 49)
+Additional data saved for business 49
+Starting enhancement, translation, and summarisation for business 49
+Enhanced and translated description for business 49 into spanish, eng
+Starting translation for business 49
+Completed translation for business 49 for all languages
+Completed enhancement, translation, and summarisation for business 49
+Translation task queued for business 49
+All business data processed and saved for business 49
+Downloaded and processed image 0 for business 49
+Downloaded and processed image 1 for business 49
+Downloaded and processed image 2 for business 49
+Downloaded and processed image 3 for business 49
+Downloaded and processed image 4 for business 49
+Downloaded and processed image 5 for business 49
+Downloaded and processed image 6 for business 49
+Set main image for business 49
+Saving business data for task 6
+New business created: Mas Al Sur (ID: 50)
+Additional data saved for business 50
+Starting enhancement, translation, and summarisation for business 50
+Enhanced and translated description for business 50 into spanish, eng
+Starting translation for business 50
+Completed translation for business 50 for all languages
+Completed enhancement, translation, and summarisation for business 50
+Translation task queued for business 50
+All business data processed and saved for business 50
+Downloaded and processed image 0 for business 50
+Downloaded and processed image 1 for business 50
+Downloaded and processed image 2 for business 50
+Downloaded and processed image 3 for business 50
+Downloaded and processed image 4 for business 50
+Downloaded and processed image 5 for business 50
+Downloaded and processed image 6 for business 50
+Set main image for business 50
+Saving business data for task 6
+New business created: Alhambra (ID: 51)
+Additional data saved for business 51
+Starting enhancement, translation, and summarisation for business 51
+Enhanced and translated description for business 51 into spanish, eng
+Starting translation for business 51
+Completed translation for business 51 for all languages
+Completed enhancement, translation, and summarisation for business 51
+Translation task queued for business 51
+All business data processed and saved for business 51
+Downloaded and processed image 0 for business 51
+Downloaded and processed image 1 for business 51
+Downloaded and processed image 2 for business 51
+Downloaded and processed image 3 for business 51
+Downloaded and processed image 4 for business 51
+Downloaded and processed image 5 for business 51
+Downloaded and processed image 6 for business 51
+Set main image for business 51
+Saving business data for task 6
+New business created: Fatigas del querer (ID: 52)
+Additional data saved for business 52
+Starting enhancement, translation, and summarisation for business 52
+Enhanced and translated description for business 52 into spanish, eng
+Starting translation for business 52
+Completed translation for business 52 for all languages
+Completed enhancement, translation, and summarisation for business 52
+Translation task queued for business 52
+All business data processed and saved for business 52
+Downloaded and processed image 0 for business 52
+Downloaded and processed image 1 for business 52
+Downloaded and processed image 2 for business 52
+Downloaded and processed image 3 for business 52
+Downloaded and processed image 4 for business 52
+Downloaded and processed image 5 for business 52
+Downloaded and processed image 6 for business 52
+Set main image for business 52
+Saving business data for task 6
+New business created: Mercado de la Reina 12 (ID: 53)
+Additional data saved for business 53
+Starting enhancement, translation, and summarisation for business 53
+Enhanced and translated description for business 53 into spanish, eng
+Starting translation for business 53
+Completed translation for business 53 for all languages
+Completed enhancement, translation, and summarisation for business 53
+Translation task queued for business 53
+All business data processed and saved for business 53
+Downloaded and processed image 0 for business 53
+Downloaded and processed image 1 for business 53
+Downloaded and processed image 2 for business 53
+Downloaded and processed image 3 for business 53
+Downloaded and processed image 4 for business 53
+Downloaded and processed image 5 for business 53
+Downloaded and processed image 6 for business 53
+Set main image for business 53
+Saving business data for task 6
+New business created: Asador Real (ID: 54)
+Additional data saved for business 54
+Starting enhancement, translation, and summarisation for business 54
+Enhanced and translated description for business 54 into spanish, eng
+Starting translation for business 54
+Completed translation for business 54 for all languages
+Completed enhancement, translation, and summarisation for business 54
+Translation task queued for business 54
+All business data processed and saved for business 54
+Downloaded and processed image 0 for business 54
+Downloaded and processed image 1 for business 54
+Downloaded and processed image 2 for business 54
+Downloaded and processed image 3 for business 54
+Downloaded and processed image 4 for business 54
+Downloaded and processed image 5 for business 54
+Downloaded and processed image 6 for business 54
+Set main image for business 54
+Saving business data for task 6
+New business created: Matador (ID: 55)
+Additional data saved for business 55
+Starting enhancement, translation, and summarisation for business 55
+Enhanced and translated description for business 55 into spanish, eng
+Starting translation for business 55
+Completed translation for business 55 for all languages
+Completed enhancement, translation, and summarisation for business 55
+Translation task queued for business 55
+All business data processed and saved for business 55
+Downloaded and processed image 0 for business 55
+Downloaded and processed image 1 for business 55
+Downloaded and processed image 2 for business 55
+Downloaded and processed image 3 for business 55
+Downloaded and processed image 4 for business 55
+Downloaded and processed image 5 for business 55
+Downloaded and processed image 6 for business 55
+Set main image for business 55
+Saving business data for task 6
+New business created: Restaurante La Catedral (ID: 56)
+Additional data saved for business 56
+Starting enhancement, translation, and summarisation for business 56
+Enhanced and translated description for business 56 into spanish, eng
+Starting translation for business 56
+Completed translation for business 56 for all languages
+Completed enhancement, translation, and summarisation for business 56
+Translation task queued for business 56
+All business data processed and saved for business 56
+Downloaded and processed image 0 for business 56
+Downloaded and processed image 1 for business 56
+Downloaded and processed image 2 for business 56
+Downloaded and processed image 3 for business 56
+Downloaded and processed image 4 for business 56
+Downloaded and processed image 5 for business 56
+Error downloading image 6 for business 56: Image size (199756800 pixels) exceeds limit of 178956970 pixels, could be decompression bomb DOS attack.
+Traceback (most recent call last):
+  File "C:\Users\Usuari\Desktop\projects\scraping\automation\tasks.py", line 213, in download_images
+    img = PILImage.open(BytesIO(response.content))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\Image.py", line 3477, in open
+    im = _open_core(fp, filename, prefix, formats)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\Image.py", line 3466, in _open_core
+    _decompression_bomb_check(im.size)
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\Image.py", line 3365, in _decompression_bomb_check
+    raise DecompressionBombError(msg)
+PIL.Image.DecompressionBombError: Image size (199756800 pixels) exceeds limit of 178956970 pixels, could be decompression bomb DOS attack.
+Set main image for business 56
+Saving business data for task 6
+New business created: Rosi La Loca (ID: 57)
+Additional data saved for business 57
+Starting enhancement, translation, and summarisation for business 57
+Enhanced and translated description for business 57 into spanish, eng
+Starting translation for business 57
+Completed translation for business 57 for all languages
+Completed enhancement, translation, and summarisation for business 57
+Translation task queued for business 57
+All business data processed and saved for business 57
+Downloaded and processed image 0 for business 57
+Downloaded and processed image 1 for business 57
+Downloaded and processed image 2 for business 57
+Downloaded and processed image 3 for business 57
+Downloaded and processed image 4 for business 57
+Downloaded and processed image 5 for business 57
+Downloaded and processed image 6 for business 57
+Set main image for business 57
+Saving business data for task 6
+New business created: La Malontina (ID: 58)
+Additional data saved for business 58
+Starting enhancement, translation, and summarisation for business 58
+Enhanced and translated description for business 58 into spanish, eng
+Starting translation for business 58
+Completed translation for business 58 for all languages
+Completed enhancement, translation, and summarisation for business 58
+Translation task queued for business 58
+All business data processed and saved for business 58
+Downloaded and processed image 0 for business 58
+Downloaded and processed image 1 for business 58
+Downloaded and processed image 2 for business 58
+Downloaded and processed image 3 for business 58
+Downloaded and processed image 4 for business 58
+Downloaded and processed image 5 for business 58
+Downloaded and processed image 6 for business 58
+Set main image for business 58
+Saving business data for task 6
+New business created: La Musa Latina (ID: 59)
+Additional data saved for business 59
+Starting enhancement, translation, and summarisation for business 59
+Enhanced and translated description for business 59 into spanish, eng
+Starting translation for business 59
+Completed translation for business 59 for all languages
+Completed enhancement, translation, and summarisation for business 59
+Translation task queued for business 59
+All business data processed and saved for business 59
+Downloaded and processed image 0 for business 59
+Downloaded and processed image 1 for business 59
+Downloaded and processed image 2 for business 59
+Downloaded and processed image 3 for business 59
+Downloaded and processed image 4 for business 59
+Downloaded and processed image 5 for business 59
+Downloaded and processed image 6 for business 59
+Set main image for business 59
+Saving business data for task 6
+New business created: Casa Labra (ID: 60)
+Additional data saved for business 60
+Starting enhancement, translation, and summarisation for business 60
+Enhanced and translated description for business 60 into spanish, eng
+Starting translation for business 60
+Completed translation for business 60 for all languages
+Completed enhancement, translation, and summarisation for business 60
+Translation task queued for business 60
+All business data processed and saved for business 60
+Downloaded and processed image 0 for business 60
+Downloaded and processed image 1 for business 60
+Downloaded and processed image 2 for business 60
+Downloaded and processed image 3 for business 60
+Downloaded and processed image 4 for business 60
+Downloaded and processed image 5 for business 60
+Downloaded and processed image 6 for business 60
+Set main image for business 60
+Procesados 20 resultados en la página 1 para la consulta 'Spain, Madrid, Spanish Restaurant'
+No hay más páginas para la consulta 'Spain, Madrid, Spanish Restaurant'
+Total de resultados procesados para la consulta 'Spain, Madrid, Spanish Restaurant': 20
+Procesando consulta: Spain, Madrid, Luxury Restaurants
+Saved results for query 'Spain, Madrid, Luxury Restaurants' to C:\Users\Usuari\Desktop\projects\scraping\media\scraping_results\6\Spain,_Madrid,_Luxury_Restaurants.json
+Saving business data for task 6
+New business created: CEBO Madrid Restaurant (ID: 61)
+Additional data saved for business 61
+Starting enhancement, translation, and summarisation for business 61
+Enhanced and translated description for business 61 into spanish, eng
+Starting translation for business 61
+Completed translation for business 61 for all languages
+Completed enhancement, translation, and summarisation for business 61
+Translation task queued for business 61
+All business data processed and saved for business 61
+Downloaded and processed image 0 for business 61
+Downloaded and processed image 1 for business 61
+Downloaded and processed image 2 for business 61
+Downloaded and processed image 3 for business 61
+Downloaded and processed image 4 for business 61
+Downloaded and processed image 5 for business 61
+Downloaded and processed image 6 for business 61
+Set main image for business 61
+Saving business data for task 6
+New business created: Saddle Madrid (ID: 62)
+Additional data saved for business 62
+Starting enhancement, translation, and summarisation for business 62
+Enhanced and translated description for business 62 into spanish, eng
+Starting translation for business 62
+Completed translation for business 62 for all languages
+Completed enhancement, translation, and summarisation for business 62
+Translation task queued for business 62
+All business data processed and saved for business 62
+Downloaded and processed image 0 for business 62
+Downloaded and processed image 1 for business 62
+Downloaded and processed image 2 for business 62
+Downloaded and processed image 3 for business 62
+Downloaded and processed image 4 for business 62
+Downloaded and processed image 5 for business 62
+Downloaded and processed image 6 for business 62
+Set main image for business 62
+Saving business data for task 6
+New business created: Coque (ID: 63)
+Additional data saved for business 63
+Starting enhancement, translation, and summarisation for business 63
+Enhanced and translated description for business 63 into spanish, eng
+Starting translation for business 63
+Completed translation for business 63 for all languages
+Completed enhancement, translation, and summarisation for business 63
+Translation task queued for business 63
+All business data processed and saved for business 63
+Downloaded and processed image 0 for business 63
+Downloaded and processed image 1 for business 63
+Downloaded and processed image 2 for business 63
+Downloaded and processed image 3 for business 63
+Downloaded and processed image 4 for business 63
+Downloaded and processed image 5 for business 63
+Downloaded and processed image 6 for business 63
+Set main image for business 63
+Saving business data for task 6
+New business created: DiverXO (ID: 64)
+Additional data saved for business 64
+Starting enhancement, translation, and summarisation for business 64
+Enhanced and translated description for business 64 into spanish, eng
+Starting translation for business 64
+Completed translation for business 64 for all languages
+Completed enhancement, translation, and summarisation for business 64
+Translation task queued for business 64
+All business data processed and saved for business 64
+Downloaded and processed image 0 for business 64
+Downloaded and processed image 1 for business 64
+Downloaded and processed image 2 for business 64
+Downloaded and processed image 3 for business 64
+Downloaded and processed image 4 for business 64
+Downloaded and processed image 5 for business 64
+Downloaded and processed image 6 for business 64
+Set main image for business 64
+Saving business data for task 6
+New business created: Ramón Freixa Madrid (ID: 65)
+Additional data saved for business 65
+Starting enhancement, translation, and summarisation for business 65
+Enhanced and translated description for business 65 into spanish, eng
+Starting translation for business 65
+Completed translation for business 65 for all languages
+Completed enhancement, translation, and summarisation for business 65
+Translation task queued for business 65
+All business data processed and saved for business 65
+Downloaded and processed image 0 for business 65
+Downloaded and processed image 1 for business 65
+Downloaded and processed image 2 for business 65
+Downloaded and processed image 3 for business 65
+Downloaded and processed image 4 for business 65
+Downloaded and processed image 5 for business 65
+Downloaded and processed image 6 for business 65
+Set main image for business 65
+Saving business data for task 6
+New business created: DSTAgE (ID: 66)
+Additional data saved for business 66
+Starting enhancement, translation, and summarisation for business 66
+Enhanced and translated description for business 66 into spanish, eng
+Starting translation for business 66
+Completed translation for business 66 for all languages
+Completed enhancement, translation, and summarisation for business 66
+Translation task queued for business 66
+All business data processed and saved for business 66
+Downloaded and processed image 0 for business 66
+Downloaded and processed image 1 for business 66
+Downloaded and processed image 2 for business 66
+Downloaded and processed image 3 for business 66
+Downloaded and processed image 4 for business 66
+Downloaded and processed image 5 for business 66
+Downloaded and processed image 6 for business 66
+Set main image for business 66
+Saving business data for task 6
+New business created: Paco Roncero Restaurante (ID: 67)
+Additional data saved for business 67
+Starting enhancement, translation, and summarisation for business 67
+Enhanced and translated description for business 67 into spanish, eng
+Starting translation for business 67
+Completed translation for business 67 for all languages
+Completed enhancement, translation, and summarisation for business 67
+Translation task queued for business 67
+All business data processed and saved for business 67
+Downloaded and processed image 0 for business 67
+Downloaded and processed image 1 for business 67
+Downloaded and processed image 2 for business 67
+Downloaded and processed image 3 for business 67
+Downloaded and processed image 4 for business 67
+Downloaded and processed image 5 for business 67
+Downloaded and processed image 6 for business 67
+Set main image for business 67
+Saving business data for task 6
+New business created: La Bien Aparecida (ID: 68)
+Additional data saved for business 68
+Starting enhancement, translation, and summarisation for business 68
+Enhanced and translated description for business 68 into spanish, eng
+Starting translation for business 68
+Completed translation for business 68 for all languages
+Completed enhancement, translation, and summarisation for business 68
+Translation task queued for business 68
+All business data processed and saved for business 68
+Downloaded and processed image 0 for business 68
+Downloaded and processed image 1 for business 68
+Downloaded and processed image 2 for business 68
+Downloaded and processed image 3 for business 68
+Downloaded and processed image 4 for business 68
+Downloaded and processed image 5 for business 68
+Downloaded and processed image 6 for business 68
+Set main image for business 68
+Saving business data for task 6
+New business created: Sacha Restaurant (ID: 69)
+Additional data saved for business 69
+Starting enhancement, translation, and summarisation for business 69
+Enhanced and translated description for business 69 into spanish, eng
+Starting translation for business 69
+Completed translation for business 69 for all languages
+Completed enhancement, translation, and summarisation for business 69
+Translation task queued for business 69
+All business data processed and saved for business 69
+Downloaded and processed image 0 for business 69
+Downloaded and processed image 1 for business 69
+Downloaded and processed image 2 for business 69
+Downloaded and processed image 3 for business 69
+Downloaded and processed image 4 for business 69
+Downloaded and processed image 5 for business 69
+Downloaded and processed image 6 for business 69
+Set main image for business 69
+Saving business data for task 6
+New business created: Bodega de los Secretos (ID: 70)
+Additional data saved for business 70
+Starting enhancement, translation, and summarisation for business 70
+Enhanced and translated description for business 70 into spanish, eng
+Starting translation for business 70
+Completed translation for business 70 for all languages
+Completed enhancement, translation, and summarisation for business 70
+Translation task queued for business 70
+All business data processed and saved for business 70
+Downloaded and processed image 0 for business 70
+Downloaded and processed image 1 for business 70
+Downloaded and processed image 2 for business 70
+Downloaded and processed image 3 for business 70
+Downloaded and processed image 4 for business 70
+Downloaded and processed image 5 for business 70
+Downloaded and processed image 6 for business 70
+Set main image for business 70
+Saving business data for task 6
+New business created: El Club Allard | Restaurante Estrella Michelin (ID: 71)
+Additional data saved for business 71
+Starting enhancement, translation, and summarisation for business 71
+Enhanced and translated description for business 71 into spanish, eng
+Starting translation for business 71
+Completed translation for business 71 for all languages
+Completed enhancement, translation, and summarisation for business 71
+Translation task queued for business 71
+All business data processed and saved for business 71
+Downloaded and processed image 0 for business 71
+Downloaded and processed image 1 for business 71
+Downloaded and processed image 2 for business 71
+Downloaded and processed image 3 for business 71
+Downloaded and processed image 4 for business 71
+Downloaded and processed image 5 for business 71
+Downloaded and processed image 6 for business 71
+Set main image for business 71
+Saving business data for task 6
+New business created: Nice To Meet You Restaurant & Lounge (ID: 72)
+Additional data saved for business 72
+Starting enhancement, translation, and summarisation for business 72
+Enhanced and translated description for business 72 into spanish, eng
+Starting translation for business 72
+Completed translation for business 72 for all languages
+Completed enhancement, translation, and summarisation for business 72
+Translation task queued for business 72
+All business data processed and saved for business 72
+Downloaded and processed image 0 for business 72
+Downloaded and processed image 1 for business 72
+Downloaded and processed image 2 for business 72
+Downloaded and processed image 3 for business 72
+Downloaded and processed image 4 for business 72
+Downloaded and processed image 5 for business 72
+Downloaded and processed image 6 for business 72
+Set main image for business 72
+Saving business data for task 6
+New business created: Ático Restaurante & Terraza (ID: 73)
+Additional data saved for business 73
+Starting enhancement, translation, and summarisation for business 73
+Enhanced and translated description for business 73 into spanish, eng
+Starting translation for business 73
+Completed translation for business 73 for all languages
+Completed enhancement, translation, and summarisation for business 73
+Translation task queued for business 73
+All business data processed and saved for business 73
+Downloaded and processed image 0 for business 73
+Downloaded and processed image 1 for business 73
+Downloaded and processed image 2 for business 73
+Downloaded and processed image 3 for business 73
+Downloaded and processed image 4 for business 73
+Downloaded and processed image 5 for business 73
+Downloaded and processed image 6 for business 73
+Set main image for business 73
+Saving business data for task 6
+New business created: Restaurante Gaytán (ID: 74)
+Additional data saved for business 74
+Starting enhancement, translation, and summarisation for business 74
+Enhanced and translated description for business 74 into spanish, eng
+Starting translation for business 74
+Completed translation for business 74 for all languages
+Completed enhancement, translation, and summarisation for business 74
+Translation task queued for business 74
+All business data processed and saved for business 74
+Downloaded and processed image 0 for business 74
+Downloaded and processed image 1 for business 74
+Downloaded and processed image 2 for business 74
+Downloaded and processed image 3 for business 74
+Downloaded and processed image 4 for business 74
+Downloaded and processed image 5 for business 74
+Downloaded and processed image 6 for business 74
+Set main image for business 74
+Saving business data for task 6
+New business created: Azotea del Círculo (ID: 75)
+Additional data saved for business 75
+Starting enhancement, translation, and summarisation for business 75
+Enhanced and translated description for business 75 into spanish, eng
+Starting translation for business 75
+Completed translation for business 75 for all languages
+Completed enhancement, translation, and summarisation for business 75
+Translation task queued for business 75
+All business data processed and saved for business 75
+Downloaded and processed image 0 for business 75
+Downloaded and processed image 1 for business 75
+Downloaded and processed image 2 for business 75
+Downloaded and processed image 3 for business 75
+Downloaded and processed image 4 for business 75
+Downloaded and processed image 5 for business 75
+Downloaded and processed image 6 for business 75
+Set main image for business 75
+Saving business data for task 6
+New business created: La Cabaña Argentina (ID: 76)
+Additional data saved for business 76
+Starting enhancement, translation, and summarisation for business 76
+Enhanced and translated description for business 76 into spanish, eng
+Starting translation for business 76
+Completed translation for business 76 for all languages
+Completed enhancement, translation, and summarisation for business 76
+Translation task queued for business 76
+All business data processed and saved for business 76
+Downloaded and processed image 0 for business 76
+Downloaded and processed image 1 for business 76
+Downloaded and processed image 2 for business 76
+Downloaded and processed image 3 for business 76
+Downloaded and processed image 4 for business 76
+Downloaded and processed image 5 for business 76
+Downloaded and processed image 6 for business 76
+Set main image for business 76
+Saving business data for task 6
+New business created: Restaurante Benares Madrid (ID: 77)
+Additional data saved for business 77
+Starting enhancement, translation, and summarisation for business 77
+Enhanced and translated description for business 77 into spanish, eng
+Starting translation for business 77
+Completed translation for business 77 for all languages
+Completed enhancement, translation, and summarisation for business 77
+Translation task queued for business 77
+All business data processed and saved for business 77
+Downloaded and processed image 0 for business 77
+Downloaded and processed image 1 for business 77
+Downloaded and processed image 2 for business 77
+Downloaded and processed image 3 for business 77
+Downloaded and processed image 4 for business 77
+Downloaded and processed image 5 for business 77
+Downloaded and processed image 6 for business 77
+Set main image for business 77
+Saving business data for task 6
+New business created: Sobrino de Botín (ID: 78)
+Additional data saved for business 78
+Starting enhancement, translation, and summarisation for business 78
+Enhanced and translated description for business 78 into spanish, eng
+Starting translation for business 78
+Completed translation for business 78 for all languages
+Completed enhancement, translation, and summarisation for business 78
+Translation task queued for business 78
+All business data processed and saved for business 78
+Downloaded and processed image 0 for business 78
+Downloaded and processed image 1 for business 78
+Downloaded and processed image 2 for business 78
+Downloaded and processed image 3 for business 78
+Downloaded and processed image 4 for business 78
+Downloaded and processed image 5 for business 78
+Downloaded and processed image 6 for business 78
+Set main image for business 78
+Saving business data for task 6
+New business created: Deessa (ID: 79)
+Additional data saved for business 79
+Starting enhancement, translation, and summarisation for business 79
+Enhanced and translated description for business 79 into spanish, eng
+Starting translation for business 79
+Completed translation for business 79 for all languages
+Completed enhancement, translation, and summarisation for business 79
+Translation task queued for business 79
+All business data processed and saved for business 79
+Downloaded and processed image 0 for business 79
+Downloaded and processed image 1 for business 79
+Downloaded and processed image 2 for business 79
+Downloaded and processed image 3 for business 79
+Downloaded and processed image 4 for business 79
+Downloaded and processed image 5 for business 79
+Downloaded and processed image 6 for business 79
+Set main image for business 79
+Saving business data for task 6
+New business created: A'Barra (ID: 80)
+Additional data saved for business 80
+Starting enhancement, translation, and summarisation for business 80
+Enhanced and translated description for business 80 into spanish, eng
+Starting translation for business 80
+Completed translation for business 80 for all languages
+Completed enhancement, translation, and summarisation for business 80
+Translation task queued for business 80
+All business data processed and saved for business 80
+Downloaded and processed image 0 for business 80
+Downloaded and processed image 1 for business 80
+Downloaded and processed image 2 for business 80
+Downloaded and processed image 3 for business 80
+Downloaded and processed image 4 for business 80
+Downloaded and processed image 5 for business 80
+Downloaded and processed image 6 for business 80
+Set main image for business 80
+Procesados 20 resultados en la página 1 para la consulta 'Spain, Madrid, Luxury Restaurants'
+No hay más páginas para la consulta 'Spain, Madrid, Luxury Restaurants'
+Total de resultados procesados para la consulta 'Spain, Madrid, Luxury Restaurants': 20
+Procesando consulta: Spain, Madrid, Fast Food
+Saved results for query 'Spain, Madrid, Fast Food' to C:\Users\Usuari\Desktop\projects\scraping\media\scraping_results\6\Spain,_Madrid,_Fast_Food.json
+Saving business data for task 6
+New business created: Jollibee Madrid (ID: 81)
+Additional data saved for business 81
+Starting enhancement, translation, and summarisation for business 81
+Enhanced and translated description for business 81 into spanish, eng
+Starting translation for business 81
+Completed translation for business 81 for all languages
+Completed enhancement, translation, and summarisation for business 81
+Translation task queued for business 81
+All business data processed and saved for business 81
+Downloaded and processed image 0 for business 81
+Downloaded and processed image 1 for business 81
+Downloaded and processed image 2 for business 81
+Downloaded and processed image 3 for business 81
+Downloaded and processed image 4 for business 81
+Downloaded and processed image 5 for business 81
+Downloaded and processed image 6 for business 81
+Set main image for business 81
+Saving business data for task 6
+New business created: McDonald's (ID: 82)
+Additional data saved for business 82
+Starting enhancement, translation, and summarisation for business 82
+Enhanced and translated description for business 82 into spanish, eng
+Starting translation for business 82
+Completed translation for business 82 for all languages
+Completed enhancement, translation, and summarisation for business 82
+Translation task queued for business 82
+All business data processed and saved for business 82
+Downloaded and processed image 0 for business 82
+Downloaded and processed image 1 for business 82
+Downloaded and processed image 2 for business 82
+Downloaded and processed image 3 for business 82
+Downloaded and processed image 4 for business 82
+Downloaded and processed image 5 for business 82
+Downloaded and processed image 6 for business 82
+Set main image for business 82
+Saving business data for task 6
+New business created: Five Guys Gran Vía (ID: 83)
+Additional data saved for business 83
+Starting enhancement, translation, and summarisation for business 83
+Enhanced and translated description for business 83 into spanish, eng
+Starting translation for business 83
+Completed translation for business 83 for all languages
+Completed enhancement, translation, and summarisation for business 83
+Translation task queued for business 83
+All business data processed and saved for business 83
+Downloaded and processed image 0 for business 83
+Downloaded and processed image 1 for business 83
+Downloaded and processed image 2 for business 83
+Downloaded and processed image 3 for business 83
+Downloaded and processed image 4 for business 83
+Downloaded and processed image 5 for business 83
+Downloaded and processed image 6 for business 83
+Set main image for business 83
+Saving business data for task 6
+New business created: KFC (ID: 84)
+Additional data saved for business 84
+Starting enhancement, translation, and summarisation for business 84
+Enhanced and translated description for business 84 into spanish, eng
+Starting translation for business 84
+Completed translation for business 84 for all languages
+Completed enhancement, translation, and summarisation for business 84
+Translation task queued for business 84
+All business data processed and saved for business 84
+Downloaded and processed image 0 for business 84
+Downloaded and processed image 1 for business 84
+Downloaded and processed image 2 for business 84
+Downloaded and processed image 3 for business 84
+Downloaded and processed image 4 for business 84
+Downloaded and processed image 5 for business 84
+Downloaded and processed image 6 for business 84
+Set main image for business 84
+Saving business data for task 6
+New business created: McDonald's (ID: 85)
+Additional data saved for business 85
+Starting enhancement, translation, and summarisation for business 85
+Enhanced and translated description for business 85 into spanish, eng
+Starting translation for business 85
+Completed translation for business 85 for all languages
+Completed enhancement, translation, and summarisation for business 85
+Translation task queued for business 85
+All business data processed and saved for business 85
+Downloaded and processed image 0 for business 85
+Downloaded and processed image 1 for business 85
+Downloaded and processed image 2 for business 85
+Downloaded and processed image 3 for business 85
+Downloaded and processed image 4 for business 85
+Downloaded and processed image 5 for business 85
+Downloaded and processed image 6 for business 85
+Set main image for business 85
+Saving business data for task 6
+New business created: McDonald's (ID: 86)
+Additional data saved for business 86
+Starting enhancement, translation, and summarisation for business 86
+Enhanced and translated description for business 86 into spanish, eng
+Starting translation for business 86
+Completed translation for business 86 for all languages
+Completed enhancement, translation, and summarisation for business 86
+Translation task queued for business 86
+All business data processed and saved for business 86
+Downloaded and processed image 0 for business 86
+Downloaded and processed image 1 for business 86
+Downloaded and processed image 2 for business 86
+Downloaded and processed image 3 for business 86
+Downloaded and processed image 4 for business 86
+Downloaded and processed image 5 for business 86
+Downloaded and processed image 6 for business 86
+Set main image for business 86
+Saving business data for task 6
+New business created: KFC (ID: 87)
+Additional data saved for business 87
+Starting enhancement, translation, and summarisation for business 87
+Enhanced and translated description for business 87 into spanish, eng
+Starting translation for business 87
+Completed translation for business 87 for all languages
+Completed enhancement, translation, and summarisation for business 87
+Translation task queued for business 87
+All business data processed and saved for business 87
+Downloaded and processed image 0 for business 87
+Downloaded and processed image 1 for business 87
+Downloaded and processed image 2 for business 87
+Downloaded and processed image 3 for business 87
+Downloaded and processed image 4 for business 87
+Downloaded and processed image 5 for business 87
+Downloaded and processed image 6 for business 87
+Set main image for business 87
+Saving business data for task 6
+New business created: Taco Bell (ID: 88)
+Additional data saved for business 88
+Starting enhancement, translation, and summarisation for business 88
+Enhanced and translated description for business 88 into spanish, eng
+Starting translation for business 88
+Completed translation for business 88 for all languages
+Completed enhancement, translation, and summarisation for business 88
+Translation task queued for business 88
+All business data processed and saved for business 88
+Downloaded and processed image 0 for business 88
+Downloaded and processed image 1 for business 88
+Downloaded and processed image 2 for business 88
+Downloaded and processed image 3 for business 88
+Downloaded and processed image 4 for business 88
+Downloaded and processed image 5 for business 88
+Downloaded and processed image 6 for business 88
+Set main image for business 88
+Saving business data for task 6
+New business created: KFC (ID: 89)
+Additional data saved for business 89
+Starting enhancement, translation, and summarisation for business 89
+Enhanced and translated description for business 89 into spanish, eng
+Starting translation for business 89
+Completed translation for business 89 for all languages
+Completed enhancement, translation, and summarisation for business 89
+Translation task queued for business 89
+All business data processed and saved for business 89
+Downloaded and processed image 0 for business 89
+Downloaded and processed image 1 for business 89
+Downloaded and processed image 2 for business 89
+Downloaded and processed image 3 for business 89
+Downloaded and processed image 4 for business 89
+Downloaded and processed image 5 for business 89
+Downloaded and processed image 6 for business 89
+Set main image for business 89
+Saving business data for task 6
+New business created: McDonald's (ID: 90)
+Additional data saved for business 90
+Starting enhancement, translation, and summarisation for business 90
+Enhanced and translated description for business 90 into spanish, eng
+Starting translation for business 90
+Completed translation for business 90 for all languages
+Completed enhancement, translation, and summarisation for business 90
+Translation task queued for business 90
+All business data processed and saved for business 90
+Downloaded and processed image 0 for business 90
+Downloaded and processed image 1 for business 90
+Downloaded and processed image 2 for business 90
+Downloaded and processed image 3 for business 90
+Downloaded and processed image 4 for business 90
+Downloaded and processed image 5 for business 90
+Downloaded and processed image 6 for business 90
+Set main image for business 90
+Saving business data for task 6
+New business created: Taco Bell (ID: 91)
+Additional data saved for business 91
+Starting enhancement, translation, and summarisation for business 91
+Enhanced and translated description for business 91 into spanish, eng
+Starting translation for business 91
+Completed translation for business 91 for all languages
+Completed enhancement, translation, and summarisation for business 91
+Translation task queued for business 91
+All business data processed and saved for business 91
+Downloaded and processed image 0 for business 91
+Downloaded and processed image 1 for business 91
+Downloaded and processed image 2 for business 91
+Downloaded and processed image 3 for business 91
+Downloaded and processed image 4 for business 91
+Downloaded and processed image 5 for business 91
+Downloaded and processed image 6 for business 91
+Set main image for business 91
+Saving business data for task 6
+New business created: Five Guys Serrano (ID: 92)
+Additional data saved for business 92
+Starting enhancement, translation, and summarisation for business 92
+Enhanced and translated description for business 92 into spanish, eng
+Starting translation for business 92
+Completed translation for business 92 for all languages
+Completed enhancement, translation, and summarisation for business 92
+Translation task queued for business 92
+All business data processed and saved for business 92
+Downloaded and processed image 0 for business 92
+Downloaded and processed image 1 for business 92
+Downloaded and processed image 2 for business 92
+Downloaded and processed image 3 for business 92
+Downloaded and processed image 4 for business 92
+Downloaded and processed image 5 for business 92
+Downloaded and processed image 6 for business 92
+Set main image for business 92
+Saving business data for task 6
+New business created: Pans & Company (ID: 93)
+Additional data saved for business 93
+Starting enhancement, translation, and summarisation for business 93
+Enhanced and translated description for business 93 into spanish, eng
+Starting translation for business 93
+Completed translation for business 93 for all languages
+Completed enhancement, translation, and summarisation for business 93
+Translation task queued for business 93
+All business data processed and saved for business 93
+Error downloading image 0 for business 93: cannot write mode RGBA as JPEG
+Traceback (most recent call last):
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\JpegImagePlugin.py", line 639, in _save
+    rawmode = RAWMODE[im.mode]
+              ~~~~~~~^^^^^^^^^
+KeyError: 'RGBA'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuari\Desktop\projects\scraping\automation\tasks.py", line 236, in download_images
+    img_cropped.save(file_path, 'JPEG', quality=85)
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\Image.py", line 2568, in save
+    save_handler(self, fp, filename)
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\JpegImagePlugin.py", line 642, in _save
+    raise OSError(msg) from e
+OSError: cannot write mode RGBA as JPEG
+Downloaded and processed image 1 for business 93
+Downloaded and processed image 2 for business 93
+Downloaded and processed image 3 for business 93
+Downloaded and processed image 4 for business 93
+Downloaded and processed image 5 for business 93
+Downloaded and processed image 6 for business 93
+Set main image for business 93
+Saving business data for task 6
+New business created: KFC (ID: 94)
+Additional data saved for business 94
+Starting enhancement, translation, and summarisation for business 94
+Enhanced and translated description for business 94 into spanish, eng
+Starting translation for business 94
+Completed translation for business 94 for all languages
+Completed enhancement, translation, and summarisation for business 94
+Translation task queued for business 94
+All business data processed and saved for business 94
+Downloaded and processed image 0 for business 94
+Downloaded and processed image 1 for business 94
+Downloaded and processed image 2 for business 94
+Downloaded and processed image 3 for business 94
+Downloaded and processed image 4 for business 94
+Downloaded and processed image 5 for business 94
+Downloaded and processed image 6 for business 94
+Set main image for business 94
+Saving business data for task 6
+New business created: Burger King (ID: 95)
+Additional data saved for business 95
+Starting enhancement, translation, and summarisation for business 95
+Enhanced and translated description for business 95 into spanish, eng
+Starting translation for business 95
+Completed translation for business 95 for all languages
+Completed enhancement, translation, and summarisation for business 95
+Translation task queued for business 95
+All business data processed and saved for business 95
+Downloaded and processed image 0 for business 95
+Downloaded and processed image 1 for business 95
+Downloaded and processed image 2 for business 95
+Downloaded and processed image 3 for business 95
+Downloaded and processed image 4 for business 95
+Downloaded and processed image 5 for business 95
+Downloaded and processed image 6 for business 95
+Set main image for business 95
+Saving business data for task 6
+New business created: Carl's Jr (ID: 96)
+Additional data saved for business 96
+Starting enhancement, translation, and summarisation for business 96
+Enhanced and translated description for business 96 into spanish, eng
+Starting translation for business 96
+Completed translation for business 96 for all languages
+Completed enhancement, translation, and summarisation for business 96
+Translation task queued for business 96
+All business data processed and saved for business 96
+Downloaded and processed image 0 for business 96
+Downloaded and processed image 1 for business 96
+Error downloading image 2 for business 96: cannot write mode RGBA as JPEG
+Traceback (most recent call last):
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\JpegImagePlugin.py", line 639, in _save
+    rawmode = RAWMODE[im.mode]
+              ~~~~~~~^^^^^^^^^
+KeyError: 'RGBA'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Usuari\Desktop\projects\scraping\automation\tasks.py", line 236, in download_images
+    img_cropped.save(file_path, 'JPEG', quality=85)
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\Image.py", line 2568, in save
+    save_handler(self, fp, filename)
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\PIL\JpegImagePlugin.py", line 642, in _save
+    raise OSError(msg) from e
+OSError: cannot write mode RGBA as JPEG
+Downloaded and processed image 3 for business 96
+Downloaded and processed image 4 for business 96
+Downloaded and processed image 5 for business 96
+Downloaded and processed image 6 for business 96
+Set main image for business 96
+Saving business data for task 6
+New business created: Burger King (ID: 97)
+Additional data saved for business 97
+Starting enhancement, translation, and summarisation for business 97
+Enhanced and translated description for business 97 into spanish, eng
+Starting translation for business 97
+Completed translation for business 97 for all languages
+Completed enhancement, translation, and summarisation for business 97
+Translation task queued for business 97
+All business data processed and saved for business 97
+Downloaded and processed image 0 for business 97
+Downloaded and processed image 1 for business 97
+Downloaded and processed image 2 for business 97
+Downloaded and processed image 3 for business 97
+Downloaded and processed image 4 for business 97
+Downloaded and processed image 5 for business 97
+Downloaded and processed image 6 for business 97
+Set main image for business 97
+Saving business data for task 6
+New business created: Tempus Foody (ID: 98)
+Additional data saved for business 98
+Starting enhancement, translation, and summarisation for business 98
+Enhanced and translated description for business 98 into spanish, eng
+Starting translation for business 98
+Completed translation for business 98 for all languages
+Completed enhancement, translation, and summarisation for business 98
+Translation task queued for business 98
+All business data processed and saved for business 98
+Downloaded and processed image 0 for business 98
+Downloaded and processed image 1 for business 98
+Downloaded and processed image 2 for business 98
+Downloaded and processed image 3 for business 98
+Downloaded and processed image 4 for business 98
+Downloaded and processed image 5 for business 98
+Downloaded and processed image 6 for business 98
+Set main image for business 98
+Saving business data for task 6
+New business created: Five Guys Plaza Mayor (ID: 99)
+Additional data saved for business 99
+Starting enhancement, translation, and summarisation for business 99
+Enhanced and translated description for business 99 into spanish, eng
+Starting translation for business 99
+Completed translation for business 99 for all languages
+Completed enhancement, translation, and summarisation for business 99
+Translation task queued for business 99
+All business data processed and saved for business 99
+Downloaded and processed image 0 for business 99
+Downloaded and processed image 1 for business 99
+Downloaded and processed image 2 for business 99
+Downloaded and processed image 3 for business 99
+Downloaded and processed image 4 for business 99
+Downloaded and processed image 5 for business 99
+Downloaded and processed image 6 for business 99
+Set main image for business 99
+Saving business data for task 6
+New business created: McDonald's (ID: 100)
+Additional data saved for business 100
+Starting enhancement, translation, and summarisation for business 100
+Enhanced and translated description for business 100 into spanish, eng
+Starting translation for business 100
+Completed translation for business 100 for all languages
+Completed enhancement, translation, and summarisation for business 100
+Translation task queued for business 100
+All business data processed and saved for business 100
+Downloaded and processed image 0 for business 100
+Downloaded and processed image 1 for business 100
+Downloaded and processed image 2 for business 100
+Downloaded and processed image 3 for business 100
+Downloaded and processed image 4 for business 100
+Downloaded and processed image 5 for business 100
+Downloaded and processed image 6 for business 100
+Set main image for business 100
+Procesados 20 resultados en la página 1 para la consulta 'Spain, Madrid, Fast Food'
+No hay más páginas para la consulta 'Spain, Madrid, Fast Food'
+Total de resultados procesados para la consulta 'Spain, Madrid, Fast Food': 20
+Tarea de scraping 6 completada con éxito
+Error generating report for task 6: Cannot resolve keyword 'rating' into field. Choices are: additional_info, address, average_rating, categories, category_name, city, country, country_code, data_cid, data_id, description, description_eng, description_esp, description_fr, destination, destination_id, id, images, is_advertisement, latitude, longitude, main_category, main_category_id, neighborhood, opening_hours, operating_hours, phone, place_id, postal_code, price, project_id, project_title, rank, reviews, reviews_count, scraped_at, search_page_url, search_string, service_options, state, status, street, tailored_category, task, task_id, thumbnail, title, title_eng, title_esp, title_fr, types, url, website
+Traceback (most recent call last):
+  File "C:\Users\Usuari\Desktop\projects\scraping\automation\tasks.py", line 972, in generate_task_report
+    'average_rating': businesses.aggregate(Avg('rating'))['rating__avg'],
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\django\db\models\query.py", line 604, in aggregate
+    return self.query.chain().get_aggregation(self.db, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\django\db\models\sql\query.py", line 459, in get_aggregation
+    aggregate = aggregate_expr.resolve_expression(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\django\db\models\aggregates.py", line 63, in resolve_expression
+    c = super().resolve_expression(query, allow_joins, reuse, summarize)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\django\db\models\expressions.py", line 1073, in resolve_expression
+    c.source_expressions[pos] = arg.resolve_expression(
+                                ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\django\db\models\expressions.py", line 895, in resolve_expression
+    return query.resolve_ref(self.name, allow_joins, reuse, summarize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\django\db\models\sql\query.py", line 2010, in resolve_ref
+    join_info = self.setup_joins(
+                ^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\django\db\models\sql\query.py", line 1863, in setup_joins
+    path, final_field, targets, rest = self.names_to_path(
+                                       ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuari\Desktop\projects\scraping\scrapin-env\Lib\site-packages\django\db\models\sql\query.py", line 1768, in names_to_path
+    raise FieldError(
+django.core.exceptions.FieldError: Cannot resolve keyword 'rating' into field. Choices are: additional_info, address, average_rating, categories, category_name, city, country, country_code, data_cid, data_id, description, description_eng, description_esp, description_fr, destination, destination_id, id, images, is_advertisement, latitude, longitude, main_category, main_category_id, neighborhood, opening_hours, operating_hours, phone, place_id, postal_code, price, project_id, project_title, rank, reviews, reviews_count, scraped_at, search_page_url, search_string, service_options, state, status, street, tailored_category, task, task_id, thumbnail, title, title_eng, title_esp, title_fr, types, url, website
+Error sending completion email for task 6: 'ScrapingTask' object has no attribute 'user'
+Traceback (most recent call last):
+  File "C:\Users\Usuari\Desktop\projects\scraping\automation\tasks.py", line 1037, in send_task_completion_email
+    user_email = task.user.email
+                 ^^^^^^^^^
+AttributeError: 'ScrapingTask' object has no attribute 'user'

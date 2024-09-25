@@ -1,0 +1,1026 @@
+{
+  "search_metadata": {
+    "id": "66d989c5cc48790160298504",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/24921a04fd00b547/66d989c5cc48790160298504.json",
+    "created_at": "2024-09-05 10:36:53 UTC",
+    "processed_at": "2024-09-05 10:36:53 UTC",
+    "google_maps_url": "https://www.google.com/maps/search/empanadas+argentinas?hl=en",
+    "raw_html_file": "https://serpapi.com/searches/24921a04fd00b547/66d989c5cc48790160298504.html",
+    "total_time_taken": 1.0
+  },
+  "search_parameters": {
+    "engine": "google_maps",
+    "type": "search",
+    "q": "empanadas argentinas",
+    "google_domain": "google.com",
+    "hl": "en"
+  },
+  "search_information": {
+    "local_results_state": "Results for exact spelling",
+    "query_displayed": "empanadas argentinas"
+  },
+  "local_results": [
+    {
+      "position": 1,
+      "title": "Argentina Cafe Empanada Factory",
+      "place_id": "ChIJUa41mAHBQIYRgESS2AGmja8",
+      "data_id": "0x8640c1019835ae51:0xaf8da601d8924480",
+      "data_cid": "12649949455212233856",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x8640c1019835ae51%3A0xaf8da601d8924480&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x8640c1019835ae51%3A0xaf8da601d8924480&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 29.728320099999998,
+        "longitude": -95.4378911
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJUa41mAHBQIYRgESS2AGmja8",
+      "provider_id": "/g/11hbt66762",
+      "rating": 4.5,
+      "reviews": 576,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant"
+      ],
+      "address": "3833 Southwest Fwy, Houston, TX 77027",
+      "open_state": "Closed ⋅ Opens 11 AM",
+      "hours": "Closed ⋅ Opens 11 AM",
+      "operating_hours": {
+        "thursday": "11 AM–8 PM",
+        "friday": "11 AM–8 PM",
+        "saturday": "11 AM–8 PM",
+        "sunday": "11 AM–6 PM",
+        "monday": "11 AM–8 PM",
+        "tuesday": "11 AM–8 PM",
+        "wednesday": "11 AM–8 PM"
+      },
+      "phone": "(713) 622-9597",
+      "website": "https://linktr.ee/theempanadasfactory",
+      "description": "Cozy cafe for fresh empanadas. Argentinian empanadas are the order of the day at this welcoming cafe with a wide range.",
+      "service_options": {
+        "dine_in": true,
+        "curbside_pickup": true,
+        "no_contact_delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11hbt66762&g2lbs=AOHF13l7XFfrX0KeFtQvHONJ8f8EgDhbVfsh8JE6vhDIpyZN9LwTYGhZUznK9wFe-3KjlohQiK2S2qTNubi3H4XWHuPyypEECVJiB6YLuA4BHCRZfxfeSm8%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipOP1ZyZ72uCM7IhKvwjnfqfYGQ9aRfUeqWPYeiQ=w122-h92-k-no"
+    },
+    {
+      "position": 2,
+      "title": "Empanadas La Argentina",
+      "place_id": "ChIJq6qqJiNc54YRB1jylUH39WA",
+      "data_id": "0x86e75c2326aaaaab:0x60f5f74195f25807",
+      "data_cid": "6986762257995814919",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x86e75c2326aaaaab%3A0x60f5f74195f25807&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x86e75c2326aaaaab%3A0x60f5f74195f25807&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 31.7119084,
+        "longitude": -106.40875199999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJq6qqJiNc54YRB1jylUH39WA",
+      "provider_id": "/g/11ckqn8y8r",
+      "rating": 4.4,
+      "reviews": 32,
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant"
+      ],
+      "address": "También en Río Grande mall, Blvd. Manuel Gómez Morín, Primavera 7983-Local 60, Jardín de Senecú, 32469 Juárez, Chih., Mexico",
+      "open_state": "Closed ⋅ Opens 11 AM",
+      "hours": "Closed ⋅ Opens 11 AM",
+      "operating_hours": {
+        "thursday": "11 AM–8 PM",
+        "friday": "11 AM–8 PM",
+        "saturday": "11 AM–8 PM",
+        "sunday": "11 AM–8 PM",
+        "monday": "11 AM–8 PM",
+        "tuesday": "11 AM–8 PM",
+        "wednesday": "11 AM–8 PM"
+      },
+      "phone": "+52 656 202 3443",
+      "service_options": {
+        "dine_in": true,
+        "drive_through": true,
+        "no_contact_delivery": true
+      },
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNqi6dAM9L1abtsqDrnbvhdQzxfLq_LD_-UdhA=w129-h92-k-no"
+    },
+    {
+      "position": 3,
+      "title": "The Original Marini's Empanada House",
+      "place_id": "ChIJyQuMGjrDQIYRJT1Z8r9CCPU",
+      "data_id": "0x8640c33a1a8c0bc9:0xf50842bff2593d25",
+      "data_cid": "17656435731278150949",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x8640c33a1a8c0bc9%3A0xf50842bff2593d25&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x8640c33a1a8c0bc9%3A0xf50842bff2593d25&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 29.7362684,
+        "longitude": -95.55036989999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJyQuMGjrDQIYRJT1Z8r9CCPU",
+      "provider_id": "/g/1tdl1yw9",
+      "rating": 4.7,
+      "reviews": 1817,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant",
+        "Restaurant",
+        "South American restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant",
+        "restaurant",
+        "south_american_restaurant"
+      ],
+      "address": "10001 Westheimer Rd # 2570, Houston, TX 77042",
+      "open_state": "Closed ⋅ Opens 11 AM",
+      "hours": "Closed ⋅ Opens 11 AM",
+      "operating_hours": {
+        "thursday": "11 AM–8 PM",
+        "friday": "11 AM–9 PM",
+        "saturday": "11 AM–9 PM",
+        "sunday": "Closed",
+        "monday": "Closed",
+        "tuesday": "11 AM–8 PM",
+        "wednesday": "11 AM–8 PM"
+      },
+      "phone": "(713) 266-2729",
+      "website": "http://www.theoriginalmarinis.com/",
+      "description": "Mom-&-pop empanada specialist. Empanadas are fried to order with a variety of savory & sweet fillings at this counter-serve spot.",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "no_contact_delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/1tdl1yw9&g2lbs=AOHF13lR0e4qIQRRgi3eINSMQ9-J-F1vFHM3WtVislWK64otfeNzEL0x_qKCuYe6NMqX12jyHldH6jOQs3WU3bK8zUg631DahmDGxyS6KXKl7C3T9xHIGsA%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipO2BPwuM8ht5vsjD32O_FBbCk9unEDjz7S11Rna=w122-h92-k-no"
+    },
+    {
+      "position": 4,
+      "title": "The Empanadas Factory | Cypress",
+      "place_id": "ChIJuVWQXgrVQIYR0Hd_4-x_8PE",
+      "data_id": "0x8640d50a5e9055b9:0xf1f07fece37f77d0",
+      "data_cid": "17433574812956981200",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x8640d50a5e9055b9%3A0xf1f07fece37f77d0&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x8640d50a5e9055b9%3A0xf1f07fece37f77d0&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 29.946236799999998,
+        "longitude": -95.67599489999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJuVWQXgrVQIYR0Hd_4-x_8PE",
+      "provider_id": "/g/11rt_x0v1n",
+      "rating": 4.5,
+      "reviews": 64,
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant"
+      ],
+      "address": "11750 Barker Cypress Rd, Cypress, TX 77433",
+      "open_state": "Closed ⋅ Opens 11 AM",
+      "hours": "Closed ⋅ Opens 11 AM",
+      "operating_hours": {
+        "thursday": "11 AM–8 PM",
+        "friday": "11 AM–8 PM",
+        "saturday": "11 AM–8 PM",
+        "sunday": "11 AM–6 PM",
+        "monday": "Closed",
+        "tuesday": "11 AM–8 PM",
+        "wednesday": "11 AM–8 PM"
+      },
+      "phone": "(713) 623-1283",
+      "website": "https://theempanadasfactory.com/",
+      "service_options": {
+        "dine_in": true,
+        "drive_through": true,
+        "no_contact_delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11rt_x0v1n&g2lbs=AOHF13mxED0scD-ESpfBYvruWcJGwGpJHuJBB9YmsM6bPu7RS8uIAvYl0OSL8e3xTRrj8xoOcXQNvN_OcYwnlrL0ZRpd6QnBcCKSG7w7WB_1m01tdqd3QNg%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipN09gbv-PsBvyYpbw8NPKcaVzw8ce_Qs3lfPaNJ=w80-h106-k-no"
+    },
+    {
+      "position": 5,
+      "title": "La Che Empanadas",
+      "place_id": "ChIJO3gG45dfXIYRCCCMLVIljG0",
+      "data_id": "0x865c5f97e306783b:0x6d8c25522d8c2008",
+      "data_cid": "7893725281755340808",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x865c5f97e306783b%3A0x6d8c25522d8c2008&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x865c5f97e306783b%3A0x6d8c25522d8c2008&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 29.4465769,
+        "longitude": -98.53520089999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJO3gG45dfXIYRCCCMLVIljG0",
+      "provider_id": "/g/11h7w7slbj",
+      "rating": 4.6,
+      "reviews": 85,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant",
+        "Food producer",
+        "Wholesaler"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant",
+        "food_producer",
+        "wholesaler"
+      ],
+      "address": "1611 Culebra Rd, San Antonio, TX 78201",
+      "open_state": "Closed ⋅ Opens 9 AM",
+      "hours": "Closed ⋅ Opens 9 AM",
+      "operating_hours": {
+        "thursday": "9 AM–3 PM",
+        "friday": "9 AM–3 PM",
+        "saturday": "10 AM–3 PM",
+        "sunday": "10 AM–3 PM",
+        "monday": "9 AM–3 PM",
+        "tuesday": "9 AM–3 PM",
+        "wednesday": "9 AM–3 PM"
+      },
+      "phone": "(210) 762-8565",
+      "website": "http://www.lacheempanadafactory.com/",
+      "service_options": {
+        "dine_in": true,
+        "curbside_pickup": true,
+        "no_contact_delivery": true
+      },
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipMzQOIfmaTK6S_ACYUGS2HC2bKK93JmXCyWAjal=w80-h106-k-no"
+    },
+    {
+      "position": 6,
+      "title": "Del Campo Empanadas",
+      "place_id": "ChIJcSpmJdQtTIYRFPI_3wiVAho",
+      "data_id": "0x864c2dd425662a71:0x1a029508df3ff214",
+      "data_cid": "1874224260277334548",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x864c2dd425662a71%3A0x1a029508df3ff214&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x864c2dd425662a71%3A0x1a029508df3ff214&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 32.9953542,
+        "longitude": -97.06483399999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJcSpmJdQtTIYRFPI_3wiVAho",
+      "provider_id": "/g/11ts1mnh1d",
+      "rating": 5,
+      "reviews": 184,
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant",
+        "Bakery",
+        "Caterer",
+        "Coffee shop",
+        "Restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant",
+        "bakery",
+        "catering_service",
+        "coffee_shop",
+        "restaurant"
+      ],
+      "address": "901 Long Prairie Rd #160, Flower Mound, TX 75022",
+      "open_state": "Closed ⋅ Opens 10 AM",
+      "hours": "Closed ⋅ Opens 10 AM",
+      "operating_hours": {
+        "thursday": "10 AM–7 PM",
+        "friday": "10 AM–7 PM",
+        "saturday": "10 AM–7 PM",
+        "sunday": "10 AM–4 PM",
+        "monday": "Closed",
+        "tuesday": "10 AM–7 PM",
+        "wednesday": "10 AM–7 PM"
+      },
+      "phone": "(469) 464-4392",
+      "website": "https://delcampoempanadas.com/",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11ts1mnh1d&g2lbs=AOHF13lZJZjw0A9vEppoXruGFd6Mc22zznwfvtUt916N45fBruDyBoi1MEOXJ1ZRMYzovy_IIAAKerxsHmGSIh5-9nBqr2ILpnUTCcwRZ5QH4hZKnchgt3o%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipPIH242bStoRrml9tPalUXVRd99WVxP1QRAGACd=w126-h92-k-no"
+    },
+    {
+      "position": 7,
+      "title": "Fat Tummy Empanadas",
+      "place_id": "ChIJOWtgw_VXXIYRDehGigsPbPk",
+      "data_id": "0x865c57f5c3606b39:0xf96c0f0b8a46e80d",
+      "data_cid": "17972756755167766541",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x865c57f5c3606b39%3A0xf96c0f0b8a46e80d&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x865c57f5c3606b39%3A0xf96c0f0b8a46e80d&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 29.428001599999998,
+        "longitude": -98.5279468
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJOWtgw_VXXIYRDehGigsPbPk",
+      "provider_id": "/g/11b7glxg4p",
+      "rating": 4.8,
+      "reviews": 868,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant"
+      ],
+      "address": "2922 W Commerce St, San Antonio, TX 78207",
+      "open_state": "Closed ⋅ Opens 10 AM",
+      "hours": "Closed ⋅ Opens 10 AM",
+      "operating_hours": {
+        "thursday": "10 AM–6 PM",
+        "friday": "10 AM–6 PM",
+        "saturday": "10 AM–6 PM",
+        "sunday": "Closed",
+        "monday": "Closed",
+        "tuesday": "10 AM–3 PM",
+        "wednesday": "10 AM–3 PM"
+      },
+      "phone": "(210) 396-7288",
+      "website": "http://www.fattummyempanadas.com/",
+      "description": "Unfussy eatery with Argentinian classics. Sweet & savory Argentinian-style empanadas are the draw at this compact, unpretentious cafe.",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11b7glxg4p&g2lbs=AOHF13nSqPby89RiULQ72Ab0WtaS4_k0gpbek7Ez3aRs9SyInrgJ3OVpo207GOQw_qjqNJObid7CvdpAc66t4AKVhElZFn1E_gddE9QOFhrJodZJhh1zrvw%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipOOAKE0jfpZWKUZ-vLMPUVRMc9apaTumY-whESo=w80-h106-k-no"
+    },
+    {
+      "position": 8,
+      "title": "The Empanada Cookhouse",
+      "place_id": "ChIJK0vma7YnTIYRnKnt6IIB3AU",
+      "data_id": "0x864c27b66be64b2b:0x5dc0182e8eda99c",
+      "data_cid": "422214126831249820",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x864c27b66be64b2b%3A0x5dc0182e8eda99c&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x864c27b66be64b2b%3A0x5dc0182e8eda99c&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 32.7824625,
+        "longitude": -96.80485329999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJK0vma7YnTIYRnKnt6IIB3AU",
+      "provider_id": "/g/11h40xpl9y",
+      "rating": 4.6,
+      "reviews": 710,
+      "price": "$",
+      "type": "Latin American restaurant",
+      "types": [
+        "Latin American restaurant",
+        "Breakfast restaurant",
+        "Catering food and drink supplier",
+        "Delivery service",
+        "Lunch restaurant"
+      ],
+      "type_id": "latin_american_restaurant",
+      "type_ids": [
+        "latin_american_restaurant",
+        "breakfast_restaurant",
+        "catering_food_and_drink_supplies",
+        "delivery_service",
+        "lunch_restaurant"
+      ],
+      "address": "1001 Ross Ave #118, Dallas, TX 75202",
+      "open_state": "Closed ⋅ Opens 8:30 AM",
+      "hours": "Closed ⋅ Opens 8:30 AM",
+      "operating_hours": {
+        "thursday": "8:30 AM–6 PM",
+        "friday": "8:30 AM–6 PM",
+        "saturday": "9 AM–6 PM",
+        "sunday": "9 AM–5 PM",
+        "monday": "8:30 AM–6 PM",
+        "tuesday": "8:30 AM–6 PM",
+        "wednesday": "8:30 AM–6 PM"
+      },
+      "phone": "(214) 812-9644",
+      "website": "https://theempanadacookhouse.com/",
+      "description": "Casual spot for sweet and savory dishes. Cozy eatery dishing up a variety of homemade sweet and savory empanadas with sauces.",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "no_contact_delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11h40xpl9y&g2lbs=AOHF13lHW5N1sB73S9RF2RKj6FgrEUQHfp7-a7f6oVC6FhN8Qj5U83mVPXl8N0CHd3fjF8szLoPKEPOutw9D-cs9K96rZulGpehL-8RLZAUKajFc_Iiqu9U%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipOOrxvpl51D30AiHt2WLkWnbeZRDpmmEqbONNeQ=w138-h92-k-no"
+    },
+    {
+      "position": 9,
+      "title": "Little Patagonia",
+      "place_id": "ChIJZZdOLJjBQIYR9HcaPhdMxug",
+      "data_id": "0x8640c1982c4e9765:0xe8c64c173e1a77f4",
+      "data_cid": "16773177524897871860",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x8640c1982c4e9765%3A0xe8c64c173e1a77f4&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x8640c1982c4e9765%3A0xe8c64c173e1a77f4&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 29.7384219,
+        "longitude": -95.47011669999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJZZdOLJjBQIYR9HcaPhdMxug",
+      "provider_id": "/g/11t64gzbcf",
+      "rating": 4.7,
+      "reviews": 157,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant"
+      ],
+      "address": "5393 Westheimer Rd Suite B, Houston, TX 77056",
+      "open_state": "Closed ⋅ Opens 9 AM",
+      "hours": "Closed ⋅ Opens 9 AM",
+      "operating_hours": {
+        "thursday": "9 AM–10 PM",
+        "friday": "9 AM–10 PM",
+        "saturday": "9 AM–10 PM",
+        "sunday": "9 AM–5 PM",
+        "monday": "9 AM–7:30 PM",
+        "tuesday": "9 AM–7:30 PM",
+        "wednesday": "9 AM–7:30 PM"
+      },
+      "phone": "(832) 804-6905",
+      "website": "https://www.littlepatagoniahouston.com/",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11t64gzbcf&g2lbs=AOHF13kXFXwbBZVv4Yk9DFkkiULZ0Ki6wEfTDM3oqF-AceCbn2qqMKQeDhMuYoAjSzvGxOcrDyWIWCvAp7TpnPwFGTwRu3IZkS9LKVVO37NzHgTeQ6QYcMg%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipPMPF0uNxjijBkVKgOgvnU-UywvI0lPjUOD7YnG=w122-h92-k-no"
+    },
+    {
+      "position": 10,
+      "title": "Del Campo Empanadas",
+      "place_id": "ChIJcYkIx7rZTYYRCDPQVyGTnS4",
+      "data_id": "0x864dd9bac7088971:0x2e9d932157d03308",
+      "data_cid": "3359002668504724232",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x864dd9bac7088971%3A0x2e9d932157d03308&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x864dd9bac7088971%3A0x2e9d932157d03308&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 32.9290887,
+        "longitude": -97.2887863
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJcYkIx7rZTYYRCDPQVyGTnS4",
+      "provider_id": "/g/11jgcvk6yb",
+      "rating": 4.9,
+      "reviews": 747,
+      "price": "$$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant"
+      ],
+      "address": "10724 N Beach St, Fort Worth, TX 76244",
+      "open_state": "Closed ⋅ Opens 11 AM",
+      "hours": "Closed ⋅ Opens 11 AM",
+      "operating_hours": {
+        "thursday": "11 AM–8 PM",
+        "friday": "11 AM–8 PM",
+        "saturday": "10 AM–8 PM",
+        "sunday": "10 AM–4 PM",
+        "monday": "Closed",
+        "tuesday": "11 AM–8 PM",
+        "wednesday": "11 AM–8 PM"
+      },
+      "phone": "(817) 562-5888",
+      "website": "http://www.delcampoempanadas.com/",
+      "description": "Casual eatery for Argentinian pastries. Laid-back restaurant serving handmade Argentinian empanadas with meat, veggie & sweet options.",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11jgcvk6yb&g2lbs=AOHF13lqbdjcqswoKF3U6J94TR7OC76pPd8EyKwbBYZ2-xv-IUy5sunbpNAWd8Obekud_NcTVVApMG_yZXYqbGOMtehKzVHWASn8iUFfjqphTgAOEc2kqoc%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipOis5UYDZkfeFR0yGhd0j_JmPWe_cimtUu9vK2h=w189-h92-k-no"
+    },
+    {
+      "position": 11,
+      "title": "Argentina Bakery",
+      "place_id": "ChIJ_WfcQTOCToYR2Rcj59um2pk",
+      "data_id": "0x864e823341dc67fd:0x99daa6dbe72317d9",
+      "data_cid": "11086356896131782617",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x864e823341dc67fd%3A0x99daa6dbe72317d9&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x864e823341dc67fd%3A0x99daa6dbe72317d9&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 32.8401451,
+        "longitude": -96.991874
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ_WfcQTOCToYR2Rcj59um2pk",
+      "provider_id": "/g/1tf48kjr",
+      "rating": 4.5,
+      "reviews": 1495,
+      "price": "$",
+      "type": "Bakery",
+      "types": [
+        "Bakery",
+        "Cafe",
+        "Coffee shop",
+        "Restaurant"
+      ],
+      "type_id": "bakery",
+      "type_ids": [
+        "bakery",
+        "cafe",
+        "coffee_shop",
+        "restaurant"
+      ],
+      "address": "3401 W Airport Fwy #112, Irving, TX 75062",
+      "open_state": "Closed ⋅ Opens 7 AM",
+      "hours": "Closed ⋅ Opens 7 AM",
+      "operating_hours": {
+        "thursday": "7 AM–9 PM",
+        "friday": "7 AM–9 PM",
+        "saturday": "7 AM–9 PM",
+        "sunday": "7 AM–7 PM",
+        "monday": "7 AM–9 PM",
+        "tuesday": "7 AM–9 PM",
+        "wednesday": "7 AM–9 PM"
+      },
+      "phone": "(972) 252-4809",
+      "website": "http://www.argentinabakery.com/",
+      "description": "Family-run spot for Argentinian pastries. Cakes, pastries, pies & empanadas are served at this family-run Argentinian bakery & coffeehouse.",
+      "service_options": {
+        "dine_in": true,
+        "curbside_pickup": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/1tf48kjr&g2lbs=AOHF13nm6Lwj35Pgug9VQ1Nd1KLmdglNijXmZnNTso1OTDar7ogfMZJba3Vg5zj9uFFVtDEM79YL2bmejlg5m7NJlUVZTLAaXM6mji1LDQHKwoZmf_qakyI%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipN4jrVOsbmWpkGLX55VcIpWzHEubNIvLrWqJMFJ=w142-h92-k-no"
+    },
+    {
+      "position": 12,
+      "title": "Empa Mundo - World of Empanadas",
+      "place_id": "ChIJwfcp7T2CToYRK5hc0biM7TY",
+      "data_id": "0x864e823ded29f7c1:0x36ed8cb8d15c982b",
+      "data_cid": "3957974372942911531",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x864e823ded29f7c1%3A0x36ed8cb8d15c982b&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x864e823ded29f7c1%3A0x36ed8cb8d15c982b&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 32.8596681,
+        "longitude": -96.99272599999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJwfcp7T2CToYRK5hc0biM7TY",
+      "provider_id": "/g/1tfdz7_s",
+      "rating": 4.7,
+      "reviews": 1762,
+      "price": "$",
+      "type": "Restaurant",
+      "types": [
+        "Restaurant",
+        "Latin American restaurant"
+      ],
+      "type_id": "restaurant",
+      "type_ids": [
+        "restaurant",
+        "latin_american_restaurant"
+      ],
+      "address": "3977 N Belt Line Rd, Irving, TX 75038",
+      "open_state": "Closed ⋅ Opens 10:30 AM",
+      "hours": "Closed ⋅ Opens 10:30 AM",
+      "operating_hours": {
+        "thursday": "10:30 AM–8:30 PM",
+        "friday": "10:30 AM–8:30 PM",
+        "saturday": "10:30 AM–8:30 PM",
+        "sunday": "11 AM–8 PM",
+        "monday": "10:30 AM–8:30 PM",
+        "tuesday": "10:30 AM–8:30 PM",
+        "wednesday": "10:30 AM–8:30 PM"
+      },
+      "phone": "(972) 746-4516",
+      "website": "http://www.empamundo.com/",
+      "description": "Well-known spot with creative fillings. Counter-serve with free WiFi crafting empanadas with fillings such as cheesesteak & Texas brisket.",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/1tfdz7_s&g2lbs=AOHF13k6K8aknn1tkZC-n73vEhK6NulGxdWF9r-WXYCIkYWygAF6YIuwQRinxlSKPqcCejS6B5eKpgEJVPDxY3tPSZGKGddfrHmUEzcRN7Ys8PrMTJV4Qig%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipN0N1wsbYX_UK67UVWjZK13oDpnl0JkJFmH3qEZ=w122-h92-k-no"
+    },
+    {
+      "position": 13,
+      "title": "Maria Empanada - South Broadway",
+      "place_id": "ChIJBf0PA42Aa4cRuKS4TlTfJDg",
+      "data_id": "0x876b808d030ffd05:0x3824df544eb8a4b8",
+      "data_cid": "4045603918476518584",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x876b808d030ffd05%3A0x3824df544eb8a4b8&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x876b808d030ffd05%3A0x3824df544eb8a4b8&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 39.6931661,
+        "longitude": -104.9872662
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJBf0PA42Aa4cRuKS4TlTfJDg",
+      "provider_id": "/g/1tgz5zmb",
+      "rating": 4.6,
+      "reviews": 2479,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant",
+        "Family restaurant",
+        "Latin American restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant",
+        "family_restaurant",
+        "latin_american_restaurant"
+      ],
+      "address": "1298 S Broadway, Denver, CO 80210",
+      "open_state": "Closed ⋅ Opens 7:30 AM",
+      "hours": "Closed ⋅ Opens 7:30 AM",
+      "operating_hours": {
+        "thursday": "7:30 AM–8:30 PM",
+        "friday": "7:30 AM–8:30 PM",
+        "saturday": "7:30 AM–8:30 PM",
+        "sunday": "9 AM–8 PM",
+        "monday": "7:30 AM–8:30 PM",
+        "tuesday": "7:30 AM–8:30 PM",
+        "wednesday": "7:30 AM–8:30 PM"
+      },
+      "phone": "(303) 934-2221",
+      "website": "https://www.mariaempanada.com/",
+      "description": "Cafe with Argentinean pastries & tarts. Casual eatery serving empanadas, savory tarts & other Argentinean pastries, plus coffee.",
+      "service_options": {
+        "dine_in": true,
+        "curbside_pickup": true,
+        "no_contact_delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/1tgz5zmb&g2lbs=AOHF13mhEqU-bVHb0C8M7v_pWTeNi53clPVLhCAVyQgZobg_uiCZjw4xwmnzx3dqb2GX5oXFbTpvGnrUblCkHKAdv7rTGiScW6OypVsAcMJea1w8S24Fiyk%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipO60N-RfF_2ei_tDv5PhI_c-wCvIcn8_2MFKy5c=w163-h92-k-no"
+    },
+    {
+      "position": 14,
+      "title": "5411 Empanadas (Tunnels)",
+      "place_id": "ChIJDSvLRzq_QIYRbQcWA9ZxUg8",
+      "data_id": "0x8640bf3a47cb2b0d:0xf5271d60316076d",
+      "data_cid": "1104070022647908205",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x8640bf3a47cb2b0d%3A0xf5271d60316076d&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x8640bf3a47cb2b0d%3A0xf5271d60316076d&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 29.759292199999997,
+        "longitude": -95.3663131
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJDSvLRzq_QIYRbQcWA9ZxUg8",
+      "provider_id": "/g/11c6cr5wn5",
+      "rating": 4.1,
+      "reviews": 140,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant",
+        "Restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant",
+        "restaurant"
+      ],
+      "address": "811 Louisiana St, Houston, TX 77002",
+      "open_state": "Closed ⋅ Opens 8 AM",
+      "hours": "Closed ⋅ Opens 8 AM",
+      "operating_hours": {
+        "thursday": "8 AM–2:30 PM",
+        "friday": "8 AM–2:30 PM",
+        "saturday": "Closed",
+        "sunday": "Closed",
+        "monday": "8 AM–2:30 PM",
+        "tuesday": "8 AM–2:30 PM",
+        "wednesday": "8 AM–2:30 PM"
+      },
+      "phone": "(832) 742-5332",
+      "website": "http://www.5411empanadas.com/",
+      "description": "Relaxed spot for Argentinian offerings. Argentinean empanadas & special sauces, plus beer & wine in a laid-back setting.",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "no_contact_delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11c6cr5wn5&g2lbs=AOHF13nx3rFbDHlqMbUj1FA1w1LFfX0iO7_N00OliZPOnFP5RNUNe2PvbkWedDOizZ9_tZ2tRrfPUVuXtOaGpWcufKdPfJ77rlveW2UpLhhi8X09RE8z4ew%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipPyck9TcYDAlXH9ERKmWEuJKDpgFX5CTM4e85IV=w80-h106-k-no"
+    },
+    {
+      "position": 15,
+      "title": "THIMI'S EMPANADAS",
+      "place_id": "ChIJkwzXX7AtDogR45741Ri3oAg",
+      "data_id": "0x880e2db05fd70c93:0x8a0b718d5f89ee3",
+      "data_cid": "621698065874067171",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x880e2db05fd70c93%3A0x8a0b718d5f89ee3&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x880e2db05fd70c93%3A0x8a0b718d5f89ee3&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.8653056,
+        "longitude": -87.68578149999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJkwzXX7AtDogR45741Ri3oAg",
+      "provider_id": "/g/11vbvhfq66",
+      "rating": 4.9,
+      "reviews": 98,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant"
+      ],
+      "address": "1247 S Western Ave, Chicago, IL 60608",
+      "open_state": "Closed ⋅ Opens 11 AM",
+      "hours": "Closed ⋅ Opens 11 AM",
+      "operating_hours": {
+        "thursday": "11 AM–6 PM",
+        "friday": "11 AM–6 PM",
+        "saturday": "10 AM–4 PM",
+        "sunday": "Closed",
+        "monday": "1–6 PM",
+        "tuesday": "11 AM–6 PM",
+        "wednesday": "11 AM–6 PM"
+      },
+      "phone": "(773) 405-0168",
+      "website": "https://www.thimisempanada.com/",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11vbvhfq66&g2lbs=AOHF13lqv5Kf-t3gSvsnsNeTvsda1a4DIb4BzLFfnS6twazQcCBXWJfFMekvRHSxPpJPzfEV7yO-eJbNzq-Y1_CpVxEbU78JJ2_oOcEw9fe1gsPLKp8l4qw%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipM9OzFr3K6kr5r1ssKkDOVzLnauCS_rwl7vPs0h=w80-h142-k-no"
+    },
+    {
+      "position": 16,
+      "title": "Lazo Empanadas Ballpark - Store #1",
+      "place_id": "ChIJVVWRi954bIcRrT3dU_p1KbE",
+      "data_id": "0x876c78de8b915555:0xb12975fa53dd3dad",
+      "data_cid": "12765864336767663533",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x876c78de8b915555%3A0xb12975fa53dd3dad&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x876c78de8b915555%3A0xb12975fa53dd3dad&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 39.7551869,
+        "longitude": -104.9903374
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJVVWRi954bIcRrT3dU_p1KbE",
+      "provider_id": "/g/11g68v_zk1",
+      "rating": 4.7,
+      "reviews": 869,
+      "price": "$",
+      "type": "Latin American restaurant",
+      "types": [
+        "Latin American restaurant",
+        "Argentinian restaurant",
+        "Caterer",
+        "Delivery service",
+        "Dessert restaurant",
+        "Fast food restaurant",
+        "Lunch restaurant"
+      ],
+      "type_id": "latin_american_restaurant",
+      "type_ids": [
+        "latin_american_restaurant",
+        "argentinian_restaurant",
+        "catering_service",
+        "delivery_service",
+        "dessert_restaurant",
+        "fast_food_restaurant",
+        "lunch_restaurant"
+      ],
+      "address": "1319 22nd St, Denver, CO 80205",
+      "open_state": "Closed ⋅ Opens 10 AM",
+      "hours": "Closed ⋅ Opens 10 AM",
+      "operating_hours": {
+        "thursday": "10 AM–9 PM",
+        "friday": "10 AM–10 PM",
+        "saturday": "10 AM–10 PM",
+        "sunday": "10 AM–9 PM",
+        "monday": "10 AM–9 PM",
+        "tuesday": "10 AM–9 PM",
+        "wednesday": "10 AM–9 PM"
+      },
+      "phone": "(720) 526-5514",
+      "website": "https://www.lazoempanadas.com/",
+      "description": "Casual cafe serving Argentinean pastries. Cheerful counter spot specializing in savory Argentinean pastries, plus desserts, beer & wine.",
+      "service_options": {
+        "dine_in": true,
+        "curbside_pickup": true,
+        "no_contact_delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11g68v_zk1&g2lbs=AOHF13n_c7XmqW0VEPrsFIb7e2wgDI7yW2I00QFwsrh59XzEpZM5LUyyxq6xt2Cm500pRpa68US7lh5ZZmkhIjv414_WfktBVIHmnfG8aprfLl1CaZOjHS8%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipOkjJzKdAUQ3l2oW6BORZ8jaYX94j_YdirqCNxm=w80-h99-k-no"
+    },
+    {
+      "position": 17,
+      "title": "Maria Empanada - Riverview",
+      "place_id": "ChIJhecaPkN5bIcRADuXiBSzQuQ",
+      "data_id": "0x876c79433e1ae785:0xe442b31488973b00",
+      "data_cid": "16447905689882802944",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x876c79433e1ae785%3A0xe442b31488973b00&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x876c79433e1ae785%3A0xe442b31488973b00&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 39.7584422,
+        "longitude": -105.00636519999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJhecaPkN5bIcRADuXiBSzQuQ",
+      "provider_id": "/g/11fh_6w1f7",
+      "rating": 4.6,
+      "reviews": 394,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant",
+        "Family restaurant",
+        "Latin American restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant",
+        "family_restaurant",
+        "latin_american_restaurant"
+      ],
+      "address": "1700 Platte St, Denver, CO 80202",
+      "open_state": "Closed ⋅ Opens 7:30 AM",
+      "hours": "Closed ⋅ Opens 7:30 AM",
+      "operating_hours": {
+        "thursday": "7:30 AM–7 PM",
+        "friday": "7:30 AM–7 PM",
+        "saturday": "7:30 AM–7 PM",
+        "sunday": "9 AM–5 PM",
+        "monday": "7:30 AM–7 PM",
+        "tuesday": "7:30 AM–7 PM",
+        "wednesday": "7:30 AM–7 PM"
+      },
+      "phone": "(720) 524-4972",
+      "website": "https://www.mariaempanada.com/",
+      "description": "Cafe with Argentinean pastries & tarts. Casual eatery serving empanadas, savory tarts & other Argentinean pastries, plus coffee.",
+      "service_options": {
+        "dine_in": true,
+        "curbside_pickup": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11fh_6w1f7&g2lbs=AOHF13kBa4Q-7TZqumCGHSfj5b6NwzysIXYOIBaAJ76gD1qdhCVn2VQ2tU_-NpsOGFqvWFGObTEXVPu5h8wRxcMpM6sSJ4LOrPZ3sWpCWJgpsANu6FVPWOM%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh3.googleusercontent.com/gps-proxy/ALd4DhHxTvPY6Ny54TpdAzDvFKT3HIImABjsI9hNAROsi1l-N7KuyqZHGbWEeDghXFgLstjxJIstQyN-JASfv-VGGXBdpil3y8ZyYd_zLXemdFdxvezPiiJ1JJMEdRZbUWvc5O0pCOymA_AoBKxVA-sRp0RwoARCnB1QJKzFXQyTt25WogtvzfM3Zh0=w163-h92-k-no"
+    },
+    {
+      "position": 18,
+      "title": "La Empanaderia",
+      "place_id": "ChIJbf4R8vpX54YR0i5C1dPyoII",
+      "data_id": "0x86e757faf211fe6d:0x82a0f2d3d5422ed2",
+      "data_cid": "9412790212834242258",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x86e757faf211fe6d%3A0x82a0f2d3d5422ed2&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x86e757faf211fe6d%3A0x82a0f2d3d5422ed2&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 31.818115799999998,
+        "longitude": -106.5146312
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJbf4R8vpX54YR0i5C1dPyoII",
+      "provider_id": "/g/11mv4950h4",
+      "rating": 4,
+      "reviews": 93,
+      "price": "$",
+      "type": "Restaurant",
+      "types": [
+        "Restaurant"
+      ],
+      "type_id": "restaurant",
+      "type_ids": [
+        "restaurant"
+      ],
+      "address": "5380 N Mesa St #114, El Paso, TX 79912",
+      "open_state": "Closed ⋅ Opens 11 AM",
+      "hours": "Closed ⋅ Opens 11 AM",
+      "operating_hours": {
+        "thursday": "11 AM–9 PM",
+        "friday": "11 AM–9 PM",
+        "saturday": "11 AM–9 PM",
+        "sunday": "11 AM–9 PM",
+        "monday": "11 AM–9 PM",
+        "tuesday": "11 AM–9 PM",
+        "wednesday": "11 AM–9 PM"
+      },
+      "phone": "(915) 275-5460",
+      "website": "http://laempanaderia.us/?utm_source=gmb&utm_medium=referral",
+      "service_options": {
+        "dine_in": true,
+        "takeout": true,
+        "no_contact_delivery": true
+      },
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipMjEe53F8f0R9M720s9KaYxq_49cRY7lGnYwR30=w122-h92-k-no"
+    },
+    {
+      "position": 19,
+      "title": "Pampa Empanadas",
+      "place_id": "ChIJbziyxMBlz4cRVg5zF0tSY3A",
+      "data_id": "0x87cf65c0c4b2386f:0x7063524b17730e56",
+      "data_cid": "8098407037411724886",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x87cf65c0c4b2386f%3A0x7063524b17730e56&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x87cf65c0c4b2386f%3A0x7063524b17730e56&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 37.1541673,
+        "longitude": -93.27672
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJbziyxMBlz4cRVg5zF0tSY3A",
+      "provider_id": "/g/11rc45lp82",
+      "rating": 4.8,
+      "reviews": 133,
+      "price": "$",
+      "type": "Restaurant",
+      "types": [
+        "Restaurant"
+      ],
+      "type_id": "restaurant",
+      "type_ids": [
+        "restaurant"
+      ],
+      "address": "3302 S National Ave F, Springfield, MO 65807",
+      "open_state": "Closed ⋅ Opens 1 PM",
+      "hours": "Closed ⋅ Opens 1 PM",
+      "operating_hours": {
+        "thursday": "1–8 PM",
+        "friday": "11 AM–8 PM",
+        "saturday": "11 AM–8 PM",
+        "sunday": "Closed",
+        "monday": "11 AM–8 PM",
+        "tuesday": "11 AM–8 PM",
+        "wednesday": "11 AM–8 PM"
+      },
+      "phone": "(417) 365-5151",
+      "website": "https://pampaempanadasmo.com/",
+      "service_options": {
+        "dine_in": true,
+        "curbside_pickup": true,
+        "delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11rc45lp82&g2lbs=AOHF13n2U-f5zsScTBngByk6_RJXtfikDu4m7LySwqhCrO4Du3bKNs9tq1y-7k-__RSboxA3bD97uW8LnR_VnRj78lK3FXzvGRs5_LfmXyOcBZFP74ub-zA%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNce64e6n93tDxcOtS8YR-_bBMLCO_2McyLsQBN=w92-h92-k-no"
+    },
+    {
+      "position": 20,
+      "title": "DelSur Empanadas—Minnetonka",
+      "place_id": "ChIJK0wq1E8ys1IRSC-WbB6mdI8",
+      "data_id": "0x52b3324fd42a4c2b:0x8f74a61e6c962f48",
+      "data_cid": "10337069694323142472",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x52b3324fd42a4c2b%3A0x8f74a61e6c962f48&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x52b3324fd42a4c2b%3A0x8f74a61e6c962f48&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 44.9035246,
+        "longitude": -93.46670689999999
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJK0wq1E8ys1IRSC-WbB6mdI8",
+      "provider_id": "/g/11g8xks30x",
+      "rating": 4.9,
+      "reviews": 753,
+      "price": "$",
+      "type": "Argentinian restaurant",
+      "types": [
+        "Argentinian restaurant"
+      ],
+      "type_id": "argentinian_restaurant",
+      "type_ids": [
+        "argentinian_restaurant"
+      ],
+      "address": "14725 Excelsior Blvd, Minnetonka, MN 55345",
+      "open_state": "Closed ⋅ Opens 11 AM",
+      "hours": "Closed ⋅ Opens 11 AM",
+      "operating_hours": {
+        "thursday": "11 AM–8 PM",
+        "friday": "11 AM–8 PM",
+        "saturday": "11 AM–8 PM",
+        "sunday": "Closed",
+        "monday": "Closed",
+        "tuesday": "11 AM–8 PM",
+        "wednesday": "11 AM–8 PM"
+      },
+      "phone": "(952) 303-6081",
+      "website": "http://www.delsurempanadas.com/",
+      "service_options": {
+        "dine_in": true,
+        "curbside_pickup": true,
+        "no_contact_delivery": true
+      },
+      "order_online": "https://food.google.com/chooseprovider?restaurantId=/g/11g8xks30x&g2lbs=AOHF13m5tZMsBNRT9hPXGQzZGfG5tcIyTm8CUxElw-0pcAbWuIhFo9GV1BAiKjYWBmXM5EvHNQ3h8V69EGqK2FC67Yq_m4TNdT9wRhx9ZsUURbee2P-8EDA%3D&hl=en-US&gl=us&fo_m=MfohQo559jFvMUOzJVpjPL1YMfZ3bInYwBDuMfaXTPp5KXh-&utm_source=tactile&gei=xYnZZrSTJeLsptQP1P_CqQs&ei=xYnZZrSTJeLsptQP1P_CqQs&fo_s=OA,SOE&opi=79508299&foub=mcpp",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipOFmjQ8p1TzFs-Mo7I_GNY42ZQAf3QLsPI57m5i=w122-h92-k-no"
+    }
+  ],
+  "serpapi_pagination": {
+    "next": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&q=empanadas+argentinas&start=20&type=search"
+  }
+}

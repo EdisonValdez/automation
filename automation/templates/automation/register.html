@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="main-content">
+    <section class="register">
+        <div class="row">
+            <div class="col-12">
+                <div class="box">
+                    <div class="box-header d-flex justify-content-between">
+                        <div class="action-reg">
+                            <h4 class="fs-30">Register</h4>
+                            <a href="{% url 'login' %}">Already have an account?</a>
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="box-body">
+                        <div class="auth-content my-auto">
+                            <form class="mt-5 pt-2" method="post" action="{% url 'register' %}">
+                                {% csrf_token %}
+                                {% if form.errors %}
+                                    <div class="alert alert-danger">
+                                        Please correct the errors below.
+                                    </div>
+                                {% endif %}
+                                <div class="mb-24">
+                                    <label class="form-label mb-14" for="{{ form.username.id_for_label }}">Username</label>
+                                    {{ form.username }}
+                                    {{ form.username.errors }}
+                                </div>
+                                <div class="mb-24">
+                                    <label class="form-label mb-14" for="{{ form.email.id_for_label }}">Email</label>
+                                    {{ form.email }}
+                                    {{ form.email.errors }}
+                                </div>
+                                <div class="mb-16">
+                                    <label class="form-label mb-14" for="{{ form.password1.id_for_label }}">Password</label>
+                                    <div class="input-group auth-pass-inputgroup">
+                                        {{ form.password1 }}
+                                        <button class="btn shadow-none ms-0" type="button" id="password-addon1"><i class="far fa-eye-slash"></i></button>
+                                    </div>
+                                    {{ form.password1.errors }}
+                                </div>
+                                <div class="mb-16">
+                                    <label class="form-label mb-14" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                                    <div class="input-group auth-pass-inputgroup">
+                                        {{ form.password2 }}
+                                        <button class="btn shadow-none ms-0" type="button" id="password-addon2"><i class="far fa-eye-slash"></i></button>
+                                    </div>
+                                    {{ form.password2.errors }}
+                                </div>
+                                
+                                {% if user.is_superuser %}
+                                <div class="mb-24">
+                                    <label class="form-label mb-14" for="{{ form.destination.id_for_label }}">Destination</label>
+                                    {{ form.destination }}
+                                    {{ form.destination.errors }}
+                                </div>
+                                <div class="mb-24">
+                                    <label class="form-label mb-14" for="{{ form.role.id_for_label }}">Role</label>
+                                    {{ form.role }}
+                                    {{ form.role.errors }}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="row mb-29">
+                                    <div class="col">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="terms-check" name="terms" required>
+                                            <label class="form-check-label fs-14" for="terms-check">
+                                                I agree to the <a href="{% url 'terms' %}" class="text-primary">Terms and Conditions</a>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn bg-primary color-white w-100 waves-effect waves-light fs-18 font-w500" type="submit">Register</button>
+                                </div>
+                            </form>
+
+                            <div class="mt-37 text-center">
+                                <p class="text-muted mb-0 fs-14">Already have an account? <a href="{% url 'login' %}" class="text-primary fw-semibold">Log In</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInputs = [
+            document.getElementById('{{ form.password1.id_for_label }}'),
+            document.getElementById('{{ form.password2.id_for_label }}')
+        ];
+        const toggleButtons = [
+            document.getElementById('password-addon1'),
+            document.getElementById('password-addon2')
+        ];
+
+        toggleButtons.forEach((button, index) => {
+            button.addEventListener('click', function() {
+                if (passwordInputs[index].type === 'password') {
+                    passwordInputs[index].type = 'text';
+                    button.innerHTML = '<i class="far fa-eye"></i>';
+                } else {
+                    passwordInputs[index].type = 'password';
+                    button.innerHTML = '<i class="far fa-eye-slash"></i>';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

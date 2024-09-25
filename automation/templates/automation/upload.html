@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Upload File{% endblock %}
+
+{% block content %}
+<style>
+    .badge-info {
+    color: rgb(255, 255, 255);
+    background-color: rgb(10, 153, 46);
+}
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.overlay-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.overlay-content h2 {
+    margin-bottom: 10px;
+}
+
+.overlay-content p {
+    margin-bottom: 20px;
+}
+
+</style>
+<div class="main-content project">
+    <div class="row">
+        <div class="col-12">
+            <div class="box">
+                <div class="box-body">
+                    {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if error %}
+                    <div class="icon-box bg-color-9" role="alert">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+                    <form id="upload-form" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-3 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="{{ form.project_title.id_for_label }}" class="form-label">Project Title</label>
+                                    {{ form.project_title }}
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="{{ form.level.id_for_label }}" class="form-label">Level</label>
+                                    {{ form.level }}
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="{{ form.main_category.id_for_label }}" class="form-label">Main Category</label>
+                                    {{ form.main_category }}
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="{{ form.subcategory.id_for_label }}" class="form-label">Subcategory (optional)</label>
+                                    {{ form.subcategory }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-24">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description (optional)</label>
+                            {{ form.description }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-8 col-sm-12">
+                                <label for="{{ form.file.id_for_label }}" class="form-label">Upload File</label>
+                                <div class="input-group file-browser">
+                                  
+                              
+                                        {{ form.file }}
+                                  
+                                </div>
+                                <div class="form-text">{{ form.file.help_text }}</div>
+                            </div>
+                            
+                            <div class="col-md-4 col-sm-12">
+                                <label for="{{ form.file.id_for_label }}" class="form-label">Get Business</label>
+                                <div class="input-group file-browser">
+                                    <button type="submit" class="btn btn-primary">Start Acquiring</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="overlay" class="overlay">
+                        <div class="overlay-content">
+                            <h2>Processing your request...</h2>
+                            <p>This process may take some minutes. You can see the status on the Dashboard page.</p>
+                            <a href="{% url 'dashboard' %}" class="btn btn-primary">Ir al Dashboard</a>
+                        </div>
+                    </div>
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('upload-form');
+    const overlay = document.getElementById('overlay');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Mostrar el overlay
+        overlay.style.display = 'flex';
+
+        // Enviar el formulario de forma asíncrona
+        fetch(form.action, {
+            method: form.method,
+            body: new FormData(form),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Aquí puedes manejar la respuesta si es necesario
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+
+                    </script>
+                    <script>
+                        $(document).ready(function() {
+                            const levelSelect = $('#id_level');
+                            const categorySelect = $('#id_main_category');
+                            const subcategorySelect = $('#id_subcategory');
+                    
+                            levelSelect.change(function() {
+                                const levelId = $(this).val();
+                                $.ajax({
+                                    url: '{% url "get_categories" %}',
+                                    data: {
+                                        'level': levelId
+                                    },
+                                    success: function(data) {
+                                        console.log('Categories received:', data);
+                                        categorySelect.html('<option value="">Select a category</option>');
+                                        data.forEach(function(category) {
+                                            categorySelect.append($('<option></option>').attr('value', category.id).text(category.title));
+                                        });
+                                        // Limpiar subcategorías cuando cambia el nivel
+                                        subcategorySelect.html('<option value="">Select a subcategory (optional)</option>');
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.error('Error fetching categories:', error);
+                                    }
+                                });
+                            });
+                    
+                            categorySelect.change(function() {
+                                const categoryId = $(this).val();
+                                $.ajax({
+                                    url: '{% url "get_subcategories" %}',
+                                    data: {
+                                        'category': categoryId
+                                    },
+                                    success: function(data) {
+                                        console.log('Subcategories received:', data);
+                                        subcategorySelect.html('<option value="">Select a subcategory (optional)</option>');
+                                        data.forEach(function(subcategory) {
+                                            subcategorySelect.append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
+                                        });
+                                    },
+                                    error: function(xhr, status, error) {
+                                        console.error('Error fetching subcategories:', error);
+                                    }
+                                });
+                            });
+                        });
+                    </script>
+                    
+                    
+    <hr />
+    <div id="log-container"></div>
+    <hr />
+    <div class="box ">
+        <div class="box-header pt-0">
+            <div class="me-auto">
+                <h4 class="card-title mb-0 fs-22">Recent Activity</h4>
+            </div>
+            <div class="card-options pr-3">
+                <div class="dropdown"> 
+                    <a href="#" class="btn ripple btn-outline-light dropdown-toggle fs-14" data-bs-toggle="dropdown" aria-expanded="false"> 
+                        See All 
+                        <i class="feather feather-chevron-down"></i> 
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" role="menu">
+                        <li><a href="#">Monthly</a></li>
+                        <li><a href="#">Yearly</a></li>
+                        <li><a href="#">Weekly</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="box-body pb-0 table-responsive activity mt-18">
+            <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-profile" role="grid">
+                <thead>
+                    <tr class="top">
+                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Project</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Team</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Start</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Deadline</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Progress</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Work Status</th>
+                        <th class="border-bottom-0 sorting_disabled fs-14 font-w500" rowspan="1" colspan="1">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'task_detail' task.id %}" class="d-flex ">
+                                <span>{{ task.project_title }}</span>
+                            </a>
+                        </td>
+                        <td>
+                            <ul class="user-list mb-0">
+                                {% for member in task.team_members %}
+                                <li><img src="{{ member.avatar_url }}" alt="{{ member.name }}"></li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>{{ task.created_at|date:"d-m-Y" }}</td>
+                        <td>{{ task.deadline|date:"d-m-Y" }}</td>
+                        <td>
+                            <div class="progress progress-sm">
+                                <div class="progress-bar bg-primary w-{{ task.progress }}"></div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% elif task.status == 'TRANSLATED' %} badge-success {% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bx bx-dots-horizontal-rounded"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_client"><i class="bx bx-trash"></i> Delete</a>
+                                 
+                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_client"><a href="{% url 'task_detail' task.id %}" style="margin-left:20px"><i class="bx bx-edit"></i> Edit</a></a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">No projects yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Paginator with Custom Styling -->
+            <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+                {% endif %}
+    
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+    
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+        </div>
+    </div>
+    
+<!-- Success message modal -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage"></p>
+                <p>Redirecting to dashboard in <span id="countdown">10</span> seconds...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error message modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %} 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+ <script>
+    $(document).ready(function() {
+        $('#upload-form').on('submit', function(e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+    
+            $.ajax({
+                url: "{% url 'upload_file' %}",
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    if (response.status === 'success') {
+                        $('#successMessage').text(response.message);
+                        $('#successModal').modal('show');
+                        
+                        var seconds = 10;
+                        var countdownTimer = setInterval(function() {
+                            seconds--;
+                            $('#countdown').text(seconds);
+                            if (seconds <= 0) {
+                                clearInterval(countdownTimer);
+                                window.location.href = response.redirect_url;
+                            }
+                        }, 1000);
+                    } else {
+                        $('#errorMessage').text(response.message);
+                        $('#errorModal').modal('show');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#errorMessage').text("An error occurred. Please try again.");
+                    $('#errorModal').modal('show');
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $.ajax({
+            url: '/get-categories/',  
+            method: 'GET',
+            success: function(response) {
+                var select = $('#main_category');
+                select.empty();   
+
+            
+                select.append('<option value="">Select Category</option>');
+
+                // Populate the select dropdown with categories
+                $.each(response.categories, function(index, category) {
+                    select.append('<option value="' + category + '">' + category + '</option>');
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching categories:', error);
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#task-profile').DataTable({
+            "pageLength": 5,  // Number of records per page
+            "lengthChange": true,  // Allow user to change the number of records per page
+            "searching": true,     // Enable search filter
+            "ordering": true,      // Enable column ordering
+            "info": true,          // Show page info
+            "autoWidth": false     // Disable auto width adjustment
+        });
+    });
+</script>
+<script>
+    const taskId = "{{ task.id }}";  // Assuming you pass the task ID from the view
+const logContainer = document.getElementById('log-container');
+
+const socket = new WebSocket(
+    'ws://' + window.location.host + '/ws/logs/' + taskId + '/'
+);
+
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    const logs = data.logs;
+    logContainer.innerHTML += logs + '<br>';
+    logContainer.scrollTop = logContainer.scrollHeight;
+};
+
+socket.onclose = function(e) {
+    console.error('Log socket closed unexpectedly');
+};
+
+</script>
+{% endblock %}
+
+ 
