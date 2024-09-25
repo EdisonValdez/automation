@@ -25,11 +25,23 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(mobile, password, **extra_fields)
 
+from django.db import models
+from django.contrib.auth import get_user_model
+
 class Destination(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    country = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100)
+    country = models.CharField(max_length=100)
+
     def __str__(self):
         return self.name
+
+    def get_ambassador_count(self):
+        # Use get_user_model to ensure it works with the custom user model
+        User = get_user_model()
+        # Assuming 'ambassador' is a role or attribute on the user model
+        return User.objects.filter(destinations=self, roles__role='AMBASSADOR').count()
+
+    
 
 class CustomUser(AbstractUser):
     mobile = models.CharField(max_length=15, blank=True, null=True)

@@ -66,6 +66,8 @@ urlpatterns = [
     path('api/subcategories/', views.get_subcategories, name='get_subcategories'),
 
     path('task-status/<int:task_id>/', views.task_status, name='task_status'),
+    path('search-destinations/', views.search_destinations, name='search_destinations'),
+
 
 
 ]

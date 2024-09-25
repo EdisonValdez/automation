@@ -644,7 +644,7 @@ def delete_business(request, business_id):
         messages.success(request, "Business deleted successfully.")
         return redirect('business_list')
     return render(request, 'automation/delete_business_confirm.html', {'business': business})
- 
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def destination_management(request):
@@ -666,7 +666,12 @@ def destination_management(request):
             return JsonResponse({'status': 'error', 'errors': form.errors})
 
     # Retrieve all destinations
-    destinations = Destination.objects.all()
+    all_destinations = Destination.objects.all().order_by('name')
+    
+    # Use Paginator to limit to 24 destinations per page
+    paginator = Paginator(all_destinations, 24)
+    page_number = request.GET.get('page', 1)
+    destinations = paginator.get_page(page_number)
     
     # Prepare a list to hold destination and associated ambassador information
     destination_data = []
@@ -686,6 +691,7 @@ def destination_management(request):
     return render(request, 'automation/destination_management.html', {
         'destination_data': destination_data,
         'all_ambassadors': all_ambassadors,
+        'destinations': destinations,  # This is the paginated QuerySet
     })
 
 @login_required
@@ -768,30 +774,31 @@ def edit_destination(request):
         destination_id = request.POST.get('id')
         destination_name = request.POST.get('name')
         destination_country = request.POST.get('country')
-        ambassador_id = request.POST.get('ambassador_id')  # Get ambassador ID from the form
-        
+        ambassador_id = request.POST.get('ambassador_id')
+
         logger.info(f"Received edit request for ID: {destination_id}, Name: {destination_name}, Country: {destination_country}, Ambassador: {ambassador_id}")
 
         try:
-            # Find the destination
             destination = Destination.objects.get(id=destination_id)
             destination.name = destination_name
             destination.country = destination_country
 
-            # Handle ambassador update/assignment
             if ambassador_id:
                 try:
                     ambassador = get_object_or_404(CustomUser, id=ambassador_id)
-            
-                    destination.ambassador = ambassador  # Assuming there's a ForeignKey or OneToOneField for ambassador
-                except User.DoesNotExist:
+                    if ambassador.roles.filter(role='AMBASSADOR').exists():
+                        # Add the ambassador to the destination relationship
+                        ambassador.destinations.add(destination)
+                    else:
+                        return JsonResponse({'status': 'error', 'message': 'Selected user is not an ambassador.'})
+                except CustomUser.DoesNotExist:
                     return JsonResponse({'status': 'error', 'message': 'Ambassador not found.'})
 
             destination.save()
-            return JsonResponse({'status': 'success', 'message': 'Destination and ambassador updated successfully.'})
+            return JsonResponse({'status': 'success', 'message': 'Destination updated successfully with ambassador.'})
+
         except Destination.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'Destination not found.'})
-    
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 @login_required
@@ -1175,3 +1182,40 @@ class UploadScrapingResultsView(View):
 def task_status(request, task_id):
     task = ScrapingTask.objects.get(id=task_id)
     return render(request, 'automation/task_status.html', {'task': task})
+
+
+
+
+@login_required
+@require_GET
+def search_destinations(request):
+    try:
+        name = request.GET.get('name', '').strip()
+        country = request.GET.get('country', '').strip()
+        
+        destinations = Destination.objects.all()
+        if name:
+            destinations = destinations.filter(name__icontains=name)
+        if country:
+            destinations = destinations.filter(country__icontains=country)
+        
+        destination_data = []
+        for destination in destinations:
+            try:
+                destination_data.append({
+                    'id': destination.id,
+                    'name': destination.name,
+                    'country': destination.country,
+                    'ambassadors': destination.get_ambassador_count(),
+                })
+            except Exception as e:
+                logger.error(f"Error processing destination {destination.id}: {str(e)}")
+
+        return JsonResponse({
+            'status': 'success', 
+            'destinations': destination_data,
+            'is_admin': request.user.is_staff  # o is_admin si tienes ese campo
+        })
+    except Exception as e:
+        logger.error(f"Error in search_destinations: {str(e)}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
