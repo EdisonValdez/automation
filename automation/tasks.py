@@ -528,7 +528,7 @@ def save_business(task, local_result, query):
             'place_id': 'place_id',
             'data_id': 'data_id',
             'data_cid': 'data_cid',
-            'rating': 'average_rating',
+            'rating': 'rating',
             'reviews': 'reviews_count',
             'price': 'price',
             'type': 'category_name',
@@ -1008,7 +1008,7 @@ def generate_task_report(task_id):
             'completed_at': task.completed_at,
             'status': task.status,
             'total_businesses': businesses.count(),
-            'average_rating': businesses.aggregate(Avg('rating'))['rating__avg'],
+            'rating': businesses.aggregate(Avg('rating'))['rating__avg'],
             'top_categories': list(businesses.values('category_name').annotate(count=Count('id')).order_by('-count')[:5]),
             'businesses': []
         }

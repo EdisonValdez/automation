@@ -400,8 +400,12 @@ class DashboardView(View):
             # Get category counts for chart
             category_counts = ScrapingTask.objects.values('main_category').annotate(count=Count('id')).order_by()
             logger.debug(f"Category counts: {category_counts}")
+            for item in category_counts:
+                if item['main_category'] is None:
+                    item['main_category'] = "Uncategorized"  # Substitute None with a default label
+            
             context['category_counts'] = list(category_counts)
-
+ 
             # Get some additional useful statistics
             context['avg_businesses_per_task'] = Business.objects.count() / context['total_projects'] if context['total_projects'] > 0 else 0
             context['completion_rate'] = (context['completed_projects'] / context['total_projects']) * 100 if context['total_projects'] > 0 else 0
@@ -706,6 +710,7 @@ def get_destination(request, destination_id):
     return JsonResponse(data)
 
 
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def destination_detail(request, destination_id):
@@ -728,15 +733,27 @@ def destination_detail(request, destination_id):
             'last_name': ambassador.last_name,
             'mobile': ambassador.mobile,  
             'email': ambassador.email, 
-            'dest' : destination.name
+            'dest': destination.name
         }
         for ambassador in ambassadors
     ]
 
-    return render(request, 'automation/destination_detail.html', {
+    # Implement pagination
+    paginator = Paginator(ambassador_details, 10)  # Show 10 ambassadors per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
         'destination': destination,
-        'ambassador_details': ambassador_details 
-    })
+        'ambassador_details': page_obj.object_list,
+        'page_obj': page_obj,
+        'is_admin': request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists(),
+        'is_ambassador': request.user.roles.filter(role='AMBASSADOR').exists(),
+        'is_staff': request.user.is_staff,
+        'is_superuser': request.user.is_superuser,
+    }
+
+    return render(request, 'automation/destination_detail.html', context)
 
 @login_required
 def ambassador_profile(request, ambassador_id):
@@ -964,7 +981,7 @@ def save_business_from_json(task, business_data, query):
             'place_id': 'place_id',
             'data_id': 'data_id',
             'data_cid': 'data_cid',
-            'rating': 'average_rating',
+            'rating': 'rating',
             'reviews': 'reviews_count',
             'price': 'price',
             'type': 'category_name',

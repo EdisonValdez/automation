@@ -88,7 +88,7 @@
                                         <div class="mt-0 text-start">
                                             <a href="{% url 'task_detail' id=task.id %}" class="box-title mb-0 mt-1 mb-3 font-w600 fs-18">{{task.id}} - {{ task.project_title }}</a>
                                             <p class="fs-14 font-w500 text-muted">Category: {{ task.main_category }}</p>
-                                            <p class="fs-14 text-muted">Desc: {{ task.description }}</p>
+                                            <p class="fs-14 text-muted">Tags: {{ task.description }}</p>
                                             <p class="fs-14 text-muted">Level: {{ task.level }}</p>
                                             <p class="fs-14 text-muted">Created: {{ task.created_at }}</p>
                                             <p class="fs-14 text-muted">Completed: {{ task.completed_at }}</p>
@@ -128,26 +128,30 @@
         </div>
     </div>
 
+ <!--<script src="{% static '/libs/chart.js/Chart.bundle.min.js' %}"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>   
+    <script type="application/json" id="statusCounts">
+        {{ status_counts|json_script:"statusCounts" }}
+    </script>
+    
+    <script type="application/json" id="categoryCounts">
+        {{ category_counts|json_script:"categoryCounts" }}
+    </script>
+    
     <div class="row">
-        <div class="col-6 col-md-12">
+        <div class="col-12 col-md-12">
             <!-- PROJECTS CHART -->
             <div class="box f-height">
                 <div class="box-header d-flex justify-content-between">
-                    <h3 class="mt-9 fs-22">Project Statistics</h3>
-                    <ul class="card-list mb-0">
-                        <li class="custom-label"><span class="bg-success"></span>Completed</li>
-                        <li class="custom-label"><span class="bg-warning"></span>In Progress</li>
-                        <li class="custom-label"><span class="bg-danger"></span>Failed</li>
-                        <li class="custom-label"><span class="bg-info"></span>Pending</li>
-                    </ul>
+                    <h3 class="mt-9 fs-22">Project Status</h3>                
                 </div>
                 <div class="box-body pt-20">
-                    <div id="project-status-chart"></div>
+                    <canvas id="project-status-chart" width="100" height="100"></canvas>
                 </div>
             </div>
             <!-- END PROJECTS CHART -->
         </div>
-        <div class="col-6 col-md-12">
+        <div class="col-12 col-md-12">
             <div class="box">
                 <div class="box-header">
                     <div class="me-auto">
@@ -157,43 +161,154 @@
                 </div>
                 <div class="box-body pt-0">
                     <div class="row">
-                        <div class="col-6 col-xl-12 col-md-6 col-sm-12 w-sm-100 mb-0">
-                            <ul class="box-list mt-25 pr-60" id="category-list">
+                        <div class="canvas-container">
+                            <canvas id="category-chart" class="chartjs" width="100" height="100"></canvas>
+                            <div class="chart-data" id="category-data">
                                 <!-- This will be populated dynamically -->
-                            </ul>
-                        </div>
-                        <div class="col-6 col-xl-12 col-md-6 col-sm-12 w-sm-100 mb-0">
-                            <div class="canvas-container">
-                                <canvas id="category-chart" class="chartjs" width="100" height="100"></canvas>
-                                <div class="chart-data" id="category-data">
-                                    <!-- This will be populated dynamically -->
-                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>    
             </div>
         </div>
-    </div>
+    </div> 
+ 
+  
+<script type="application/json" id="statusCounts">
+    {{ status_counts|json_script:"statusCounts" }}
+</script>
+
+<script type="application/json" id="categoryCounts">
+    {{ category_counts|json_script:"categoryCounts" }}
+</script>
+  
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        // Retrieve the script elements
+        const statusCountsElement = document.getElementById('statusCounts');
+        const categoryCountsElement = document.getElementById('categoryCounts');
+
+        // Check if both elements exist
+        if (statusCountsElement && categoryCountsElement) {
+            // Read the contents of the <script> tag and parse it as JSON
+            const statusCounts = JSON.parse(statusCountsElement.textContent);
+            const categoryCounts = JSON.parse(categoryCountsElement.textContent);
+
+            console.log("Status Counts:", statusCounts);
+            console.log("Category Counts:", categoryCounts);
+            console.log("Raw statusCounts:", statusCountsElement.textContent);
+            console.log("Raw categoryCounts:", categoryCountsElement.textContent);
+
+            } else {
+                console.error("One or both of the data elements (#statusCounts, #categoryCounts) are missing.");
+            }
+        } catch (error) {
+            console.error("Error parsing JSON data:", error);
+        }
+
+
+        // Ensure statusCounts is populated
+        const statusChartData = [
+            statusCounts.COMPLETED || 0,
+            statusCounts.IN_PROGRESS || 0,
+            statusCounts.FAILED || 0,
+            statusCounts.TRANSLATED || 0,
+            statusCounts.PENDING || 0
+        ];
+
+        // Setup and render the Project Status Chart
+        try {
+            const statusCtx = document.getElementById('project-status-chart').getContext('2d');
+            const statusChart = new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'In Progress', 'Failed', 'Translated', 'Pending'],
+                    datasets: [{
+                        data: statusChartData,
+                        backgroundColor: ['#00BC8B', '#FFB800', '#FF0000', '#3C21F7', '#3C2655']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error creating status chart:", error);
+        }
+
+        // Ensure categoryCounts is available and properly formatted
+        const categoryData = Object.keys(categoryCounts).map((key) => ({
+            value: categoryCounts[key].count || 0,
+            color: getRandomColor(),
+            label: categoryCounts[key].main_category || "Uncategorized"
+        }));
+
+        // Prepare and render Main Category Chart
+        try {
+            const categoryCtx = document.getElementById('category-chart').getContext('2d');
+            const categoryChart = new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: categoryData.map(item => item.value),
+                        backgroundColor: categoryData.map(item => item.color)
+                    }],
+                    labels: categoryData.map(item => item.label)
+                },
+                options: {
+                    responsive: true,
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error creating category chart:", error);
+        }
+
+        // Populate category list and append to DOM
+        const categoryList = document.getElementById('category-list');
+        const categoryDataDiv = document.getElementById('category-data');
+        const totalProjects = categoryData.reduce((sum, item) => sum + item.value, 0);
+
+        categoryData.forEach(function(category) {
+            const percentage = ((category.value / totalProjects) * 100).toFixed(2);
+
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="square" style="background-color: ${category.color}"></span>${category.label}<span>${percentage}%</span>`;
+            categoryList.appendChild(li);
+
+            const div = document.createElement('div');
+            div.setAttribute('data-percent', percentage);
+            div.setAttribute('data-color', category.color);
+            div.setAttribute('data-label', category.label);
+            categoryDataDiv.appendChild(div);
+        });
+
+        // Function to generate random colors for the chart
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+    });
+</script>
+ 
 </div>
+ 
 <div class="box">
     <div class="box-header pt-0">
         <div class="me-auto">
             <h4 class="card-title mb-0 fs-22" id="scraped-list">Recent Activity</h4>
         </div>
-        <div class="card-options pr-3">
-            <div class="dropdown">
-                <a href="#" class="btn ripple btn-outline-light dropdown-toggle fs-14" data-bs-toggle="dropdown" aria-expanded="false">
-                    See All
-                    <i class="feather feather-chevron-down"></i>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end" role="menu">
-                    <li><a href="#">Monthly</a></li>
-                    <li><a href="#">Yearly</a></li>
-                    <li><a href="#">Weekly</a></li>
-                </ul>
-            </div>
-        </div>
+ 
     </div>
     <div class="box-body pb-0 table-responsive activity mt-18">
         <div class="box-body pb-0 table-responsive activity mt-18">
@@ -357,113 +472,6 @@
 </div>
 
  </div>
- 
-<script src="{% static '/libs/chart.js/Chart.bundle.min.js' %}"></script> 
-<script src="{% static '/libs/apexcharts/apexcharts.js' %}"></script> 
- 
- 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get the serialized data safely from the DOM
-        const statusCounts = JSON.parse(document.getElementById('statusCounts').textContent);
-        const categoryCounts = JSON.parse(document.getElementById('categoryCounts').textContent);
- 
-
-        console.log("Status Counts:", statusCounts);
-        console.log("Category Counts:", categoryCounts);
-
-        // Ensure statusCounts is populated
-        const statusChartData = [
-            statusCounts.COMPLETED || 0,
-            statusCounts.IN_PROGRESS || 0,
-            statusCounts.FAILED || 0,
-            statusCounts.TRANSLATED || 0,
-            statusCounts.PENDING || 0
-        ];
-
-        // Setup and render the Project Status Chart
-        try {
-            const statusCtx = document.getElementById('project-status-chart').getContext('2d');
-            const statusChart = new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Completed', 'In Progress', 'Failed', 'Translated', 'Pending'],
-                    datasets: [{
-                        data: statusChartData,
-                        backgroundColor: ['#00BC8B', '#FFB800', '#FF0000', '#3C21F7', '#3C265G']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                        position: 'bottom',
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Error creating status chart:", error);
-        }
-
-        // Ensure categoryCounts is available and properly formatted
-        const categoryData = Object.keys(categoryCounts).map((key) => ({
-            value: categoryCounts[key].count || 0,
-            color: getRandomColor(),
-            label: categoryCounts[key].main_category || "Unknown"
-        }));
-
-        // Prepare and render Main Category Chart
-        try {
-            const categoryCtx = document.getElementById('category-chart').getContext('2d');
-            const categoryChart = new Chart(categoryCtx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: categoryData.map(item => item.value),
-                        backgroundColor: categoryData.map(item => item.color)
-                    }],
-                    labels: categoryData.map(item => item.label)
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                        position: 'bottom',
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Error creating category chart:", error);
-        }
-
-        // Populate category list and append to DOM
-        const categoryList = document.getElementById('category-list');
-        const categoryDataDiv = document.getElementById('category-data');
-        const totalProjects = categoryData.reduce((sum, item) => sum + item.value, 0);
-
-        categoryData.forEach(function(category) {
-            const percentage = ((category.value / totalProjects) * 100).toFixed(2);
-
-            const li = document.createElement('li');
-            li.innerHTML = `<span class="square" style="background-color: ${category.color}"></span>${category.label}<span>${percentage}%</span>`;
-            categoryList.appendChild(li);
-
-            const div = document.createElement('div');
-            div.setAttribute('data-percent', percentage);
-            div.setAttribute('data-color', category.color);
-            div.setAttribute('data-label', category.label);
-            categoryDataDiv.appendChild(div);
-        });
-
-        // Function to generate random colors for the chart
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
-    });
-</script>
 
 <script>
     $(document).ready(function() {

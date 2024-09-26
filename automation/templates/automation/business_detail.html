@@ -88,7 +88,7 @@
                         <p><strong>Address:</strong> {{ business.address }}</p>
                         <p><strong>City:</strong> {{ business.city.name|default:"N/A" }}</p>
                         <p><strong>Phone:</strong> {{ business.phone|default:"N/A" }}</p>
-                        <p><strong>Rating:</strong> {{ business.average_rating|default:"N/A" }} ({{ business.reviews_count|default:"0" }} reviews)</p>
+                        <p><strong>Rating:</strong> {{ business.rating|default:"N/A" }} ({{ business.reviews_count|default:"0" }} reviews)</p>
                         <p><strong>Price:</strong> {{ business.price|default:"N/A" }}</p>
                         <p><strong>Website:</strong> <a href="{{ business.website }}" target="_blank">{{ business.website|default:"N/A" }}</a></p>
         

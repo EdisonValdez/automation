@@ -183,7 +183,7 @@ class Business(models.Model):
     data_id = models.CharField(max_length=255, blank=True, null=True)
     data_cid = models.CharField(max_length=255, blank=True, null=True)
     reviews_count = models.PositiveIntegerField(default=0)
-    average_rating = models.FloatField(null=True, blank=True)
+    rating = models.FloatField(null=True, blank=True)
     scraped_at = models.DateTimeField()
     url = models.URLField(max_length=500, blank=True, null=True)
     website = models.URLField(max_length=500, blank=True, null=True)

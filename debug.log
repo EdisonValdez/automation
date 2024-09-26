@@ -15911,3 +15911,31 @@ INFO 2024-09-25 22:38:09,879 views 11476 26500 Destination: Lisboa, Ambassadors 
 INFO 2024-09-25 22:38:09,882 views 11476 26500 Ambassador: carmen 2
 INFO 2024-09-25 22:47:57,278 views 11476 1664 Destination: Lisboa, Ambassadors Count: 1
 INFO 2024-09-25 22:47:57,285 views 11476 1664 Ambassador: carmen 2
+INFO 2024-09-26 07:59:01,204 views 1184 27952 Destination: Lisboa, Ambassadors Count: 1
+INFO 2024-09-26 07:59:01,206 views 1184 27952 Ambassador: carmen 2
+INFO 2024-09-26 08:28:37,787 views 1184 2860 Accessing TaskDetailView for task 6
+INFO 2024-09-26 08:28:37,917 views 1184 2860 Retrieved task 6 with 60 businesses
+INFO 2024-09-26 08:28:40,863 models 1184 28964 Updating Business 41: El Minibar
+INFO 2024-09-26 08:28:42,302 models 1184 28964 Updating Business 41: El Minibar
+INFO 2024-09-26 08:29:03,974 views 1184 28964 Accessing user_management view
+INFO 2024-09-26 08:29:03,978 views 1184 28964 Retrieved 3 users
+INFO 2024-09-26 08:29:07,258 views 1184 29000 Accessing edit_user view for user_id: 2
+INFO 2024-09-26 08:29:13,443 views 1184 28300 Accessing user_management view
+INFO 2024-09-26 08:29:13,445 views 1184 28300 Retrieved 3 users
+INFO 2024-09-26 08:31:23,296 views 1184 25756 Accessing create_user view
+INFO 2024-09-26 08:31:42,869 views 1184 22716 Accessing user_management view
+INFO 2024-09-26 08:31:42,870 views 1184 22716 Retrieved 3 users
+INFO 2024-09-26 08:31:59,483 views 1184 28444 Accessing UploadFileView GET
+INFO 2024-09-26 08:34:46,588 views 1184 16516 Accessing UploadFileView GET
+INFO 2024-09-26 08:35:31,277 views 1184 28544 Accessing UploadFileView GET
+INFO 2024-09-26 08:36:06,080 views 1184 30568 Accessing UploadFileView GET
+INFO 2024-09-26 08:36:09,248 views 1184 9048 Accessing UploadFileView GET
+INFO 2024-09-26 08:36:15,748 views 1184 23144 Accessing UploadFileView GET
+INFO 2024-09-26 08:36:32,365 views 1184 22992 Accessing UploadFileView GET
+INFO 2024-09-26 08:37:42,720 views 1184 26368 Accessing UploadFileView GET
+INFO 2024-09-26 08:38:14,921 views 1184 24768 Accessing UploadFileView GET
+INFO 2024-09-26 08:38:38,629 views 1184 28232 Accessing UploadFileView GET
+INFO 2024-09-26 08:38:57,929 views 1184 24976 Accessing UploadFileView GET
+INFO 2024-09-26 08:47:47,953 views 1184 1300 Accessing UploadFileView GET
+INFO 2024-09-26 08:48:13,375 views 1184 28444 Accessing UploadFileView GET
+INFO 2024-09-26 08:48:19,429 views 1184 29092 Accessing UploadFileView GET
