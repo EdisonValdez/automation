@@ -51,16 +51,24 @@ import re
 import unicodedata
 import boto3
 from botocore.exceptions import NoCredentialsError
-#SERPAPI_KEY = settings.SERPAPI_KEY   
-SERPAPI_KEY="c63b29e92a3a15f1974d4ca626d4f3ad5d752768608c5e2c8d96b03e2b2c7689"   #"68ea65477e6d1364cb779432e97386315b6b6de331a2fcdb00580d2e5f00201e"
-OPENAI_API_KEY = openai.api_key = "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"
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from the .env file
+load_dotenv()
 
+# Access the API keys from environment variables
+SERPAPI_KEY = os.getenv('SERPAPI_KEY')
+GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
+
+openai.api_key = GENAI_OPENAI_API_KEY
+
+ 
 User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
-doctran = Doctran(openai_api_key=OPENAI_API_KEY)
+doctran = Doctran(openai_api_key=GENAI_OPENAI_API_KEY)
 
 
 def process_scraping_task(task_id):
