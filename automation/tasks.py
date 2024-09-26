@@ -64,10 +64,7 @@ load_dotenv()
 SERPAPI_KEY = os.getenv('SERPAPI_KEY')
 GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
 TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
- 
-# Log the API keys (for debugging; remove in production)
-logger.info(f"Using GENAI API Key: {GENAI_OPENAI_API_KEY}")
-logger.info(f"Using TRANSLATION API Key: {TRANSLATION_OPENAI_API_KEY}")
+
 
 # Set the OpenAI API key
 # Choose the correct API key based on your use case
