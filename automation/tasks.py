@@ -64,7 +64,7 @@ load_dotenv()
 SERPAPI_KEY = os.getenv('SERPAPI_KEY')
 GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
 TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
-
+ 
 # Log the API keys (for debugging; remove in production)
 logger.info(f"Using GENAI API Key: {GENAI_OPENAI_API_KEY}")
 logger.info(f"Using TRANSLATION API Key: {TRANSLATION_OPENAI_API_KEY}")
@@ -395,7 +395,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
     except Exception as e:
-        logger.error(f"Error enhancing and translating description for business {business.id}: {str(e)}")
+        logger.error(f"Error enhancing and translating description for business- {TRANSLATION_OPENAI_API_KEY} {business.id}: {str(e)}")
 
 def translate_business_info_sync(business, languages=["spanish", "eng"]):
     asyncio.run(translate_business_info_async(business, languages=languages))

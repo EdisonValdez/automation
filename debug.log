@@ -16724,3 +16724,814 @@ INFO 2024-09-26 12:26:26,151 views 30080 17588 Accessing UploadFileView GET
 INFO 2024-09-26 12:27:18,236 views 30080 28264 Accessing UploadFileView GET
 INFO 2024-09-26 12:31:58,096 tasks 30880 10548 Using GENAI API Key: "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" #Gen-ai Local Secret
 INFO 2024-09-26 12:31:58,097 tasks 30880 10548 Using TRANSLATION API Key: "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"  #Translation Local Secret
+INFO 2024-09-26 12:33:46,636 views 30880 26880 Received request to translate businesses for task 6
+INFO 2024-09-26 12:33:46,643 views 30880 26880 Translating and enhancing business: La Mi Venta
+ERROR 2024-09-26 12:33:47,265 tasks 30880 26880 Error enhancing and translating description for business 42: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:47,268 tasks 30880 26880 Starting translation for business 42
+INFO 2024-09-26 12:33:47,314 tasks 30880 26880 Completed translation for business 42 for all languages
+INFO 2024-09-26 12:33:47,315 models 30880 26880 Updating Business 42: La Mi Venta
+INFO 2024-09-26 12:33:47,319 views 30880 26880 Translating and enhancing business: El Minibar
+ERROR 2024-09-26 12:33:47,482 tasks 30880 26880 Error enhancing and translating description for business 41: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:47,484 tasks 30880 26880 Starting translation for business 41
+INFO 2024-09-26 12:33:47,486 tasks 30880 26880 Completed translation for business 41 for all languages
+INFO 2024-09-26 12:33:47,487 models 30880 26880 Updating Business 41: El Minibar
+INFO 2024-09-26 12:33:47,489 views 30880 26880 Translating and enhancing business: Taberna El Sur
+ERROR 2024-09-26 12:33:47,653 tasks 30880 26880 Error enhancing and translating description for business 43: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:47,656 tasks 30880 26880 Starting translation for business 43
+INFO 2024-09-26 12:33:47,658 tasks 30880 26880 Completed translation for business 43 for all languages
+INFO 2024-09-26 12:33:47,659 models 30880 26880 Updating Business 43: Taberna El Sur
+INFO 2024-09-26 12:33:47,661 views 30880 26880 Translating and enhancing business: El Anciano Rey de los Vinos
+ERROR 2024-09-26 12:33:47,828 tasks 30880 26880 Error enhancing and translating description for business 44: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:47,830 tasks 30880 26880 Starting translation for business 44
+INFO 2024-09-26 12:33:47,832 tasks 30880 26880 Completed translation for business 44 for all languages
+INFO 2024-09-26 12:33:47,833 models 30880 26880 Updating Business 44: El Anciano Rey de los Vinos
+INFO 2024-09-26 12:33:47,835 views 30880 26880 Translating and enhancing business: Taberna el Sur de Huertas
+ERROR 2024-09-26 12:33:48,014 tasks 30880 26880 Error enhancing and translating description for business 45: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:48,016 tasks 30880 26880 Starting translation for business 45
+INFO 2024-09-26 12:33:48,019 tasks 30880 26880 Completed translation for business 45 for all languages
+INFO 2024-09-26 12:33:48,020 models 30880 26880 Updating Business 45: Taberna el Sur de Huertas
+INFO 2024-09-26 12:33:48,022 views 30880 26880 Translating and enhancing business: Puerto Rico
+ERROR 2024-09-26 12:33:48,239 tasks 30880 26880 Error enhancing and translating description for business 46: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:48,240 tasks 30880 26880 Starting translation for business 46
+INFO 2024-09-26 12:33:48,242 tasks 30880 26880 Completed translation for business 46 for all languages
+INFO 2024-09-26 12:33:48,243 models 30880 26880 Updating Business 46: Puerto Rico
+INFO 2024-09-26 12:33:48,247 views 30880 26880 Translating and enhancing business: Bodega de la Ardosa
+ERROR 2024-09-26 12:33:48,412 tasks 30880 26880 Error enhancing and translating description for business 47: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:48,416 tasks 30880 26880 Starting translation for business 47
+INFO 2024-09-26 12:33:48,421 tasks 30880 26880 Completed translation for business 47 for all languages
+INFO 2024-09-26 12:33:48,422 models 30880 26880 Updating Business 47: Bodega de la Ardosa
+INFO 2024-09-26 12:33:48,424 views 30880 26880 Translating and enhancing business: Casa Alberto
+ERROR 2024-09-26 12:33:48,606 tasks 30880 26880 Error enhancing and translating description for business 48: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:48,607 tasks 30880 26880 Starting translation for business 48
+INFO 2024-09-26 12:33:48,610 tasks 30880 26880 Completed translation for business 48 for all languages
+INFO 2024-09-26 12:33:48,610 models 30880 26880 Updating Business 48: Casa Alberto
+INFO 2024-09-26 12:33:48,612 views 30880 26880 Translating and enhancing business: Tapa Tapa Montera
+ERROR 2024-09-26 12:33:48,787 tasks 30880 26880 Error enhancing and translating description for business 49: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:48,789 tasks 30880 26880 Starting translation for business 49
+INFO 2024-09-26 12:33:48,791 tasks 30880 26880 Completed translation for business 49 for all languages
+INFO 2024-09-26 12:33:48,792 models 30880 26880 Updating Business 49: Tapa Tapa Montera
+INFO 2024-09-26 12:33:48,794 views 30880 26880 Translating and enhancing business: Mas Al Sur
+ERROR 2024-09-26 12:33:48,974 tasks 30880 26880 Error enhancing and translating description for business 50: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:48,976 tasks 30880 26880 Starting translation for business 50
+INFO 2024-09-26 12:33:48,978 tasks 30880 26880 Completed translation for business 50 for all languages
+INFO 2024-09-26 12:33:48,979 models 30880 26880 Updating Business 50: Mas Al Sur
+INFO 2024-09-26 12:33:48,981 views 30880 26880 Translating and enhancing business: Alhambra
+ERROR 2024-09-26 12:33:49,204 tasks 30880 26880 Error enhancing and translating description for business 51: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:49,206 tasks 30880 26880 Starting translation for business 51
+INFO 2024-09-26 12:33:49,208 tasks 30880 26880 Completed translation for business 51 for all languages
+INFO 2024-09-26 12:33:49,209 models 30880 26880 Updating Business 51: Alhambra
+INFO 2024-09-26 12:33:49,219 views 30880 26880 Translating and enhancing business: Fatigas del querer
+ERROR 2024-09-26 12:33:49,390 tasks 30880 26880 Error enhancing and translating description for business 52: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:49,392 tasks 30880 26880 Starting translation for business 52
+INFO 2024-09-26 12:33:49,394 tasks 30880 26880 Completed translation for business 52 for all languages
+INFO 2024-09-26 12:33:49,395 models 30880 26880 Updating Business 52: Fatigas del querer
+INFO 2024-09-26 12:33:49,397 views 30880 26880 Translating and enhancing business: Mercado de la Reina 12
+ERROR 2024-09-26 12:33:49,649 tasks 30880 26880 Error enhancing and translating description for business 53: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:49,652 tasks 30880 26880 Starting translation for business 53
+INFO 2024-09-26 12:33:49,657 tasks 30880 26880 Completed translation for business 53 for all languages
+INFO 2024-09-26 12:33:49,659 models 30880 26880 Updating Business 53: Mercado de la Reina 12
+INFO 2024-09-26 12:33:49,664 views 30880 26880 Translating and enhancing business: Asador Real
+ERROR 2024-09-26 12:33:49,868 tasks 30880 26880 Error enhancing and translating description for business 54: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:33:49,870 tasks 30880 26880 Starting translation for business 54
+INFO 2024-09-26 12:35:22,364 tasks 22904 28612 Using GENAI API Key: "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" #Gen-ai Local Secret
+INFO 2024-09-26 12:35:22,365 tasks 22904 28612 Using TRANSLATION API Key: "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"  #Translation Local Secret
+INFO 2024-09-26 12:35:26,162 views 22904 30504 Received request to translate businesses for task 6
+INFO 2024-09-26 12:35:26,169 views 22904 30504 Translating and enhancing business: La Mi Venta
+ERROR 2024-09-26 12:35:26,661 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 42: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:26,663 tasks 22904 30504 Starting translation for business 42
+INFO 2024-09-26 12:35:26,708 tasks 22904 30504 Completed translation for business 42 for all languages
+INFO 2024-09-26 12:35:26,709 models 22904 30504 Updating Business 42: La Mi Venta
+INFO 2024-09-26 12:35:26,711 views 22904 30504 Translating and enhancing business: El Minibar
+ERROR 2024-09-26 12:35:26,954 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 41: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:26,956 tasks 22904 30504 Starting translation for business 41
+INFO 2024-09-26 12:35:26,960 tasks 22904 30504 Completed translation for business 41 for all languages
+INFO 2024-09-26 12:35:26,961 models 22904 30504 Updating Business 41: El Minibar
+INFO 2024-09-26 12:35:26,967 views 22904 30504 Translating and enhancing business: Taberna El Sur
+ERROR 2024-09-26 12:35:27,140 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 43: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:27,142 tasks 22904 30504 Starting translation for business 43
+INFO 2024-09-26 12:35:27,144 tasks 22904 30504 Completed translation for business 43 for all languages
+INFO 2024-09-26 12:35:27,144 models 22904 30504 Updating Business 43: Taberna El Sur
+INFO 2024-09-26 12:35:27,146 views 22904 30504 Translating and enhancing business: El Anciano Rey de los Vinos
+ERROR 2024-09-26 12:35:27,329 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 44: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:27,331 tasks 22904 30504 Starting translation for business 44
+INFO 2024-09-26 12:35:27,334 tasks 22904 30504 Completed translation for business 44 for all languages
+INFO 2024-09-26 12:35:27,335 models 22904 30504 Updating Business 44: El Anciano Rey de los Vinos
+INFO 2024-09-26 12:35:27,337 views 22904 30504 Translating and enhancing business: Taberna el Sur de Huertas
+ERROR 2024-09-26 12:35:27,520 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 45: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:27,522 tasks 22904 30504 Starting translation for business 45
+INFO 2024-09-26 12:35:27,525 tasks 22904 30504 Completed translation for business 45 for all languages
+INFO 2024-09-26 12:35:27,526 models 22904 30504 Updating Business 45: Taberna el Sur de Huertas
+INFO 2024-09-26 12:35:27,528 views 22904 30504 Translating and enhancing business: Puerto Rico
+ERROR 2024-09-26 12:35:27,699 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 46: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:27,701 tasks 22904 30504 Starting translation for business 46
+INFO 2024-09-26 12:35:27,703 tasks 22904 30504 Completed translation for business 46 for all languages
+INFO 2024-09-26 12:35:27,704 models 22904 30504 Updating Business 46: Puerto Rico
+INFO 2024-09-26 12:35:27,707 views 22904 30504 Translating and enhancing business: Bodega de la Ardosa
+ERROR 2024-09-26 12:35:27,884 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 47: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:27,886 tasks 22904 30504 Starting translation for business 47
+INFO 2024-09-26 12:35:27,889 tasks 22904 30504 Completed translation for business 47 for all languages
+INFO 2024-09-26 12:35:27,890 models 22904 30504 Updating Business 47: Bodega de la Ardosa
+INFO 2024-09-26 12:35:27,892 views 22904 30504 Translating and enhancing business: Casa Alberto
+ERROR 2024-09-26 12:35:28,060 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 48: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:28,063 tasks 22904 30504 Starting translation for business 48
+INFO 2024-09-26 12:35:28,067 tasks 22904 30504 Completed translation for business 48 for all languages
+INFO 2024-09-26 12:35:28,069 models 22904 30504 Updating Business 48: Casa Alberto
+INFO 2024-09-26 12:35:28,072 views 22904 30504 Translating and enhancing business: Tapa Tapa Montera
+ERROR 2024-09-26 12:35:28,246 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 49: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:28,249 tasks 22904 30504 Starting translation for business 49
+INFO 2024-09-26 12:35:28,252 tasks 22904 30504 Completed translation for business 49 for all languages
+INFO 2024-09-26 12:35:28,253 models 22904 30504 Updating Business 49: Tapa Tapa Montera
+INFO 2024-09-26 12:35:28,257 views 22904 30504 Translating and enhancing business: Mas Al Sur
+ERROR 2024-09-26 12:35:28,572 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 50: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:28,574 tasks 22904 30504 Starting translation for business 50
+INFO 2024-09-26 12:35:28,576 tasks 22904 30504 Completed translation for business 50 for all languages
+INFO 2024-09-26 12:35:28,577 models 22904 30504 Updating Business 50: Mas Al Sur
+INFO 2024-09-26 12:35:28,581 views 22904 30504 Translating and enhancing business: Alhambra
+ERROR 2024-09-26 12:35:28,760 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 51: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:28,762 tasks 22904 30504 Starting translation for business 51
+INFO 2024-09-26 12:35:28,767 tasks 22904 30504 Completed translation for business 51 for all languages
+INFO 2024-09-26 12:35:28,768 models 22904 30504 Updating Business 51: Alhambra
+INFO 2024-09-26 12:35:28,771 views 22904 30504 Translating and enhancing business: Fatigas del querer
+ERROR 2024-09-26 12:35:28,954 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 52: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:28,956 tasks 22904 30504 Starting translation for business 52
+INFO 2024-09-26 12:35:28,958 tasks 22904 30504 Completed translation for business 52 for all languages
+INFO 2024-09-26 12:35:28,959 models 22904 30504 Updating Business 52: Fatigas del querer
+INFO 2024-09-26 12:35:28,961 views 22904 30504 Translating and enhancing business: Mercado de la Reina 12
+ERROR 2024-09-26 12:35:29,148 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 53: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:29,149 tasks 22904 30504 Starting translation for business 53
+INFO 2024-09-26 12:35:29,152 tasks 22904 30504 Completed translation for business 53 for all languages
+INFO 2024-09-26 12:35:29,152 models 22904 30504 Updating Business 53: Mercado de la Reina 12
+INFO 2024-09-26 12:35:29,154 views 22904 30504 Translating and enhancing business: Asador Real
+ERROR 2024-09-26 12:35:29,345 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 54: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:29,347 tasks 22904 30504 Starting translation for business 54
+INFO 2024-09-26 12:35:29,349 tasks 22904 30504 Completed translation for business 54 for all languages
+INFO 2024-09-26 12:35:29,350 models 22904 30504 Updating Business 54: Asador Real
+INFO 2024-09-26 12:35:29,351 views 22904 30504 Translating and enhancing business: Matador
+ERROR 2024-09-26 12:35:29,547 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 55: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:29,549 tasks 22904 30504 Starting translation for business 55
+INFO 2024-09-26 12:35:29,551 tasks 22904 30504 Completed translation for business 55 for all languages
+INFO 2024-09-26 12:35:29,552 models 22904 30504 Updating Business 55: Matador
+INFO 2024-09-26 12:35:29,555 views 22904 30504 Translating and enhancing business: Restaurante La Catedral
+ERROR 2024-09-26 12:35:29,744 tasks 22904 30504 Error enhancing and translating description for business- "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"  #Translation Local Secret 56: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:35:29,746 tasks 22904 30504 Starting translation for business 56
+INFO 2024-09-26 12:35:29,748 tasks 22904 30504 Completed translation for business 56 for all languages
+INFO 2024-09-26 12:35:29,749 models 22904 30504 Updating Business 56: Restaurante La Catedral
+INFO 2024-09-26 12:35:29,750 views 22904 30504 Translating and enhancing business: Rosi La Loca
+INFO 2024-09-26 12:36:30,342 tasks 28788 32532 Using GENAI API Key: "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" #Gen-ai Local Secret
+INFO 2024-09-26 12:36:30,343 tasks 28788 32532 Using TRANSLATION API Key: "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"  #Translation Local Secret
+INFO 2024-09-26 12:36:32,993 views 28788 26712 Received request to translate businesses for task 6
+INFO 2024-09-26 12:36:32,999 views 28788 26712 Translating and enhancing business: La Mi Venta
+ERROR 2024-09-26 12:36:33,513 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 42: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:33,516 tasks 28788 26712 Starting translation for business 42
+INFO 2024-09-26 12:36:33,566 tasks 28788 26712 Completed translation for business 42 for all languages
+INFO 2024-09-26 12:36:33,566 models 28788 26712 Updating Business 42: La Mi Venta
+INFO 2024-09-26 12:36:33,569 views 28788 26712 Translating and enhancing business: El Minibar
+ERROR 2024-09-26 12:36:33,742 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 41: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:33,746 tasks 28788 26712 Starting translation for business 41
+INFO 2024-09-26 12:36:33,751 tasks 28788 26712 Completed translation for business 41 for all languages
+INFO 2024-09-26 12:36:33,752 models 28788 26712 Updating Business 41: El Minibar
+INFO 2024-09-26 12:36:33,756 views 28788 26712 Translating and enhancing business: Taberna El Sur
+ERROR 2024-09-26 12:36:33,923 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 43: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:33,930 tasks 28788 26712 Starting translation for business 43
+INFO 2024-09-26 12:36:33,938 tasks 28788 26712 Completed translation for business 43 for all languages
+INFO 2024-09-26 12:36:33,940 models 28788 26712 Updating Business 43: Taberna El Sur
+INFO 2024-09-26 12:36:33,947 views 28788 26712 Translating and enhancing business: El Anciano Rey de los Vinos
+ERROR 2024-09-26 12:36:34,127 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 44: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:34,133 tasks 28788 26712 Starting translation for business 44
+INFO 2024-09-26 12:36:34,142 tasks 28788 26712 Completed translation for business 44 for all languages
+INFO 2024-09-26 12:36:34,145 models 28788 26712 Updating Business 44: El Anciano Rey de los Vinos
+INFO 2024-09-26 12:36:34,149 views 28788 26712 Translating and enhancing business: Taberna el Sur de Huertas
+ERROR 2024-09-26 12:36:34,318 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 45: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:34,320 tasks 28788 26712 Starting translation for business 45
+INFO 2024-09-26 12:36:34,322 tasks 28788 26712 Completed translation for business 45 for all languages
+INFO 2024-09-26 12:36:34,323 models 28788 26712 Updating Business 45: Taberna el Sur de Huertas
+INFO 2024-09-26 12:36:34,324 views 28788 26712 Translating and enhancing business: Puerto Rico
+ERROR 2024-09-26 12:36:34,487 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 46: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:34,489 tasks 28788 26712 Starting translation for business 46
+INFO 2024-09-26 12:36:34,492 tasks 28788 26712 Completed translation for business 46 for all languages
+INFO 2024-09-26 12:36:34,493 models 28788 26712 Updating Business 46: Puerto Rico
+INFO 2024-09-26 12:36:34,495 views 28788 26712 Translating and enhancing business: Bodega de la Ardosa
+ERROR 2024-09-26 12:36:34,675 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 47: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:34,677 tasks 28788 26712 Starting translation for business 47
+INFO 2024-09-26 12:36:34,680 tasks 28788 26712 Completed translation for business 47 for all languages
+INFO 2024-09-26 12:36:34,681 models 28788 26712 Updating Business 47: Bodega de la Ardosa
+INFO 2024-09-26 12:36:34,683 views 28788 26712 Translating and enhancing business: Casa Alberto
+ERROR 2024-09-26 12:36:34,852 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 48: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:34,854 tasks 28788 26712 Starting translation for business 48
+INFO 2024-09-26 12:36:34,856 tasks 28788 26712 Completed translation for business 48 for all languages
+INFO 2024-09-26 12:36:34,857 models 28788 26712 Updating Business 48: Casa Alberto
+INFO 2024-09-26 12:36:34,860 views 28788 26712 Translating and enhancing business: Tapa Tapa Montera
+ERROR 2024-09-26 12:36:35,029 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 49: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:35,031 tasks 28788 26712 Starting translation for business 49
+INFO 2024-09-26 12:36:35,034 tasks 28788 26712 Completed translation for business 49 for all languages
+INFO 2024-09-26 12:36:35,035 models 28788 26712 Updating Business 49: Tapa Tapa Montera
+INFO 2024-09-26 12:36:35,036 views 28788 26712 Translating and enhancing business: Mas Al Sur
+ERROR 2024-09-26 12:36:35,255 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 50: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:35,257 tasks 28788 26712 Starting translation for business 50
+INFO 2024-09-26 12:36:35,262 tasks 28788 26712 Completed translation for business 50 for all languages
+INFO 2024-09-26 12:36:35,263 models 28788 26712 Updating Business 50: Mas Al Sur
+INFO 2024-09-26 12:36:35,267 views 28788 26712 Translating and enhancing business: Alhambra
+ERROR 2024-09-26 12:36:35,441 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 51: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:35,443 tasks 28788 26712 Starting translation for business 51
+INFO 2024-09-26 12:36:35,445 tasks 28788 26712 Completed translation for business 51 for all languages
+INFO 2024-09-26 12:36:35,446 models 28788 26712 Updating Business 51: Alhambra
+INFO 2024-09-26 12:36:35,448 views 28788 26712 Translating and enhancing business: Fatigas del querer
+ERROR 2024-09-26 12:36:35,623 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 52: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:35,624 tasks 28788 26712 Starting translation for business 52
+INFO 2024-09-26 12:36:35,627 tasks 28788 26712 Completed translation for business 52 for all languages
+INFO 2024-09-26 12:36:35,628 models 28788 26712 Updating Business 52: Fatigas del querer
+INFO 2024-09-26 12:36:35,629 views 28788 26712 Translating and enhancing business: Mercado de la Reina 12
+ERROR 2024-09-26 12:36:35,829 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 53: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:35,831 tasks 28788 26712 Starting translation for business 53
+INFO 2024-09-26 12:36:35,833 tasks 28788 26712 Completed translation for business 53 for all languages
+INFO 2024-09-26 12:36:35,834 models 28788 26712 Updating Business 53: Mercado de la Reina 12
+INFO 2024-09-26 12:36:35,836 views 28788 26712 Translating and enhancing business: Asador Real
+ERROR 2024-09-26 12:36:36,003 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 54: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:36,005 tasks 28788 26712 Starting translation for business 54
+INFO 2024-09-26 12:36:36,008 tasks 28788 26712 Completed translation for business 54 for all languages
+INFO 2024-09-26 12:36:36,009 models 28788 26712 Updating Business 54: Asador Real
+INFO 2024-09-26 12:36:36,011 views 28788 26712 Translating and enhancing business: Matador
+ERROR 2024-09-26 12:36:36,196 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 55: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:36,198 tasks 28788 26712 Starting translation for business 55
+INFO 2024-09-26 12:36:36,201 tasks 28788 26712 Completed translation for business 55 for all languages
+INFO 2024-09-26 12:36:36,202 models 28788 26712 Updating Business 55: Matador
+INFO 2024-09-26 12:36:36,204 views 28788 26712 Translating and enhancing business: Restaurante La Catedral
+ERROR 2024-09-26 12:36:36,392 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 56: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:36,393 tasks 28788 26712 Starting translation for business 56
+INFO 2024-09-26 12:36:36,396 tasks 28788 26712 Completed translation for business 56 for all languages
+INFO 2024-09-26 12:36:36,396 models 28788 26712 Updating Business 56: Restaurante La Catedral
+INFO 2024-09-26 12:36:36,398 views 28788 26712 Translating and enhancing business: Rosi La Loca
+ERROR 2024-09-26 12:36:36,571 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 57: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:36,573 tasks 28788 26712 Starting translation for business 57
+INFO 2024-09-26 12:36:36,576 tasks 28788 26712 Completed translation for business 57 for all languages
+INFO 2024-09-26 12:36:36,577 models 28788 26712 Updating Business 57: Rosi La Loca
+INFO 2024-09-26 12:36:36,579 views 28788 26712 Translating and enhancing business: La Malontina
+ERROR 2024-09-26 12:36:36,752 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 58: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:36,757 tasks 28788 26712 Starting translation for business 58
+INFO 2024-09-26 12:36:36,765 tasks 28788 26712 Completed translation for business 58 for all languages
+INFO 2024-09-26 12:36:36,766 models 28788 26712 Updating Business 58: La Malontina
+INFO 2024-09-26 12:36:36,770 views 28788 26712 Translating and enhancing business: La Musa Latina
+ERROR 2024-09-26 12:36:36,941 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 59: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:36,944 tasks 28788 26712 Starting translation for business 59
+INFO 2024-09-26 12:36:36,947 tasks 28788 26712 Completed translation for business 59 for all languages
+INFO 2024-09-26 12:36:36,948 models 28788 26712 Updating Business 59: La Musa Latina
+INFO 2024-09-26 12:36:36,950 views 28788 26712 Translating and enhancing business: Casa Labra
+ERROR 2024-09-26 12:36:37,127 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 60: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:37,129 tasks 28788 26712 Starting translation for business 60
+INFO 2024-09-26 12:36:37,132 tasks 28788 26712 Completed translation for business 60 for all languages
+INFO 2024-09-26 12:36:37,132 models 28788 26712 Updating Business 60: Casa Labra
+INFO 2024-09-26 12:36:37,135 views 28788 26712 Translating and enhancing business: CEBO Madrid Restaurant
+ERROR 2024-09-26 12:36:37,298 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 61: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:37,299 tasks 28788 26712 Starting translation for business 61
+INFO 2024-09-26 12:36:37,304 tasks 28788 26712 Completed translation for business 61 for all languages
+INFO 2024-09-26 12:36:37,305 models 28788 26712 Updating Business 61: CEBO Madrid Restaurant
+INFO 2024-09-26 12:36:37,306 views 28788 26712 Translating and enhancing business: Saddle Madrid
+ERROR 2024-09-26 12:36:37,474 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 62: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:37,476 tasks 28788 26712 Starting translation for business 62
+INFO 2024-09-26 12:36:37,480 tasks 28788 26712 Completed translation for business 62 for all languages
+INFO 2024-09-26 12:36:37,481 models 28788 26712 Updating Business 62: Saddle Madrid
+INFO 2024-09-26 12:36:37,483 views 28788 26712 Translating and enhancing business: Coque
+ERROR 2024-09-26 12:36:37,690 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 63: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:37,692 tasks 28788 26712 Starting translation for business 63
+INFO 2024-09-26 12:36:37,695 tasks 28788 26712 Completed translation for business 63 for all languages
+INFO 2024-09-26 12:36:37,696 models 28788 26712 Updating Business 63: Coque
+INFO 2024-09-26 12:36:37,697 views 28788 26712 Translating and enhancing business: DiverXO
+ERROR 2024-09-26 12:36:37,979 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 64: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:37,984 tasks 28788 26712 Starting translation for business 64
+INFO 2024-09-26 12:36:37,989 tasks 28788 26712 Completed translation for business 64 for all languages
+INFO 2024-09-26 12:36:37,991 models 28788 26712 Updating Business 64: DiverXO
+INFO 2024-09-26 12:36:37,998 views 28788 26712 Translating and enhancing business: Paco Roncero Restaurante
+ERROR 2024-09-26 12:36:38,168 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 67: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:38,174 tasks 28788 26712 Starting translation for business 67
+INFO 2024-09-26 12:36:38,182 tasks 28788 26712 Completed translation for business 67 for all languages
+INFO 2024-09-26 12:36:38,184 models 28788 26712 Updating Business 67: Paco Roncero Restaurante
+INFO 2024-09-26 12:36:38,188 views 28788 26712 Translating and enhancing business: Ramón Freixa Madrid
+ERROR 2024-09-26 12:36:38,355 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 65: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:38,358 tasks 28788 26712 Starting translation for business 65
+INFO 2024-09-26 12:36:38,361 tasks 28788 26712 Completed translation for business 65 for all languages
+INFO 2024-09-26 12:36:38,361 models 28788 26712 Updating Business 65: Ramón Freixa Madrid
+INFO 2024-09-26 12:36:38,363 views 28788 26712 Translating and enhancing business: DSTAgE
+ERROR 2024-09-26 12:36:38,528 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 66: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:38,530 tasks 28788 26712 Starting translation for business 66
+INFO 2024-09-26 12:36:38,532 tasks 28788 26712 Completed translation for business 66 for all languages
+INFO 2024-09-26 12:36:38,532 models 28788 26712 Updating Business 66: DSTAgE
+INFO 2024-09-26 12:36:38,534 views 28788 26712 Translating and enhancing business: La Bien Aparecida
+ERROR 2024-09-26 12:36:38,701 tasks 28788 26712 Error enhancing and translating description for business- "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"  #Translation Local Secret 68: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:36:38,703 tasks 28788 26712 Starting translation for business 68
+INFO 2024-09-26 12:36:38,705 tasks 28788 26712 Completed translation for business 68 for all languages
+INFO 2024-09-26 12:36:38,706 models 28788 26712 Updating Business 68: La Bien Aparecida
+INFO 2024-09-26 12:36:38,708 views 28788 26712 Translating and enhancing business: El Club Allard | Restaurante Estrella Michelin
+INFO 2024-09-26 12:37:25,797 tasks 23696 15420 Using GENAI API Key: "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" #Gen-ai Local Secret
+INFO 2024-09-26 12:37:25,798 tasks 23696 15420 Using TRANSLATION API Key: "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"  #Translation Local Secret
+INFO 2024-09-26 12:37:29,785 views 23696 22584 Received request to translate businesses for task 6
+INFO 2024-09-26 12:37:29,792 views 23696 22584 Translating and enhancing business: Taberna El Sur
+ERROR 2024-09-26 12:37:30,309 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 43: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:30,311 tasks 23696 22584 Starting translation for business 43
+INFO 2024-09-26 12:37:30,355 tasks 23696 22584 Completed translation for business 43 for all languages
+INFO 2024-09-26 12:37:30,356 models 23696 22584 Updating Business 43: Taberna El Sur
+INFO 2024-09-26 12:37:30,366 views 23696 22584 Translating and enhancing business: La Mi Venta
+ERROR 2024-09-26 12:37:30,555 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 42: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:30,557 tasks 23696 22584 Starting translation for business 42
+INFO 2024-09-26 12:37:30,560 tasks 23696 22584 Completed translation for business 42 for all languages
+INFO 2024-09-26 12:37:30,561 models 23696 22584 Updating Business 42: La Mi Venta
+INFO 2024-09-26 12:37:30,563 views 23696 22584 Translating and enhancing business: DiverXO
+ERROR 2024-09-26 12:37:30,755 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 64: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:30,761 tasks 23696 22584 Starting translation for business 64
+INFO 2024-09-26 12:37:30,769 tasks 23696 22584 Completed translation for business 64 for all languages
+INFO 2024-09-26 12:37:30,771 models 23696 22584 Updating Business 64: DiverXO
+INFO 2024-09-26 12:37:30,776 views 23696 22584 Translating and enhancing business: El Minibar
+ERROR 2024-09-26 12:37:30,974 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 41: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:30,976 tasks 23696 22584 Starting translation for business 41
+INFO 2024-09-26 12:37:30,978 tasks 23696 22584 Completed translation for business 41 for all languages
+INFO 2024-09-26 12:37:30,979 models 23696 22584 Updating Business 41: El Minibar
+INFO 2024-09-26 12:37:30,980 views 23696 22584 Translating and enhancing business: El Anciano Rey de los Vinos
+ERROR 2024-09-26 12:37:31,161 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 44: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:31,163 tasks 23696 22584 Starting translation for business 44
+INFO 2024-09-26 12:37:31,166 tasks 23696 22584 Completed translation for business 44 for all languages
+INFO 2024-09-26 12:37:31,166 models 23696 22584 Updating Business 44: El Anciano Rey de los Vinos
+INFO 2024-09-26 12:37:31,168 views 23696 22584 Translating and enhancing business: Taberna el Sur de Huertas
+ERROR 2024-09-26 12:37:31,365 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 45: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:31,368 tasks 23696 22584 Starting translation for business 45
+INFO 2024-09-26 12:37:31,371 tasks 23696 22584 Completed translation for business 45 for all languages
+INFO 2024-09-26 12:37:31,371 models 23696 22584 Updating Business 45: Taberna el Sur de Huertas
+INFO 2024-09-26 12:37:31,373 views 23696 22584 Translating and enhancing business: Puerto Rico
+ERROR 2024-09-26 12:37:31,542 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 46: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:31,544 tasks 23696 22584 Starting translation for business 46
+INFO 2024-09-26 12:37:31,547 tasks 23696 22584 Completed translation for business 46 for all languages
+INFO 2024-09-26 12:37:31,548 models 23696 22584 Updating Business 46: Puerto Rico
+INFO 2024-09-26 12:37:31,550 views 23696 22584 Translating and enhancing business: Bodega de la Ardosa
+ERROR 2024-09-26 12:37:31,726 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 47: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:31,728 tasks 23696 22584 Starting translation for business 47
+INFO 2024-09-26 12:37:31,731 tasks 23696 22584 Completed translation for business 47 for all languages
+INFO 2024-09-26 12:37:31,732 models 23696 22584 Updating Business 47: Bodega de la Ardosa
+INFO 2024-09-26 12:37:31,734 views 23696 22584 Translating and enhancing business: Casa Alberto
+ERROR 2024-09-26 12:37:31,958 tasks 23696 22584 Error enhancing and translating description for business- "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"  #Translation Local Secret 48: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:37:31,960 tasks 23696 22584 Starting translation for business 48
+INFO 2024-09-26 12:37:31,963 tasks 23696 22584 Completed translation for business 48 for all languages
+INFO 2024-09-26 12:37:31,963 models 23696 22584 Updating Business 48: Casa Alberto
+INFO 2024-09-26 12:37:31,967 views 23696 22584 Translating and enhancing business: Tapa Tapa Montera
+INFO 2024-09-26 12:38:06,934 tasks 18448 31284 Using GENAI API Key: "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" #Gen-ai Local Secret
+INFO 2024-09-26 12:38:06,935 tasks 18448 31284 Using TRANSLATION API Key: "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"  #Translation Local Secret
+INFO 2024-09-26 12:38:10,178 views 18448 21632 Received request to translate businesses for task 6
+INFO 2024-09-26 12:38:10,185 views 18448 21632 Translating and enhancing business: La Mi Venta
+ERROR 2024-09-26 12:38:10,593 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 42: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:10,596 tasks 18448 21632 Starting translation for business 42
+INFO 2024-09-26 12:38:10,655 tasks 18448 21632 Completed translation for business 42 for all languages
+INFO 2024-09-26 12:38:10,656 models 18448 21632 Updating Business 42: La Mi Venta
+INFO 2024-09-26 12:38:10,658 views 18448 21632 Translating and enhancing business: DiverXO
+ERROR 2024-09-26 12:38:10,826 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 64: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:10,828 tasks 18448 21632 Starting translation for business 64
+INFO 2024-09-26 12:38:10,830 tasks 18448 21632 Completed translation for business 64 for all languages
+INFO 2024-09-26 12:38:10,831 models 18448 21632 Updating Business 64: DiverXO
+INFO 2024-09-26 12:38:10,833 views 18448 21632 Translating and enhancing business: Taberna El Sur
+ERROR 2024-09-26 12:38:10,991 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 43: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:10,993 tasks 18448 21632 Starting translation for business 43
+INFO 2024-09-26 12:38:10,996 tasks 18448 21632 Completed translation for business 43 for all languages
+INFO 2024-09-26 12:38:10,996 models 18448 21632 Updating Business 43: Taberna El Sur
+INFO 2024-09-26 12:38:10,999 views 18448 21632 Translating and enhancing business: El Minibar
+ERROR 2024-09-26 12:38:11,152 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 41: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:11,155 tasks 18448 21632 Starting translation for business 41
+INFO 2024-09-26 12:38:11,157 tasks 18448 21632 Completed translation for business 41 for all languages
+INFO 2024-09-26 12:38:11,158 models 18448 21632 Updating Business 41: El Minibar
+INFO 2024-09-26 12:38:11,160 views 18448 21632 Translating and enhancing business: El Anciano Rey de los Vinos
+ERROR 2024-09-26 12:38:11,312 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 44: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:11,314 tasks 18448 21632 Starting translation for business 44
+INFO 2024-09-26 12:38:11,316 tasks 18448 21632 Completed translation for business 44 for all languages
+INFO 2024-09-26 12:38:11,317 models 18448 21632 Updating Business 44: El Anciano Rey de los Vinos
+INFO 2024-09-26 12:38:11,320 views 18448 21632 Translating and enhancing business: Taberna el Sur de Huertas
+ERROR 2024-09-26 12:38:11,480 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 45: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:11,482 tasks 18448 21632 Starting translation for business 45
+INFO 2024-09-26 12:38:11,485 tasks 18448 21632 Completed translation for business 45 for all languages
+INFO 2024-09-26 12:38:11,486 models 18448 21632 Updating Business 45: Taberna el Sur de Huertas
+INFO 2024-09-26 12:38:11,487 views 18448 21632 Translating and enhancing business: Puerto Rico
+ERROR 2024-09-26 12:38:11,652 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 46: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:11,654 tasks 18448 21632 Starting translation for business 46
+INFO 2024-09-26 12:38:11,656 tasks 18448 21632 Completed translation for business 46 for all languages
+INFO 2024-09-26 12:38:11,656 models 18448 21632 Updating Business 46: Puerto Rico
+INFO 2024-09-26 12:38:11,658 views 18448 21632 Translating and enhancing business: Bodega de la Ardosa
+ERROR 2024-09-26 12:38:11,808 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 47: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:11,809 tasks 18448 21632 Starting translation for business 47
+INFO 2024-09-26 12:38:11,812 tasks 18448 21632 Completed translation for business 47 for all languages
+INFO 2024-09-26 12:38:11,812 models 18448 21632 Updating Business 47: Bodega de la Ardosa
+INFO 2024-09-26 12:38:11,814 views 18448 21632 Translating and enhancing business: Casa Alberto
+ERROR 2024-09-26 12:38:11,989 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 48: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:11,991 tasks 18448 21632 Starting translation for business 48
+INFO 2024-09-26 12:38:11,993 tasks 18448 21632 Completed translation for business 48 for all languages
+INFO 2024-09-26 12:38:11,994 models 18448 21632 Updating Business 48: Casa Alberto
+INFO 2024-09-26 12:38:11,996 views 18448 21632 Translating and enhancing business: Tapa Tapa Montera
+ERROR 2024-09-26 12:38:12,159 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 49: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:12,161 tasks 18448 21632 Starting translation for business 49
+INFO 2024-09-26 12:38:12,163 tasks 18448 21632 Completed translation for business 49 for all languages
+INFO 2024-09-26 12:38:12,164 models 18448 21632 Updating Business 49: Tapa Tapa Montera
+INFO 2024-09-26 12:38:12,166 views 18448 21632 Translating and enhancing business: Mas Al Sur
+ERROR 2024-09-26 12:38:12,327 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 50: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:12,333 tasks 18448 21632 Starting translation for business 50
+INFO 2024-09-26 12:38:12,341 tasks 18448 21632 Completed translation for business 50 for all languages
+INFO 2024-09-26 12:38:12,342 models 18448 21632 Updating Business 50: Mas Al Sur
+INFO 2024-09-26 12:38:12,344 views 18448 21632 Translating and enhancing business: Alhambra
+ERROR 2024-09-26 12:38:12,491 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 51: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:12,496 tasks 18448 21632 Starting translation for business 51
+INFO 2024-09-26 12:38:12,503 tasks 18448 21632 Completed translation for business 51 for all languages
+INFO 2024-09-26 12:38:12,504 models 18448 21632 Updating Business 51: Alhambra
+INFO 2024-09-26 12:38:12,508 views 18448 21632 Translating and enhancing business: Fatigas del querer
+ERROR 2024-09-26 12:38:12,657 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 52: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:12,659 tasks 18448 21632 Starting translation for business 52
+INFO 2024-09-26 12:38:12,661 tasks 18448 21632 Completed translation for business 52 for all languages
+INFO 2024-09-26 12:38:12,661 models 18448 21632 Updating Business 52: Fatigas del querer
+INFO 2024-09-26 12:38:12,663 views 18448 21632 Translating and enhancing business: Mercado de la Reina 12
+ERROR 2024-09-26 12:38:12,834 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 53: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:12,837 tasks 18448 21632 Starting translation for business 53
+INFO 2024-09-26 12:38:12,842 tasks 18448 21632 Completed translation for business 53 for all languages
+INFO 2024-09-26 12:38:12,843 models 18448 21632 Updating Business 53: Mercado de la Reina 12
+INFO 2024-09-26 12:38:12,847 views 18448 21632 Translating and enhancing business: Asador Real
+ERROR 2024-09-26 12:38:13,003 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 54: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:13,007 tasks 18448 21632 Starting translation for business 54
+INFO 2024-09-26 12:38:13,013 tasks 18448 21632 Completed translation for business 54 for all languages
+INFO 2024-09-26 12:38:13,015 models 18448 21632 Updating Business 54: Asador Real
+INFO 2024-09-26 12:38:13,020 views 18448 21632 Translating and enhancing business: Matador
+ERROR 2024-09-26 12:38:13,190 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 55: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:13,191 tasks 18448 21632 Starting translation for business 55
+INFO 2024-09-26 12:38:13,194 tasks 18448 21632 Completed translation for business 55 for all languages
+INFO 2024-09-26 12:38:13,195 models 18448 21632 Updating Business 55: Matador
+INFO 2024-09-26 12:38:13,198 views 18448 21632 Translating and enhancing business: Restaurante La Catedral
+ERROR 2024-09-26 12:38:13,357 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 56: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:13,359 tasks 18448 21632 Starting translation for business 56
+INFO 2024-09-26 12:38:13,361 tasks 18448 21632 Completed translation for business 56 for all languages
+INFO 2024-09-26 12:38:13,362 models 18448 21632 Updating Business 56: Restaurante La Catedral
+INFO 2024-09-26 12:38:13,365 views 18448 21632 Translating and enhancing business: Rosi La Loca
+ERROR 2024-09-26 12:38:13,519 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 57: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:13,520 tasks 18448 21632 Starting translation for business 57
+INFO 2024-09-26 12:38:13,522 tasks 18448 21632 Completed translation for business 57 for all languages
+INFO 2024-09-26 12:38:13,523 models 18448 21632 Updating Business 57: Rosi La Loca
+INFO 2024-09-26 12:38:13,525 views 18448 21632 Translating and enhancing business: La Malontina
+ERROR 2024-09-26 12:38:13,670 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 58: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:13,672 tasks 18448 21632 Starting translation for business 58
+INFO 2024-09-26 12:38:13,675 tasks 18448 21632 Completed translation for business 58 for all languages
+INFO 2024-09-26 12:38:13,675 models 18448 21632 Updating Business 58: La Malontina
+INFO 2024-09-26 12:38:13,677 views 18448 21632 Translating and enhancing business: La Musa Latina
+ERROR 2024-09-26 12:38:13,830 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 59: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:13,833 tasks 18448 21632 Starting translation for business 59
+INFO 2024-09-26 12:38:13,837 tasks 18448 21632 Completed translation for business 59 for all languages
+INFO 2024-09-26 12:38:13,838 models 18448 21632 Updating Business 59: La Musa Latina
+INFO 2024-09-26 12:38:13,840 views 18448 21632 Translating and enhancing business: Casa Labra
+ERROR 2024-09-26 12:38:14,005 tasks 18448 21632 Error enhancing and translating description for business- "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"  #Translation Local Secret 60: Error executing transformation (<Transformation.summarize: 'DocumentSummarizer'>, {'token_limit': 300}): OpenAI function call failed: Incorrect API key provided: "sk-proj*************************************************************************************************************************************************************************************cret. You can find your API key at https://platform.openai.com/account/api-keys.
+INFO 2024-09-26 12:38:14,008 tasks 18448 21632 Starting translation for business 60
+INFO 2024-09-26 12:38:14,013 tasks 18448 21632 Completed translation for business 60 for all languages
+INFO 2024-09-26 12:38:14,013 models 18448 21632 Updating Business 60: Casa Labra
+INFO 2024-09-26 12:38:14,016 views 18448 21632 Translating and enhancing business: CEBO Madrid Restaurant
+INFO 2024-09-26 12:39:58,241 tasks 31756 17592 Using GENAI API Key: "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" #Gen-ai Local Secret
+INFO 2024-09-26 12:39:58,243 tasks 31756 17592 Using TRANSLATION API Key: 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
+INFO 2024-09-26 12:39:58,248 tasks 31756 18836 Using GENAI API Key: "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" #Gen-ai Local Secret
+INFO 2024-09-26 12:39:58,249 tasks 31756 18836 Using TRANSLATION API Key: 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
+INFO 2024-09-26 12:40:28,453 tasks 31864 19836 Using GENAI API Key: "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" #Gen-ai Local Secret
+INFO 2024-09-26 12:40:28,454 tasks 31864 19836 Using TRANSLATION API Key: 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
+INFO 2024-09-26 12:40:30,805 views 31864 30772 Received request to translate businesses for task 6
+INFO 2024-09-26 12:40:30,811 views 31864 30772 Translating and enhancing business: La Mi Venta
+INFO 2024-09-26 12:40:43,538 models 31864 30772 Updating Business 42: La Mi Venta
+INFO 2024-09-26 12:40:43,545 tasks 31864 30772 Enhanced and translated description for business 42 into spanish, eng
+INFO 2024-09-26 12:40:43,547 tasks 31864 30772 Starting translation for business 42
+INFO 2024-09-26 12:40:43,603 tasks 31864 30772 Completed translation for business 42 for all languages
+INFO 2024-09-26 12:40:43,604 models 31864 30772 Updating Business 42: La Mi Venta
+INFO 2024-09-26 12:40:43,606 views 31864 30772 Translating and enhancing business: DiverXO
+INFO 2024-09-26 12:40:57,998 models 31864 30772 Updating Business 64: DiverXO
+INFO 2024-09-26 12:40:58,003 tasks 31864 30772 Enhanced and translated description for business 64 into spanish, eng
+INFO 2024-09-26 12:40:58,006 tasks 31864 30772 Starting translation for business 64
+INFO 2024-09-26 12:40:58,014 tasks 31864 30772 Completed translation for business 64 for all languages
+INFO 2024-09-26 12:40:58,017 models 31864 30772 Updating Business 64: DiverXO
+INFO 2024-09-26 12:40:58,022 views 31864 30772 Translating and enhancing business: Taberna El Sur
+INFO 2024-09-26 12:41:10,974 models 31864 30772 Updating Business 43: Taberna El Sur
+INFO 2024-09-26 12:41:10,978 tasks 31864 30772 Enhanced and translated description for business 43 into spanish, eng
+INFO 2024-09-26 12:41:10,979 tasks 31864 30772 Starting translation for business 43
+INFO 2024-09-26 12:41:10,981 tasks 31864 30772 Completed translation for business 43 for all languages
+INFO 2024-09-26 12:41:10,982 models 31864 30772 Updating Business 43: Taberna El Sur
+INFO 2024-09-26 12:41:10,983 views 31864 30772 Translating and enhancing business: El Minibar
+INFO 2024-09-26 12:41:25,316 models 31864 30772 Updating Business 41: El Minibar
+INFO 2024-09-26 12:41:25,323 tasks 31864 30772 Enhanced and translated description for business 41 into spanish, eng
+INFO 2024-09-26 12:41:25,325 tasks 31864 30772 Starting translation for business 41
+INFO 2024-09-26 12:41:25,330 tasks 31864 30772 Completed translation for business 41 for all languages
+INFO 2024-09-26 12:41:25,331 models 31864 30772 Updating Business 41: El Minibar
+INFO 2024-09-26 12:41:25,333 views 31864 30772 Translating and enhancing business: El Anciano Rey de los Vinos
+INFO 2024-09-26 12:41:35,755 views 31864 30232 Accessing TaskDetailView for task 6
+INFO 2024-09-26 12:41:35,830 views 31864 30232 Retrieved task 6 with 60 businesses
+INFO 2024-09-26 12:41:39,513 models 31864 30772 Updating Business 44: El Anciano Rey de los Vinos
+INFO 2024-09-26 12:41:39,522 tasks 31864 30772 Enhanced and translated description for business 44 into spanish, eng
+INFO 2024-09-26 12:41:39,523 tasks 31864 30772 Starting translation for business 44
+INFO 2024-09-26 12:41:39,527 tasks 31864 30772 Completed translation for business 44 for all languages
+INFO 2024-09-26 12:41:39,527 models 31864 30772 Updating Business 44: El Anciano Rey de los Vinos
+INFO 2024-09-26 12:41:39,529 views 31864 30772 Translating and enhancing business: Taberna el Sur de Huertas
+INFO 2024-09-26 12:41:52,722 models 31864 30772 Updating Business 45: Taberna el Sur de Huertas
+INFO 2024-09-26 12:41:52,725 tasks 31864 30772 Enhanced and translated description for business 45 into spanish, eng
+INFO 2024-09-26 12:41:52,726 tasks 31864 30772 Starting translation for business 45
+INFO 2024-09-26 12:41:52,729 tasks 31864 30772 Completed translation for business 45 for all languages
+INFO 2024-09-26 12:41:52,730 models 31864 30772 Updating Business 45: Taberna el Sur de Huertas
+INFO 2024-09-26 12:41:52,731 views 31864 30772 Translating and enhancing business: Puerto Rico
+INFO 2024-09-26 12:42:07,206 models 31864 30772 Updating Business 46: Puerto Rico
+INFO 2024-09-26 12:42:07,215 tasks 31864 30772 Enhanced and translated description for business 46 into spanish, eng
+INFO 2024-09-26 12:42:07,216 tasks 31864 30772 Starting translation for business 46
+INFO 2024-09-26 12:42:07,219 tasks 31864 30772 Completed translation for business 46 for all languages
+INFO 2024-09-26 12:42:07,219 models 31864 30772 Updating Business 46: Puerto Rico
+INFO 2024-09-26 12:42:07,221 views 31864 30772 Translating and enhancing business: Bodega de la Ardosa
+INFO 2024-09-26 12:42:19,472 models 31864 30772 Updating Business 47: Bodega de la Ardosa
+INFO 2024-09-26 12:42:19,475 tasks 31864 30772 Enhanced and translated description for business 47 into spanish, eng
+INFO 2024-09-26 12:42:19,476 tasks 31864 30772 Starting translation for business 47
+INFO 2024-09-26 12:42:19,478 tasks 31864 30772 Completed translation for business 47 for all languages
+INFO 2024-09-26 12:42:19,479 models 31864 30772 Updating Business 47: Bodega de la Ardosa
+INFO 2024-09-26 12:42:19,481 views 31864 30772 Translating and enhancing business: Casa Alberto
+INFO 2024-09-26 12:42:37,327 models 31864 30772 Updating Business 48: Casa Alberto
+INFO 2024-09-26 12:42:37,329 tasks 31864 30772 Enhanced and translated description for business 48 into spanish, eng
+INFO 2024-09-26 12:42:37,330 tasks 31864 30772 Starting translation for business 48
+INFO 2024-09-26 12:42:37,332 tasks 31864 30772 Completed translation for business 48 for all languages
+INFO 2024-09-26 12:42:37,333 models 31864 30772 Updating Business 48: Casa Alberto
+INFO 2024-09-26 12:42:37,335 views 31864 30772 Translating and enhancing business: Tapa Tapa Montera
+INFO 2024-09-26 12:42:43,134 views 31864 30436 Accessing TaskDetailView for task 6
+INFO 2024-09-26 12:42:43,148 views 31864 30436 Retrieved task 6 with 60 businesses
+INFO 2024-09-26 12:42:49,540 models 31864 30772 Updating Business 49: Tapa Tapa Montera
+INFO 2024-09-26 12:42:49,544 tasks 31864 30772 Enhanced and translated description for business 49 into spanish, eng
+INFO 2024-09-26 12:42:49,545 tasks 31864 30772 Starting translation for business 49
+INFO 2024-09-26 12:42:49,547 tasks 31864 30772 Completed translation for business 49 for all languages
+INFO 2024-09-26 12:42:49,548 models 31864 30772 Updating Business 49: Tapa Tapa Montera
+INFO 2024-09-26 12:42:49,550 views 31864 30772 Translating and enhancing business: Mas Al Sur
+INFO 2024-09-26 12:43:03,105 models 31864 30772 Updating Business 50: Mas Al Sur
+INFO 2024-09-26 12:43:03,108 tasks 31864 30772 Enhanced and translated description for business 50 into spanish, eng
+INFO 2024-09-26 12:43:03,109 tasks 31864 30772 Starting translation for business 50
+INFO 2024-09-26 12:43:03,113 tasks 31864 30772 Completed translation for business 50 for all languages
+INFO 2024-09-26 12:43:03,114 models 31864 30772 Updating Business 50: Mas Al Sur
+INFO 2024-09-26 12:43:03,116 views 31864 30772 Translating and enhancing business: Alhambra
+INFO 2024-09-26 12:43:18,108 models 31864 30772 Updating Business 51: Alhambra
+INFO 2024-09-26 12:43:18,113 tasks 31864 30772 Enhanced and translated description for business 51 into spanish, eng
+INFO 2024-09-26 12:43:18,115 tasks 31864 30772 Starting translation for business 51
+INFO 2024-09-26 12:43:18,120 tasks 31864 30772 Completed translation for business 51 for all languages
+INFO 2024-09-26 12:43:18,121 models 31864 30772 Updating Business 51: Alhambra
+INFO 2024-09-26 12:43:18,124 views 31864 30772 Translating and enhancing business: Fatigas del querer
+INFO 2024-09-26 12:43:30,964 models 31864 30772 Updating Business 52: Fatigas del querer
+INFO 2024-09-26 12:43:30,978 tasks 31864 30772 Enhanced and translated description for business 52 into spanish, eng
+INFO 2024-09-26 12:43:30,982 tasks 31864 30772 Starting translation for business 52
+INFO 2024-09-26 12:43:30,992 tasks 31864 30772 Completed translation for business 52 for all languages
+INFO 2024-09-26 12:43:30,993 models 31864 30772 Updating Business 52: Fatigas del querer
+INFO 2024-09-26 12:43:30,996 views 31864 30772 Translating and enhancing business: Mercado de la Reina 12
+INFO 2024-09-26 12:43:43,367 models 31864 30772 Updating Business 53: Mercado de la Reina 12
+INFO 2024-09-26 12:43:43,376 tasks 31864 30772 Enhanced and translated description for business 53 into spanish, eng
+INFO 2024-09-26 12:43:43,379 tasks 31864 30772 Starting translation for business 53
+INFO 2024-09-26 12:43:43,388 tasks 31864 30772 Completed translation for business 53 for all languages
+INFO 2024-09-26 12:43:43,390 models 31864 30772 Updating Business 53: Mercado de la Reina 12
+INFO 2024-09-26 12:43:43,395 views 31864 30772 Translating and enhancing business: Asador Real
+INFO 2024-09-26 12:43:59,875 models 31864 30772 Updating Business 54: Asador Real
+INFO 2024-09-26 12:43:59,877 tasks 31864 30772 Enhanced and translated description for business 54 into spanish, eng
+INFO 2024-09-26 12:43:59,878 tasks 31864 30772 Starting translation for business 54
+INFO 2024-09-26 12:43:59,881 tasks 31864 30772 Completed translation for business 54 for all languages
+INFO 2024-09-26 12:43:59,881 models 31864 30772 Updating Business 54: Asador Real
+INFO 2024-09-26 12:43:59,883 views 31864 30772 Translating and enhancing business: Matador
+INFO 2024-09-26 12:44:13,767 models 31864 30772 Updating Business 55: Matador
+INFO 2024-09-26 12:44:13,771 tasks 31864 30772 Enhanced and translated description for business 55 into spanish, eng
+INFO 2024-09-26 12:44:13,772 tasks 31864 30772 Starting translation for business 55
+INFO 2024-09-26 12:44:13,775 tasks 31864 30772 Completed translation for business 55 for all languages
+INFO 2024-09-26 12:44:13,776 models 31864 30772 Updating Business 55: Matador
+INFO 2024-09-26 12:44:13,778 views 31864 30772 Translating and enhancing business: Restaurante La Catedral
+INFO 2024-09-26 12:44:23,798 models 31864 30772 Updating Business 56: Restaurante La Catedral
+INFO 2024-09-26 12:44:23,800 tasks 31864 30772 Enhanced and translated description for business 56 into spanish, eng
+INFO 2024-09-26 12:44:23,801 tasks 31864 30772 Starting translation for business 56
+INFO 2024-09-26 12:44:23,803 tasks 31864 30772 Completed translation for business 56 for all languages
+INFO 2024-09-26 12:44:23,804 models 31864 30772 Updating Business 56: Restaurante La Catedral
+INFO 2024-09-26 12:44:23,806 views 31864 30772 Translating and enhancing business: Rosi La Loca
+INFO 2024-09-26 12:44:36,265 models 31864 30772 Updating Business 57: Rosi La Loca
+INFO 2024-09-26 12:44:36,270 tasks 31864 30772 Enhanced and translated description for business 57 into spanish, eng
+INFO 2024-09-26 12:44:36,271 tasks 31864 30772 Starting translation for business 57
+INFO 2024-09-26 12:44:36,273 tasks 31864 30772 Completed translation for business 57 for all languages
+INFO 2024-09-26 12:44:36,273 models 31864 30772 Updating Business 57: Rosi La Loca
+INFO 2024-09-26 12:44:36,275 views 31864 30772 Translating and enhancing business: La Malontina
+INFO 2024-09-26 12:44:51,838 models 31864 30772 Updating Business 58: La Malontina
+INFO 2024-09-26 12:44:51,843 tasks 31864 30772 Enhanced and translated description for business 58 into spanish, eng
+INFO 2024-09-26 12:44:51,847 tasks 31864 30772 Starting translation for business 58
+INFO 2024-09-26 12:44:51,855 tasks 31864 30772 Completed translation for business 58 for all languages
+INFO 2024-09-26 12:44:51,856 models 31864 30772 Updating Business 58: La Malontina
+INFO 2024-09-26 12:44:51,859 views 31864 30772 Translating and enhancing business: La Musa Latina
+INFO 2024-09-26 12:45:06,224 models 31864 30772 Updating Business 59: La Musa Latina
+INFO 2024-09-26 12:45:06,226 tasks 31864 30772 Enhanced and translated description for business 59 into spanish, eng
+INFO 2024-09-26 12:45:06,227 tasks 31864 30772 Starting translation for business 59
+INFO 2024-09-26 12:45:06,229 tasks 31864 30772 Completed translation for business 59 for all languages
+INFO 2024-09-26 12:45:06,230 models 31864 30772 Updating Business 59: La Musa Latina
+INFO 2024-09-26 12:45:06,232 views 31864 30772 Translating and enhancing business: Casa Labra
+INFO 2024-09-26 12:45:20,031 models 31864 30772 Updating Business 60: Casa Labra
+INFO 2024-09-26 12:45:20,037 tasks 31864 30772 Enhanced and translated description for business 60 into spanish, eng
+INFO 2024-09-26 12:45:20,041 tasks 31864 30772 Starting translation for business 60
+INFO 2024-09-26 12:45:20,045 tasks 31864 30772 Completed translation for business 60 for all languages
+INFO 2024-09-26 12:45:20,046 models 31864 30772 Updating Business 60: Casa Labra
+INFO 2024-09-26 12:45:20,048 views 31864 30772 Translating and enhancing business: CEBO Madrid Restaurant
+INFO 2024-09-26 12:45:32,239 models 31864 30772 Updating Business 61: CEBO Madrid Restaurant
+INFO 2024-09-26 12:45:32,246 tasks 31864 30772 Enhanced and translated description for business 61 into spanish, eng
+INFO 2024-09-26 12:45:32,250 tasks 31864 30772 Starting translation for business 61
+INFO 2024-09-26 12:45:32,255 tasks 31864 30772 Completed translation for business 61 for all languages
+INFO 2024-09-26 12:45:32,256 models 31864 30772 Updating Business 61: CEBO Madrid Restaurant
+INFO 2024-09-26 12:45:32,259 views 31864 30772 Translating and enhancing business: Saddle Madrid
+INFO 2024-09-26 12:45:42,033 models 31864 30772 Updating Business 62: Saddle Madrid
+INFO 2024-09-26 12:45:42,035 tasks 31864 30772 Enhanced and translated description for business 62 into spanish, eng
+INFO 2024-09-26 12:45:42,037 tasks 31864 30772 Starting translation for business 62
+INFO 2024-09-26 12:45:42,041 tasks 31864 30772 Completed translation for business 62 for all languages
+INFO 2024-09-26 12:45:42,042 models 31864 30772 Updating Business 62: Saddle Madrid
+INFO 2024-09-26 12:45:42,044 views 31864 30772 Translating and enhancing business: Coque
+INFO 2024-09-26 12:45:54,507 models 31864 30772 Updating Business 63: Coque
+INFO 2024-09-26 12:45:54,510 tasks 31864 30772 Enhanced and translated description for business 63 into spanish, eng
+INFO 2024-09-26 12:45:54,511 tasks 31864 30772 Starting translation for business 63
+INFO 2024-09-26 12:45:54,514 tasks 31864 30772 Completed translation for business 63 for all languages
+INFO 2024-09-26 12:45:54,515 models 31864 30772 Updating Business 63: Coque
+INFO 2024-09-26 12:45:54,517 views 31864 30772 Translating and enhancing business: Paco Roncero Restaurante
+INFO 2024-09-26 12:46:07,309 models 31864 30772 Updating Business 67: Paco Roncero Restaurante
+INFO 2024-09-26 12:46:07,311 tasks 31864 30772 Enhanced and translated description for business 67 into spanish, eng
+INFO 2024-09-26 12:46:07,312 tasks 31864 30772 Starting translation for business 67
+INFO 2024-09-26 12:46:07,315 tasks 31864 30772 Completed translation for business 67 for all languages
+INFO 2024-09-26 12:46:07,316 models 31864 30772 Updating Business 67: Paco Roncero Restaurante
+INFO 2024-09-26 12:46:07,318 views 31864 30772 Translating and enhancing business: Ramón Freixa Madrid
+INFO 2024-09-26 12:46:18,663 models 31864 30772 Updating Business 65: Ramón Freixa Madrid
+INFO 2024-09-26 12:46:18,666 tasks 31864 30772 Enhanced and translated description for business 65 into spanish, eng
+INFO 2024-09-26 12:46:18,668 tasks 31864 30772 Starting translation for business 65
+INFO 2024-09-26 12:46:18,673 tasks 31864 30772 Completed translation for business 65 for all languages
+INFO 2024-09-26 12:46:18,674 models 31864 30772 Updating Business 65: Ramón Freixa Madrid
+INFO 2024-09-26 12:46:18,676 views 31864 30772 Translating and enhancing business: DSTAgE
+INFO 2024-09-26 12:46:31,115 models 31864 30772 Updating Business 66: DSTAgE
+INFO 2024-09-26 12:46:31,117 tasks 31864 30772 Enhanced and translated description for business 66 into spanish, eng
+INFO 2024-09-26 12:46:31,118 tasks 31864 30772 Starting translation for business 66
+INFO 2024-09-26 12:46:31,120 tasks 31864 30772 Completed translation for business 66 for all languages
+INFO 2024-09-26 12:46:31,121 models 31864 30772 Updating Business 66: DSTAgE
+INFO 2024-09-26 12:46:31,122 views 31864 30772 Translating and enhancing business: La Bien Aparecida
+INFO 2024-09-26 12:46:43,859 models 31864 30772 Updating Business 68: La Bien Aparecida
+INFO 2024-09-26 12:46:43,861 tasks 31864 30772 Enhanced and translated description for business 68 into spanish, eng
+INFO 2024-09-26 12:46:43,862 tasks 31864 30772 Starting translation for business 68
+INFO 2024-09-26 12:46:43,864 tasks 31864 30772 Completed translation for business 68 for all languages
+INFO 2024-09-26 12:46:43,864 models 31864 30772 Updating Business 68: La Bien Aparecida
+INFO 2024-09-26 12:46:43,866 views 31864 30772 Translating and enhancing business: El Club Allard | Restaurante Estrella Michelin
+INFO 2024-09-26 12:46:55,495 models 31864 30772 Updating Business 71: El Club Allard | Restaurante Estrella Michelin
+INFO 2024-09-26 12:46:55,501 tasks 31864 30772 Enhanced and translated description for business 71 into spanish, eng
+INFO 2024-09-26 12:46:55,504 tasks 31864 30772 Starting translation for business 71
+INFO 2024-09-26 12:46:55,512 tasks 31864 30772 Completed translation for business 71 for all languages
+INFO 2024-09-26 12:46:55,515 models 31864 30772 Updating Business 71: El Club Allard | Restaurante Estrella Michelin
+INFO 2024-09-26 12:46:55,521 views 31864 30772 Translating and enhancing business: Sacha Restaurant
+INFO 2024-09-26 12:47:08,075 models 31864 30772 Updating Business 69: Sacha Restaurant
+INFO 2024-09-26 12:47:08,078 tasks 31864 30772 Enhanced and translated description for business 69 into spanish, eng
+INFO 2024-09-26 12:47:08,079 tasks 31864 30772 Starting translation for business 69
+INFO 2024-09-26 12:47:08,082 tasks 31864 30772 Completed translation for business 69 for all languages
+INFO 2024-09-26 12:47:08,083 models 31864 30772 Updating Business 69: Sacha Restaurant
+INFO 2024-09-26 12:47:08,084 views 31864 30772 Translating and enhancing business: Bodega de los Secretos
+INFO 2024-09-26 12:47:19,200 models 31864 30772 Updating Business 70: Bodega de los Secretos
+INFO 2024-09-26 12:47:19,201 tasks 31864 30772 Enhanced and translated description for business 70 into spanish, eng
+INFO 2024-09-26 12:47:19,202 tasks 31864 30772 Starting translation for business 70
+INFO 2024-09-26 12:47:19,204 tasks 31864 30772 Completed translation for business 70 for all languages
+INFO 2024-09-26 12:47:19,205 models 31864 30772 Updating Business 70: Bodega de los Secretos
+INFO 2024-09-26 12:47:19,207 views 31864 30772 Translating and enhancing business: Nice To Meet You Restaurant & Lounge
+INFO 2024-09-26 12:47:32,641 models 31864 30772 Updating Business 72: Nice To Meet You Restaurant & Lounge
+INFO 2024-09-26 12:47:32,645 tasks 31864 30772 Enhanced and translated description for business 72 into spanish, eng
+INFO 2024-09-26 12:47:32,646 tasks 31864 30772 Starting translation for business 72
+INFO 2024-09-26 12:47:32,650 tasks 31864 30772 Completed translation for business 72 for all languages
+INFO 2024-09-26 12:47:32,651 models 31864 30772 Updating Business 72: Nice To Meet You Restaurant & Lounge
+INFO 2024-09-26 12:47:32,655 views 31864 30772 Translating and enhancing business: Ático Restaurante & Terraza
+INFO 2024-09-26 12:47:47,384 models 31864 30772 Updating Business 73: Ático Restaurante & Terraza
+INFO 2024-09-26 12:47:47,388 tasks 31864 30772 Enhanced and translated description for business 73 into spanish, eng
+INFO 2024-09-26 12:47:47,389 tasks 31864 30772 Starting translation for business 73
+INFO 2024-09-26 12:47:47,394 tasks 31864 30772 Completed translation for business 73 for all languages
+INFO 2024-09-26 12:47:47,395 models 31864 30772 Updating Business 73: Ático Restaurante & Terraza
+INFO 2024-09-26 12:47:47,399 views 31864 30772 Translating and enhancing business: Restaurante Gaytán
+INFO 2024-09-26 12:47:58,390 models 31864 30772 Updating Business 74: Restaurante Gaytán
+INFO 2024-09-26 12:47:58,395 tasks 31864 30772 Enhanced and translated description for business 74 into spanish, eng
+INFO 2024-09-26 12:47:58,397 tasks 31864 30772 Starting translation for business 74
+INFO 2024-09-26 12:47:58,402 tasks 31864 30772 Completed translation for business 74 for all languages
+INFO 2024-09-26 12:47:58,404 models 31864 30772 Updating Business 74: Restaurante Gaytán
+INFO 2024-09-26 12:47:58,408 views 31864 30772 Translating and enhancing business: Azotea del Círculo
+INFO 2024-09-26 12:48:09,709 models 31864 30772 Updating Business 75: Azotea del Círculo
+INFO 2024-09-26 12:48:09,711 tasks 31864 30772 Enhanced and translated description for business 75 into spanish, eng
+INFO 2024-09-26 12:48:09,712 tasks 31864 30772 Starting translation for business 75
+INFO 2024-09-26 12:48:09,715 tasks 31864 30772 Completed translation for business 75 for all languages
+INFO 2024-09-26 12:48:09,715 models 31864 30772 Updating Business 75: Azotea del Círculo
+INFO 2024-09-26 12:48:09,717 views 31864 30772 Translating and enhancing business: La Cabaña Argentina
+INFO 2024-09-26 12:48:21,760 models 31864 30772 Updating Business 76: La Cabaña Argentina
+INFO 2024-09-26 12:48:21,764 tasks 31864 30772 Enhanced and translated description for business 76 into spanish, eng
+INFO 2024-09-26 12:48:21,766 tasks 31864 30772 Starting translation for business 76
+INFO 2024-09-26 12:48:21,771 tasks 31864 30772 Completed translation for business 76 for all languages
+INFO 2024-09-26 12:48:21,772 models 31864 30772 Updating Business 76: La Cabaña Argentina
+INFO 2024-09-26 12:48:21,776 views 31864 30772 Translating and enhancing business: Restaurante Benares Madrid
+INFO 2024-09-26 12:48:35,170 models 31864 30772 Updating Business 77: Restaurante Benares Madrid
+INFO 2024-09-26 12:48:35,171 tasks 31864 30772 Enhanced and translated description for business 77 into spanish, eng
+INFO 2024-09-26 12:48:35,172 tasks 31864 30772 Starting translation for business 77
+INFO 2024-09-26 12:48:35,174 tasks 31864 30772 Completed translation for business 77 for all languages
+INFO 2024-09-26 12:48:35,176 models 31864 30772 Updating Business 77: Restaurante Benares Madrid
+INFO 2024-09-26 12:48:35,178 views 31864 30772 Translating and enhancing business: Sobrino de Botín
+INFO 2024-09-26 12:48:46,424 models 31864 30772 Updating Business 78: Sobrino de Botín
+INFO 2024-09-26 12:48:46,426 tasks 31864 30772 Enhanced and translated description for business 78 into spanish, eng
+INFO 2024-09-26 12:48:46,427 tasks 31864 30772 Starting translation for business 78
+INFO 2024-09-26 12:48:46,430 tasks 31864 30772 Completed translation for business 78 for all languages
+INFO 2024-09-26 12:48:46,430 models 31864 30772 Updating Business 78: Sobrino de Botín
+INFO 2024-09-26 12:48:46,432 views 31864 30772 Translating and enhancing business: Deessa
+INFO 2024-09-26 12:49:01,124 models 31864 30772 Updating Business 79: Deessa
+INFO 2024-09-26 12:49:01,127 tasks 31864 30772 Enhanced and translated description for business 79 into spanish, eng
+INFO 2024-09-26 12:49:01,127 tasks 31864 30772 Starting translation for business 79
+INFO 2024-09-26 12:49:01,129 tasks 31864 30772 Completed translation for business 79 for all languages
+INFO 2024-09-26 12:49:01,130 models 31864 30772 Updating Business 79: Deessa
+INFO 2024-09-26 12:49:01,133 views 31864 30772 Translating and enhancing business: A'Barra
+INFO 2024-09-26 12:49:11,943 models 31864 30772 Updating Business 80: A'Barra
+INFO 2024-09-26 12:49:11,946 tasks 31864 30772 Enhanced and translated description for business 80 into spanish, eng
+INFO 2024-09-26 12:49:11,947 tasks 31864 30772 Starting translation for business 80
+INFO 2024-09-26 12:49:11,949 tasks 31864 30772 Completed translation for business 80 for all languages
+INFO 2024-09-26 12:49:11,950 models 31864 30772 Updating Business 80: A'Barra
+INFO 2024-09-26 12:49:11,952 views 31864 30772 Translating and enhancing business: Jollibee Madrid
+INFO 2024-09-26 12:49:24,839 models 31864 30772 Updating Business 81: Jollibee Madrid
+INFO 2024-09-26 12:49:24,843 tasks 31864 30772 Enhanced and translated description for business 81 into spanish, eng
+INFO 2024-09-26 12:49:24,844 tasks 31864 30772 Starting translation for business 81
+INFO 2024-09-26 12:49:24,846 tasks 31864 30772 Completed translation for business 81 for all languages
+INFO 2024-09-26 12:49:24,847 models 31864 30772 Updating Business 81: Jollibee Madrid
+INFO 2024-09-26 12:49:24,848 views 31864 30772 Translating and enhancing business: McDonald's
+INFO 2024-09-26 12:49:36,192 models 31864 30772 Updating Business 82: McDonald's
+INFO 2024-09-26 12:49:36,195 tasks 31864 30772 Enhanced and translated description for business 82 into spanish, eng
+INFO 2024-09-26 12:49:36,197 tasks 31864 30772 Starting translation for business 82
+INFO 2024-09-26 12:49:36,201 tasks 31864 30772 Completed translation for business 82 for all languages
+INFO 2024-09-26 12:49:36,202 models 31864 30772 Updating Business 82: McDonald's
+INFO 2024-09-26 12:49:36,204 views 31864 30772 Translating and enhancing business: Five Guys Gran Vía
+INFO 2024-09-26 12:49:50,446 models 31864 30772 Updating Business 83: Five Guys Gran Vía
+INFO 2024-09-26 12:49:50,448 tasks 31864 30772 Enhanced and translated description for business 83 into spanish, eng
+INFO 2024-09-26 12:49:50,449 tasks 31864 30772 Starting translation for business 83
+INFO 2024-09-26 12:49:50,451 tasks 31864 30772 Completed translation for business 83 for all languages
+INFO 2024-09-26 12:49:50,452 models 31864 30772 Updating Business 83: Five Guys Gran Vía
+INFO 2024-09-26 12:49:50,453 views 31864 30772 Translating and enhancing business: KFC
+INFO 2024-09-26 12:50:02,375 models 31864 30772 Updating Business 84: KFC
+INFO 2024-09-26 12:50:02,377 tasks 31864 30772 Enhanced and translated description for business 84 into spanish, eng
+INFO 2024-09-26 12:50:02,378 tasks 31864 30772 Starting translation for business 84
+INFO 2024-09-26 12:50:02,380 tasks 31864 30772 Completed translation for business 84 for all languages
+INFO 2024-09-26 12:50:02,381 models 31864 30772 Updating Business 84: KFC
+INFO 2024-09-26 12:50:02,383 views 31864 30772 Translating and enhancing business: McDonald's
+INFO 2024-09-26 12:50:14,119 models 31864 30772 Updating Business 85: McDonald's
+INFO 2024-09-26 12:50:14,123 tasks 31864 30772 Enhanced and translated description for business 85 into spanish, eng
+INFO 2024-09-26 12:50:14,125 tasks 31864 30772 Starting translation for business 85
+INFO 2024-09-26 12:50:14,131 tasks 31864 30772 Completed translation for business 85 for all languages
+INFO 2024-09-26 12:50:14,133 models 31864 30772 Updating Business 85: McDonald's
+INFO 2024-09-26 12:50:14,137 views 31864 30772 Translating and enhancing business: McDonald's
+INFO 2024-09-26 12:50:25,243 models 31864 30772 Updating Business 86: McDonald's
+INFO 2024-09-26 12:50:25,247 tasks 31864 30772 Enhanced and translated description for business 86 into spanish, eng
+INFO 2024-09-26 12:50:25,248 tasks 31864 30772 Starting translation for business 86
+INFO 2024-09-26 12:50:25,255 tasks 31864 30772 Completed translation for business 86 for all languages
+INFO 2024-09-26 12:50:25,256 models 31864 30772 Updating Business 86: McDonald's
+INFO 2024-09-26 12:50:25,260 views 31864 30772 Translating and enhancing business: KFC
+INFO 2024-09-26 12:50:37,756 models 31864 30772 Updating Business 87: KFC
+INFO 2024-09-26 12:50:37,760 tasks 31864 30772 Enhanced and translated description for business 87 into spanish, eng
+INFO 2024-09-26 12:50:37,762 tasks 31864 30772 Starting translation for business 87
+INFO 2024-09-26 12:50:37,767 tasks 31864 30772 Completed translation for business 87 for all languages
+INFO 2024-09-26 12:50:37,768 models 31864 30772 Updating Business 87: KFC
+INFO 2024-09-26 12:50:37,772 views 31864 30772 Translating and enhancing business: Taco Bell
+INFO 2024-09-26 12:50:50,999 models 31864 30772 Updating Business 88: Taco Bell
+INFO 2024-09-26 12:50:51,001 tasks 31864 30772 Enhanced and translated description for business 88 into spanish, eng
+INFO 2024-09-26 12:50:51,002 tasks 31864 30772 Starting translation for business 88
+INFO 2024-09-26 12:50:51,005 tasks 31864 30772 Completed translation for business 88 for all languages
+INFO 2024-09-26 12:50:51,005 models 31864 30772 Updating Business 88: Taco Bell
+INFO 2024-09-26 12:50:51,007 views 31864 30772 Translating and enhancing business: KFC
+INFO 2024-09-26 12:51:01,941 models 31864 30772 Updating Business 89: KFC
+INFO 2024-09-26 12:51:01,943 tasks 31864 30772 Enhanced and translated description for business 89 into spanish, eng
+INFO 2024-09-26 12:51:01,944 tasks 31864 30772 Starting translation for business 89
+INFO 2024-09-26 12:51:01,947 tasks 31864 30772 Completed translation for business 89 for all languages
+INFO 2024-09-26 12:51:01,948 models 31864 30772 Updating Business 89: KFC
+INFO 2024-09-26 12:51:01,950 views 31864 30772 Translating and enhancing business: McDonald's
+INFO 2024-09-26 12:51:12,712 models 31864 30772 Updating Business 90: McDonald's
+INFO 2024-09-26 12:51:12,716 tasks 31864 30772 Enhanced and translated description for business 90 into spanish, eng
+INFO 2024-09-26 12:51:12,718 tasks 31864 30772 Starting translation for business 90
+INFO 2024-09-26 12:51:12,726 tasks 31864 30772 Completed translation for business 90 for all languages
+INFO 2024-09-26 12:51:12,727 models 31864 30772 Updating Business 90: McDonald's
+INFO 2024-09-26 12:51:12,730 views 31864 30772 Translating and enhancing business: Taco Bell
+INFO 2024-09-26 12:51:24,765 models 31864 30772 Updating Business 91: Taco Bell
+INFO 2024-09-26 12:51:24,769 tasks 31864 30772 Enhanced and translated description for business 91 into spanish, eng
+INFO 2024-09-26 12:51:24,770 tasks 31864 30772 Starting translation for business 91
+INFO 2024-09-26 12:51:24,772 tasks 31864 30772 Completed translation for business 91 for all languages
+INFO 2024-09-26 12:51:24,773 models 31864 30772 Updating Business 91: Taco Bell
+INFO 2024-09-26 12:51:24,775 views 31864 30772 Translating and enhancing business: Five Guys Serrano
+INFO 2024-09-26 12:51:36,174 models 31864 30772 Updating Business 92: Five Guys Serrano
+INFO 2024-09-26 12:51:36,176 tasks 31864 30772 Enhanced and translated description for business 92 into spanish, eng
+INFO 2024-09-26 12:51:36,177 tasks 31864 30772 Starting translation for business 92
+INFO 2024-09-26 12:51:36,180 tasks 31864 30772 Completed translation for business 92 for all languages
+INFO 2024-09-26 12:51:36,181 models 31864 30772 Updating Business 92: Five Guys Serrano
+INFO 2024-09-26 12:51:36,184 views 31864 30772 Translating and enhancing business: Pans & Company
+INFO 2024-09-26 12:51:48,241 models 31864 30772 Updating Business 93: Pans & Company
+INFO 2024-09-26 12:51:48,244 tasks 31864 30772 Enhanced and translated description for business 93 into spanish, eng
+INFO 2024-09-26 12:51:48,245 tasks 31864 30772 Starting translation for business 93
+INFO 2024-09-26 12:51:48,248 tasks 31864 30772 Completed translation for business 93 for all languages
+INFO 2024-09-26 12:51:48,250 models 31864 30772 Updating Business 93: Pans & Company
+INFO 2024-09-26 12:51:48,252 views 31864 30772 Translating and enhancing business: KFC
+INFO 2024-09-26 12:51:58,631 models 31864 30772 Updating Business 94: KFC
+INFO 2024-09-26 12:51:58,633 tasks 31864 30772 Enhanced and translated description for business 94 into spanish, eng
+INFO 2024-09-26 12:51:58,634 tasks 31864 30772 Starting translation for business 94
+INFO 2024-09-26 12:51:58,637 tasks 31864 30772 Completed translation for business 94 for all languages
+INFO 2024-09-26 12:51:58,638 models 31864 30772 Updating Business 94: KFC
+INFO 2024-09-26 12:51:58,640 views 31864 30772 Translating and enhancing business: Burger King
+INFO 2024-09-26 12:52:12,625 models 31864 30772 Updating Business 95: Burger King
+INFO 2024-09-26 12:52:12,626 tasks 31864 30772 Enhanced and translated description for business 95 into spanish, eng
+INFO 2024-09-26 12:52:12,627 tasks 31864 30772 Starting translation for business 95
+INFO 2024-09-26 12:52:12,631 tasks 31864 30772 Completed translation for business 95 for all languages
+INFO 2024-09-26 12:52:12,632 models 31864 30772 Updating Business 95: Burger King
+INFO 2024-09-26 12:52:12,634 views 31864 30772 Translating and enhancing business: Carl's Jr
+INFO 2024-09-26 12:52:26,680 models 31864 30772 Updating Business 96: Carl's Jr
+INFO 2024-09-26 12:52:26,684 tasks 31864 30772 Enhanced and translated description for business 96 into spanish, eng
+INFO 2024-09-26 12:52:26,686 tasks 31864 30772 Starting translation for business 96
+INFO 2024-09-26 12:52:26,690 tasks 31864 30772 Completed translation for business 96 for all languages
+INFO 2024-09-26 12:52:26,692 models 31864 30772 Updating Business 96: Carl's Jr
+INFO 2024-09-26 12:52:26,695 views 31864 30772 Translating and enhancing business: Burger King
+INFO 2024-09-26 12:52:39,900 models 31864 30772 Updating Business 97: Burger King
+INFO 2024-09-26 12:52:39,902 tasks 31864 30772 Enhanced and translated description for business 97 into spanish, eng
+INFO 2024-09-26 12:52:39,904 tasks 31864 30772 Starting translation for business 97
+INFO 2024-09-26 12:52:39,906 tasks 31864 30772 Completed translation for business 97 for all languages
+INFO 2024-09-26 12:52:39,906 models 31864 30772 Updating Business 97: Burger King
+INFO 2024-09-26 12:52:39,908 views 31864 30772 Translating and enhancing business: Tempus Foody
+INFO 2024-09-26 12:57:47,773 views 31864 9004 Accessing TaskDetailView for task 6
+INFO 2024-09-26 12:57:47,790 views 31864 9004 Retrieved task 6 with 60 businesses
