@@ -96,8 +96,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            
+                            </div>                            
                             <div class="box-footer">
                                 <div class="d-flex align-items-center">
                                     <div class="d-flex mb-3 mb-md-0">
@@ -105,14 +104,16 @@
                                             {{ task.status }}
                                         </div>
                                     </div>
+                                </div>
+                                <div class="d-flex align-items-center">
                                     <div class="ms-auto mt-3 mt-sm-0">
                                         {% if task.status != 'TRANSLATED' %}
-                                        <button class="btn btn-outline-light text-muted pd-0 fs-14 start-translating-btn"
+                                        <button class="btn btn-outline-light text-muted pd-1 fs-14 start-translating-btn"
                                                 data-task-id="{{ task.id }}">
                                             <i class="fas fa-sync"></i> Start Translating 
                                         </button>
-                                        {% else %}
-                                        <button class="btn btn-outline-light text-muted pd-0 fs-14 disabled">
+                                        {% else %}                                   
+                                        <button class="btn btn-outline-light text-muted pd-1 fs-14 disabled">
                                             <i class="fas fa-check"></i> Translation Completed
                                         </button>
                                         {% endif %}
@@ -127,7 +128,7 @@
             </div>
         </div>
     </div>
-
+    <div class="overlay" ></div>   
  <!--<script src="{% static '/libs/chart.js/Chart.bundle.min.js' %}"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>   
     <script type="application/json" id="statusCounts">

@@ -198,11 +198,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 FILE_UPLOAD_PERMISSIONS = 644
 
-AWS_ACCESS_KEY_ID=os.environ.get('AKIATOM3R3CWRVHAKJEF')
-AWS_SECRET_ACCESS_KEY=os.environ.get('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')
-AWS_STORAGE_BUCKET_NAME=os.environ.get('localsecret')
-AWS_S3_REGION_NAME=os.environ.get('us-east-1')
-AWS_S3_CUSTOM_DOMAIN=os.environ.get('localsecret.s3.amazonaws.com')
+AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME=os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME=os.environ.get('AWS_S3_REGION_NAME')
+AWS_S3_CUSTOM_DOMAIN=os.environ.get('AWS_STORAGE_BUCKET_NAME.s3.amazonaws.com')
 
 # Configuraciones adicionales
 AWS_S3_OBJECT_PARAMETERS = {

@@ -53,22 +53,31 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 import os
 from dotenv import load_dotenv
+import logging
 
+import openai
+logger = logging.getLogger(__name__)
 # Load environment variables from the .env file
 load_dotenv()
 
 # Access the API keys from environment variables
 SERPAPI_KEY = os.getenv('SERPAPI_KEY')
 GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
+TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
 
-openai.api_key = GENAI_OPENAI_API_KEY
+# Log the API keys (for debugging; remove in production)
+logger.info(f"Using GENAI API Key: {GENAI_OPENAI_API_KEY}")
+logger.info(f"Using TRANSLATION API Key: {TRANSLATION_OPENAI_API_KEY}")
 
- 
+# Set the OpenAI API key
+# Choose the correct API key based on your use case
+openai.api_key = TRANSLATION_OPENAI_API_KEY  # Use this for translation tasks
+
 User = get_user_model()
-
 logger = logging.getLogger(__name__)
 
-doctran = Doctran(openai_api_key=GENAI_OPENAI_API_KEY)
+# Initialize Doctran with the correct API key
+doctran = Doctran(openai_api_key=TRANSLATION_OPENAI_API_KEY)
 
 
 def process_scraping_task(task_id):

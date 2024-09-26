@@ -48,9 +48,8 @@ from django.db.models.functions import TruncDate
 
 logger = logging.getLogger(__name__)
  
-#SERPAPI_KEY = settings.SERPAPI_KEY
-SERPAPI_KEY="d4edc184cff5bc34bdf05511b8ae72f5560f9a34d5176049e9402016dc4f8e59"   #"68ea65477e6d1364cb779432e97386315b6b6de331a2fcdb00580d2e5f00201e"
-
+SERPAPI_KEY = settings.SERPAPI_KEY
+ 
 @login_required
 def process_scraping_task(request, task_id):
     task = get_object_or_404(ScrapingTask, id=task_id)
