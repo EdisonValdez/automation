@@ -44,7 +44,11 @@ logger = logging.getLogger(__name__)
   
 
 def health_check(request):
-    return HttpResponse("OK", content_type="text/plain")
+    try:
+        return HttpResponse("OK", content_type="text/plain")
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return HttpResponse("ERROR", status=500)
 
 
 class BusinessViewSet(viewsets.ModelViewSet):
