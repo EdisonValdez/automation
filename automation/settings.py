@@ -2,7 +2,8 @@ from pathlib import Path
 import os
 from pathlib import Path
 from dotenv import load_dotenv
- 
+import sys
+import dj_database_url
 load_dotenv()
 
 
@@ -138,7 +139,7 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-DISABLE_COLLECTSTATIC = 1
+#DISABLE_COLLECTSTATIC = 1
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
