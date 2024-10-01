@@ -1,5 +1,5 @@
-pydantic>=2.7.4,<3.0.0
-confection>=0.1.5
-doctran>=0.0.14
-langchain>=0.2.16
-langchain-core>=0.2.39
+pydantic
+confection
+doctran
+langchain
+langchain-core
