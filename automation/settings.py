@@ -18,7 +18,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,10.244.34.32').split(',')
+#ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,10.244.34.32').split(',')
+ALLOWED_HOSTS = ['*']
+
 TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
 GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
 SERPAPI_KEY = os.getenv('SERPAPI_KEY')
