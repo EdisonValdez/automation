@@ -4,6 +4,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import sys
 import dj_database_url
+from django.core.management.utils import get_random_secret_key
 load_dotenv()
 
 
@@ -14,13 +15,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "iYT-_YtqdJLLhJ9AO7Q5pcgkcPTUx5qevzXChvt8-u--LPuFWtyjGJdhQRIkH3NOy38"
-DEBUG = 'True'
-ALLOWED_HOSTS = ['*']
-#ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS').split(',')
-TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY', '')
-GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY', '')
-SERPAPI_KEY = os.getenv('SERPAPI_KEY', '')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
+DEBUG = os.getenv('DEBUG', 'False') == True
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1, localhost').split(',')
+TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
+GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
+SERPAPI_KEY = os.getenv('SERPAPI_KEY')
 
 
 
@@ -77,14 +77,10 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3')
-    }
-}
-else:
+DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
+
+
+if DEVELOPMENT_MODE is True:
     DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -95,6 +91,13 @@ else:
         'PORT': '5432',
     }
 }
+elif len(sys.argv) > 0 and sys.argv[1] != 'collecstatic':
+    if os.getenv("DATABASE_URL", None) is None:
+        raise Exception("DATABASE_URL environment variable not defined")
+    DATABASES = {
+        "default": dj_database_url.parse(os.environ.get("DATABASE_URL"),)
+    }
+
   
  
 # Password validation
@@ -208,11 +211,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 FILE_UPLOAD_PERMISSIONS = 644
 
-AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID', '')
-AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-AWS_STORAGE_BUCKET_NAME=os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
-AWS_S3_REGION_NAME=os.environ.get('AWS_S3_REGION_NAME', '')
-AWS_S3_CUSTOM_DOMAIN=os.environ.get('AWS_STORAGE_BUCKET_NAME.s3.amazonaws.com', '')
+AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME=os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME=os.environ.get('AWS_S3_REGION_NAME')
+AWS_S3_CUSTOM_DOMAIN=os.environ.get('AWS_STORAGE_BUCKET_NAME.s3.amazonaws.com')
 
 # Configuraciones adicionales
 AWS_S3_OBJECT_PARAMETERS = {
