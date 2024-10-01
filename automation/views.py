@@ -3,7 +3,7 @@ from django.conf import settings
 from django.db import DatabaseError
 from django.views import View
 from django.http import HttpResponseForbidden, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
 import json
@@ -129,7 +129,7 @@ class UploadFileView(View):
             task.save()
             try:
                 # Pass the task_id to the process_scraping_task function
-                process_scraping_task(task_id=task.id)
+                process_scraping_task(self, task_id=task.id)
                 logger.info(f"Scraping task {task.id} created and queued, project ID: {task.project_id}")
                 return JsonResponse({
                     'status': 'success',
@@ -271,6 +271,7 @@ class AmbassadorDashboardView(View):
 
         return render(request, 'automation/ambassador_dashboard.html', context)
     
+   
 @csrf_exempt
 @login_required
 def update_image_order(request, business_id):
@@ -280,17 +281,23 @@ def update_image_order(request, business_id):
             image_ids = data.get('order', [])
             business = get_object_or_404(Business, id=business_id)
             
-            for index, image_id in enumerate(image_ids):
-                image = Image.objects.get(id=image_id, business=business)
-                image.order = index
-                image.save()
+            # Use a transaction to ensure atomicity
+            with transaction.atomic():
+                for index, image_id in enumerate(image_ids):
+                    print(f"Updating image ID: {image_id} to order: {index}")
+                    image = Image.objects.get(id=image_id, business=business)
+                    image.order = index
+                    image.save()
             
             return JsonResponse({'status': 'success'})
         except Exception as e:
             logger.error(f"Error updating image order: {e}")
             return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
-@login_required
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
+
+@login_required
 def delete_image(request, image_id):
     image = get_object_or_404(Image, id=image_id)
     business_id = image.business.id
@@ -612,33 +619,115 @@ def is_admin_or_ambassador(user):
 @user_passes_test(is_admin_or_ambassador)
 def business_detail(request, business_id):
     business = get_object_or_404(Business, id=business_id)
-    return render(request, 'automation/business_detail.html', {'business': business})
+    status_choices = Business.STATUS_CHOICES
 
+    context = {
+       'business': business,
+        'status_choices': status_choices
+    }
+    return render(request, 'automation/business_detail.html', context)
 
-@user_passes_test(is_admin)
-def create_business(request):
-    if request.method == 'POST':
-        form = BusinessForm(request.POST)
-        if form.is_valid():
-            business = form.save()
-            messages.success(request, "Business created successfully.")
-            return redirect('business_detail', business_id=business.id)
-    else:
-        form = BusinessForm()
-    return render(request, 'automation/create_business.html', {'form': form})
-
-@user_passes_test(is_admin)
-def edit_business(request, business_id):
+ 
+@csrf_protect
+def update_business(request, business_id):
     business = get_object_or_404(Business, id=business_id)
+    
     if request.method == 'POST':
-        form = BusinessForm(request.POST, instance=business)
+        post_data = request.POST.copy()
+
+        # Manejar las opciones de servicio JSON
+        service_options_str = post_data.get('service_options', '').strip()
+        logger.debug("Service Options String from POST: %s", service_options_str)
+
+        try:
+            if service_options_str:
+                service_options = json.loads(service_options_str.replace("'", '"'))
+            else:
+                service_options = business.service_options  # Mantener las opciones existentes
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'errors': {'service_options': 'Invalid JSON format'}})
+
+        # Agregar las opciones de servicio procesadas de vuelta a los datos del formulario
+        post_data['service_options'] = service_options
+
+        # Conservar las horas de operación existentes si no se proporcionan nuevas
+        if 'operating_hours' not in post_data:
+            post_data['operating_hours'] = business.operating_hours
+
+        # Inicializar el formulario
+        form = BusinessForm(post_data, instance=business)
+
         if form.is_valid():
-            form.save()
-            messages.success(request, "Business updated successfully.")
+            updated_business = form.save(commit=False)
+            
+            # Asegurarse de que las horas de operación se conserven
+            if not updated_business.operating_hours:
+                updated_business.operating_hours = business.operating_hours
+            
+            updated_business.save()
+            logger.info("Business %s updated successfully", business.project_title)
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+
             return redirect('business_detail', business_id=business.id)
+        else:
+            logger.error("Form Errors: %s", form.errors)
+            return JsonResponse({'success': False, 'errors': form.errors})
+    
+    return redirect('business_detail', business_id=business_id)
+
+
+@csrf_exempt
+def update_business_hours(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        business_id = data.get('business_id')
+        hours = data.get('hours')
+
+        # Ensure 'hours' is a dictionary (key-value pairs for each day)
+        if not isinstance(hours, dict):
+            return JsonResponse({'status': 'error', 'message': 'Invalid hours format.'})
+
+        try:
+            business = Business.objects.get(id=business_id)
+            business.operating_hours = hours
+            business.save()
+            return JsonResponse({'status': 'success'})
+        except Business.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Business not found.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
     else:
-        form = BusinessForm(instance=business)
-    return render(request, 'automation/edit_business.html', {'form': form, 'business': business})
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+ 
+@require_POST
+@csrf_exempt  
+def update_image_status(request):
+    try:
+        data = json.loads(request.body)
+        image_id = data.get('image_id')
+        is_approved = data.get('is_approved')
+
+        logger.info(f'Received request to update image {image_id} with approval status {is_approved}')
+
+        # Fetch the image object
+        try:
+            image = Image.objects.get(id=image_id)
+            image.is_approved = is_approved
+            image.save()
+
+            logger.info(f'Successfully updated image {image_id} to {is_approved}')
+            return JsonResponse({'success': True})
+        except Image.DoesNotExist:
+            logger.error(f'Image with id {image_id} does not exist')
+            return JsonResponse({'success': False, 'error': 'Image not found'})
+
+    except json.JSONDecodeError as e:
+        logger.error(f'JSON decode error: {e}')
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'})
+
 
 @user_passes_test(is_admin)
 def delete_business(request, business_id):
@@ -1199,9 +1288,7 @@ class UploadScrapingResultsView(View):
 def task_status(request, task_id):
     task = ScrapingTask.objects.get(id=task_id)
     return render(request, 'automation/task_status.html', {'task': task})
-
-
-
+ 
 
 @login_required
 @require_GET

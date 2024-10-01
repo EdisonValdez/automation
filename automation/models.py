@@ -144,9 +144,9 @@ class ScrapingTask(models.Model):
 
 class Business(models.Model):
     STATUS_CHOICES = [
+        ('DISCARDED', 'Discarded'),
         ('PENDING', 'Pending'),
         ('REVIEWED', 'Reviewed'),
-        ('DISCARDED', 'Discarded'),
         ('IN_PRODUCTION', 'In Production'),
     ]
     status = models.CharField(
@@ -239,6 +239,8 @@ class Image(models.Model):
     local_path = models.CharField(max_length=255, null=True, blank=True)
     order = models.IntegerField(default=0) 
     thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+
 
 
     class Meta:

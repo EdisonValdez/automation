@@ -32,37 +32,37 @@
                         <div class="row">
                             <div class="col-md-3 col-sm-12 mb-24">
                                 <div class="form-group">
-                                    <label for="{{ form.project_title.id_for_label }}" class="form-label">Project Title</label>
+                                    <label for="{{ form.project_title.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Project Title</label>
                                     {{ form.project_title }}
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-12 mb-24">
                                 <div class="form-group">
-                                    <label for="{{ form.level.id_for_label }}" class="form-label">Level</label>
+                                    <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
                                     {{ form.level }}
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-12 mb-24">
                                 <div class="form-group">
-                                    <label for="{{ form.main_category.id_for_label }}" class="form-label">Main Category</label>
+                                    <label for="{{ form.main_category.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
                                     {{ form.main_category }}
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-12 mb-24">
                                 <div class="form-group">
-                                    <label for="{{ form.subcategory.id_for_label }}" class="form-label">Subcategory (optional)</label>
+                                    <label for="{{ form.subcategory.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Subcategory (optional)</label>
                                     {{ form.subcategory }}
                                 </div>
                             </div>
                         </div>
                         <div class="form-group mb-24">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">Description (optional)</label>
+                            <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description (optional)</label>
                             {{ form.description }}
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-8 col-sm-12">
-                                <label for="{{ form.file.id_for_label }}" class="form-label">Upload File</label>
+                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
+                                <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
                                 <div class="input-group file-browser">
                                   
                               
@@ -72,11 +72,37 @@
                                 <div class="form-text">{{ form.file.help_text }}</div>
                             </div>
                             
-                            <div class="col-md-4 col-sm-12">
-                                <label for="{{ form.file.id_for_label }}" class="form-label">Get Business</label>
-                                <div class="input-group file-browser">
-                                    <button type="submit" class="btn btn-primary">Start Acquiring</button>
+             <!--    <div class="col-xl-8 col-lg-8 col-md-8 col-sm-12">
+                                <label class="form-label mt-1 fs-18 font-w500 color-primary mt-1 fs-18 font-w500 color-primary">Images number:</label>
+                                <div class="custom-controls-stacked d-lg-flex align-items-center">
+
+                                    <label class="custom-control custom-radio success me-4">
+                                        <input type="radio" class="custom-control-input" name="{{ form.num_images.name }}" value="0" {% if form.num_images.value == '0' %}checked{% endif %}>
+                                        <span class="custom-control-label">0 images</span>
+                                    </label>
+                                    <label class="custom-control custom-radio success me-4">
+                                        <input type="radio" class="custom-control-input" name="{{ form.num_images.name }}" value="3" {% if form.num_images.value == '3' %}checked{% endif %}> 
+                                        <span class="custom-control-label">3 images</span>
+                                    </label>
+                                    <label class="custom-control custom-radio success me-4">
+                                        <input type="radio" class="custom-control-input" name="{{ form.num_images.name }}" value="7" {% if form.num_images.value == '7' %}checked{% endif %}>
+                                        <span class="custom-control-label">7 images</span>
+                                    </label>
+                                    <label class="custom-control custom-radio success me-4">
+                                        <input type="radio" class="custom-control-input" name="{{ form.num_images.name }}" value="12" {% if form.num_images.value == '12' %}checked{% endif %}>
+                                        <span class="custom-control-label">20 images</span>
+                                    </label>
                                 </div>
+                                
+                            </div> -->
+                        </div>
+
+                        <div class="row">
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                             <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Get Business</label>
+                                <div class="input-group file-browser">
+                                    <button type="submit" class="btn btn-primary">Start process</button>
+                                </div>  
                             </div>
                         </div>
                     </form>

@@ -110,6 +110,16 @@ class ScrapingTaskForm(forms.ModelForm):
         required=False,
         empty_label="Select a subcategory (optional)"
     )
+   # num_images = forms.ChoiceField(
+     #   choices=[
+       #     (0, '0 Images'),
+        #    (3, '3 Images'),
+        #    (7, '7 Images'),
+       #     (12, '12 Images'),
+      #  ],
+       # initial=3,
+      #  widget=forms.Select(attrs={'class': 'form-control'})
+   # )
 
     class Meta:
         model = ScrapingTask
@@ -166,18 +176,8 @@ class ScrapingTaskForm(forms.ModelForm):
 
         return instance
 
+
 class BusinessForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ['address', 'city', 'state', 'phone', 'status']
-        widgets = {
-            #'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'address': forms.TextInput(attrs={'class': 'form-control'}),
-            'city': forms.TextInput(attrs={'class': 'form-control'}),
-            'state': forms.TextInput(attrs={'class': 'form-control'}),
-            #'zip_code': forms.TextInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            #'website': forms.URLInput(attrs={'class': 'form-control'}),
-            #'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'status': forms.Select(attrs={'class': 'form-control'}),
-        }
+        fields = ['status', 'city', 'price', 'description', 'description_esp', 'description_eng', 'operating_hours', 'category_name']

@@ -48,56 +48,48 @@ import pycountry
 from doctran import Doctran
 from asgiref.sync import sync_to_async
 import re
+
+from requests.exceptions import RequestException
 import unicodedata
 import boto3
 from botocore.exceptions import NoCredentialsError
-import os
-from dotenv import load_dotenv
-import logging
-
-import openai
-logger = logging.getLogger(__name__)
-# Load environment variables from the .env file
-load_dotenv()
-
-# Access the API keys from environment variables
-SERPAPI_KEY = os.getenv('SERPAPI_KEY')
-GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
-TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
-
-
-# Set the OpenAI API key
-# Choose the correct API key based on your use case
-openai.api_key = TRANSLATION_OPENAI_API_KEY  # Use this for translation tasks
+SERPAPI_KEY = settings.SERPAPI_KEY   
+OPENAI_API_KEY = openai.api_key =  settings.SERPAPI_KEY 
 
 User = get_user_model()
+
 logger = logging.getLogger(__name__)
 
-# Initialize Doctran with the correct API key
-doctran = Doctran(openai_api_key=TRANSLATION_OPENAI_API_KEY)
-
+doctran = Doctran(openai_api_key=OPENAI_API_KEY)
 
 def process_scraping_task(task_id):
     log_file_path = get_log_file_path(task_id)
     file_handler = logging.FileHandler(log_file_path)
     logger.addHandler(file_handler)
 
-    logger.info(f"Iniciando tarea de scraping {task_id}")
+    logger.info(f"Starting scraping task {task_id}")
     task = ScrapingTask.objects.get(id=task_id)
     task.status = 'IN_PROGRESS'
     task.save()
 
-    # Configurar el cliente de S3
-    s3 = boto3.client('s3')
-    bucket_name = 'nombre-de-tu-bucket'
+    # Configure S3 client
+    try:
+        s3 = boto3.client('s3')
+        bucket_name = 'localsecrets'
+        logger.info("S3 client configured successfully")
+    except Exception as e:
+        logger.error(f"Failed to configure S3 client: {str(e)}")
+        task.status = 'FAILED'
+        task.save()
+        return
 
     try:
         queries = read_queries(task.file.path)
-        logger.info(f"Total de consultas a procesar: {len(queries)}")
+        logger.info(f"Total queries to process: {len(queries)}")
 
-        for query in queries:
+        for index, query in enumerate(queries, start=1):
             try:
-                logger.info(f"Procesando consulta: {query}")
+                logger.info(f"Processing query {index}/{len(queries)}: {query}")
                 params = {
                     "api_key": SERPAPI_KEY,
                     "engine": "google_maps",
@@ -110,65 +102,86 @@ def process_scraping_task(task_id):
                 next_page_token = None
                 page_num = 1
                 total_results = 0
-                max_pages = 7
+                max_pages = 20
 
                 while page_num <= max_pages:
                     if next_page_token:
                         params["next_page_token"] = next_page_token
                     
-                    search = GoogleSearch(params)
-                    results = search.get_dict()
-
-                    if 'error' in results:
-                        logger.error(f"Error de API para la consulta '{query}' en la página {page_num}: {results['error']}")
+                    logger.info(f"Sending API request for query '{query}', page {page_num}")
+                    try:
+                        search = GoogleSearch(params)
+                        results = search.get_dict()
+                    except RequestException as e:
+                        logger.error(f"Network error while fetching results for query '{query}', page {page_num}: {str(e)}")
+                        time.sleep(5)  # Wait longer before retrying
+                        continue
+                    except Exception as e:
+                        logger.error(f"Unexpected error while fetching results for query '{query}', page {page_num}: {str(e)}")
                         break
 
+                    if 'error' in results:
+                        logger.error(f"API error for query '{query}' on page {page_num}: {results['error']}")
+                        break
+
+                    logger.info(f"Saving results for query '{query}', page {page_num}")
                     save_results(task, results, query)
 
                     local_results = results.get('local_results', [])
-                    for local_result in local_results:
-                        business = save_business(task, local_result, query)
-                        image_paths = download_images(business, local_result)
-                        
-                        # Subir imágenes a S3
-                        for image_path in image_paths:
-                            try:
-                                s3_key = f"{task_id}/{business.id}/{os.path.basename(image_path)}"
-                                s3.upload_file(image_path, bucket_name, s3_key)
-                                logger.info(f"Imagen {image_path} subida exitosamente a S3 como {s3_key}")
-                                 
-                                s3_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
-                                update_image_url(business, image_path, s3_url)
-                                 
-                                os.remove(image_path)
-                            except NoCredentialsError:
-                                logger.error("Credenciales de AWS no disponibles")
-                            except Exception as e:
-                                logger.error(f"Error al subir {image_path} a S3: {str(e)}")
+                    logger.info(f"Processing {len(local_results)} local results for query '{query}', page {page_num}")
+                    for result_index, local_result in enumerate(local_results, start=1):
+                        try:
+                            logger.info(f"Saving business {result_index}/{len(local_results)} for query '{query}', page {page_num}")
+                            business = save_business(task, local_result, query)
+                            
+                            logger.info(f"Downloading images for business {business.id}")
+                            image_paths = download_images(business, local_result)
+                            
+                            # Upload images to S3                            # Upload images to S3                            # Upload images to S3                            # Upload images to S3
+                            # Upload images to S3                            # Upload images to S3                            # Upload images to S3
+                            for image_path in image_paths:
+                                try:
+                                    s3_key = f"{task_id}/{business.id}/{os.path.basename(image_path)}"
+                                    logger.info(f"Uploading image {image_path} to S3 as {s3_key}")
+                                    s3.upload_file(image_path, bucket_name, s3_key)
+                                    logger.info(f"Image {image_path} uploaded to S3 as {s3_key}")
+                                     
+                                    s3_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
+                                    update_image_url(business, image_path, s3_url)
+                                    
+                                    logger.info(f"Removing temporary file {image_path}")
+                                    os.remove(image_path)
+                                except NoCredentialsError:
+                                    logger.error("AWS credentials not available")
+                                except Exception as e:
+                                    logger.error(f"Error uploading {image_path} to S3: {str(e)}")
+                        except Exception as e:
+                            logger.error(f"Error processing business result {result_index} for query '{query}': {str(e)}")
+                            continue
 
                     total_results += len(local_results)
-                    logger.info(f"Procesados {len(local_results)} resultados en la página {page_num} para la consulta '{query}'")
+                    logger.info(f"Processed {len(local_results)} results on page {page_num} for query '{query}'")
 
                     next_page_token = get_next_page_token(results)
                     if not next_page_token:
-                        logger.info(f"No hay más páginas para la consulta '{query}'")
+                        logger.info(f"No more pages for query '{query}'")
                         break
 
                     page_num += 1
                     time.sleep(2)
-                logger.info(f"Total de resultados procesados para la consulta '{query}': {total_results}")
+                logger.info(f"Total results processed for query '{query}': {total_results}")
 
             except Exception as e:
-                logger.error(f"Error al procesar la consulta '{query}': {str(e)}", exc_info=True)
+                logger.error(f"Error processing query '{query}': {str(e)}", exc_info=True)
                 continue 
 
-        logger.info(f"Tarea de scraping {task_id} completada con éxito")
+        logger.info(f"Scraping task {task_id} completed successfully")
         task.status = 'COMPLETED'
         task.completed_at = timezone.now()
         task.save()
 
     except Exception as e:
-        logger.error(f"Error en la tarea de scraping {task_id}: {str(e)}", exc_info=True)
+        logger.error(f"Error in scraping task {task_id}: {str(e)}", exc_info=True)
         task.status = 'FAILED'
         task.save()
     finally:
@@ -176,36 +189,8 @@ def process_scraping_task(task_id):
         file_handler.close()
  
     cleanup_temp_files(task_id)
+
  
-def cleanup_temp_files(task_id):
-    """
-    Elimina los archivos temporales asociados con una tarea específica.
-    """
-    temp_dir = os.path.join(settings.MEDIA_ROOT, f'temp_images_{task_id}')
-    if os.path.exists(temp_dir):
-        try:
-            shutil.rmtree(temp_dir)
-            logger.info(f"Directorio temporal para la tarea {task_id} eliminado: {temp_dir}")
-        except Exception as e:
-            logger.error(f"Error al eliminar el directorio temporal para la tarea {task_id}: {str(e)}")
-
-def update_image_url(business, local_path, s3_url):
-    """
-    Actualiza la URL de la imagen en la base de datos con la URL de S3.
-    """
-    try:
-        image = BusinessImage.objects.get(business=business, local_path=local_path)
-        image.s3_url = s3_url
-        image.local_path = ''  # Opcional: limpiar la ruta local si ya no es necesaria
-        image.save()
-        logger.info(f"URL de imagen actualizada para el negocio {business.id}: {s3_url}")
-    except BusinessImage.DoesNotExist:
-        logger.warning(f"No se encontró la imagen para el negocio {business.id} con ruta local {local_path}")
-    except Exception as e:
-        logger.error(f"Error al actualizar la URL de la imagen para el negocio {business.id}: {str(e)}")
-
-
-
 def read_queries(file_path):
     logger.info(f"Reading queries from file: {file_path}")
     try:
@@ -216,6 +201,43 @@ def read_queries(file_path):
     except Exception as e:
         logger.error(f"Error reading queries from file {file_path}: {str(e)}", exc_info=True)
         return []
+
+ 
+def cleanup_temp_files(task_id):
+    try:
+        temp_dir = os.path.join(settings.MEDIA_ROOT, f'temp_images_{task_id}')
+        if os.path.exists(temp_dir):
+            for file in os.listdir(temp_dir):
+                file_path = os.path.join(temp_dir, file)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                except Exception as e:
+                    logger.error(f"Error deleting file {file_path}: {str(e)}")
+            os.rmdir(temp_dir)
+        logger.info(f"Temporary files for task {task_id} cleaned up")
+    except Exception as e:
+        logger.error(f"Error cleaning up temporary files for task {task_id}: {str(e)}")
+
+def get_next_page_token(results):
+    return results.get('serpapi_pagination', {}).get('next_page_token')
+ 
+ 
+def update_image_url(business, local_path, s3_url):
+    """
+    Actualiza la URL de la imagen en la base de datos con la URL de S3.
+    """
+    try:
+        image = BusinessImage.objects.get(business=business, local_path=local_path)
+        image.s3_url = s3_url
+        image.local_path = ''  #  limpiar la ruta local si ya no es necesaria
+        image.save()
+        logger.info(f"URL de imagen actualizada para el negocio {business.id}: {s3_url}")
+    except BusinessImage.DoesNotExist:
+        logger.warning(f"No se encontró la imagen para el negocio {business.id} con ruta local {local_path}")
+    except Exception as e:
+        logger.error(f"Error al actualizar la URL de la imagen para el negocio {business.id}: {str(e)}")
+
 
 def save_results(task, results, query):
     results_dir = os.path.join(settings.MEDIA_ROOT, 'scraping_results', str(task.id))
@@ -369,6 +391,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
     original_description = business.description or ""
     prompt = (f"Create an appealing, not verbose, and simple reading 250-character description "
               f"for the following business:\n\nName: {business.title}\nCategory: {business.category_name}\n"
+              f"and location:{business.address}\n"
               f"Original Description: {original_description}\n\nNew Description:")
 
     try:
@@ -392,7 +415,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
     except Exception as e:
-        logger.error(f"Error enhancing and translating description for business- {TRANSLATION_OPENAI_API_KEY} {business.id}: {str(e)}")
+        logger.error(f"Error enhancing and translating description for business {business.id}: {str(e)}")
 
 def translate_business_info_sync(business, languages=["spanish", "eng"]):
     asyncio.run(translate_business_info_async(business, languages=languages))
@@ -531,6 +554,7 @@ def save_business(task, local_result, query):
             'project_id': task.project_id,
             'project_title': task.project_title,
             'main_category': task.main_category,
+            'subcategory': task.subcategory,
             'tailored_category': task.tailored_category,
             'search_string': query,
             'scraped_at': timezone.now(),
@@ -1134,4 +1158,5 @@ def task_status_changed(sender, instance, **kwargs):
         generate_task_report(instance.id)
         # Send email notification
         send_task_completion_email(instance.id)
+ 
 

@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import DefaultRouter 
 from . import views
 
 router = DefaultRouter()
@@ -18,7 +18,14 @@ urlpatterns = [
     path('task/<int:id>/', views.TaskDetailView.as_view(), name='task_detail'),
     #path('business/<int:business_id>/', views.BusinessDetailView.as_view(), name='business_detail'),
     path('business/<int:business_id>/', views.business_detail, name='business_detail'),
+    path('update-image-status/', views.update_image_status, name="update_image_status"),
+    #path('update-business-field/', views.update_business_field, name='update_business_field'),
+    path('update-business-hours/', views.update_business_hours, name='update_business_hours'),
+    #path('update-business-info/', views.update_business_info, name='update_business_info'),
+
+
     path('businesses/', views.business_list, name='business_list'),
+    path('update-business/<int:business_id>/', views.update_business, name='update_business'),
     path('delete-image/<int:image_id>/', views.delete_image, name='delete_image'),
     path('update-image-order/<int:business_id>/', views.update_image_order, name='update_image_order'),
     path('change-business-status/<int:business_id>/', views.change_business_status, name='change_business_status'),

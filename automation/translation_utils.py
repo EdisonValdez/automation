@@ -15,9 +15,6 @@ TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
 openai.api_key = GENAI_OPENAI_API_KEY
  
 
-GENAI_OPENAI_API_KEY="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" #Gen-ai Local Secret
-
-TRANSLATION_OPENAI_API_KEY="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"  #Translation Local Secret
 doctran = Doctran(openai_api_key=TRANSLATION_OPENAI_API_KEY, openai_model="gpt-3.5-turbo-instruct")
  
 async def translate_text(text, target_language):

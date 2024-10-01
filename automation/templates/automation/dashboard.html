@@ -6,11 +6,12 @@
 {% block content %}
 
 
-<div class="main-content project">
- 
-<div class="row">
-   
-     {% if user.is_admin %}
+<div class="main-content project">   
+    <div class="overlay" ></div>   
+    <!--Total Projects-->
+    <div class="row">
+    
+        {% if user.is_admin %}
         <div class="col-9 col-xl-9 col-md-9 col-sm-12">
     {% else %}
         <div class="col-12 col-xl-12 col-md-12 col-sm-12">
@@ -65,6 +66,7 @@
         </div>
     {% endif %}
     </div>
+    <!--Recent Business Update-->
     <div class="row">
         <div class="">
             <div class="box-header pt-0 pl-0 ms-0 mb-4 mt-4 border-bottom-0 responsive-header">
@@ -78,9 +80,9 @@
                 </div>
             </div>
             <div class="row">
-                {% for task in tasks %}
+                {% for task in tasks|slice:":4" %}
                 <div class="col-3 col-xl-3 col-md-4 col-sm-6">
-           
+            
                         <div class="box left-dot">
                             <div class="box-body">
                                 <div class="row">
@@ -92,7 +94,7 @@
                                             <p class="fs-14 text-muted">Level: {{ task.level }}</p>
                                             <p class="fs-14 text-muted">Created: {{ task.created_at }}</p>
                                             <p class="fs-14 text-muted">Completed: {{ task.completed_at }}</p>
-                                             
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -121,195 +123,22 @@
                                 </div>
                             </div>
                         </div>
-                  
+                    
                 </div>
                 {% endfor %}
                 
             </div>
         </div>
     </div>
-    <div class="overlay" ></div>   
- <!--<script src="{% static '/libs/chart.js/Chart.bundle.min.js' %}"></script> -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>   
-    <script type="application/json" id="statusCounts">
-        {{ status_counts|json_script:"statusCounts" }}
-    </script>
-    
-    <script type="application/json" id="categoryCounts">
-        {{ category_counts|json_script:"categoryCounts" }}
-    </script>
-    
-    <div class="row">
-        <div class="col-12 col-md-12">
-            <!-- PROJECTS CHART -->
-            <div class="box f-height">
-                <div class="box-header d-flex justify-content-between">
-                    <h3 class="mt-9 fs-22">Project Status</h3>                
-                </div>
-                <div class="box-body pt-20">
-                    <canvas id="project-status-chart" width="100" height="100"></canvas>
-                </div>
-            </div>
-            <!-- END PROJECTS CHART -->
-        </div>
-        <div class="col-12 col-md-12">
-            <div class="box">
-                <div class="box-header">
-                    <div class="me-auto">
-                        <h4 class="card-title fs-22">Main Categories</h4>
-                        <p class="fs-14 mt-4">Distribution of projects by main category</p>
-                    </div>
-                </div>
-                <div class="box-body pt-0">
-                    <div class="row">
-                        <div class="canvas-container">
-                            <canvas id="category-chart" class="chartjs" width="100" height="100"></canvas>
-                            <div class="chart-data" id="category-data">
-                                <!-- This will be populated dynamically -->
-                            </div>
-                        </div>
-                    </div>
-                </div>    
-            </div>
-        </div>
-    </div> 
- 
-  
-<script type="application/json" id="statusCounts">
-    {{ status_counts|json_script:"statusCounts" }}
-</script>
+    <!--Recent Business Update-->
 
-<script type="application/json" id="categoryCounts">
-    {{ category_counts|json_script:"categoryCounts" }}
-</script>
-  
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    try {
-        // Retrieve the script elements
-        const statusCountsElement = document.getElementById('statusCounts');
-        const categoryCountsElement = document.getElementById('categoryCounts');
-
-        // Check if both elements exist
-        if (statusCountsElement && categoryCountsElement) {
-            // Read the contents of the <script> tag and parse it as JSON
-            const statusCounts = JSON.parse(statusCountsElement.textContent);
-            const categoryCounts = JSON.parse(categoryCountsElement.textContent);
-
-            console.log("Status Counts:", statusCounts);
-            console.log("Category Counts:", categoryCounts);
-            console.log("Raw statusCounts:", statusCountsElement.textContent);
-            console.log("Raw categoryCounts:", categoryCountsElement.textContent);
-
-            } else {
-                console.error("One or both of the data elements (#statusCounts, #categoryCounts) are missing.");
-            }
-        } catch (error) {
-            console.error("Error parsing JSON data:", error);
-        }
-
-
-        // Ensure statusCounts is populated
-        const statusChartData = [
-            statusCounts.COMPLETED || 0,
-            statusCounts.IN_PROGRESS || 0,
-            statusCounts.FAILED || 0,
-            statusCounts.TRANSLATED || 0,
-            statusCounts.PENDING || 0
-        ];
-
-        // Setup and render the Project Status Chart
-        try {
-            const statusCtx = document.getElementById('project-status-chart').getContext('2d');
-            const statusChart = new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Completed', 'In Progress', 'Failed', 'Translated', 'Pending'],
-                    datasets: [{
-                        data: statusChartData,
-                        backgroundColor: ['#00BC8B', '#FFB800', '#FF0000', '#3C21F7', '#3C2655']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                        position: 'bottom',
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Error creating status chart:", error);
-        }
-
-        // Ensure categoryCounts is available and properly formatted
-        const categoryData = Object.keys(categoryCounts).map((key) => ({
-            value: categoryCounts[key].count || 0,
-            color: getRandomColor(),
-            label: categoryCounts[key].main_category || "Uncategorized"
-        }));
-
-        // Prepare and render Main Category Chart
-        try {
-            const categoryCtx = document.getElementById('category-chart').getContext('2d');
-            const categoryChart = new Chart(categoryCtx, {
-                type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: categoryData.map(item => item.value),
-                        backgroundColor: categoryData.map(item => item.color)
-                    }],
-                    labels: categoryData.map(item => item.label)
-                },
-                options: {
-                    responsive: true,
-                    legend: {
-                        position: 'bottom',
-                    }
-                }
-            });
-        } catch (error) {
-            console.error("Error creating category chart:", error);
-        }
-
-        // Populate category list and append to DOM
-        const categoryList = document.getElementById('category-list');
-        const categoryDataDiv = document.getElementById('category-data');
-        const totalProjects = categoryData.reduce((sum, item) => sum + item.value, 0);
-
-        categoryData.forEach(function(category) {
-            const percentage = ((category.value / totalProjects) * 100).toFixed(2);
-
-            const li = document.createElement('li');
-            li.innerHTML = `<span class="square" style="background-color: ${category.color}"></span>${category.label}<span>${percentage}%</span>`;
-            categoryList.appendChild(li);
-
-            const div = document.createElement('div');
-            div.setAttribute('data-percent', percentage);
-            div.setAttribute('data-color', category.color);
-            div.setAttribute('data-label', category.label);
-            categoryDataDiv.appendChild(div);
-        });
-
-        // Function to generate random colors for the chart
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
-    });
-</script>
- 
-</div>
- 
-<div class="box">
+    <!--Recent Activity-->
+    <div class="box">
     <div class="box-header pt-0">
         <div class="me-auto">
             <h4 class="card-title mb-0 fs-22" id="scraped-list">Recent Activity</h4>
         </div>
- 
+
     </div>
     <div class="box-body pb-0 table-responsive activity mt-18">
         <div class="box-body pb-0 table-responsive activity mt-18">
@@ -333,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </td>
                         <td>{{ task.created_at|date:"d-m-Y" }}</td>
                         <td>{{ task.deadline|date:"d-m-Y" }}</td>
-              
+                
                         <td>
                             <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% elif task.status == 'TRANSLATED' %} badge-success {% endif %}">
                                 {{ task.get_status_display }}
@@ -424,55 +253,60 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             </script>
             
-           <!-- Paginator with Custom Styling -->
-           <div class="pagination">
+            <!-- Paginator with Custom Styling -->
+            <div class="pagination">
             <span class="step-links">
                 {% if page_obj.has_previous %}
                     <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
                     <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
                 {% endif %}
-    
+
                 <span class="current">
                     Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
                 </span>
-    
+
                 {% if page_obj.has_next %}
                     <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
                     <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
                 {% endif %}
             </span>
         </div>
-         <!-- Paginator with Custom Styling -->
+            <!-- Paginator with Custom Styling -->
     </div>
     </div>
- 
-<div class="modal custom-modal fade" id="delete_project" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="form-header">
-                    <h3>Delete Project</h3>
-                    <p>Are you sure you want to delete this project?</p>
-                </div>
-                <div class="modal-btn delete-action">
-                    <div class="row">
-                        <div class="col-6 mb-0">
-                            <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
-                        </div>
-                        <div class="col-6 mb-0">
-                            <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+
+    <div class="modal custom-modal fade" id="delete_project" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="form-header">
+                        <h3>Delete Project</h3>
+                        <p>Are you sure you want to delete this project?</p>
+                    </div>
+                    <div class="modal-btn delete-action">
+                        <div class="row">
+                            <div class="col-6 mb-0">
+                                <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                            </div>
+                            <div class="col-6 mb-0">
+                                <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="overlay"></div>
-</div>
+    </div>
+    <!--Recent Activity-->
 
- </div>
+
+    </div>
+    <!--Total Projects-->
+   
+</div>
+ 
 
 <script>
     $(document).ready(function() {
@@ -484,6 +318,5 @@ document.addEventListener('DOMContentLoaded', function() {
             "info": true,          // Show page info
             "autoWidth": false     // Disable auto width adjustment
         });
-    });
-</script>
+    });</script>
 {% endblock %}
