@@ -82,16 +82,16 @@ DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 
 if DEVELOPMENT_MODE is True:
     DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'automation-240924',
-        'USER': 'postgres',
-        'PASSWORD': 'Thesecret1',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'automation-240924',
+            'USER': 'postgres',
+            'PASSWORD': 'Thesecret1',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
     }
-}
-elif len(sys.argv) > 0 and sys.argv[1] != 'collecstatic':
+elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
     if os.getenv("DATABASE_URL", None) is None:
         raise Exception("DATABASE_URL environment variable not defined")
     DATABASES = {
@@ -142,7 +142,7 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-#DISABLE_COLLECTSTATIC = 1
+#
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
