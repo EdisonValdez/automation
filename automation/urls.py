@@ -32,8 +32,9 @@ urlpatterns = [
     path('update-business-status/<int:business_id>/', views.update_business_status, name='update_business_status'),
     path('admin-view/', views.admin_view, name='admin_view'),
     
-    #path('', views.DashboardView.as_view(), name='dashboard'),    Until I got the deployment!
-    path('', views.health_check, name='health_check'), 
+    path('', views.DashboardView.as_view(), name='dashboard'),     
+    #path('', views.health_check, name='health_check'), 
+    
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
 
