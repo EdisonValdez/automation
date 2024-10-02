@@ -162,7 +162,6 @@
                         </td>
                         <td>{{ task.created_at|date:"d-m-Y" }}</td>
                         <td>{{ task.deadline|date:"d-m-Y" }}</td>
-                
                         <td>
                             <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% elif task.status == 'TRANSLATED' %} badge-success {% endif %}">
                                 {{ task.get_status_display }}
@@ -188,10 +187,12 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6">No tasks found.</td>
+                        <td colspan="5">No tasks found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
+                
+                
             </table>
 
             <script>

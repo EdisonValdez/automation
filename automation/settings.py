@@ -1,30 +1,26 @@
 from pathlib import Path
 import os
-from pathlib import Path
 from dotenv import load_dotenv
 import sys
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
 load_dotenv()
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-#ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost,10.244.34.32').split(',')
+# Allow all hosts for development
 ALLOWED_HOSTS = ['*']
 
+# API keys
 TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
 GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
 SERPAPI_KEY = os.getenv('SERPAPI_KEY')
 
+# Installed apps
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,8 +31,10 @@ INSTALLED_APPS = [
     'automation',
     'django_celery_results',
     'django.contrib.postgres',
+    'storages',  # Required for AWS S3
 ]
 
+# Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -47,12 +45,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# Root URLs and Templates
 ROOT_URLCONF = 'automation.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],  
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,19 +63,18 @@ TEMPLATES = [
         },
     },
 ]
- 
+
 WSGI_APPLICATION = 'automation.wsgi.application'
+
+# Channels setup
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer'
     }
 }
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+# Database configuration
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
-
 
 if DEVELOPMENT_MODE is True:
     DATABASES = {
@@ -94,14 +91,10 @@ elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
     if os.getenv("DATABASE_URL", None) is None:
         raise Exception("DATABASE_URL environment variable not defined")
     DATABASES = {
-        "default": dj_database_url.parse(os.environ.get("DATABASE_URL"), conn_max_age=600, ssl_require=True)
+        "default": dj_database_url.parse(os.getenv("DATABASE_URL"), conn_max_age=600, ssl_require=True)
     }
 
-  
- 
 # Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -117,39 +110,40 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
+# Static files and media files setup
+STATIC_URL = '/static/'  # Keep this for local development
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Local static files root
+
+# AWS S3 Configuration for static and media files
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = 'localsecrets'
+AWS_S3_REGION_NAME = 'us-east-1'  # Change to your bucket region
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+# Static files storage with S3
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'  # Use this for production
+
+# Media files storage with S3
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
+# S3 settings
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_DEFAULT_ACL = 'public-read'
+AWS_LOCATION = 'static'
 
-STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
- 
-#
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# settings.py
-
+# Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -177,7 +171,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'automation': {   
+        'automation': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': True,
@@ -185,32 +179,10 @@ LOGGING = {
     },
 }
 
+# Authentication model
 AUTH_USER_MODEL = 'automation.CustomUser'
 
-
-MEDIA_URL = '/media/'
+# Media upload settings
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
-# File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
-FILE_UPLOAD_PERMISSIONS = 0o644  # Correct octal format for file permissions
-
-
-AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME=os.environ.get('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME=os.environ.get('AWS_S3_REGION_NAME')
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-
-
-# Configuraciones adicionales
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-AWS_DEFAULT_ACL = 'public-read'
-AWS_LOCATION = 'static'
-
-# Para usar S3 como almacenamiento de archivos estáticos
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+FILE_UPLOAD_PERMISSIONS = 0o644
