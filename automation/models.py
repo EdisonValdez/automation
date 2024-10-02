@@ -6,7 +6,7 @@ import logging
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import JSONField
 from django.conf import settings
-
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +25,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(mobile, password, **extra_fields)
 
-from django.db import models
-from django.contrib.auth import get_user_model
+
 
 class Destination(models.Model):
     name = models.CharField(max_length=100)
