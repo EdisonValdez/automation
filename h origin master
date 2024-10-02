@@ -1,0 +1,24 @@
+[33mcommit 8b27b72bfb4792e2f71b4253a96a744098148ebb[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m)[m
+Merge: be41206c 172688dc
+Author: EdisonValdez <eddynvg@hotmail.com>
+Date:   Wed Oct 2 12:07:20 2024 +0200
+
+    Merge branch 'master' of https://github.com/EdisonValdez/automation
+
+[33mcommit be41206c4c063537382fef7d9c7ddd8c7ee41630[m
+Author: EdisonValdez <eddynvg@hotmail.com>
+Date:   Wed Oct 2 12:03:02 2024 +0200
+
+    Datatables
+
+[33mcommit 5d61a9b9557915c17e70b41a75458ca8a67d6000[m
+Author: EdisonValdez <eddynvg@hotmail.com>
+Date:   Tue Oct 1 22:26:42 2024 +0200
+
+    sALLOWEDHOST*
+
+[33mcommit 368f5a390ea7c590d991b8f8d2bac65c583528ef[m
+Author: EdisonValdez <eddynvg@hotmail.com>
+Date:   Tue Oct 1 22:22:46 2024 +0200
+
+    settings.py

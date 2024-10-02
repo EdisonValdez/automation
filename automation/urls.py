@@ -34,10 +34,6 @@ urlpatterns = [
     
     path('', views.DashboardView.as_view(), name='dashboard'),     
     #path('', views.health_check, name='health_check'), 
-<<<<<<< HEAD
-    
-=======
->>>>>>> 172688dc58efc568c0e335213e8b5d2f87689699
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
 
