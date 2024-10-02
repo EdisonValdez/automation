@@ -860,12 +860,20 @@ def ambassador_profile(request, ambassador_id):
     ambassador = get_object_or_404(UserRole, id=ambassador_id, role='AMBASSADOR')
     return render(request, 'ambassador_profile.html', {'ambassador': ambassador})
 
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def create_destination(request):
     if request.method == 'POST':
         form = DestinationForm(request.POST)
         if form.is_valid():
+            # Check if destination already exists
+            if Destination.objects.filter(name=form.cleaned_data['name'], country=form.cleaned_data['country']).exists():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': "This destination already exists."
+                }, status=400)
+
             destination = form.save()
             return JsonResponse({
                 'status': 'success',
@@ -883,6 +891,7 @@ def create_destination(request):
     else:
         form = DestinationForm()
         return render(request, 'automation/create_destination.html', {'form': form})
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())

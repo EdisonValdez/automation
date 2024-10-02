@@ -63,6 +63,7 @@
                 })
                 .catch(error => {
                     createBtn.disabled = false;
+                    console.error('Fetch Error:', error); 
                     messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Please try again.</div>`;
                     console.error('Error:', error);
                 });

@@ -351,7 +351,7 @@ $('#destinationForm').on('submit', function(event) {
 });
 
 </script>
-                
+               
 <script>
     document.getElementById('searchForm').addEventListener('submit', function(event) {
         event.preventDefault();  // Prevents the default form submission behavior
@@ -418,5 +418,62 @@ $('#destinationForm').on('submit', function(event) {
 
     });
 </script>
- 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageDiv = document.getElementById('message'); // Assuming you have a message div to show messages
+
+        // Add event listener for delete buttons
+        document.querySelectorAll('.deleteDestinationBtn').forEach(function(btn) {
+            btn.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default anchor behavior
+
+                const destinationId = this.getAttribute('data-id');
+
+                // Confirm deletion
+                if (confirm("Are you sure you want to delete this destination?")) {
+                    fetch(`/destinations/${destinationId}/delete`, {  // Use your URL path for deletion
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCookie('csrftoken'), // CSRF token for safety
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                            // Optionally, remove the deleted item from the UI
+                            // For example, you can find the parent element and remove it
+                            btn.closest('li').remove(); // Remove the parent <li> of the button
+                        } else {
+                            messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred while deleting. Please try again.</div>`;
+                    });
+                }
+            });
+        });
+
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Check if this cookie string begins with the desired name
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+
 {% endblock %}
