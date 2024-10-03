@@ -24,9 +24,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(mobile, password, **extra_fields)
-
-
-
+ 
 class Destination(models.Model):
     name = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
@@ -39,9 +37,7 @@ class Destination(models.Model):
         User = get_user_model()
         # Assuming 'ambassador' is a role or attribute on the user model
         return User.objects.filter(destinations=self, roles__role='AMBASSADOR').count()
-
-    
-
+ 
 class CustomUser(AbstractUser):
     mobile = models.CharField(max_length=15, blank=True, null=True)
     destinations = models.ManyToManyField(Destination, blank=True)
@@ -85,8 +81,7 @@ class UserRole(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
-
-
+  
 class Level(models.Model):
     id = models.AutoField(primary_key=True)  # Use AutoField for automatic ID assignment
     title = models.CharField(max_length=100)
@@ -102,7 +97,6 @@ class Category(models.Model):
 
     def __str__(self):
         return self.title
-
     
 class Subcategory(models.Model):
     id = models.AutoField(primary_key=True)
@@ -111,8 +105,7 @@ class Subcategory(models.Model):
 
     def __str__(self):
         return self.title
-
-    
+ 
 class ScrapingTask(models.Model):
     project_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     project_title = models.CharField(max_length=255)
@@ -140,7 +133,6 @@ class ScrapingTask(models.Model):
             logger.info(f"Updating ScrapingTask {self.id}, new status: {self.status}")
         super().save(*args, **kwargs)
  
-
 class Business(models.Model):
     STATUS_CHOICES = [
         ('DISCARDED', 'Discarded'),
@@ -219,8 +211,7 @@ class BusinessCategory(models.Model):
 
     def __str__(self):
         return self.name
-
-
+ 
 class OpeningHours(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='opening_hours')
     day = models.CharField(max_length=10)
@@ -264,8 +255,7 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review for {self.business.title} by {self.author_name}"
-
-
+ 
 class BusinessImage(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='business_images')
     local_path = models.CharField(max_length=255, blank=True)

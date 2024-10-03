@@ -176,7 +176,9 @@ class ScrapingTaskForm(forms.ModelForm):
 
         return instance
 
-
+class CsvImportForm(forms.Form):
+    csv_upload = forms.FileField(label='Select a CSV file')
+     
 class BusinessForm(forms.ModelForm):
     class Meta:
         model = Business

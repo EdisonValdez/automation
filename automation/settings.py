@@ -74,7 +74,7 @@ CHANNEL_LAYERS = {
 }
 
 # Database configuration
-DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
+DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "false"
 
 if DEVELOPMENT_MODE is True:
     DATABASES = {
@@ -94,6 +94,7 @@ elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
         "default": dj_database_url.parse(os.getenv("DATABASE_URL"), conn_max_age=600, ssl_require=True)
     }
 
+ 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {

@@ -1,9 +1,18 @@
+import csv
+import logging
+from io import StringIO
 from django.contrib import admin
-from .models import (
-    Destination, ScrapingTask, Business, Category, Subcategory, OpeningHours, 
-    AdditionalInfo, Image, CustomUser, BusinessCategory, Review, UserRole, Level
-)
+from django.urls import path
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.db import transaction
+from django import forms
+from .models import CustomUser, UserRole, Destination, Business, BusinessCategory, OpeningHours, AdditionalInfo, Image, Review, ScrapingTask, Category, Subcategory, Level
 
+logger = logging.getLogger(__name__)
+
+class CsvImportForm(forms.Form):
+    csv_upload = forms.FileField()
 
 # UserRole Inline for CustomUser
 class UserRoleInline(admin.TabularInline):
@@ -11,52 +20,37 @@ class UserRoleInline(admin.TabularInline):
     extra = 1
     filter_horizontal = ('destinations',)
 
-
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('username', 'mobile', 'is_admin', 'is_ambassador')
     search_fields = ('username', 'mobile')
     inlines = [UserRoleInline]
 
-
-# Destination Admin
 @admin.register(Destination)
 class DestinationAdmin(admin.ModelAdmin):
     list_display = ('name', 'country')
     search_fields = ('name', 'country')
 
-
-# Business Category Inline
 class CategoryInline(admin.TabularInline):
-    model = BusinessCategory  # Use BusinessCategory with ForeignKey to Business
+    model = BusinessCategory
     extra = 1
 
-
-# Opening Hours Inline
 class OpeningHoursInline(admin.TabularInline):
     model = OpeningHours
     extra = 0
 
-
-# Additional Info Inline
 class AdditionalInfoInline(admin.TabularInline):
     model = AdditionalInfo
     extra = 0
 
-
-# Image Inline
 class ImageInline(admin.TabularInline):
     model = Image
     extra = 0
 
-
-# Review Inline
 class ReviewInline(admin.TabularInline):
     model = Review
     extra = 0
 
-
-# Business Admin
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
     list_display = ('title', 'category_name', 'status', 'task', 'scraped_at')
@@ -65,8 +59,6 @@ class BusinessAdmin(admin.ModelAdmin):
     readonly_fields = ('scraped_at',)
     inlines = [CategoryInline, OpeningHoursInline, AdditionalInfoInline, ImageInline, ReviewInline]
 
-
-# Scraping Task Admin
 @admin.register(ScrapingTask)
 class ScrapingTaskAdmin(admin.ModelAdmin):
     list_display = ('project_title', 'main_category', 'tailored_category', 'status', 'created_at', 'completed_at')
@@ -74,27 +66,114 @@ class ScrapingTaskAdmin(admin.ModelAdmin):
     search_fields = ('project_title', 'main_category', 'tailored_category')
     readonly_fields = ('created_at', 'completed_at', 'status')
 
+class BaseCsvImportAdmin(admin.ModelAdmin):
+    change_list_template = "admin/change_list_with_import.html"
 
-# Category Admin
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('import-csv/', self.admin_site.admin_view(self.import_csv), name=f'automation_{self.model._meta.model_name}_import_csv'),
+        ]
+        return custom_urls + urls
+
+
+    def import_csv(self, request):
+        if request.method == "POST":
+            form = CsvImportForm(request.POST, request.FILES)
+            if form.is_valid():
+                csv_file = form.cleaned_data['csv_upload']
+                if not csv_file.name.endswith('.csv'):
+                    messages.error(request, 'Invalid file type. Please upload a CSV file.')
+                    return redirect('..')
+
+                try:
+                    decoded_file = csv_file.read().decode('utf-8')
+                    io_string = StringIO(decoded_file)
+                    reader = csv.DictReader(io_string)
+
+                    with transaction.atomic():
+                        created_count = 0
+                        updated_count = 0
+                        error_count = 0
+
+                        for row in reader:
+                            try:
+                                created = self.process_row(row)
+                                if created:
+                                    created_count += 1
+                                else:
+                                    updated_count += 1
+                            except Exception as e:
+                                logger.error(f"Error processing row {row}: {str(e)}")
+                                error_count += 1
+
+                    messages.success(request, f'CSV data uploaded successfully. Created: {created_count}, Updated: {updated_count}, Errors: {error_count}')
+                    logger.info(f'CSV upload successful. Created: {created_count}, Updated: {updated_count}, Errors: {error_count}')
+
+                except Exception as e:
+                    messages.error(request, f"Error uploading CSV: {str(e)}")
+                    logger.exception("Error during CSV upload")
+
+                return redirect("..")
+        else:
+            form = CsvImportForm()
+
+        context = {
+            'form': form,
+            'title': f"Import CSV for {self.model._meta.verbose_name}",
+        }
+        return render(request, "admin/csv_form.html", context)
+
+    def process_row(self, row):
+        raise NotImplementedError("Subclasses must implement this method")
+
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'value', 'level')
+class CategoryAdmin(BaseCsvImportAdmin):
+    list_display = ('title', 'level', 'value')
     search_fields = ('title', 'value')
 
+    def process_row(self, row):
+        if 'title' not in row or 'value' not in row or 'level' not in row:
+            raise KeyError("Missing required fields in CSV")
 
-# Subcategory Admin
+        level = Level.objects.get(id=row['level'])
+        category, created = Category.objects.update_or_create(
+            title=row['title'],
+            defaults={'value': row['value'], 'level': level}
+        )
+        return created
+
 @admin.register(Subcategory)
-class SubcategoryAdmin(admin.ModelAdmin):
+class SubcategoryAdmin(BaseCsvImportAdmin):
     list_display = ('title', 'category')
     search_fields = ('title',)
     list_filter = ('category',)
 
+    def process_row(self, row):
+        if 'title' not in row or 'category' not in row:
+            raise KeyError("Missing required fields in CSV")
 
-# Level Admin
+        category = Category.objects.get(id=row['category'])
+        subcategory, created = Subcategory.objects.update_or_create(
+            title=row['title'],
+            defaults={'category': category}
+        )
+        return created
+
 @admin.register(Level)
-class LevelAdmin(admin.ModelAdmin):
+class LevelAdmin(BaseCsvImportAdmin):
     list_display = ('title',)
     search_fields = ('title',)
+
+    def process_row(self, row):
+        if 'ID' not in row or 'Title' not in row:
+            raise KeyError("Missing required fields in CSV")
+
+        level, created = Level.objects.update_or_create(
+            id=row['ID'],
+            defaults={'title': row['Title']}
+        )
+        return created
 
 
 # Register the rest of the models
