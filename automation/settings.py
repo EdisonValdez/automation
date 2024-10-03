@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'false'
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 # Allow all hosts for development
 ALLOWED_HOSTS = ['*']
@@ -94,6 +94,7 @@ elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
         "default": dj_database_url.parse(os.getenv("DATABASE_URL"), conn_max_age=600, ssl_require=True)
     }
 
+ 
  
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

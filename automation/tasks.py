@@ -48,7 +48,6 @@ import pycountry
 from doctran import Doctran
 from asgiref.sync import sync_to_async
 import re
-
 from requests.exceptions import RequestException
 import unicodedata
 import boto3
@@ -61,6 +60,17 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 doctran = Doctran(openai_api_key=OPENAI_API_KEY)
+ 
+def read_queries(file_path):
+    logger.info(f"Reading queries from file: {file_path}")
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            queries = [line.strip() for line in file if line.strip()]
+        logger.info(f"Successfully read {len(queries)} queries from file")
+        return queries
+    except Exception as e:
+        logger.error(f"Error reading queries from file {file_path}: {str(e)}", exc_info=True)
+        return []
 
 def process_scraping_task(task_id):
     log_file_path = get_log_file_path(task_id)
@@ -72,16 +82,10 @@ def process_scraping_task(task_id):
     task.status = 'IN_PROGRESS'
     task.save()
 
-    # Configure S3 client
-    try:
-        s3 = boto3.client('s3')
-        bucket_name = 'localsecrets'
-        logger.info("S3 client configured successfully")
-    except Exception as e:
-        logger.error(f"Failed to configure S3 client: {str(e)}")
-        task.status = 'FAILED'
-        task.save()
-        return
+    # Remove S3 client configuration as it's not needed
+    # Prepare backup directory locally instead
+    backup_directory = os.path.join(settings.MEDIA_ROOT, f"backup_images/{task_id}")
+    os.makedirs(backup_directory, exist_ok=True)
 
     try:
         queries = read_queries(task.file.path)
@@ -102,7 +106,7 @@ def process_scraping_task(task_id):
                 next_page_token = None
                 page_num = 1
                 total_results = 0
-                max_pages = 20
+                max_pages = 100
 
                 while page_num <= max_pages:
                     if next_page_token:
@@ -136,29 +140,24 @@ def process_scraping_task(task_id):
                             
                             logger.info(f"Downloading images for business {business.id}")
                             image_paths = download_images(business, local_result)
-                            
-                            # Upload images to S3                            # Upload images to S3                            # Upload images to S3                            # Upload images to S3
-                            # Upload images to S3                            # Upload images to S3                            # Upload images to S3
+
+                            # Temporarily save images only to the local filesystem
                             for image_path in image_paths:
                                 try:
-                                    s3_key = f"{task_id}/{business.id}/{os.path.basename(image_path)}"
-                                    logger.info(f"Uploading image {image_path} to S3 as {s3_key}")
-                                    s3.upload_file(image_path, bucket_name, s3_key)
-                                    logger.info(f"Image {image_path} uploaded to S3 as {s3_key}")
-                                     
-                                    s3_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
-                                    update_image_url(business, image_path, s3_url)
-                                    
-                                    logger.info(f"Removing temporary file {image_path}")
-                                    os.remove(image_path)
-                                except NoCredentialsError:
-                                    logger.error("AWS credentials not available")
+                                    local_backup_path = os.path.join(backup_directory, os.path.basename(image_path))
+                                    shutil.move(image_path, local_backup_path)
+                                    logger.info(f"Image {image_path} saved locally as {local_backup_path}")
+
+                                    # Update image path in the database
+                                    update_image_url(business, image_path, local_backup_path)
+
                                 except Exception as e:
-                                    logger.error(f"Error uploading {image_path} to S3: {str(e)}")
+                                    logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
+
                         except Exception as e:
                             logger.error(f"Error processing business result {result_index} for query '{query}': {str(e)}")
                             continue
-
+ 
                     total_results += len(local_results)
                     logger.info(f"Processed {len(local_results)} results on page {page_num} for query '{query}'")
 
@@ -187,22 +186,9 @@ def process_scraping_task(task_id):
     finally:
         logger.removeHandler(file_handler)
         file_handler.close()
- 
+
     cleanup_temp_files(task_id)
 
- 
-def read_queries(file_path):
-    logger.info(f"Reading queries from file: {file_path}")
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            queries = [line.strip() for line in file if line.strip()]
-        logger.info(f"Successfully read {len(queries)} queries from file")
-        return queries
-    except Exception as e:
-        logger.error(f"Error reading queries from file {file_path}: {str(e)}", exc_info=True)
-        return []
-
- 
 def cleanup_temp_files(task_id):
     try:
         temp_dir = os.path.join(settings.MEDIA_ROOT, f'temp_images_{task_id}')
@@ -221,47 +207,28 @@ def cleanup_temp_files(task_id):
 
 def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
- 
- 
-def update_image_url(business, local_path, s3_url):
+
+def update_image_url(business, local_path, backup_path):
     """
-    Actualiza la URL de la imagen en la base de datos con la URL de S3.
+    Updates the image URL in the database to point to the local backup path.
     """
     try:
-        image = BusinessImage.objects.get(business=business, local_path=local_path)
-        image.s3_url = s3_url
-        image.local_path = ''  #  limpiar la ruta local si ya no es necesaria
+        image = Image.objects.get(business=business, local_path=local_path)
+        image.local_path = backup_path  # Update to local backup path
         image.save()
-        logger.info(f"URL de imagen actualizada para el negocio {business.id}: {s3_url}")
-    except BusinessImage.DoesNotExist:
-        logger.warning(f"No se encontró la imagen para el negocio {business.id} con ruta local {local_path}")
+        logger.info(f"Local path for image updated for business {business.id}: {backup_path}")
+    except Image.DoesNotExist:
+        logger.warning(f"No Image found for business {business.id} with local path {local_path}")
     except Exception as e:
-        logger.error(f"Error al actualizar la URL de la imagen para el negocio {business.id}: {str(e)}")
-
-
-def save_results(task, results, query):
-    results_dir = os.path.join(settings.MEDIA_ROOT, 'scraping_results', str(task.id))
-    os.makedirs(results_dir, exist_ok=True)
-    file_name = f"{query.replace(' ', '_')}.json"
-    file_path = os.path.join(results_dir, file_name)
-    with open(file_path, 'w') as f:
-        json.dump(results, f)
-    logger.info(f"Saved results for query '{query}' to {file_path}")
-
-def slugify(value):
-    """
-    Convierte una cadena en un slug válido para nombres de archivo.
-    """
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub(r'[^\w\s-]', '', value.lower())
-    return re.sub(r'[-\s]+', '_', value).strip('-_')
+        logger.error(f"Error updating local path for image for business {business.id}: {str(e)}")
 
 def download_images(business, local_result):
     photos_link = local_result.get('photos_link')
     if not photos_link:
         logger.info(f"No photos link found for business {business.id}")
-        return
+        return []
 
+    image_paths = []
     try:
         photos_search = GoogleSearch({
             "api_key": SERPAPI_KEY,
@@ -274,16 +241,15 @@ def download_images(business, local_result):
 
         if 'error' in photos_results:
             logger.error(f"API Error fetching photos for business '{business.title}': {photos_results['error']}")
-            return
+            return image_paths
 
         output_dir = os.path.join(settings.MEDIA_ROOT, 'business_images', str(business.id))
         os.makedirs(output_dir, exist_ok=True)
 
-        # Crear un slug del nombre del negocio
+        # Create a slug of the business name
         business_slug = slugify(business.title)
 
-        # Limit 7 images
-        for i, photo in enumerate(photos_results.get('photos', [])[:7]):
+        for i, photo in enumerate(photos_results.get('photos', [])):
             image_url = photo.get('image')
             if image_url:
                 try:
@@ -291,10 +257,8 @@ def download_images(business, local_result):
                     if response.status_code == 200:
                         img = PILImage.open(BytesIO(response.content))
 
-                        # Calculate the aspect ratio
-                        aspect_ratio = 3 / 2  # 3:2 aspect ratio
-
-                        # Calculate new dimensions
+                        # Calculate and crop to the 3:2 aspect ratio
+                        aspect_ratio = 3 / 2
                         if img.width / img.height > aspect_ratio:
                             new_width = int(img.height * aspect_ratio)
                             new_height = img.height
@@ -302,7 +266,6 @@ def download_images(business, local_result):
                             new_width = img.width
                             new_height = int(img.width / aspect_ratio)
 
-                        # Crop the image to 3:2
                         left = (img.width - new_width) / 2
                         top = (img.height - new_height) / 2
                         right = (img.width + new_width) / 2
@@ -321,6 +284,7 @@ def download_images(business, local_result):
                             local_path=local_path,
                             order=i
                         )
+                        image_paths.append(file_path)
                         logger.info(f"Downloaded and processed image {i} for business {business.id}")
 
                     else:
@@ -339,6 +303,25 @@ def download_images(business, local_result):
 
     except Exception as e:
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
+
+    return image_paths
+
+def save_results(task, results, query):
+    results_dir = os.path.join(settings.MEDIA_ROOT, 'scraping_results', str(task.id))
+    os.makedirs(results_dir, exist_ok=True)
+    file_name = f"{query.replace(' ', '_')}.json"
+    file_path = os.path.join(results_dir, file_name)
+    with open(file_path, 'w') as f:
+        json.dump(results, f)
+    logger.info(f"Saved results for query '{query}' to {file_path}")
+
+def slugify(value):
+    """
+    Convierte una cadena en un slug válido para nombres de archivo.
+    """
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    return re.sub(r'[-\s]+', '_', value).strip('-_')
 
 async def translate_text(text, language="spanish"):
     if text and text.strip():
@@ -554,7 +537,6 @@ def save_business(task, local_result, query):
             'project_id': task.project_id,
             'project_title': task.project_title,
             'main_category': task.main_category,
-            'subcategory': task.subcategory,
             'tailored_category': task.tailored_category,
             'search_string': query,
             'scraped_at': timezone.now(),
@@ -573,13 +555,15 @@ def save_business(task, local_result, query):
             'address': 'address',
             'phone': 'phone',
             'website': 'website',
-            'description': 'description', 
+            'description': 'description',
             'thumbnail': 'thumbnail',
         }
 
         for api_field, model_field in field_mapping.items():
-            if api_field in local_result:
+            if local_result.get(api_field) is not None:
                 business_data[model_field] = local_result[api_field]
+            else:
+                logger.warning(f"Missing expected field '{api_field}' in local result")
 
         if 'gps_coordinates' in local_result:
             business_data['latitude'] = local_result['gps_coordinates'].get('latitude')
@@ -663,8 +647,8 @@ def save_business(task, local_result, query):
         logger.info(f"Additional data saved for business {business.id}")
         
         # Queue translation task
-        enhance_translate_and_summarize_business(business.id)
-        logger.info(f"Translation task queued for business {business.id}")
+        #enhance_translate_and_summarize_business(business.id)
+        #logger.info(f"Translation task queued for business {business.id}")
 
         # Handle service options
         service_options = local_result.get('serviceOptions', {})
@@ -678,7 +662,6 @@ def save_business(task, local_result, query):
     except Exception as e:
         logger.error(f"Error saving business data for task {task.id}: {str(e)}", exc_info=True)
         raise
-
 
 @sync_to_async
 def get_categories(business):
@@ -730,8 +713,7 @@ def cleanup_old_tasks():
             logger.info(f"Deleted old task: {task.id}")
         except Exception as e:
             logger.error(f"Error deleting old task {task.id}: {str(e)}", exc_info=True)
-
-
+ 
 def update_task_status():
     """
     Update the status of tasks based on their progress
@@ -754,8 +736,7 @@ def update_task_status():
                 logger.info(f"Updated status for task {task.id}: Progress {progress}%")
         except Exception as e:
             logger.error(f"Error updating status for task {task.id}: {str(e)}", exc_info=True)
-
-
+ 
 def get_business_status(business):
     """
     Determine the status of a business based on its attributes
@@ -768,8 +749,7 @@ def get_business_status(business):
         return 'UNCLAIMED'
     else:
         return 'ACTIVE'
-
-
+ 
 def update_business_statuses():
     """
     Update the status of all businesses
@@ -784,8 +764,7 @@ def update_business_statuses():
                 logger.info(f"Updated status for business {business.id} to {new_status}")
         except Exception as e:
             logger.error(f"Error updating status for business {business.id}: {str(e)}", exc_info=True)
-
-
+ 
 def calculate_business_score(business):
     """
     Calculate a score for a business based on various factors
@@ -807,8 +786,7 @@ def calculate_business_score(business):
         score += 25  # 25 points for having a phone number
 
     return min(score, 300)  # Cap the score at 300
-
-
+ 
 def update_business_scores():
     """
     Update the scores of all businesses
@@ -823,13 +801,10 @@ def update_business_scores():
                 logger.info(f"Updated score for business {business.id} to {new_score}")
         except Exception as e:
             logger.error(f"Error updating score for business {business.id}: {str(e)}", exc_info=True)
-
-
-# Utility function to get the next page token for pagination
+  
 def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
-
-
+ 
 def process_next_page(task_id, query, next_page_token):
     """
     Process the next page of results for a given query
@@ -874,8 +849,7 @@ def process_next_page(task_id, query, next_page_token):
 
     except Exception as e:
         logger.error(f"Error processing next page for task {task_id}, query '{query}': {str(e)}", exc_info=True)
-
-
+ 
 def update_business_details(business_id):
     """
     Update details for a specific business using the Google Maps Place Details API
@@ -923,8 +897,7 @@ def update_business_details(business_id):
         logger.error(f"Business with id {business_id} not found")
     except Exception as e:
         logger.error(f"Error updating details for business {business_id}: {str(e)}", exc_info=True)
-
-
+ 
 def update_all_business_details():
     """
     Update details for all businesses
@@ -990,8 +963,7 @@ def parse_review_time(date_string):
     except ValueError:
         logger.error(f"Error parsing date: {date_string}")
         return None
-
-
+ 
 def process_all_business_reviews():
     """
     Process reviews for all businesses
@@ -1000,8 +972,7 @@ def process_all_business_reviews():
     for business in businesses:
         process_business_reviews(business.id)
         time.sleep(1)  # Add a small delay to avoid overwhelming the API
-
-
+ 
 def update_business_rankings(task_id):
     """
     Update rankings for businesses within a specific task
@@ -1020,8 +991,7 @@ def update_business_rankings(task_id):
         logger.error(f"Task with id {task_id} not found")
     except Exception as e:
         logger.error(f"Error updating rankings for task {task_id}: {str(e)}", exc_info=True)
-
-
+ 
 def update_all_task_rankings():
     """
     Update rankings for all tasks
@@ -1029,8 +999,7 @@ def update_all_task_rankings():
     tasks = ScrapingTask.objects.all()
     for task in tasks:
         update_business_rankings(task.id)
-
-
+ 
 def generate_task_report(task_id):
     """
     Generate a report for a specific task
@@ -1103,8 +1072,7 @@ def generate_all_task_reports():
     tasks = ScrapingTask.objects.filter(status='COMPLETED', report_file__isnull=True)
     for task in tasks:
         generate_task_report(task.id)
-
-
+ 
 def send_task_completion_email(task_id):
     """
     Send an email notification when a task is completed

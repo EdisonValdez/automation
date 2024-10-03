@@ -297,8 +297,45 @@
     <!-- END MAIN CONTENT -->
 
     <div class="overlay"></div>
-
+    <div id="scraping-status" style="display: none;">
+        <p id="status-message">Business data is in progress. Please wait...</p>
+    </div>
+    
     <!-- SCRIPT -->
+     
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    {{ task_id }}  {% if task_id %}   
+    <script>     
+        const taskId = "{{ task_id }}";
+        function checkTaskStatus() {
+            $.ajax({
+                url: "{% url 'check_task_status' task_id=taskId %}",
+                method: 'GET',
+                success: function(response) {
+                    if (response.status === 'IN_PROGRESS') {
+                        $('#scraping-status').show();
+                        $('#status-message').text('Scraping is in progress. Please wait...');
+                    } else if (response.status === 'COMPLETED') {
+                        $('#scraping-status').hide();
+                        alert('Scraping completed successfully!');
+                    } else if (response.status === 'FAILED') {
+                        $('#scraping-status').hide();
+                        alert('Scraping failed. Please try again later.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error checking task status:', error);
+                    $('#scraping-status').hide();
+                }
+            });
+        }
+    
+        setInterval(checkTaskStatus, 5000);
+   
+    </script>
+         {% endif %}
+
     <!-- APEX CHART 
  
     <script src="{% static '/libs/jquery/jquery.min.js' %}"></script>

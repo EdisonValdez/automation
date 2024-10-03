@@ -140,7 +140,7 @@ class UploadFileView(View):
             task.save()
             try:
                 # Pass the task_id to the process_scraping_task function
-                process_scraping_task(self, task_id=task.id)
+                process_scraping_task(task_id=task.id)
                 logger.info(f"Scraping task {task.id} created and queued, project ID: {task.project_id}")
                 return JsonResponse({
                     'status': 'success',
@@ -248,8 +248,7 @@ def ambassador_view(request):
     destination = request.user.destination
     businesses = Business.objects.filter(city=destination)
     return render(request, 'automation/ambassador_template.html', {'businesses': businesses})
-
-
+ 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.roles.filter(role='AMBASSADOR').exists()), name='dispatch')
 class AmbassadorDashboardView(View):
@@ -281,7 +280,6 @@ class AmbassadorDashboardView(View):
         }
 
         return render(request, 'automation/ambassador_dashboard.html', context)
-    
    
 @csrf_exempt
 @login_required
@@ -306,8 +304,7 @@ def update_image_order(request, business_id):
             return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
-
-
+ 
 @login_required
 def delete_image(request, image_id):
     image = get_object_or_404(Image, id=image_id)
@@ -637,7 +634,6 @@ def business_detail(request, business_id):
         'status_choices': status_choices
     }
     return render(request, 'automation/business_detail.html', context)
-
  
 @csrf_protect
 def update_business(request, business_id):
@@ -687,8 +683,7 @@ def update_business(request, business_id):
             return JsonResponse({'success': False, 'errors': form.errors})
     
     return redirect('business_detail', business_id=business_id)
-
-
+ 
 @csrf_exempt
 def update_business_hours(request):
     if request.method == 'POST':
@@ -711,8 +706,7 @@ def update_business_hours(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
-
- 
+  
 @require_POST
 @csrf_exempt  
 def update_image_status(request):
@@ -738,8 +732,7 @@ def update_image_status(request):
     except json.JSONDecodeError as e:
         logger.error(f'JSON decode error: {e}')
         return JsonResponse({'success': False, 'error': 'Invalid JSON'})
-
-
+ 
 @user_passes_test(is_admin)
 def delete_business(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -808,9 +801,7 @@ def get_destination(request, destination_id):
         'country': destination.country
     }
     return JsonResponse(data)
-
-
-
+ 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def destination_detail(request, destination_id):
@@ -860,7 +851,6 @@ def ambassador_profile(request, ambassador_id):
     ambassador = get_object_or_404(UserRole, id=ambassador_id, role='AMBASSADOR')
     return render(request, 'ambassador_profile.html', {'ambassador': ambassador})
 
-
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def create_destination(request):
@@ -891,8 +881,7 @@ def create_destination(request):
     else:
         form = DestinationForm()
         return render(request, 'automation/create_destination.html', {'form': form})
-
-
+ 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def edit_destination(request):
@@ -996,7 +985,6 @@ def get_ambassador_businesses(user):
         return Business.objects.none()
 
     return Business.objects.filter(destination__in=ambassador_destinations).select_related('destination')
-
  
 def ambassador_businesses_view(request):
     if not request.user.is_ambassador:
@@ -1046,8 +1034,8 @@ def custom_404_view(request, exception=None):
 def save_business_from_results(task, results, query):
     for local_result in results.get('local_results', []):
         business = save_business(task, local_result, query)
-        enhance_and_translate_description(business)
-        translate_business_info_sync(business)
+        #enhance_and_translate_description(business)
+        #translate_business_info_sync(business)
         download_images(business, local_result)
 
 @require_GET
@@ -1308,7 +1296,14 @@ class UploadScrapingResultsView(View):
 def task_status(request, task_id):
     task = ScrapingTask.objects.get(id=task_id)
     return render(request, 'automation/task_status.html', {'task': task})
- 
+
+
+def check_task_status(request, task_id):
+    try:
+        task = ScrapingTask.objects.get(id=task_id)
+        return JsonResponse({'status': task.status})
+    except ScrapingTask.DoesNotExist:
+        return JsonResponse({'status': 'UNKNOWN'}, status=404)
 
 @login_required
 @require_GET

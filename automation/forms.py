@@ -3,9 +3,6 @@ import logging
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import CustomUser, Business, Destination, ScrapingTask, UserRole, Category, Subcategory, Level
-
-
-
 logger = logging.getLogger(__name__)
 
 class UserProfileForm(forms.ModelForm):
@@ -110,17 +107,6 @@ class ScrapingTaskForm(forms.ModelForm):
         required=False,
         empty_label="Select a subcategory (optional)"
     )
-   # num_images = forms.ChoiceField(
-     #   choices=[
-       #     (0, '0 Images'),
-        #    (3, '3 Images'),
-        #    (7, '7 Images'),
-       #     (12, '12 Images'),
-      #  ],
-       # initial=3,
-      #  widget=forms.Select(attrs={'class': 'form-control'})
-   # )
-
     class Meta:
         model = ScrapingTask
         fields = ['project_title', 'level', 'main_category', 'subcategory', 'description', 'file']
