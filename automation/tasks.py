@@ -4,6 +4,7 @@ import shutil
 import uuid
 from celery import shared_task
 from django.utils import timezone
+from ratelimit import RateLimitException
 from automation.consumers import get_log_file_path
 from .models import BusinessImage, Destination, Review, ScrapingTask, Business, Category, OpeningHours, AdditionalInfo, Image
 from django.conf import settings 
@@ -55,8 +56,12 @@ from botocore.exceptions import NoCredentialsError
 import logging
 import backoff
 from requests.exceptions import RequestException
-from ratelimit import RateLimitException, limits
-from ratelimit.decorators import ratelimit
+import backoff
+import time
+from requests.exceptions import RequestException
+ 
+
+
 SERPAPI_KEY = settings.SERPAPI_KEY   
 OPENAI_API_KEY = openai.api_key =  settings.SERPAPI_KEY 
 
@@ -77,8 +82,31 @@ def read_queries(file_path):
         logger.error(f"Error reading queries from file {file_path}: {str(e)}", exc_info=True)
         return []
 
+# Implementación Manual de Control de Tasa
+def rate_limiter(max_calls, period):
+    def decorator(func):
+        last_reset = [time.time()]
+        call_counts = [0]
+
+        def wrapper(*args, **kwargs):
+            current_time = time.time()
+            if current_time - last_reset[0] > period:
+                last_reset[0] = current_time
+                call_counts[0] = 0
+
+            if call_counts[0] < max_calls:
+                call_counts[0] += 1
+                return func(*args, **kwargs)
+            else:
+                time.sleep(period - (current_time - last_reset[0]))
+                return wrapper(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
 @backoff.on_exception(backoff.expo, RequestException, max_tries=5)
-@ratelimit(key='ip', rate='10/m', block=True)
+@rate_limiter(max_calls=10, period=60)  # 10 llamadas por cada 60 segundos
 def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
