@@ -108,6 +108,7 @@ def update_business_status(request, business_id):
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
 
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
@@ -160,6 +161,7 @@ class UploadFileView(View):
                 'message': "There was an error with your submission. Please check the form.",
                 'errors': form.errors
             })
+
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):

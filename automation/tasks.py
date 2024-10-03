@@ -52,6 +52,11 @@ from requests.exceptions import RequestException
 import unicodedata
 import boto3
 from botocore.exceptions import NoCredentialsError
+import logging
+import backoff
+from requests.exceptions import RequestException
+from ratelimit import RateLimitException, limits
+from ratelimit.decorators import ratelimit
 SERPAPI_KEY = settings.SERPAPI_KEY   
 OPENAI_API_KEY = openai.api_key =  settings.SERPAPI_KEY 
 
@@ -72,6 +77,12 @@ def read_queries(file_path):
         logger.error(f"Error reading queries from file {file_path}: {str(e)}", exc_info=True)
         return []
 
+@backoff.on_exception(backoff.expo, RequestException, max_tries=5)
+@ratelimit(key='ip', rate='10/m', block=True)
+def fetch_search_results(params):
+    search = GoogleSearch(params)
+    return search.get_dict()
+
 def process_scraping_task(task_id):
     log_file_path = get_log_file_path(task_id)
     file_handler = logging.FileHandler(log_file_path)
@@ -82,8 +93,7 @@ def process_scraping_task(task_id):
     task.status = 'IN_PROGRESS'
     task.save()
 
-    # Remove S3 client configuration as it's not needed
-    # Prepare backup directory locally instead
+    # Prepare backup directory locally
     backup_directory = os.path.join(settings.MEDIA_ROOT, f"backup_images/{task_id}")
     os.makedirs(backup_directory, exist_ok=True)
 
@@ -103,76 +113,68 @@ def process_scraping_task(task_id):
                     "hl": "en",
                     "no_cache": "true"
                 }
-                next_page_token = None
-                page_num = 1
-                total_results = 0
-                max_pages = 100
 
-                while page_num <= max_pages:
-                    if next_page_token:
-                        params["next_page_token"] = next_page_token
-                    
-                    logger.info(f"Sending API request for query '{query}', page {page_num}")
+                try:
+                    results = fetch_search_results(params)
+                except RequestException as e:
+                    logger.error(f"Network error while fetching results for query '{query}': {str(e)}")
+                    continue
+                except RateLimitException:
+                    logger.error(f"Rate limit exceeded for query '{query}'")
+                    continue
+                except Exception as e:
+                    logger.error(f"Unexpected error while fetching results for query '{query}': {str(e)}")
+                    continue
+
+                if 'error' in results:
+                    logger.error(f"API error for query '{query}': {results['error']}")
+                    continue
+
+                logger.info(f"Saving results for query '{query}'")
+                save_results(task, results, query)
+
+                local_results = results.get('local_results', [])
+                logger.info(f"Processing {len(local_results)} local results for query '{query}'")
+                for result_index, local_result in enumerate(local_results, start=1):
                     try:
-                        search = GoogleSearch(params)
-                        results = search.get_dict()
-                    except RequestException as e:
-                        logger.error(f"Network error while fetching results for query '{query}', page {page_num}: {str(e)}")
-                        time.sleep(5)  # Wait longer before retrying
-                        continue
+                        logger.info(f"Saving business {result_index}/{len(local_results)} for query '{query}'")
+                        business = save_business(task, local_result, query)
+                        
+                        logger.info(f"Downloading images for business {business.id}")
+                        image_paths = download_images(business, local_result)
+
+                        # Temporarily save images only to the local filesystem
+                        for image_path in image_paths:
+                            try:
+                                local_backup_path = os.path.join(backup_directory, os.path.basename(image_path))
+                                shutil.move(image_path, local_backup_path)
+                                logger.info(f"Image {image_path} saved locally as {local_backup_path}")
+
+                                # Update image path in the database
+                                update_image_url(business, image_path, local_backup_path)
+
+                            except Exception as e:
+                                logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
+
                     except Exception as e:
-                        logger.error(f"Unexpected error while fetching results for query '{query}', page {page_num}: {str(e)}")
-                        break
-
-                    if 'error' in results:
-                        logger.error(f"API error for query '{query}' on page {page_num}: {results['error']}")
-                        break
-
-                    logger.info(f"Saving results for query '{query}', page {page_num}")
-                    save_results(task, results, query)
-
-                    local_results = results.get('local_results', [])
-                    logger.info(f"Processing {len(local_results)} local results for query '{query}', page {page_num}")
-                    for result_index, local_result in enumerate(local_results, start=1):
-                        try:
-                            logger.info(f"Saving business {result_index}/{len(local_results)} for query '{query}', page {page_num}")
-                            business = save_business(task, local_result, query)
-                            
-                            logger.info(f"Downloading images for business {business.id}")
-                            image_paths = download_images(business, local_result)
-
-                            # Temporarily save images only to the local filesystem
-                            for image_path in image_paths:
-                                try:
-                                    local_backup_path = os.path.join(backup_directory, os.path.basename(image_path))
-                                    shutil.move(image_path, local_backup_path)
-                                    logger.info(f"Image {image_path} saved locally as {local_backup_path}")
-
-                                    # Update image path in the database
-                                    update_image_url(business, image_path, local_backup_path)
-
-                                except Exception as e:
-                                    logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
-
-                        except Exception as e:
-                            logger.error(f"Error processing business result {result_index} for query '{query}': {str(e)}")
-                            continue
+                        logger.error(f"Error processing business result {result_index} for query '{query}': {str(e)}")
+                        continue
  
-                    total_results += len(local_results)
-                    logger.info(f"Processed {len(local_results)} results on page {page_num} for query '{query}'")
+                total_results += len(local_results)
+                logger.info(f"Processed {len(local_results)} results on page {page_num} for query '{query}'")
 
-                    next_page_token = get_next_page_token(results)
-                    if not next_page_token:
-                        logger.info(f"No more pages for query '{query}'")
-                        break
+                next_page_token = get_next_page_token(results)
+                if not next_page_token:
+                    logger.info(f"No more pages for query '{query}'")
+                    break
 
-                    page_num += 1
-                    time.sleep(2)
-                logger.info(f"Total results processed for query '{query}': {total_results}")
-
+                page_num += 1
+                time.sleep(2)
             except Exception as e:
                 logger.error(f"Error processing query '{query}': {str(e)}", exc_info=True)
                 continue 
+
+        logger.info(f"Total results processed for query '{query}': {total_results}")
 
         logger.info(f"Scraping task {task_id} completed successfully")
         task.status = 'COMPLETED'
@@ -188,6 +190,7 @@ def process_scraping_task(task_id):
         file_handler.close()
 
     cleanup_temp_files(task_id)
+
 
 def cleanup_temp_files(task_id):
     try:

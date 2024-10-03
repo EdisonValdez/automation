@@ -191,3 +191,11 @@ AUTH_USER_MODEL = 'automation.CustomUser'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 FILE_UPLOAD_PERMISSIONS = 0o644
+
+# Increase the request timeout
+REQUEST_TIMEOUT = 120  # in seconds
+
+# Increase the database connection timeout
+DATABASE_OPTIONS = {
+    'connect_timeout': 60,
+}
