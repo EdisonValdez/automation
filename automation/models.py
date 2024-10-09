@@ -1,4 +1,6 @@
 # models.py
+from datetime import timezone
+import os
 from django.contrib.auth.models import  AbstractUser, BaseUserManager
 import uuid
 from django.db import models
@@ -107,6 +109,7 @@ class Subcategory(models.Model):
         return self.title
  
 class ScrapingTask(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
     project_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     project_title = models.CharField(max_length=255)
     level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True)
@@ -114,6 +117,7 @@ class ScrapingTask(models.Model):
     subcategory = models.ForeignKey(Subcategory, on_delete=models.SET_NULL, null=True, blank=True)
     tailored_category = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    report_url = models.URLField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)     
     status = models.CharField(max_length=20, choices=[ 
@@ -127,10 +131,8 @@ class ScrapingTask(models.Model):
     file = models.FileField(upload_to='scraping_files/')
 
     def save(self, *args, **kwargs):
-        if not self.id:
-            logger.info(f"Creating new ScrapingTask")
-        else:
-            logger.info(f"Updating ScrapingTask {self.id}, new status: {self.status}")
+        if self.status == 'COMPLETED' and not self.completed_at:
+            self.completed_at = timezone.now()
         super().save(*args, **kwargs)
  
 class Business(models.Model):
@@ -278,7 +280,10 @@ class BusinessImage(models.Model):
     def image_url(self):
         if self.s3_url:
             return self.s3_url
-        elif self.local_path:
-            return settings.MEDIA_URL + self.local_path
-        else:
-            return self.original_url
+        
+        if self.local_path:
+            full_path = os.path.join(settings.MEDIA_ROOT, self.local_path)
+            if os.path.exists(full_path):
+                return f"{settings.MEDIA_URL}{self.local_path}"
+        
+        return settings.DEFAULT_IMAGE_URL

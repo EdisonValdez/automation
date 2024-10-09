@@ -11,90 +11,134 @@
     <!--Total Projects-->
     <div class="row">
     
-        {% if user.is_admin %}
-        <div class="col-9 col-xl-9 col-md-9 col-sm-12">
-    {% else %}
+        {% if user.is_admin %} 
         <div class="col-12 col-xl-12 col-md-12 col-sm-12">
-        {% endif %}
-                <div class="box card-box">
-                    <div class="icon-box bg-color-6 d-block">
-                        <div class="content text-center color-6">
-                            <h5 class="title-box fs-17 font-w500">Total Project</h5>
-                            <div class="themesflat-counter fs-18 font-wb">
-                                <span class="number" data-from="0" data-to="{{ total_projects }}" data-speed="2500" data-inviewport="yes">{{ total_projects }} +</span>
-                            </div>
-                        </div>
-                    </div>    
-                    <div class="icon-box bg-color-7 d-block">
-                        <div class="content text-center color-7">
-                            <h5 class="title-box fs-17 font-w500">Pending Project</h5>
-                            <div class="themesflat-counter fs-18 font-wb">
-                                <span class="number" data-from="0" data-to="{{ pending_projects }}" data-speed="2500" data-inviewport="yes">{{ pending_projects }} +</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="icon-box bg-color-8 d-block">
-                        <div class="content text-center color-8">
-                            <h5 class="title-box fs-17 font-w500">On Going project</h5>
-                            <div class="themesflat-counter fs-18 font-wb">
-                                <span class="number" data-from="0" data-to="{{ ongoing_projects }}" data-speed="2500" data-inviewport="yes">{{ ongoing_projects }} +</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="icon-box bg-color-9 d-block">
-                        <div class="content text-center color-9">
-                            <h5 class="title-box fs-17 font-w500">Complete Project</h5>
-                            <div class="themesflat-counter fs-18 font-wb">
-                                <span class="number" data-from="0" data-to="{{ completed_projects }}" data-speed="2500" data-inviewport="yes">{{ completed_projects }} +</span>
-                            </div>
-                        </div>
+ 
+        <div class="box card-box">
+            <div class="icon-box bg-color-6 d-block">
+                <div class="content text-center color-0">
+                    <h5 class="title-box fs-17 font-w500">
+                        <i class="fas fa-tasks color-0"></i> Total Projects
+                    </h5>
+                    <div class="themesflat-counter fs-14 font-wb">
+                        <span class="number" data-from="0" data-to="{{ total_projects }}" data-speed="2500" data-inviewport="yes">{{ tasks.count }} +</span>
                     </div>
                 </div>
-        </div>
-    {% if  user.is_admin %}
-        <div class="col-3 col-xl-3 col-md-3 col-sm-12">
-            <div class="box h-100 d-flex align-items-center">
-                <a class="create d-flex bg-primary justify-content-center" href="{% url 'upload_file' %}">
-                    <div class="icon color-white pt-4 pr-8">
-                        <i class='bx bx-plus-circle'></i>
+            </div>
+        
+            <div class="icon-box bg-color-7 d-block">
+                <div class="content text-center color-0">
+                    <h5 class="title-box fs-17 font-w500">
+                        <i class="fas fa-language color-0"></i> Translated Projects
+                    </h5>
+                    <div class="themesflat-counter fs-14 font-wb">
+                        <span class="number" data-from="0" data-to="{{ translated_projects }}" data-speed="2500" data-inviewport="yes">{{ translated_projects }}</span>
                     </div>
-                    <div class="content">
-                        <h5 class="color-white">Create New Project</h5>
+                </div>
+            </div>
+        
+            <div class="icon-box bg-color-8 d-block">
+                <div class="content text-center color-0">
+                    <h5 class="title-box fs-17 font-w500">
+                        <i class="fas fa-building color-0"></i> Total Businesses
+                    </h5>
+                    <div class="themesflat-counter fs-14 font-wb">
+                        <span class="number" data-from="0" data-to="{{ total_businesses }}" data-speed="2500" data-inviewport="yes">{{ total_businesses }}</span>
                     </div>
-                </a>
+                </div>
+            </div>
+        
+            <div class="icon-box bg-color-1 d-block">
+                <div class="content text-center color-0">
+                    <h5 class="title-box fs-17 font-w500">
+                         Total Destinations
+                    </h5>
+                    <div class="themesflat-counter fs-14 font-wb">
+                        <span class="number" data-from="0" data-to="" data-speed="2500" data-inviewport="yes">{{ total_destinations }} +</span>
+                    </div>
+                </div>
             </div>
         </div>
-    {% endif %}
+        
+        <div class="box card-box">
+          
+ 
+            <div class="box">
+                <div class="box-body d-flex pb-0">
+                    <div class="me-auto">
+                        <h4 class="numb fs-30 font-wb">  {{ total_users }}  </h4>
+                        <h5 class="card-title fs-18 font-w400">Total Users</h5>
+                        <p class="fs-14 mb-0 mt-11"><span class="text-primary"></span>Please assign destinations</p>
+                    </div>
+                    <div id="total-revenue-chart" style="min-height: 40px;"><div id="apexchartsjtmqrjq6" class="apexcharts-canvas apexchartsjtmqrjq6 apexcharts-theme-light" style="width: 70px; height: 40px;"><svg id="SvgjsSvg1861" width="70" height="40" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev" class="apexcharts-svg" xmlns:data="ApexChartsNS" transform="translate(0, 0)" style="background: transparent;"><g id="SvgjsG1863" class="apexcharts-inner apexcharts-graphical" transform="translate(0, 0)"><defs id="SvgjsDefs1862"><clipPath id="gridRectMaskjtmqrjq6"><rect id="SvgjsRect1869" width="79" height="45" x="-4.5" y="-2.5" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="forecastMaskjtmqrjq6"></clipPath><clipPath id="nonForecastMaskjtmqrjq6"></clipPath><clipPath id="gridRectMarkerMaskjtmqrjq6"><rect id="SvgjsRect1870" width="74" height="44" x="-2" y="-2" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath></defs><line id="SvgjsLine1868" x1="0" y1="0" x2="0" y2="40" stroke="#b6b6b6" stroke-dasharray="3" stroke-linecap="butt" class="apexcharts-xcrosshairs" x="0" y="0" width="1" height="40" fill="#b1b9c4" filter="none" fill-opacity="0.9" stroke-width="1"></line><g id="SvgjsG1876" class="apexcharts-xaxis" transform="translate(0, 0)"><g id="SvgjsG1877" class="apexcharts-xaxis-texts-g" transform="translate(0, 4)"></g></g><g id="SvgjsG1890" class="apexcharts-grid"><g id="SvgjsG1891" class="apexcharts-gridlines-horizontal" style="display: none;"><line id="SvgjsLine1893" x1="0" y1="0" x2="70" y2="0" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1894" x1="0" y1="8" x2="70" y2="8" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1895" x1="0" y1="16" x2="70" y2="16" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1896" x1="0" y1="24" x2="70" y2="24" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1897" x1="0" y1="32" x2="70" y2="32" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1898" x1="0" y1="40" x2="70" y2="40" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line></g><g id="SvgjsG1892" class="apexcharts-gridlines-vertical" style="display: none;"></g><line id="SvgjsLine1900" x1="0" y1="40" x2="70" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line><line id="SvgjsLine1899" x1="0" y1="1" x2="0" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line></g><g id="SvgjsG1871" class="apexcharts-line-series apexcharts-plot-series"><g id="SvgjsG1872" class="apexcharts-series" seriesName="seriesx1" data:longestSeries="true" rel="1" data:realIndex="0"><path id="SvgjsPath1875" d="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" fill="none" fill-opacity="1" stroke="rgba(0,143,251,0.85)" stroke-opacity="1" stroke-linecap="butt" stroke-width="5" stroke-dasharray="0" class="apexcharts-line" index="0" clip-path="url(#gridRectMaskjtmqrjq6)" pathTo="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" pathFrom="M -1 40L -1 40L 7 40L 14 40L 21 40L 28 40L 35 40L 42 40L 49 40L 56 40L 63 40L 70 40"></path><g id="SvgjsG1873" class="apexcharts-series-markers-wrap" data:realIndex="0"><g class="apexcharts-series-markers"><circle id="SvgjsCircle1906" r="0" cx="0" cy="0" class="apexcharts-marker wwzmj5l52 no-pointer-events" stroke="#ffffff" fill="#008ffb" fill-opacity="1" stroke-width="2" stroke-opacity="0.9" default-marker-size="0"></circle></g></g></g><g id="SvgjsG1874" class="apexcharts-datalabels" data:realIndex="0"></g></g><line id="SvgjsLine1901" x1="0" y1="0" x2="70" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line><line id="SvgjsLine1902" x1="0" y1="0" x2="70" y2="0" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line><g id="SvgjsG1903" class="apexcharts-yaxis-annotations"></g><g id="SvgjsG1904" class="apexcharts-xaxis-annotations"></g><g id="SvgjsG1905" class="apexcharts-point-annotations"></g></g><rect id="SvgjsRect1867" width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe"></rect><g id="SvgjsG1889" class="apexcharts-yaxis" rel="0" transform="translate(-18, 0)"></g><g id="SvgjsG1864" class="apexcharts-annotations"></g></svg><div class="apexcharts-legend" style="max-height: 20px;"></div><div class="apexcharts-tooltip apexcharts-theme-light"><div class="apexcharts-tooltip-series-group" style="order: 1;"><span class="apexcharts-tooltip-marker" style="background-color: rgb(0, 143, 251);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div></div><div class="apexcharts-yaxistooltip apexcharts-yaxistooltip-0 apexcharts-yaxistooltip-left apexcharts-theme-light"><div class="apexcharts-yaxistooltip-text"></div></div></div></div>
+                <div class="resize-triggers"><div class="expand-trigger"><div style="width: 487px; height: 108px;"></div></div><div class="contract-trigger"></div></div></div>
+            </div>
+
+ 
+                <div class="box">
+                    <div class="box-body d-flex pb-0">
+                        <div class="me-auto">
+                            <h4 class="numb fs-30 font-wb">{{ ambassador_count }}</h4>
+                            <h5 class="card-title fs-18 font-w400">Total Ambassadors</h5>
+                            <p class="fs-14 mb-0 mt-11"><span class="text-primary"></span>Please assign destinations</p>
+                        </div>
+                        <div id="total-revenue-chart" style="min-height: 40px;"><div id="apexchartsjtmqrjq6" class="apexcharts-canvas apexchartsjtmqrjq6 apexcharts-theme-light" style="width: 70px; height: 40px;"><svg id="SvgjsSvg1861" width="70" height="40" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev" class="apexcharts-svg" xmlns:data="ApexChartsNS" transform="translate(0, 0)" style="background: transparent;"><g id="SvgjsG1863" class="apexcharts-inner apexcharts-graphical" transform="translate(0, 0)"><defs id="SvgjsDefs1862"><clipPath id="gridRectMaskjtmqrjq6"><rect id="SvgjsRect1869" width="79" height="45" x="-4.5" y="-2.5" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="forecastMaskjtmqrjq6"></clipPath><clipPath id="nonForecastMaskjtmqrjq6"></clipPath><clipPath id="gridRectMarkerMaskjtmqrjq6"><rect id="SvgjsRect1870" width="74" height="44" x="-2" y="-2" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath></defs><line id="SvgjsLine1868" x1="0" y1="0" x2="0" y2="40" stroke="#b6b6b6" stroke-dasharray="3" stroke-linecap="butt" class="apexcharts-xcrosshairs" x="0" y="0" width="1" height="40" fill="#b1b9c4" filter="none" fill-opacity="0.9" stroke-width="1"></line><g id="SvgjsG1876" class="apexcharts-xaxis" transform="translate(0, 0)"><g id="SvgjsG1877" class="apexcharts-xaxis-texts-g" transform="translate(0, 4)"></g></g><g id="SvgjsG1890" class="apexcharts-grid"><g id="SvgjsG1891" class="apexcharts-gridlines-horizontal" style="display: none;"><line id="SvgjsLine1893" x1="0" y1="0" x2="70" y2="0" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1894" x1="0" y1="8" x2="70" y2="8" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1895" x1="0" y1="16" x2="70" y2="16" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1896" x1="0" y1="24" x2="70" y2="24" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1897" x1="0" y1="32" x2="70" y2="32" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1898" x1="0" y1="40" x2="70" y2="40" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line></g><g id="SvgjsG1892" class="apexcharts-gridlines-vertical" style="display: none;"></g><line id="SvgjsLine1900" x1="0" y1="40" x2="70" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line><line id="SvgjsLine1899" x1="0" y1="1" x2="0" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line></g><g id="SvgjsG1871" class="apexcharts-line-series apexcharts-plot-series"><g id="SvgjsG1872" class="apexcharts-series" seriesName="seriesx1" data:longestSeries="true" rel="1" data:realIndex="0"><path id="SvgjsPath1875" d="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" fill="none" fill-opacity="1" stroke="rgba(0,143,251,0.85)" stroke-opacity="1" stroke-linecap="butt" stroke-width="5" stroke-dasharray="0" class="apexcharts-line" index="0" clip-path="url(#gridRectMaskjtmqrjq6)" pathTo="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" pathFrom="M -1 40L -1 40L 7 40L 14 40L 21 40L 28 40L 35 40L 42 40L 49 40L 56 40L 63 40L 70 40"></path><g id="SvgjsG1873" class="apexcharts-series-markers-wrap" data:realIndex="0"><g class="apexcharts-series-markers"><circle id="SvgjsCircle1906" r="0" cx="0" cy="0" class="apexcharts-marker wwzmj5l52 no-pointer-events" stroke="#ffffff" fill="#008ffb" fill-opacity="1" stroke-width="2" stroke-opacity="0.9" default-marker-size="0"></circle></g></g></g><g id="SvgjsG1874" class="apexcharts-datalabels" data:realIndex="0"></g></g><line id="SvgjsLine1901" x1="0" y1="0" x2="70" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line><line id="SvgjsLine1902" x1="0" y1="0" x2="70" y2="0" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line><g id="SvgjsG1903" class="apexcharts-yaxis-annotations"></g><g id="SvgjsG1904" class="apexcharts-xaxis-annotations"></g><g id="SvgjsG1905" class="apexcharts-point-annotations"></g></g><rect id="SvgjsRect1867" width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe"></rect><g id="SvgjsG1889" class="apexcharts-yaxis" rel="0" transform="translate(-18, 0)"></g><g id="SvgjsG1864" class="apexcharts-annotations"></g></svg><div class="apexcharts-legend" style="max-height: 20px;"></div><div class="apexcharts-tooltip apexcharts-theme-light"><div class="apexcharts-tooltip-series-group" style="order: 1;"><span class="apexcharts-tooltip-marker" style="background-color: rgb(0, 143, 251);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div></div><div class="apexcharts-yaxistooltip apexcharts-yaxistooltip-0 apexcharts-yaxistooltip-left apexcharts-theme-light"><div class="apexcharts-yaxistooltip-text"></div></div></div></div>
+                    <div class="resize-triggers"><div class="expand-trigger"><div style="width: 487px; height: 108px;"></div></div><div class="contract-trigger"></div></div></div>
+                </div>
+  
+ 
+    <div class="icon-box bg-color-4">
+        <a class="create d-flex" href="{% url 'upload_file' %}">
+            <div class="icon bg-white">
+                <i class='bx bx-plus'></i>
+            </div>
+            <div class="content d-flex align-items-center">
+                <h5 class="color-white">Create New Project</h5>
+            </div>
+        </a>
+    </div>
+ 
+        </div>
+        
+        </div>
+        {% endif %}
+
     </div>
     <!--Recent Business Update-->
     <div class="row">
-        <div class="">
+        <div class="col-xl-12 col-lg-12 col-md-6 col-sm-12">
             <div class="box-header pt-0 pl-0 ms-0 mb-4 mt-4 border-bottom-0 responsive-header">
                 <h4 class="box-title fs-22">Recent Business Update</h4>
-                <div class="card-options">
-                    <div class="btn-list d-flex">
-                        <a href="#scraped-list" class="btn btn-light d-flex align-items-center mr-5">
-                            <i class="fas fa-eye mr-5"></i>View All Processes
-                        </a>
+                
+                <div class="box box-manage">
+                    <div class="box-body d-flex pd-7 pb-0">
+                        <div class="me-auto w-55">
+                            <h5 class="card-title text-white fs-30 font-w500 mt-4">Manage Business in Queue</h5>
+                            <p class="mb-0 text-o7 fs-18 font-w500 pb-11">While getting errors saving the data to the db, you´ll need to upload the Json manually.</p>
+                        </div>
+                        <div class="btn-now">
+                            <a class="h6 font-w500" href="{% url 'upload_scraping_results' %}"><span>Upload JSON</span></a>
+                        </div>
                     </div>
+
                 </div>
             </div>
             <div class="row">
-                {% for task in tasks|slice:":4" %}
-                <div class="col-3 col-xl-3 col-md-4 col-sm-6">
+                {% for task in tasks|slice:":10" %}
+                <div class="col-3 col-xl-3 col-md-4 col-sm-12">
             
                         <div class="box left-dot">
                             <div class="box-body">
                                 <div class="row">
                                     <div class="col-12 mb-10">
                                         <div class="mt-0 text-start">
-                                            <a href="{% url 'task_detail' id=task.id %}" class="box-title mb-0 mt-1 mb-3 font-w600 fs-18">{{task.id}} - {{ task.project_title }}</a>
+                                            <a href="{% url 'task_detail' id=task.id %}" class="box-title mb-0 mt-1 mb-3 font-w600 fs-14">{{task.id}} - {{ task.project_title }}</a>
                                             <p class="fs-14 font-w500 text-muted">Category: {{ task.main_category }}</p>
                                             <p class="fs-14 text-muted">Tags: {{ task.description }}</p>
                                             <p class="fs-14 text-muted">Level: {{ task.level }}</p>
                                             <p class="fs-14 text-muted">Created: {{ task.created_at }}</p>
                                             <p class="fs-14 text-muted">Completed: {{ task.completed_at }}</p>
-                                            
+                                            <a  class="fs-14 text-muted" href="{{MEDIA_ROOT}}{% url 'view_report' task.id %}" target="_blank">View report</a>
                                         </div>
                                     </div>
                                 </div>
@@ -147,7 +191,7 @@
                     <tr class="top">
                         <th class="border-bottom-0 sorting fs-14 font-w500">Project</th>
                         <th class="border-bottom-0 sorting fs-14 font-w500">Start</th>
-                        <th class="border-bottom-0 sorting fs-14 font-w500">Deadline</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500">Business(es)</th>
                         <th class="border-bottom-0 sorting fs-14 font-w500">Work Status</th>
                         <th class="border-bottom-0 sorting_disabled fs-14 font-w500">Action</th>
                     </tr>
@@ -161,7 +205,7 @@
                             </a>
                         </td>
                         <td>{{ task.created_at|date:"d-m-Y" }}</td>
-                        <td>{{ task.deadline|date:"d-m-Y" }}</td>
+                        <td>  {{ task.businesses.count }} </td>
                         <td>
                             <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% elif task.status == 'TRANSLATED' %} badge-success {% endif %}">
                                 {{ task.get_status_display }}

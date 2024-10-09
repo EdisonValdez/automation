@@ -3,6 +3,7 @@ from datetime import datetime
 import shutil
 import uuid
 from celery import shared_task
+from django.urls import reverse
 from django.utils import timezone
 from ratelimit import RateLimitException
 from automation.consumers import get_log_file_path
@@ -60,10 +61,10 @@ import backoff
 import time
 from requests.exceptions import RequestException
  
+SERPAPI_KEY = settings.SERPAPI_KEY  
+OPENAI_API_KEY = settings.TRANSLATION_OPENAI_API_KEY
+openai.api_key = OPENAI_API_KEY   
 
-
-SERPAPI_KEY = settings.SERPAPI_KEY   
-OPENAI_API_KEY = openai.api_key =  settings.SERPAPI_KEY 
 
 User = get_user_model()
 
@@ -75,13 +76,53 @@ def read_queries(file_path):
     logger.info(f"Reading queries from file: {file_path}")
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
-            queries = [line.strip() for line in file if line.strip()]
+            queries = []
+            for line in file:
+                parts = line.strip().split('|')
+                if len(parts) == 2:
+                    query, coords = parts
+                    queries.append({'query': query.strip(), 'll': coords.strip()})
+                elif len(parts) == 1:
+                    queries.append({'query': parts[0].strip(), 'll': None})
         logger.info(f"Successfully read {len(queries)} queries from file")
         return queries
     except Exception as e:
         logger.error(f"Error reading queries from file {file_path}: {str(e)}", exc_info=True)
         return []
 
+def process_query(query_data):
+    query = query_data['query']
+    ll = query_data.get('ll')
+    
+    params = {
+        "api_key": settings.SERPAPI_KEY,
+        "engine": "google_maps",
+        "type": "search",
+        "google_domain": "google.com",
+        "q": query,
+        "hl": "en",
+        "no_cache": "true",
+    }
+    
+    if ll:
+        params["ll"] = ll
+    
+    try:
+        results = fetch_search_results(params)
+        
+        if 'error' in results:
+            logger.error(f"API error for query '{query}': {results['error']}")
+            return None
+        
+        return results
+    
+    except (RequestException, RateLimitException) as e:
+        logger.error(f"Error fetching results for query '{query}': {str(e)}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error while fetching results for query '{query}': {str(e)}", exc_info=True)
+        return None
+ 
 # Implementación Manual de Control de Tasa
 def rate_limiter(max_calls, period):
     def decorator(func):
@@ -106,7 +147,7 @@ def rate_limiter(max_calls, period):
     return decorator
 
 @backoff.on_exception(backoff.expo, RequestException, max_tries=5)
-@rate_limiter(max_calls=10, period=60)  # 10 llamadas por cada 60 segundos
+@rate_limiter(max_calls=10, period=60)  
 def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
@@ -116,138 +157,126 @@ def process_scraping_task(task_id):
     file_handler = logging.FileHandler(log_file_path)
     logger.addHandler(file_handler)
 
-    logger.info(f"Starting scraping task {task_id}")
-    task = ScrapingTask.objects.get(id=task_id)
-    task.status = 'IN_PROGRESS'
-    task.save()
-
-    # Prepare backup directory locally
-    backup_directory = os.path.join(settings.MEDIA_ROOT, f"backup_images/{task_id}")
-    os.makedirs(backup_directory, exist_ok=True)
-
     try:
+        logger.info(f"Starting scraping task {task_id}")
+        task = ScrapingTask.objects.get(id=task_id)
+        task.status = 'IN_PROGRESS'
+        task.save()
+
+        # Prepare backup directory locally
+        #backup_directory = os.path.join(settings.MEDIA_ROOT, f"backup_images/{task_id}")
+        #os.makedirs(backup_directory, exist_ok=True)
+        business_images_directory = os.path.join(settings.MEDIA_ROOT, 'business_images')
+        os.makedirs(business_images_directory, exist_ok=True)
+
+
         queries = read_queries(task.file.path)
         logger.info(f"Total queries to process: {len(queries)}")
 
-        for index, query in enumerate(queries, start=1):
-            try:
-                logger.info(f"Processing query {index}/{len(queries)}: {query}")
-                params = {
-                    "api_key": SERPAPI_KEY,
-                    "engine": "google_maps",
-                    "type": "search",
-                    "google_domain": "google.com",
-                    "q": query,
-                    "hl": "en",
-                    "no_cache": "true"
-                }
+        total_results = 0
 
-                try:
-                    results = fetch_search_results(params)
-                except RequestException as e:
-                    logger.error(f"Network error while fetching results for query '{query}': {str(e)}")
-                    continue
-                except RateLimitException:
-                    logger.error(f"Rate limit exceeded for query '{query}'")
-                    continue
-                except Exception as e:
-                    logger.error(f"Unexpected error while fetching results for query '{query}': {str(e)}")
-                    continue
+        for index, query_data in enumerate(queries, start=1):
+            query = query_data['query']
+            page_num = 1
+            start_offset = 0
+            
+            while start_offset < 100:
+                logger.info(f"Processing query {index}/{len(queries)}: {query} (Page {page_num})")
+                query_data['start'] = start_offset
+                
+                results = process_query(query_data)
+                
+                if results is None:
+                    break  # Si hay un error, pasamos a la siguiente consulta
+                
+                local_results = results.get('local_results', [])
+                if not local_results:
+                    logger.info(f"No results found for query '{query}' (Page {page_num})")
+                    break
 
-                if 'error' in results:
-                    logger.error(f"API error for query '{query}': {results['error']}")
-                    continue
-
-                logger.info(f"Saving results for query '{query}'")
+                logger.info(f"Processing {len(local_results)} local results for query '{query}' (Page {page_num})")
                 save_results(task, results, query)
 
-                local_results = results.get('local_results', [])
-                logger.info(f"Processing {len(local_results)} local results for query '{query}'")
                 for result_index, local_result in enumerate(local_results, start=1):
                     try:
-                        logger.info(f"Saving business {result_index}/{len(local_results)} for query '{query}'")
-                        business = save_business(task, local_result, query)
+                        with transaction.atomic():
+                            logger.info(f"Saving business {result_index}/{len(local_results)} for query '{query}' (Page {page_num})")
+                            business = save_business(task, local_result, query)
+                            logger.info(f"Downloading images for business {business.id}")
+                            image_paths = download_images(business, local_result)
+                            successful_images = 0
+                            for image_path in image_paths:
+                                try:
+                                    update_image_url(business, image_path, image_path)
+                                    logger.info(f"Image {image_path} processed for business {business.id}")
+                                    successful_images += 1
+                                except Exception as e:
+                                    logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
+                            logger.info(f"Successfully processed {successful_images}/{len(image_paths)} images for business {business.id}")
                         
-                        logger.info(f"Downloading images for business {business.id}")
-                        image_paths = download_images(business, local_result)
-
-                        # Temporarily save images only to the local filesystem
-                        for image_path in image_paths:
-                            try:
-                                local_backup_path = os.path.join(backup_directory, os.path.basename(image_path))
-                                shutil.move(image_path, local_backup_path)
-                                logger.info(f"Image {image_path} saved locally as {local_backup_path}")
-
-                                # Update image path in the database
-                                update_image_url(business, image_path, local_backup_path)
-
-                            except Exception as e:
-                                logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
+                        #for image_path in image_paths:
+                            #try:
+                                #local_backup_path = os.path.join(backup_directory, os.path.basename(image_path))
+                               # shutil.move(image_path, local_backup_path)
+                                #logger.info(f"Image {image_path} saved locally as {local_backup_path}")
+                               # update_image_url(business, image_path, local_backup_path)
+                           # except Exception as e:
+                              #  logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
 
                     except Exception as e:
-                        logger.error(f"Error processing business result {result_index} for query '{query}': {str(e)}")
+                        logger.error(f"Error processing business result {result_index} for query '{query}': {str(e)}", exc_info=True)
                         continue
- 
+
                 total_results += len(local_results)
                 logger.info(f"Processed {len(local_results)} results on page {page_num} for query '{query}'")
 
-                next_page_token = get_next_page_token(results)
-                if not next_page_token:
-                    logger.info(f"No more pages for query '{query}'")
-                    break
-
+                # Increment start_offset for the next page
+                start_offset += 20
                 page_num += 1
-                time.sleep(2)
-            except Exception as e:
-                logger.error(f"Error processing query '{query}': {str(e)}", exc_info=True)
-                continue 
+                time.sleep(2)  # Sleep between page requests to avoid overwhelming the API
 
-        logger.info(f"Total results processed for query '{query}': {total_results}")
+            logger.info(f"Finished processing query: {query}")
+
+        logger.info(f"Total results processed across all queries: {total_results}")
+        
+        report_url = generate_task_report(task_id)
+        if report_url:
+            task.report_url = report_url
+            logger.info(f"Report generated and available at: {report_url}")
+        else:
+            logger.warning("Failed to generate report")
+
 
         logger.info(f"Scraping task {task_id} completed successfully")
         task.status = 'COMPLETED'
         task.completed_at = timezone.now()
         task.save()
 
+    except ScrapingTask.DoesNotExist:
+        logger.error(f"Scraping task with id {task_id} not found")
     except Exception as e:
         logger.error(f"Error in scraping task {task_id}: {str(e)}", exc_info=True)
-        task.status = 'FAILED'
-        task.save()
+        if 'task' in locals():
+            task.status = 'FAILED'
+            task.save()
     finally:
         logger.removeHandler(file_handler)
         file_handler.close()
-
-    cleanup_temp_files(task_id)
-
-
-def cleanup_temp_files(task_id):
-    try:
-        temp_dir = os.path.join(settings.MEDIA_ROOT, f'temp_images_{task_id}')
-        if os.path.exists(temp_dir):
-            for file in os.listdir(temp_dir):
-                file_path = os.path.join(temp_dir, file)
-                try:
-                    if os.path.isfile(file_path):
-                        os.unlink(file_path)
-                except Exception as e:
-                    logger.error(f"Error deleting file {file_path}: {str(e)}")
-            os.rmdir(temp_dir)
-        logger.info(f"Temporary files for task {task_id} cleaned up")
-    except Exception as e:
-        logger.error(f"Error cleaning up temporary files for task {task_id}: {str(e)}")
-
+ 
+ 
 def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
 
-def update_image_url(business, local_path, backup_path):
+def update_image_url(business, local_path, new_path):
+#def update_image_url(business, local_path, backup_path):
     """
     Updates the image URL in the database to point to the local backup path.
     """
     try:
         image = Image.objects.get(business=business, local_path=local_path)
-        image.local_path = backup_path  # Update to local backup path
+        image.local_path = new_path #backup_path / Update to local backup path
         image.save()
-        logger.info(f"Local path for image updated for business {business.id}: {backup_path}")
+        logger.info(f"Local path for image updated for business {business.id}: {new_path}")
     except Image.DoesNotExist:
         logger.warning(f"No Image found for business {business.id} with local path {local_path}")
     except Exception as e:
@@ -1046,17 +1075,18 @@ def generate_task_report(task_id):
             'completed_at': task.completed_at,
             'status': task.status,
             'total_businesses': businesses.count(),
-            'rating': businesses.aggregate(Avg('rating'))['rating__avg'],
+            'rating': businesses.aggregate(Avg('rating'))['rating__avg'] or 0,
             'top_categories': list(businesses.values('category_name').annotate(count=Count('id')).order_by('-count')[:5]),
-            'businesses': []
+            'businesses': [],
+            'check_status_url': reverse('check_task_status', kwargs={'task_id': task.id})
         }
 
         for business in businesses:
             report_data['businesses'].append({
                 'id': business.id,
                 'title': business.title,
-                'rating': business.rating,
-                'reviews_count': business.reviews_count,
+                'rating': business.rating or 0,  # Use 0 if None
+                'reviews_count': business.reviews_count or 0,  # Use 0 if None
                 'category': business.category_name,
                 'address': business.address,
                 'phone': business.phone,
@@ -1065,7 +1095,7 @@ def generate_task_report(task_id):
             })
 
         # Generate PDF report
-        template = get_template('report_template.html')
+        template = get_template('automation/report_template.html')
         html = template.render(report_data)
         
         # Create a BytesIO buffer to receive PDF data
@@ -1077,24 +1107,30 @@ def generate_task_report(task_id):
         if not pdf.err:
             # Save the PDF report
             report_filename = f"task_report_{task.id}.pdf"
-            report_path = os.path.join(settings.MEDIA_ROOT, 'reports', report_filename)
-            os.makedirs(os.path.dirname(report_path), exist_ok=True)
+            report_dir = os.path.join(settings.MEDIA_ROOT, 'reports')
+            os.makedirs(report_dir, exist_ok=True)
+            report_path = os.path.join(report_dir, report_filename)
             
             with open(report_path, 'wb') as f:
-                f.write(result.getvalue())
-
+                f.write(result.getvalue()) 
             # Update task with report information
             task.report_file = f'reports/{report_filename}'
             task.save()
-
+ 
             logger.info(f"Generated report for task {task_id}")
+            print(report_path)
+            report_url = reverse('view_report', kwargs={'task_id': task.id})
+            return report_url
         else:
             logger.error(f"Error generating PDF for task {task_id}: {pdf.err}")
+            return None
 
     except ScrapingTask.DoesNotExist:
         logger.error(f"Task with id {task_id} not found")
+        return None
     except Exception as e:
         logger.error(f"Error generating report for task {task_id}: {str(e)}", exc_info=True)
+        return None
 
 def generate_all_task_reports():
     """
@@ -1110,6 +1146,11 @@ def send_task_completion_email(task_id):
     """
     try:
         task = ScrapingTask.objects.get(id=task_id)
+        
+        if task.user is None:
+            logger.warning(f"Task {task_id} has no associated user. Skipping email notification.")
+            return
+
         user_email = task.user.email
 
         subject = f"Task Completed: {task.project_title}"
@@ -1146,6 +1187,7 @@ def send_task_completion_email(task_id):
         logger.error(f"Task with id {task_id} not found")
     except Exception as e:
         logger.error(f"Error sending completion email for task {task_id}: {str(e)}", exc_info=True)
+
 
 @receiver(post_save, sender=ScrapingTask)
 def task_status_changed(sender, instance, **kwargs):

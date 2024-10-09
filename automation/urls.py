@@ -48,6 +48,7 @@ urlpatterns = [
 
     path('check-task-status/<int:task_id>/', views.check_task_status, name='check_task_status'),
 
+    path('view-report/<int:task_id>/', views.view_report, name='view_report'),
 
  
     path('user-profile/', views.user_profile, name='user_profile'),

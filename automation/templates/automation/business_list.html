@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="main-content project"> 
     <div class="row">
@@ -10,15 +10,15 @@
             <div class="box">
                 <div class="box-body">
                     <div class="table-responsive">
-                        <table  class="table table-vcenter table-bordered dataTable no-footer mw-100 dataTable" id="task-profile">
+                        <table class="table table-vcenter table-bordered dataTable" id="task-profile">
                             <thead>
                                 <tr class="top">
                                     <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 25%;">Project</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500"  style="width: 15%;">Category</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500"  style="width: 20%;">Address</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500"  style="width: 15%;">Destination</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500"  style="width: 15%;">Progress</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500"  style="width: 10%;">Action</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 15%;">Category</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 20%;">Address</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 15%;">Destination</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 15%;">Progress</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 10%;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -34,7 +34,6 @@
                                         </p>
                                     </td>
                                     <td>
-                                        <!-- Actions Dropdown -->
                                         <div class="dropdown">
                                             <a href="#" class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="bx bx-dots-horizontal-rounded"></i>
@@ -53,31 +52,26 @@
                                 </tr>
                                 {% endfor %}
                             </tbody>
-                            
                         </table>
-                        
-                        <!-- Paginator with Custom Styling -->
+
                         <div class="pagination">
                             <span class="step-links">
                                 {% if page_obj.has_previous %}
                                     <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
                                     <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
                                 {% endif %}
-                    
                                 <span class="current">
                                     Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
                                 </span>
-                    
                                 {% if page_obj.has_next %}
                                     <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
                                     <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
                                 {% endif %}
                             </span>
                         </div>
-
-                    </div>                    
+                    </div>
                 </div>
-            </div>            
+            </div>
         </div>
     </div>
 </div>
@@ -85,12 +79,12 @@
 <script>
     $(document).ready(function() {
         $('#task-profile').DataTable({
-            "pageLength": 30,  // Number of records per page
-            "lengthChange": true,  // Allow user to change the number of records per page
-            "searching": true,     // Enable search filter
-            "ordering": true,      // Enable column ordering
-            "info": true,          // Show page info
-            "autoWidth": false     // Disable auto width adjustment
+            "pageLength": 30,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false
         });
     });
 </script>

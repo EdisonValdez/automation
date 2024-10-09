@@ -2,7 +2,7 @@ import threading
 from django.conf import settings
 from django.db import DatabaseError
 from django.views import View
-from django.http import HttpResponseForbidden, JsonResponse
+from django.http import FileResponse, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
@@ -136,6 +136,7 @@ class UploadFileView(View):
         form = ScrapingTaskForm(request.POST, request.FILES)
         if form.is_valid():
             task = form.save(commit=False)
+            task.user = request.user 
             task.created_by = request.user
             task.status = 'QUEUED'
             task.save()
@@ -162,7 +163,6 @@ class UploadFileView(View):
                 'errors': form.errors
             })
 
-
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
     def get(self, request, id):
@@ -181,22 +181,28 @@ class TaskDetailView(View):
             return render(request, 'automation/error.html', {'error': 'Task not found.'}, status=404)
 
         task = task_queryset.first()  # Retrieve the first task that matches the query
-        
+
+        # Prefetch related businesses
         businesses = task.businesses.prefetch_related(
             Prefetch('images', queryset=Image.objects.order_by('id'), to_attr='first_image')
         ).all()
 
+        # Count the number of businesses
+        business_count = businesses.count()
+
+        # Attach the first image if available
         for business in businesses:
             business.first_image = business.first_image[0] if business.first_image else None
 
         context = {
             'task': task,
             'businesses': businesses,
+            'business_count': business_count,  # Add the business count to the context
             'status_choices': Business.STATUS_CHOICES,
             'MEDIA_URL': settings.MEDIA_URL,
         }
 
-        logger.info(f"Retrieved task {id} with {businesses.count()} businesses")
+        logger.info(f"Retrieved task {id} with {business_count} businesses")
         return render(request, 'automation/task_detail.html', context)
 
 @method_decorator(login_required, name='dispatch')
@@ -458,12 +464,21 @@ class DashboardView(View):
         return context
 
     def get_admin_context(self):
+        # Count only users with the "AMBASSADOR" role
+        ambassador_count = CustomUser.objects.filter(roles__role='AMBASSADOR').count()
+
         return {
             'total_users': CustomUser.objects.count(),
             'total_businesses': Business.objects.count(),
             'total_destinations': Destination.objects.count(),
             'businesses': Business.objects.all(),
+            'user_role': UserRole.objects.count(),
+
+            # Add ambassador-specific count to the context
+            'ambassador_count': ambassador_count,
         }
+
+
 
     def get_ambassador_context(self, user):
         return {
@@ -1340,3 +1355,27 @@ def search_destinations(request):
     except Exception as e:
         logger.error(f"Error in search_destinations: {str(e)}", exc_info=True)
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+def view_report(request, task_id):
+    task = get_object_or_404(ScrapingTask, id=task_id)
+    report_filename = f"task_report_{task.id}.pdf"
+    report_path = os.path.join(settings.MEDIA_ROOT, 'reports', report_filename)
+    return FileResponse(open(report_path, 'rb'), content_type='application/pdf')
+
+
+def get_log_file_path(task_id):
+    log_dir = os.path.join(settings.MEDIA_ROOT, 'task_logs')
+    os.makedirs(log_dir, exist_ok=True)
+    return os.path.join(log_dir, f'task_{task_id}.log')
+
+def send_task_completion_email(task_id):
+    task = ScrapingTask.objects.get(id=task_id)
+    subject = f'Scraping Task {task_id} Completed'
+    message = f'Your scraping task "{task.project_title}" has been completed.\n'
+    if task.report_url:
+        report_full_url = f"{settings.BASE_URL}{task.report_url}"
+        message += f'You can view the report at: {report_full_url}\n'
+    from_email = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [task.user.email]  # Asumiendo que tiene un campo de usuario asociado a la tarea
+    
+    send_mail(subject, message, from_email, recipient_list)

@@ -94,6 +94,7 @@ elif len(sys.argv) > 0 and sys.argv[1] != 'collectstatic':
         "default": dj_database_url.parse(os.getenv("DATABASE_URL"), conn_max_age=600, ssl_require=True)
     }
 
+
  
  
 # Password validation
@@ -199,3 +200,14 @@ REQUEST_TIMEOUT = 120  # in seconds
 DATABASE_OPTIONS = {
     'connect_timeout': 60,
 }
+
+# Configuración de correo electrónico
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
+DEFAULT_IMAGE_URL = os.getenv('DEFAULT_IMAGE_URL')
