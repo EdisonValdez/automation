@@ -87,24 +87,42 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
  
-# Configuración de AWS S3
+# Configuración de DigitalOcean Spaces
 if not DEVELOPMENT_MODE:
-    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', 'localsecrets')
-    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+    # Credenciales
+    AWS_ACCESS_KEY_ID = os.getenv('SPACES_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('SPACES_SECRET_ACCESS_KEY')
+
+
+    # Configuración del bucket
+    SPACES_BUCKET_NAME = os.getenv('SPACES_BUCKET_NAME', 'business-images')
+    SPACES_REGION_NAME = os.getenv('SPACES_REGION_NAME', 'nyc3')   
+    AWS_S3_ENDPOINT_URL = f'https://{SPACES_REGION_NAME}.digitaloceanspaces.com'
+    AWS_S3_CUSTOM_DOMAIN = f'{SPACES_BUCKET_NAME}.{SPACES_REGION_NAME}.digitaloceanspaces.com'
+
+    # Configuraciones adicionales
     AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
     AWS_DEFAULT_ACL = 'public-read'
     AWS_LOCATION = 'static'
 
     # Configuración para archivos estáticos
-    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+    #STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+    STATICFILES_STORAGE = 'automation.storage_backends.StaticStorage'
     STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
 
+    # CDN Not activated yet
+    #STATICFILES_STORAGE = 'automation.storage_backends.StaticStorage'
+    #STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
+
     # Configuración para archivos de medios
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    #DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    DEFAULT_FILE_STORAGE = 'automation.storage_backends.MediaStorage'
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+
+    # Configuraciones adicionales para DigitalOcean Spaces
+    AWS_S3_ADDRESSING_STYLE = 'virtual'
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+
 
 # Configuración de imagen por defecto
 DEFAULT_IMAGE_URL = os.getenv('DEFAULT_IMAGE_URL', 'https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png')
@@ -203,10 +221,8 @@ if not DEBUG:
 # Configuración de CORS 
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Permitir todos los orígenes en desarrollo
 if not DEBUG:
-    CORS_ALLOWED_ORIGINS = [
-        "https://orca-app-jasq8.ondigitalocean.app/",
- 
-    ]
+    CORS_ALLOW_ALL_ORIGINS = True
+
 
 # Configuración de API keys
 TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
@@ -239,20 +255,5 @@ SESSION_COOKIE_AGE = 1209600  # 2 semanas
 # Configuración de mensajes
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
  
-REQUIRED_ENV_VARS = [
-    'DJANGO_SECRET_KEY',
-    'DATABASE_URL',
-    'AWS_ACCESS_KEY_ID',
-    'AWS_SECRET_ACCESS_KEY',
-    'AWS_STORAGE_BUCKET_NAME',
- 
-]
-
-for var in REQUIRED_ENV_VARS:
-    if var not in os.environ:
-        raise Exception(f"La variable de entorno {var} no está configurada.")
-
- 
-
 
      
