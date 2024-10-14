@@ -418,7 +418,7 @@ $(document).ready(function() {
         const logContainer = document.getElementById('log-container');
     
         const socket = new WebSocket(
-            'ws://' + window.location.host + '/ws/logs/' + taskId + '/'
+            'wss://' + window.location.host + '/ws/logs/' + taskId + '/'
         );
     
         socket.onmessage = function(e) {

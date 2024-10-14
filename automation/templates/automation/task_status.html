@@ -12,7 +12,7 @@
     const statusElement = document.getElementById('task-status');
     
     const socket = new WebSocket(
-        'ws://' + window.location.host + 
+        'wss://' + window.location.host + 
         '/ws/logs/' + taskId + '/'
     );
 
