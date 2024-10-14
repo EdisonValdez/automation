@@ -85,42 +85,40 @@ class UserRole(models.Model):
         return f"{self.user.username} - {self.role}"
   
 class Level(models.Model):
-    id = models.AutoField(primary_key=True)  # Use AutoField for automatic ID assignment
     title = models.CharField(max_length=100)
 
     def __str__(self):
         return self.title
+
 
 class Category(models.Model):
-    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
-    value = models.CharField(max_length=50, unique=True)  # Para almacenar valores como 'restaurants', 'cafe', etc.
-    level = models.ForeignKey('Level', on_delete=models.CASCADE)
+    value = models.CharField(max_length=50, unique=True)
+    level = models.ForeignKey(Level, on_delete=models.CASCADE)  # Link to Level
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='subcategories', on_delete=models.CASCADE)  # Parent for subcategories
 
     def __str__(self):
         return self.title
-    
-class Subcategory(models.Model):
-    id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=100)
-    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='subcategories')
 
-    def __str__(self):
-        return self.title
+    def has_children(self):
+        """Check if this category has any subcategories."""
+        return self.subcategories.exists()
  
+
 class ScrapingTask(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
     project_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     project_title = models.CharField(max_length=255)
     level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True)
-    main_category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    subcategory = models.ForeignKey(Subcategory, on_delete=models.SET_NULL, null=True, blank=True)
+    main_category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='tasks')
+    subcategory = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks_sub')
     tailored_category = models.CharField(max_length=100, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     report_url = models.URLField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True, blank=True)     
-    status = models.CharField(max_length=20, choices=[ 
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    status = models.CharField(max_length=20, choices=[
         ('QUEUED', 'QUEUED'),
         ('PENDING', 'Pending'),
         ('IN_PROGRESS', 'In Progress'),
@@ -128,12 +126,14 @@ class ScrapingTask(models.Model):
         ('FAILED', 'Failed'),
         ('TRANSLATED', 'Translated'),
     ], default='PENDING')
+
     file = models.FileField(upload_to='scraping_files/')
 
     def save(self, *args, **kwargs):
         if self.status == 'COMPLETED' and not self.completed_at:
             self.completed_at = timezone.now()
         super().save(*args, **kwargs)
+
  
 class Business(models.Model):
     STATUS_CHOICES = [
@@ -206,13 +206,12 @@ class Business(models.Model):
     class Meta:
         verbose_name_plural = "Businesses"
 
-# Business-related Category
 class BusinessCategory(models.Model):
-    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='categories')
-    name = models.CharField(max_length=100)
-
+    business = models.ForeignKey(Business, on_delete=models.CASCADE)  # ForeignKey to Business
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)  # ForeignKey to Category
+    
     def __str__(self):
-        return self.name
+        return f"{self.business.title} - {self.category.title}"
  
 class OpeningHours(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='opening_hours')

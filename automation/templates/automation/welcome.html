@@ -1,0 +1,26 @@
+<!-- templates/welcome.html -->
+ 
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="main-content project">
+    <div class="row">
+        <div class="container text-center">
+            <h1>Welcome</h1>
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <p>Hello, Admin! You can manage the system <a href="{% url 'admin:index' %}">here</a>.</p>
+                {% elif user.roles.filter(role='AMBASSADOR').exists %}
+                    <p>Welcome, Ambassador! You can navigate to your dashboard <a href="{% url 'ambassador_dashboard' %}">here</a>.</p>
+                {% else %}
+                    <p>Welcome, {{ user.username }}! Explore our features.</p>
+                {% endif %}
+            {% else %}
+                <p>Please <a href="{% url 'login' %}">log in</a> to continue.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

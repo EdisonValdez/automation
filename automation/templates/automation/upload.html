@@ -74,47 +74,59 @@
                     <form id="upload-form" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
-                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 mb-24">
+                            <div class="col-md-3 col-sm-12 mb-24">
                                 <div class="form-group">
                                     <label for="{{ form.project_title.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Project Title</label>
                                     {{ form.project_title }}
                                 </div>
                             </div>
-                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 mb-24">
-                                <div class="form-group">
-                                    <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
-                                    {{ form.level }}
+  
+                                <!-- Main Category Dropdown -->
+                                <div class="col-md-3 col-sm-12 mb-24">
+                                    <div class="form-group">
+                                        <label for="id_main_category" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
+                                        <select name="main_category" class="form-control" required id="id_main_category">
+                                            <option value="">Select a category</option>
+                                            <!-- Loop through the main categories and populate the dropdown -->
+                                            {% for category in main_categories %}
+                                                <option value="{{ category.id }}">{{ category.title }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12 mb-24">
-                                <div class="form-group">
-                                    <label for="{{ form.main_category.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
-                                    {{ form.main_category }}
-                                </div>
-                            </div>
-                           <!-- <div class="col-md-3 col-sm-12 mb-24">
-                                <div class="form-group">
-                                    <label for="{{ form.subcategory.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Subcategory (optional)</label>
-                                    {{ form.subcategory }}
-                                </div>
-                            </div>-->
+                            
+                                <!-- Subcategory Dropdown -->
+                                <div class="col-md-3 col-sm-12 mb-24">
+                                    <div class="form-group">
+                                        <label for="id_subcategory" class="form-label mt-1 fs-18 font-w500 color-primary">Subcategory (optional)</label>
+                                        <select name="subcategory" class="form-control" id="id_subcategory">
+                                            <option value="">Select a subcategory (optional)</option>
+                                        </select>
+                                    </div>
+                                </div> 
+                            
+
+
                         </div>
                         <div class="form-group mb-24">
                             <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description (optional)</label>
                             {{ form.description }}
-                       
+                        </div>
                         
                         <div class="row">
                             <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
                                 <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
-                                <div class="input-group file-browser">   
+                                <div class="input-group file-browser">
+                                  
+                              
                                         {{ form.file }}
+                                  
                                 </div>
                                 <div class="form-text">{{ form.file.help_text }}</div>
                             </div>
  
                         </div>
-                        </div>
+
                         <div class="row">
                             <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                              <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Get Business</label>
@@ -124,7 +136,70 @@
                             </div>
                         </div>
                     </form>
-  
+ 
+<script>
+$(document).ready(function() {
+    $('#id_level').change(function() {
+        var levelId = $(this).val();  // Get the selected level ID
+        // Clear the existing categories and subcategories
+        $('#id_main_category').empty().append('<option value="">Select a category</option>');
+        $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+
+        if (levelId) {
+            $.ajax({
+                url: '{% url "get_categories" %}',  // Fetch categories by level
+                data: {
+                    'level_id': levelId
+                },
+                success: function(data) {
+                    // Populate the main category dropdown with fetched categories
+                    data.forEach(function(category) {
+                        $('#id_main_category').append(
+                            $('<option></option>').attr('value', category.id).text(category.title)
+                        );
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching categories:', error);  // For debugging
+                }
+            });
+        }
+    });
+});
+
+</script> 
+<script>
+ $(document).ready(function() {
+    $('#id_main_category').change(function() {
+        var categoryId = $(this).val();  // Get the selected main category ID
+
+        // Clear and reset the subcategory dropdown
+        $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+
+        if (categoryId) {
+            $.ajax({
+                url: '{% url "get_subcategories" %}',  // Fetch subcategories based on main category
+                data: {
+                    'category_id': categoryId
+                },
+                success: function(data) {
+                    // Populate the subcategory dropdown with fetched subcategories
+                    data.forEach(function(subcategory) {
+                        $('#id_subcategory').append(
+                            $('<option></option>').attr('value', subcategory.id).text(subcategory.title)
+                        );
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error fetching subcategories: " + error);  // For debugging
+                }
+            });
+        }
+    });
+});
+
+</script>
+
                     <div class="overlay" ></div>                 
            
                     <div id="log-container"></div>
@@ -133,82 +208,7 @@
     <div class="loader" id="loader"></div>
     <p>Processing your upload...</p>
 </div>
- 
-<script>
-    $(document).ready(function() {
-        const levelSelect = $('#id_level');
-        const categorySelect = $('#id_main_category');
-        const subcategorySelect = $('#id_subcategory');
-
-        levelSelect.change(function() {
-            const levelId = $(this).val();
-            $.ajax({
-                url: '{% url "get_categories" %}',
-                data: {
-                    'level': levelId
-                },
-                success: function(data) {
-                    console.log('Categories received:', data);
-                    categorySelect.html('<option value="">Select a category</option>');
-                    data.forEach(function(category) {
-                        categorySelect.append($('<option></option>').attr('value', category.id).text(category.title));
-                    });
-                    // Limpiar subcategorías cuando cambia el nivel
-                    subcategorySelect.html('<option value="">Select a subcategory (optional)</option>');
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching categories:', error);
-                }
-            });
-        });
-
-        categorySelect.change(function() {
-            const categoryId = $(this).val();
-            $.ajax({
-                url: '{% url "get_subcategories" %}',
-                data: {
-                    'category': categoryId
-                },
-                success: function(data) {
-                    console.log('Subcategories received:', data);
-                    subcategorySelect.html('<option value="">Select a subcategory (optional)</option>');
-                    data.forEach(function(subcategory) {
-                        subcategorySelect.append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching subcategories:', error);
-                }
-            });
-        });
-    });
-</script>
-<script type="text/javascript">
-    $(document).ready(function() {
-        $.ajax({
-            url: '/get-categories/',  
-            method: 'GET',
-            success: function(response) {
-                var select = $('#main_category');
-                select.empty();   
-
-            
-                select.append('<option value="">Select Category</option>');
-
-                // Populate the select dropdown with categories
-                $.each(response.categories, function(index, category) {
-                    select.append('<option value="' + category + '">' + category + '</option>');
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error('Error fetching categories:', error);
-            }
-        });
-    });
-</script>
-
-
-    <hr />
+  <hr />
     <div class="box ">
         <div class="box-header pt-0">
             <div class="me-auto">

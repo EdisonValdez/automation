@@ -31,7 +31,7 @@ from django.template.loader import render_to_string
 from .tasks import *
 from .serializers import BusinessSerializer
 from .permissions import IsAdminOrAmbassadorForDestination
-from .models import CustomUser, Destination, ScrapingTask, Image, Business, Subcategory, UserRole
+from .models import CustomUser, Destination, Level, ScrapingTask, Image, Business,  UserRole
 from .forms import DestinationForm, UserProfileForm, CustomUserCreationForm, CustomUserChangeForm, ScrapingTaskForm, BusinessForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
@@ -41,14 +41,26 @@ from django.http import HttpResponse
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
-  
-
+ 
 def health_check(request):
     try:
         return HttpResponse("OK", content_type="text/plain")
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         return HttpResponse("ERROR", status=500)
+ 
+def welcome_view(request):
+    if request.user.is_authenticated:
+        # User is logged in, check their roles
+        if request.user.is_superuser:
+            return render(request, 'automation/welcome.html')  # Render with admin message
+        elif request.user.roles.filter(role='AMBASSADOR').exists():
+            return render(request, 'automation/welcome.html')  # Render with ambassador message
+        else:
+            return render(request, 'automation/welcome.html')  # Render with standard user message
+    else:
+        # User is not logged in
+        return redirect('login')  # Redirect to login page
 
 
 class BusinessViewSet(viewsets.ModelViewSet):
@@ -107,15 +119,16 @@ def update_business_status(request, business_id):
     
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
-
-
+ 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
+
     def get(self, request):
         logger.info("Accessing UploadFileView GET")
-        form = ScrapingTaskForm()
         
+        form = ScrapingTaskForm()
+
         # Fetch tasks with pagination
         tasks = ScrapingTask.objects.all().order_by('-created_at')
         paginator = Paginator(tasks, 5)
@@ -125,21 +138,25 @@ class UploadFileView(View):
         context = {
             'form': form,
             'page_obj': page_obj,
-            'tasks': page_obj.object_list  
+            'tasks': page_obj.object_list
         }
+
         return render(request, 'automation/upload.html', context)
 
     @transaction.atomic
     def post(self, request):
         logger.info("Received file upload POST request")
         logger.debug(f"POST data: {request.POST}")
+        
         form = ScrapingTaskForm(request.POST, request.FILES)
+
         if form.is_valid():
             task = form.save(commit=False)
-            task.user = request.user 
+            task.user = request.user
             task.created_by = request.user
             task.status = 'QUEUED'
             task.save()
+
             try:
                 # Pass the task_id to the process_scraping_task function
                 process_scraping_task(task_id=task.id)
@@ -155,6 +172,7 @@ class UploadFileView(View):
                     'status': 'error',
                     'message': "Failed to start the scraping task. Please try again."
                 })
+
         else:
             logger.warning(f"Form validation failed: {form.errors}")
             return JsonResponse({
@@ -358,13 +376,15 @@ def login_view(request):
             messages.error(request, "Invalid username or password.")
     return render(request, 'automation/login.html')
 
+
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class DashboardView(View):
+    
     def get(self, request):
         user = request.user
         context = self.get_common_context()
-        
+
         # Determine user role
         is_admin = user.is_superuser or user.roles.filter(role='ADMIN').exists()
         is_ambassador = user.roles.filter(role='AMBASSADOR').exists()
@@ -379,11 +399,12 @@ class DashboardView(View):
         else:
             context.update(self.get_user_context(user))
 
-        tasks = ScrapingTask.objects.all().order_by('-created_at')   
-        paginator = Paginator(tasks, 6) 
+        # Fetch and paginate tasks
+        tasks = ScrapingTask.objects.all().order_by('-created_at')
+        paginator = Paginator(tasks, 6)  # Show 6 tasks per page
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
- 
+
         # Add role flags and other data to context
         context.update({
             'tasks': page_obj.object_list,
@@ -411,35 +432,32 @@ class DashboardView(View):
             context['failed_projects'] = next((item['count'] for item in status_counts if item['status'] == 'FAILED'), 0)
             context['translated_projects'] = next((item['count'] for item in status_counts if item['status'] == 'TRANSLATED'), 0)
 
-            # Get recent projects and tasks
-            context['projects'] = ScrapingTask.objects.all().order_by('-created_at')[:5]
-            context['tasks'] = ScrapingTask.objects.all().order_by('-created_at')[:10]
+            # Get project statistics
+            context['projects'] = ScrapingTask.objects.all().order_by('-created_at')[:5]  # Recent projects
+            context['tasks'] = ScrapingTask.objects.all().order_by('-created_at')[:10]  # Recent tasks
 
             # Get status counts for chart
             status_counts_chart = ScrapingTask.objects.values('status').annotate(count=Count('id')).order_by()
-            logger.debug(f"Status counts: {status_counts_chart}")
             context['status_counts'] = {item['status']: item['count'] for item in status_counts_chart}
 
             # Get category counts for chart
             category_counts = ScrapingTask.objects.values('main_category').annotate(count=Count('id')).order_by()
-            logger.debug(f"Category counts: {category_counts}")
             for item in category_counts:
                 if item['main_category'] is None:
                     item['main_category'] = "Uncategorized"  # Substitute None with a default label
-            
-            context['category_counts'] = list(category_counts)
- 
-            # Get some additional useful statistics
-            context['avg_businesses_per_task'] = Business.objects.count() / context['total_projects'] if context['total_projects'] > 0 else 0
-            context['completion_rate'] = (context['completed_projects'] / context['total_projects']) * 100 if context['total_projects'] > 0 else 0
 
-            # Get tasks created in the last 7 days
+            context['category_counts'] = list(category_counts)
+
+            # Additional statistics
+            context['avg_businesses_per_task'] = (Business.objects.count() / context['total_projects']) if context['total_projects'] > 0 else 0
+            context['completion_rate'] = (context['completed_projects'] / context['total_projects'] * 100) if context['total_projects'] > 0 else 0
+
+            # Recent tasks
             seven_days_ago = timezone.now() - timezone.timedelta(days=7)
             context['recent_tasks_count'] = ScrapingTask.objects.filter(created_at__gte=seven_days_ago).count()
 
         except DatabaseError as e:
             logger.error(f"Database error in get_common_context: {str(e)}")
-            # Set default values in case of database error
             context = {
                 'total_projects': 0,
                 'total_businesses': 0,
@@ -458,13 +476,11 @@ class DashboardView(View):
             }
         except Exception as e:
             logger.error(f"Unexpected error in get_common_context: {str(e)}")
-            # Re-raise the exception to be handled by the global error handler
             raise
 
         return context
 
     def get_admin_context(self):
-        # Count only users with the "AMBASSADOR" role
         ambassador_count = CustomUser.objects.filter(roles__role='AMBASSADOR').count()
 
         return {
@@ -473,12 +489,8 @@ class DashboardView(View):
             'total_destinations': Destination.objects.count(),
             'businesses': Business.objects.all(),
             'user_role': UserRole.objects.count(),
-
-            # Add ambassador-specific count to the context
             'ambassador_count': ambassador_count,
         }
-
-
 
     def get_ambassador_context(self, user):
         return {
@@ -487,9 +499,8 @@ class DashboardView(View):
         }
 
     def get_user_context(self, user):
-        # Add regular user-specific dashboard data here if needed
         return {}
-
+    
 @login_required
 def logout_view(request):
     logout(request)
@@ -1045,8 +1056,7 @@ def edit_business(request, business_id):
         messages.error(request, "An error occurred while editing the business.")
         return redirect('business_list')
     
-def custom_404_view(request, exception=None):
-    return render(request, '404.html', status=404)
+ 
 
 def save_business_from_results(task, results, query):
     for local_result in results.get('local_results', []):
@@ -1055,40 +1065,85 @@ def save_business_from_results(task, results, query):
         #translate_business_info_sync(business)
         download_images(business, local_result)
 
-@require_GET
+def load_categories(request):
+    # Fetch only top-level categories (those with no parent)
+    top_level_categories = Category.objects.filter(parent__isnull=True)
+
+    # Render the form with only the top-level categories
+    return render(request, 'automation/upload.html', {
+        'main_categories': top_level_categories,
+    })
+
+
 def get_categories(request):
-    level_id = request.GET.get('level')
+    """
+    Fetch categories based on the specified level.
+    """
+    level_id = request.GET.get('level_id')
+
     if not level_id:
         return JsonResponse({'error': 'Level ID is required'}, status=400)
-    logger.debug(f"Fetching categories for level_id: {level_id}")
-    categories = Category.objects.filter(level_id=level_id).values('id', 'title')
-    logger.debug(f"Found categories: {categories}")
+
+    # Fetch categories that belong to the selected level and have no parent (top-level categories)
+    categories = Category.objects.filter(level_id=level_id, parent__isnull=True).values('id', 'title')
+
+    if not categories:
+        return JsonResponse({'error': 'No categories found for this level'}, status=404)
+
     return JsonResponse(list(categories), safe=False)
 
-@require_GET
+ 
+
 def get_subcategories(request):
-    category_id = request.GET.get('category')
+    """
+    Fetch subcategories based on the selected main category.
+    """
+    category_id = request.GET.get('category_id')
+
     if not category_id:
         return JsonResponse({'error': 'Category ID is required'}, status=400)
-    logger.debug(f"Fetching subcategories for category_id: {category_id}")
-    subcategories = Subcategory.objects.filter(category_id=category_id).values('id', 'title')
-    logger.debug(f"Found subcategories: {subcategories}")
+
+    # Fetch subcategories where the parent is the selected category
+    subcategories = Category.objects.filter(parent_id=category_id).values('id', 'title')
+
     return JsonResponse(list(subcategories), safe=False)
+
+def parse_address(address):
+    # This is a simplified address parser. You might want to use a more robust solution.
+    components = address.split(',')
+    parsed = {
+        'street': components[0].strip() if len(components) > 0 else '',
+        'city': components[1].strip() if len(components) > 1 else '',
+        'state': components[2].strip() if len(components) > 2 else '',
+        'postal_code': '',
+        'country': components[-1].strip() if len(components) > 3 else ''
+    }
+    
+    # Try to extract postal code
+    for component in components:
+        if component.strip().isdigit():
+            parsed['postal_code'] = component.strip()
+            break
+    
+    return parsed
+
 
 @transaction.atomic
 def save_business_from_json(task, business_data, query):
     logger.info(f"Saving business data from JSON for task {task.id}")
+
     try:
         business_obj = {
             'task': task,
             'project_id': task.project_id,
             'project_title': task.project_title,
-            'main_category': task.main_category,
+            'main_category': task.main_category,  # Assume this is a Category instance
             'tailored_category': task.tailored_category,
             'search_string': query,
             'scraped_at': timezone.now(),
         }
 
+        # Field mapping
         field_mapping = {
             'position': 'rank',
             'title': 'title',
@@ -1102,7 +1157,7 @@ def save_business_from_json(task, business_data, query):
             'address': 'address',
             'phone': 'phone',
             'website': 'website',
-            'description': 'description', 
+            'description': 'description',
             'thumbnail': 'thumbnail',
         }
 
@@ -1126,7 +1181,7 @@ def save_business_from_json(task, business_data, query):
         # Parse address
         address = business_data.get('address', '')
         address_components = parse_address(address)
-        
+
         business_obj['street'] = address_components.get('street', '')
         business_obj['city'] = address_components.get('city', '')
         business_obj['state'] = address_components.get('state', '')
@@ -1136,7 +1191,7 @@ def save_business_from_json(task, business_data, query):
         # Fill in missing address components
         fill_missing_address_components(business_obj, task, query)
 
-        # Find or create the destination based on the country and state
+        # Get or create destination
         destination_name = f"{business_obj['country']}, {business_obj['state']}" if business_obj['state'] else business_obj['country']
         destination, created = Destination.objects.get_or_create(name=destination_name)
         business_obj['destination'] = destination
@@ -1153,10 +1208,15 @@ def save_business_from_json(task, business_data, query):
             logger.info(f"Existing business updated from JSON: {business.title} (ID: {business.id})")
 
         # Save categories
-        Category.objects.bulk_create([
-            Category(business=business, name=category)
-            for category in business_data.get('categories', [])
-        ], ignore_conflicts=True)
+        # Remove the old BusinessCategory logic, assuming business_data['categories'] contains category IDs
+        categories = business_data.get('categories', [])
+        
+        for category_id in categories:
+            try:
+                category = Category.objects.get(id=category_id)  # Assume these are the IDs of existing categories
+                business.main_category.add(category)  # Associate main category if needed
+            except Category.DoesNotExist:
+                logger.warning(f"Category ID {category_id} does not exist.")
 
         # Save additional info
         additional_info = [
@@ -1171,9 +1231,8 @@ def save_business_from_json(task, business_data, query):
             for key, value in item.items()
         ]
         AdditionalInfo.objects.bulk_create(additional_info, ignore_conflicts=True)
-
         logger.info(f"Additional data saved for business {business.id}")
-        
+
         # Queue translation task
         enhance_translate_and_summarize_business(business.id)
         logger.info(f"Translation task queued for business {business.id}")
@@ -1187,62 +1246,11 @@ def save_business_from_json(task, business_data, query):
         logger.info(f"All business data processed and saved for business {business.id}")
 
         return business
+
     except Exception as e:
         logger.error(f"Error saving business data from JSON for task {task.id}: {str(e)}", exc_info=True)
         raise
 
-def parse_address(address):
-    # This is a simplified address parser. You might want to use a more robust solution.
-    components = address.split(',')
-    parsed = {
-        'street': components[0].strip() if len(components) > 0 else '',
-        'city': components[1].strip() if len(components) > 1 else '',
-        'state': components[2].strip() if len(components) > 2 else '',
-        'postal_code': '',
-        'country': components[-1].strip() if len(components) > 3 else ''
-    }
-    
-    # Try to extract postal code
-    for component in components:
-        if component.strip().isdigit():
-            parsed['postal_code'] = component.strip()
-            break
-    
-    return parsed
-
-@transaction.atomic
-def process_uploaded_json(task, file_path):
-    success_count = 0
-    error_count = 0
-    
-    try:
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-
-        if 'local_results' in data:
-            for business_data in data['local_results']:
-                try:
-                    save_business_from_json(task, business_data, data.get('search_parameters', {}).get('q', ''))
-                    success_count += 1
-                except Exception as e:
-                    logger.error(f"Error processing business: {str(e)}")
-                    error_count += 1
-        else:
-            raise ValueError("Invalid JSON structure")
-
-        # Force the transaction to be written to the database
-        transaction.get_connection().commit()
-
-        logger.info(f"JSON processing completed. Successes: {success_count}, Errors: {error_count}")
-
-        return success_count, error_count
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON file.")
-        raise
-    except Exception as e:
-        logger.error(f"Error processing JSON file: {str(e)}")
-        raise
- 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class UploadScrapingResultsView(View):
@@ -1379,3 +1387,10 @@ def send_task_completion_email(task_id):
     recipient_list = [task.user.email]  # Asumiendo que tiene un campo de usuario asociado a la tarea
     
     send_mail(subject, message, from_email, recipient_list)
+
+
+def custom_404_view(request, exception):
+    return render(request, 'automation/404.html', status=404)
+
+def custom_500_view(request):
+    return render(request, 'automation/500.html', status=500)

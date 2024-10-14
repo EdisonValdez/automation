@@ -2,7 +2,7 @@
 import logging
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser, Business, Destination, ScrapingTask, UserRole, Category, Subcategory, Level
+from .models import CustomUser, Business, Destination, ScrapingTask, UserRole, Category, Level
 logger = logging.getLogger(__name__)
 
 class UserProfileForm(forms.ModelForm):
@@ -85,49 +85,58 @@ class DestinationForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
-  
 class ScrapingTaskForm(forms.ModelForm):
     file = forms.FileField(
         help_text="Upload a file containing search queries (one per line)",
-        widget=forms.FileInput(attrs={'class': 'btn btn-light d-flex align-items-center mr-5', 'style':'display:contents'})
+        widget=forms.FileInput(attrs={'class': 'btn btn-light d-flex align-items-center mr-5', 'style': 'display:contents'})
     )
+
     level = forms.ModelChoiceField(
         queryset=Level.objects.all(),
         widget=forms.Select(attrs={'class': 'form-control'}),
         empty_label="Select a level"
     )
+
     main_category = forms.ModelChoiceField(
         queryset=Category.objects.none(),
         widget=forms.Select(attrs={'class': 'form-control'}),
         empty_label="Select a category"
     )
+
     subcategory = forms.ModelChoiceField(
-        queryset=Subcategory.objects.none(),
+        queryset=Category.objects.none(),
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=False,
         empty_label="Select a subcategory (optional)"
     )
+
     class Meta:
         model = ScrapingTask
         fields = ['project_title', 'level', 'main_category', 'subcategory', 'description', 'file']
-        widgets = { 
+        widgets = {
             'project_title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Siempre poblar el queryset de main_category
+        self.fields['main_category'].queryset = Category.objects.filter(parent__isnull=True)
         
-        # Always populate main_category queryset
-        self.fields['main_category'].queryset = Category.objects.all()
-        
-        # If we have an instance and level is set, filter categories
+        # Si tenemos una instancia y el nivel está establecido, filtrar las categorías
         if self.instance.pk and self.instance.level:
-            self.fields['main_category'].queryset = Category.objects.filter(level=self.instance.level)
+            self.fields['main_category'].queryset = Category.objects.filter(level=self.instance.level, parent__isnull=True)
         
-        # If we have an instance and main_category is set, filter subcategories
-        if self.instance.pk and self.instance.main_category:
-            self.fields['subcategory'].queryset = Subcategory.objects.filter(category=self.instance.main_category)
+        # Si main_category está en los datos POST, actualizar subcategory
+        if 'main_category' in self.data:
+            try:
+                main_category_id = int(self.data.get('main_category'))
+                self.fields['subcategory'].queryset = Category.objects.filter(parent_id=main_category_id)
+            except (ValueError, TypeError):
+                pass  # invalid input from the client; ignore and fallback to empty queryset
+        # Si estamos editando una instancia existente, poblar subcategory
+        elif self.instance.pk and self.instance.main_category:
+            self.fields['subcategory'].queryset = Category.objects.filter(parent=self.instance.main_category)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -140,7 +149,7 @@ class ScrapingTaskForm(forms.ModelForm):
         if main_category and level and main_category.level != level:
             self.add_error('main_category', 'The selected category does not belong to the selected level.')
 
-        if subcategory and main_category and subcategory.category != main_category:
+        if subcategory and main_category and subcategory.parent != main_category:
             self.add_error('subcategory', 'The selected subcategory does not belong to the selected main category.')
 
         return cleaned_data
@@ -155,16 +164,16 @@ class ScrapingTaskForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.status = 'PENDING'
-        
         if commit:
             instance.save()
             logger.info(f"Created new ScrapingTask with id: {instance.id}")
-
         return instance
+
 
 class CsvImportForm(forms.Form):
     csv_upload = forms.FileField(label='Select a CSV file')
-     
+
+
 class BusinessForm(forms.ModelForm):
     class Meta:
         model = Business

@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'false'
 
 # Allow all hosts for development
 ALLOWED_HOSTS = ['*']
@@ -76,11 +76,12 @@ CHANNEL_LAYERS = {
 # Database configuration
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "false"
 
+#if DEVELOPMENT_MODE is False:
 if DEVELOPMENT_MODE is True:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'automation-240924',
+            'NAME': 'automation-121024',
             'USER': 'postgres',
             'PASSWORD': 'Thesecret1',
             'HOST': 'localhost',
@@ -137,7 +138,8 @@ STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'  # Use this for productio
 
 # Media files storage with S3
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+#MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+DEFAULT_IMAGE_URL = 'https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png'
 
 
 # S3 settings
@@ -189,6 +191,7 @@ LOGGING = {
 AUTH_USER_MODEL = 'automation.CustomUser'
 
 # Media upload settings
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 FILE_UPLOAD_PERMISSIONS = 0o644
@@ -210,4 +213,3 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
-DEFAULT_IMAGE_URL = os.getenv('DEFAULT_IMAGE_URL')

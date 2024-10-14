@@ -3,7 +3,9 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from rest_framework.routers import DefaultRouter 
+from rest_framework.routers import DefaultRouter
+
+from automation.tasks import get_categories 
 from . import views
 
 router = DefaultRouter()
@@ -32,7 +34,7 @@ urlpatterns = [
     path('update-business-status/<int:business_id>/', views.update_business_status, name='update_business_status'),
     path('admin-view/', views.admin_view, name='admin_view'),
     
-    path('', views.DashboardView.as_view(), name='dashboard'),     
+    path('dashboard', views.DashboardView.as_view(), name='dashboard'),     
     #path('', views.health_check, name='health_check'), 
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
@@ -74,18 +76,28 @@ urlpatterns = [
     path('ambassadors/<int:ambassador_id>/', views.ambassador_profile, name='ambassador_profile'),
     path('upload-scraping-results/', views.UploadScrapingResultsView.as_view(), name='upload_scraping_results'),
 
-    path('api/categories/', views.get_categories, name='get_categories'),
-    path('api/subcategories/', views.get_subcategories, name='get_subcategories'),
+    #path('api/categories/', views.get_categories, name='get_categories'),
+    #path('api/subcategories/', views.get_subcategories, name='get_subcategories'),
 
     path('task-status/<int:task_id>/', views.task_status, name='task_status'),
     path('search-destinations/', views.search_destinations, name='search_destinations'),
 
     path('health/', views.health_check, name='health_check'),
+    path('', views.welcome_view, name='welcome'),
+
+ 
+ 
+    path('load-categories/', views.load_categories, name='load_categories'),  # For loading the form
+    path('categories/', views.get_categories, name='get_categories'),         # For fetching main categories by level
+    path('subcategories/', views.get_subcategories, name='get_subcategories'),# For fetching subcategories
+ 
 
 
 ]
-
+ 
+handler500 = 'automation.views.custom_500_view'
 handler404 = 'automation.views.custom_404_view'
 
 if settings.DEBUG:
+    print(settings.DEBUG)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
