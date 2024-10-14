@@ -89,7 +89,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Configuración de DigitalOcean Spaces
-# Configuración de DigitalOcean Spaces
 USE_SPACES = os.getenv('USE_SPACES', 'False').lower() == 'true'
 
 if USE_SPACES:
@@ -113,7 +112,9 @@ if USE_SPACES:
     STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
 
     # Configuración para archivos de medios
-    DEFAULT_FILE_STORAGE = 'automation.storage_backends.MediaStorage'
+    #DEFAULT_FILE_STORAGE = 'automation.storage_backends.MediaStorage'
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
     # Configuraciones adicionales para DigitalOcean Spaces
