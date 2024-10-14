@@ -232,7 +232,7 @@
                                     <p>Debug: Full URL = {{ MEDIA_URL }}{{ image.local_path|urlencode }}</p>
                                     <img src="{{ MEDIA_URL }}{{ image.local_path }}" alt="{{MEDIA_URL}}{{ image.local_path }}" class="landscape-image">
                                 {% else %}
-                                    <img src="{{ MEDIA_URL }}{{ image.image_url }}" alt="{{MEDIA_URL}}{{ image.local_path }}" class="landscape-image">
+                                    <img src="{{ image.image_url }}" alt="{{MEDIA_URL}}{{ image.local_path }}" class="landscape-image">
                                 {% endif %}
                             </div>
                             

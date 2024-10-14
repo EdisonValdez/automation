@@ -114,5 +114,3 @@ cli.add_command(delete_file)
 if __name__ == '__main__':
     cli()
 
-#python upload_bucket.py list-files --bucket business-images --prefix uploads/
-#python upload_bucket.py upload-folder-to-s3 --bucket business-images --prefix media/ --local-dir ./media
