@@ -142,6 +142,10 @@ class Business(models.Model):
         ('REVIEWED', 'Reviewed'),
         ('IN_PRODUCTION', 'In Production'),
     ]
+    TYPE_CHOICES = [
+        ('event', 'Event'),
+        ('place', 'Place'),
+    ]
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -149,7 +153,6 @@ class Business(models.Model):
     )
     task = models.ForeignKey(ScrapingTask, on_delete=models.CASCADE, related_name='businesses')
     project_id = models.UUIDField(editable=False)
-    project_title = models.CharField(max_length=255)
     main_category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, related_name='businesses')
     tailored_category = models.CharField(max_length=100, blank=True, null=True)
     search_string = models.CharField(max_length=255)

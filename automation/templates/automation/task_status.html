@@ -6,7 +6,7 @@
 <p>Status: <span id="task-status">{{ task.status }}</span></p>
 <div id="log-container" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
 
-<script>
+<script>/*
     const taskId = "{{ task.id }}";
     const logContainer = document.getElementById('log-container');
     const statusElement = document.getElementById('task-status');
@@ -31,6 +31,6 @@
 
     socket.onclose = function(e) {
         console.error('Chat socket closed unexpectedly');
-    };
+    };*/
 </script>
 {% endblock %}

@@ -10,7 +10,7 @@
         <div class="container text-center">
             <h1>Welcome</h1>
             {% if user.is_authenticated %}
-                {% if user.is_superuser %}
+                {% if user.is_superuser or is_admin %}
                     <p>Hello, Admin! You can manage the system <a href="{% url 'admin:index' %}">here</a>.</p>
                 {% elif user.roles.filter(role='AMBASSADOR').exists %}
                     <p>Welcome, Ambassador! You can navigate to your dashboard <a href="{% url 'ambassador_dashboard' %}">here</a>.</p>

@@ -218,6 +218,8 @@ class TaskDetailView(View):
             'business_count': business_count,  # Add the business count to the context
             'status_choices': Business.STATUS_CHOICES,
             'MEDIA_URL': settings.MEDIA_URL,
+            'MEDIA_ROOT': settings.MEDIA_ROOT,
+            'DEFAULT_IMAGE_URL': settings.DEFAULT_IMAGE_URL,
         }
 
         logger.info(f"Retrieved task {id} with {business_count} businesses")
