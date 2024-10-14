@@ -108,7 +108,7 @@ class Category(models.Model):
 class ScrapingTask(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
     project_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    project_title = models.CharField(max_length=255)
+    project_title = models.CharField(max_length=300)
     level = models.ForeignKey(Level, on_delete=models.SET_NULL, null=True)
     main_category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='tasks')
     subcategory = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks_sub')
@@ -153,6 +153,7 @@ class Business(models.Model):
     )
     task = models.ForeignKey(ScrapingTask, on_delete=models.CASCADE, related_name='businesses')
     project_id = models.UUIDField(editable=False)
+    project_title = models.CharField(max_length=255)
     main_category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, related_name='businesses')
     tailored_category = models.CharField(max_length=100, blank=True, null=True)
     search_string = models.CharField(max_length=255)
