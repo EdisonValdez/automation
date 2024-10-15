@@ -338,7 +338,7 @@ def download_images(business, local_result):
                         # Save the image to Spaces
                         buffer = BytesIO()
                         img_cropped.save(buffer, 'JPEG', quality=85)
-                        default_storage.save(file_path, ContentFile(buffer.getvalue()))
+                        default_storage.save(file_path, ContentFile(buffer.getvalue()), parameters={'ACL': 'public-read'})
                         
                         # Get the S3/Spaces URL
                         s3_url = default_storage.url(file_path)
