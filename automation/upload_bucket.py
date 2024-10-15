@@ -22,7 +22,6 @@ s3_client = session.client('s3',
                            endpoint_url=spaces_endpoint_url,
                            aws_access_key_id=spaces_access_key,
                            aws_secret_access_key=spaces_secret_key)
-
 @click.command()
 @click.option('--bucket',
     default=spaces_bucket_name,
@@ -33,9 +32,10 @@ s3_client = session.client('s3',
 @click.option('--local-dir',
     default='media/',
     help='The local directory to upload from')
+
 def upload_folder_to_s3(bucket: str, prefix: str, local_dir: str):
     """
-    Sube una carpeta local a DigitalOcean Spaces.
+    Sube una carpeta local a DigitalOcean Spaces y establece permisos de lectura pública.
 
     :param bucket: Nombre del bucket para subir los archivos
     :param prefix: Prefijo (carpeta) dentro del bucket
@@ -44,17 +44,58 @@ def upload_folder_to_s3(bucket: str, prefix: str, local_dir: str):
     if not os.path.exists(local_dir):
         raise click.ClickException(f"The local directory {local_dir} does not exist")
 
+    # Crear un conjunto para almacenar los directorios únicos
+    unique_dirs = set()
+
     for root, dirs, files in os.walk(local_dir):
         for file in files:
             local_path = os.path.join(root, file)
             relative_path = os.path.relpath(local_path, local_dir)
             s3_path = os.path.join(prefix, relative_path).replace("\\", "/")
 
+            # Agregar el directorio padre a unique_dirs
+            parent_dir = os.path.dirname(s3_path)
+            if parent_dir:
+                unique_dirs.add(parent_dir)
+
             try:
                 click.echo(f"Uploading {local_path} to {s3_path}")
-                s3_client.upload_file(local_path, bucket, s3_path)
+                
+                # Subir el archivo con ACL público-lectura
+                s3_client.upload_file(
+                    local_path, 
+                    bucket, 
+                    s3_path,
+                    ExtraArgs={'ACL': 'public-read'}
+                )
+                
+                # Establecer el tipo de contenido adecuado para imágenes
+                if s3_path.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                    content_type = f"image/{os.path.splitext(s3_path)[1][1:].lower()}"
+                    s3_client.put_object_acl(Bucket=bucket, Key=s3_path, ACL='public-read')
+                    s3_client.copy_object(
+                        Bucket=bucket,
+                        CopySource={'Bucket': bucket, 'Key': s3_path},
+                        Key=s3_path,
+                        MetadataDirective='REPLACE',
+                        ContentType=content_type,
+                        ACL='public-read'
+                    )
+
             except ClientError as e:
                 click.echo(f"Error uploading {local_path}: {e}", err=True)
+
+    # Establecer permisos de lectura pública para los directorios
+    for dir_path in unique_dirs:
+        try:
+            s3_client.put_object(
+                Bucket=bucket,
+                Key=f"{dir_path}/",
+                ACL='public-read'
+            )
+            click.echo(f"Set public-read permissions for directory: {dir_path}/")
+        except ClientError as e:
+            click.echo(f"Error setting permissions for directory {dir_path}: {e}", err=True)
 
     click.echo("Upload completed")
 
