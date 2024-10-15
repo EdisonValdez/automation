@@ -370,10 +370,7 @@ def download_images(business, local_result):
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
 
     return image_paths
-
-
-
-
+ 
 def save_results(task, results, query):
     results_dir = os.path.join(settings.MEDIA_ROOT, 'scraping_results', str(task.id))
     os.makedirs(results_dir, exist_ok=True)
@@ -404,22 +401,6 @@ async def translate_text(text, language="spanish"):
 async def translate_business_info_async(business, languages=["spanish", "eng"]):
     logger.info(f"Starting translation for business {business.id}")
 
-    # Traducción de categorías
-    categories = await get_categories(business)
-    for category in categories:
-        for lang in languages:
-            try:
-                if lang == "spanish":
-                    category.name_es = await translate_text(category.name, language="spanish")
-                elif lang == "eng":
-                    # Usamos 'eng' para mantener consistencia, pero internamente se traduce a inglés británico
-                    category.name_eng = await translate_text(category.name, language="eng")
-                await save_category(category)
-                logger.info(f"Translated category {category.name} to {lang} for business {business.id}")
-            except Exception as e:
-                logger.error(f"Error translating category {category.name} to {lang} for business {business.id}: {str(e)}")
-
-    # Traducción de información adicional
     additional_info = await get_additional_info(business)
     for info in additional_info:
         for lang in languages:
@@ -730,11 +711,7 @@ def save_business(task, local_result, query):
     except Exception as e:
         logger.error(f"Error saving business data for task {task.id}: {str(e)}", exc_info=True)
         raise
-
-@sync_to_async
-def get_categories(business):
-    return list(business.categories.all())
-
+ 
 @sync_to_async
 def get_additional_info(business):
     return list(business.additional_info.all())
