@@ -94,13 +94,15 @@ class ScrapingTaskForm(forms.ModelForm):
     level = forms.ModelChoiceField(
         queryset=Level.objects.all(),
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Select a level"
+        empty_label="Select a level",
+        error_messages={'required': 'Please select a level.'}
     )
 
     main_category = forms.ModelChoiceField(
         queryset=Category.objects.none(),
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Select a category"
+        empty_label="Select a category",
+        error_messages={'required': 'Please select a main category.'}
     )
 
     subcategory = forms.ModelChoiceField(

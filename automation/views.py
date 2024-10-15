@@ -146,8 +146,6 @@ class UploadFileView(View):
     @transaction.atomic
     def post(self, request):
         logger.info("Received file upload POST request")
-        logger.debug(f"POST data: {request.POST}")
-        
         form = ScrapingTaskForm(request.POST, request.FILES)
 
         if form.is_valid():
@@ -158,7 +156,6 @@ class UploadFileView(View):
             task.save()
 
             try:
-                # Pass the task_id to the process_scraping_task function
                 process_scraping_task(task_id=task.id)
                 logger.info(f"Scraping task {task.id} created and queued, project ID: {task.project_id}")
                 return JsonResponse({
@@ -170,16 +167,17 @@ class UploadFileView(View):
                 logger.error(f"Failed to start the scraping task for task_id {task.id}: {str(e)}", exc_info=True)
                 return JsonResponse({
                     'status': 'error',
-                    'message': "Failed to start the scraping task. Please try again."
+                    'message': "Failed to start the scraping task. Please try again.",
+ 
                 })
-
         else:
             logger.warning(f"Form validation failed: {form.errors}")
             return JsonResponse({
                 'status': 'error',
                 'message': "There was an error with your submission. Please check the form.",
-                'errors': form.errors
+                'errors': form.errors  # Return form errors to the frontend
             })
+
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):

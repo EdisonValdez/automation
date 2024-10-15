@@ -29,3 +29,5 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.ERROR(f"Error uploading {local_path}: {e}"))
 
         self.stdout.write(self.style.SUCCESS('Media transfer completed'))
+
+#python manage.py transfer_media
