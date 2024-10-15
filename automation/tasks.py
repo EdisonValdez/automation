@@ -715,11 +715,7 @@ def save_business(task, local_result, query):
 @sync_to_async
 def get_additional_info(business):
     return list(business.additional_info.all())
-
-@sync_to_async
-def save_category(category):
-    category.save()
-
+ 
 @sync_to_async
 def save_info(info):
     info.save()
