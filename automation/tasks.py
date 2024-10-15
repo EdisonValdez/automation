@@ -11,6 +11,9 @@ from .models import BusinessImage, Destination, Review, ScrapingTask, Business, 
 from django.conf import settings 
 from serpapi import GoogleSearch
 import json
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+
 import requests
 from django.utils import timezone
 import os
@@ -268,19 +271,18 @@ def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
 
 def update_image_url(business, local_path, new_path):
-#def update_image_url(business, local_path, backup_path):
-    """
-    Updates the image URL in the database to point to the local backup path.
-    """
     try:
         image = Image.objects.get(business=business, local_path=local_path)
-        image.local_path = new_path #backup_path / Update to local backup path
+        # Update the S3/Spaces URL
+        s3_url = default_storage.url(new_path)
+        image.image_url = s3_url
+        image.local_path = new_path
         image.save()
-        logger.info(f"Local path for image updated for business {business.id}: {new_path}")
+        logger.info(f"Image URL and local path updated for business {business.id}: {s3_url}")
     except Image.DoesNotExist:
         logger.warning(f"No Image found for business {business.id} with local path {local_path}")
     except Exception as e:
-        logger.error(f"Error updating local path for image for business {business.id}: {str(e)}")
+        logger.error(f"Error updating image for business {business.id}: {str(e)}")
 
 def download_images(business, local_result):
     photos_link = local_result.get('photos_link')
@@ -302,9 +304,6 @@ def download_images(business, local_result):
         if 'error' in photos_results:
             logger.error(f"API Error fetching photos for business '{business.title}': {photos_results['error']}")
             return image_paths
-
-        output_dir = os.path.join(settings.MEDIA_ROOT, 'business_images', str(business.id))
-        os.makedirs(output_dir, exist_ok=True)
 
         # Create a slug of the business name
         business_slug = slugify(business.title)
@@ -332,28 +331,34 @@ def download_images(business, local_result):
                         bottom = (img.height + new_height) / 2
                         img_cropped = img.crop((left, top, right, bottom))
 
-                        # Save the cropped image with the new naming convention
+                        # Save to Spaces
                         file_name = f"{business_slug}_{i}.jpg"
-                        file_path = os.path.join(output_dir, file_name)
-                        img_cropped.save(file_path, 'JPEG', quality=85)
-
-                        local_path = os.path.join('business_images', str(business.id), file_name)
+                        file_path = f'business_images/{business.id}/{file_name}'
+                        
+                        # Save the image to Spaces
+                        buffer = BytesIO()
+                        img_cropped.save(buffer, 'JPEG', quality=85)
+                        default_storage.save(file_path, ContentFile(buffer.getvalue()))
+                        
+                        # Get the S3/Spaces URL
+                        s3_url = default_storage.url(file_path)
+                        logger.info(f"Image saved to Spaces: {s3_url}")
+                        
                         Image.objects.create(
                             business=business,
-                            image_url=image_url,
-                            local_path=local_path,
+                            image_url=s3_url,
+                            local_path=file_path,  # Save the relative path
                             order=i
                         )
                         image_paths.append(file_path)
                         logger.info(f"Downloaded and processed image {i} for business {business.id}")
-
                     else:
                         logger.error(f"Failed to download image {i} for business {business.id}: HTTP {response.status_code}")
                 except Exception as e:
                     logger.error(f"Error downloading image {i} for business {business.id}: {str(e)}", exc_info=True)
 
             time.sleep(1)  # To avoid overloading the server
-
+ 
         # Set the first image as the main image if it exists
         first_image = Image.objects.filter(business=business).order_by('order').first()
         if first_image:
@@ -365,6 +370,9 @@ def download_images(business, local_result):
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
 
     return image_paths
+
+
+
 
 def save_results(task, results, query):
     results_dir = os.path.join(settings.MEDIA_ROOT, 'scraping_results', str(task.id))

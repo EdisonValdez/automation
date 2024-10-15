@@ -235,9 +235,7 @@ class Image(models.Model):
     order = models.IntegerField(default=0) 
     thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
     is_approved = models.BooleanField(default=False)
-
-
-
+ 
     class Meta:
         ordering = ['order']
  
