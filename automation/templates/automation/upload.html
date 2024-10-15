@@ -405,7 +405,7 @@ $(document).ready(function() {
                     hideLoader(); // Use the hideLoader function
                     $('.overlay').hide(); // Hide the overlay on error
                     $('#submit-button').attr('disabled', false);
-                    $('#errorMessage').text("An error occurred. Please try again.");
+                    $('#errorMessage').text("An error occurred. However, the process might be running in the background. Check later the logs.");
                     $('#errorModal').modal('show');
                 },
                 cache: false,
