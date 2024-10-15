@@ -221,7 +221,7 @@
         <div class="row">
             {% for image in business.images.all %}
                 {% if not image.is_approved %}
-                    <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="false" draggable="true">
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="false" draggable="true">
                         <div class="box client">
                             <div class="img-box">
                                 <div class="image-container">
@@ -252,7 +252,7 @@
         <div class="row" id="sortable-approved-images">
             {% for image in business.images.all %}
                 {% if image.is_approved %}
-                    <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="true" draggable="true">
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="true" draggable="true">
                         <div class="box client">
                             <div class="img-box">
                                 <div class="image-container">
