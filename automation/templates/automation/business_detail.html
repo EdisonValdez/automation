@@ -232,7 +232,7 @@
                                     <p>Debug: Full URL = {{ MEDIA_URL }}{{ image.local_path|urlencode }}</p>
                                     <img src="{{ MEDIA_URL }}{{ image.local_path }}" alt="{{MEDIA_URL}}{{ image.local_path }}" class="landscape-image">
                                 {% else %}
-                                    <img src="{{ image.image_url }}" alt="{{MEDIA_URL}}{{ image.local_path }}" class="landscape-image">
+                                    <img src="{{ image.image_url }}" alt="{{ image.local_url }}" class="landscape-image">
                                 {% endif %}
                             </div>
                             
@@ -257,19 +257,16 @@
         </h4>
         <div id="approved-images" class="card image-container droppable mt-25" style="border: 2px solid #28a745; min-height: 200px; padding: 10px;">
             <div class="row" id="sortable-approved-images">
-                {% for image in business.images.all %}
+            {% for image in business.images.all %}
                 {% if image.is_approved %}
                 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="true" draggable="true">
                     <div class="box client">
                         <div class="img-box">
                             <div class="image-container">
                                 {% if image.local_path %}
-                                    <p>Debug: MEDIA_URL = {{ MEDIA_URL }}</p>
-                                    <p>Debug: image.local_path = {{ image.local_path }}</p>
-                                    <p>Debug: Full URL = {{ MEDIA_URL }}{{ image.local_path|urlencode }}</p>
                                     <img src="{{ MEDIA_URL }}{{ image.local_path  }}" alt="{{MEDIA_URL}}{{ image.local_path }}" class="landscape-image">
                                 {% else %}
-                                    <img src="{{ MEDIA_URL }}{{ image.image_url }}" alt="{{MEDIA_URL}}{{ image.local_path }}" class="landscape-image">
+                                    <img src="{{ image.image_url }}" alt="{{ image.local_url }}" class="landscape-image">
                                 {% endif %}
                             </div>
                             
@@ -277,7 +274,7 @@
                     </div>
                 </div>
                 {% endif %}
-                {% endfor %}
+            {% endfor %}
             </div>
             
         </div>
