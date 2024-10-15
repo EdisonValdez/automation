@@ -221,20 +221,22 @@
         <div class="row">
             {% for image in business.images.all %}
                 {% if not image.is_approved %}
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="false" draggable="true">
+                    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="false" draggable="true">
                         <div class="box client">
                             <div class="img-box">
                                 <div class="image-container">
                                     {% if image.local_path %}
-                                        <img src="{{ MEDIA_URL }}{{ image.local_path }}" alt="Local image" class="landscape-image">
+                                        <img src="{{ MEDIA_URL }}{{ image.local_path }}" alt="Imagen local" class="landscape-image">
                                     {% else %}
-                                        <img src="{{ image.image_url }}" alt="Remote image" class="landscape-image">
+                                        <img src="{{ image.image_url }}" alt="Imagen remota" class="landscape-image">
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
                     </div>
                 {% endif %}
+            {% empty %}
+                <p>No hay imágenes no aprobadas.</p>
             {% endfor %}
         </div>
     </div>
@@ -252,14 +254,12 @@
         <div class="row" id="sortable-approved-images">
             {% for image in business.images.all %}
                 {% if image.is_approved %}
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="true" draggable="true">
+                    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 mb-25 draggable" data-id="{{ image.id }}" data-approved="true" draggable="true">
                         <div class="box client">
                             <div class="img-box">
                                 <div class="image-container">
                                     {% if image.local_path %}
                                         <img src="{{ MEDIA_URL }}{{ image.local_path }}" alt="Local image" class="landscape-image">
-                                    {% else %}
-                                        <img src="{{ image.image_url }}" alt="Remote image" class="landscape-image">
                                     {% endif %}
                                 </div>
                             </div>
