@@ -44,3 +44,15 @@ class Command(BaseCommand):
 
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Error loading categories: {str(e)}'))
+# python manage.py load_categories automation/level_categories/transportation.json
+# python manage.py load_categories automation/level_categories/where_to_buy.json 
+# python manage.py load_categories automation/level_categories/what_to_do.json  
+# python manage.py load_categories automation/level_categories/rental_services.json
+# python manage.py load_categories automation/level_categories/food_and_drink.json 
+# python manage.py load_categories automation/level_categories/categories.json   
+#
+#
+#
+#
+#
+#

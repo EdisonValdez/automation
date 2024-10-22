@@ -11,27 +11,29 @@
                     <div class="box-body">
                         <h3>Destination:</h3>
                         <h5>{{ destination.name }}</h5>
-                        
+
                         <!-- Iterate over ambassador details -->
                         {% for ambassador in ambassador_details %}
-                                            
                         <div class="box client mt-4">
                             <div class="dropdown">
                                 <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="bx bx-dots-horizontal-rounded"></i>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right">
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ ambassador.id }}"><i class="bx bx-edit mr-5"></i>Edit</a>
-                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal{{ ambassador.id }}"><i class="bx bx-trash"></i> Delete</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ ambassador.user_id }}"><i class="bx bx-edit mr-5"></i>Edit</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal{{ ambassador.user_id }}"><i class="bx bx-trash"></i> Delete</a>
                                 </div>
                             </div>
+
                             <div class="box-body pt-5 pb-0">
                                 <div class="img-box">
-                                    <img src="./images/client/2.png" alt="Imagen del embajador">
+                                    <img src="./images/client/2.png" alt="Ambassador Image">
                                     <div class="pulse-css"></div>
                                 </div>
-                                <a href="client-details.html"><h5 class="mt-17">{{ ambassador.username }}</h5></a>                
-                                <p class="fs-14 font-w400 font-main">Ambassador at <span class="text-clo-primary font-w500 pl-4">{{ destination.name }}</span></p>
+
+                                <h5 class="mt-17">{{ ambassador.username }}</h5>
+                                <p class="fs-14">Ambassador at <strong>{{ destination.name }}</strong></p>
+                                
                                 <ul class="info">
                                     <li class="fs-14">
                                         <i class="bx bxs-phone"></i>
@@ -43,14 +45,15 @@
                                     </li>
                                     <li class="fs-14"><strong>Ambassador Destinations:</strong> {{ ambassador.dest }}</li>
                                 </ul>
+
                                 <div class="group-btn d-flex justify-content-between">
-                                    <a class="bg-btn-pri color-white" href="#" data-bs-toggle="modal" data-bs-target="#messageModal{{ ambassador.id }}">Message</a> 
+                                    <a class="bg-btn-pri color-white" href="#" data-bs-toggle="modal" data-bs-target="#messageModal{{ ambassador.user_id }}">Message</a> 
                                 </div>
                             </div>
                         </div>
 
                         <!-- Modal for Sending Message -->
-                        <div class="modal fade" id="messageModal{{ ambassador.id }}" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+                        <div class="modal fade" id="messageModal{{ ambassador.user_id }}" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
@@ -58,7 +61,7 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <form id="messageForm{{ ambassador.id }}">
+                                        <form id="messageForm{{ ambassador.user_id }}">
                                             <div class="form-group mb-3">
                                                 <label for="subject" class="form-label">Subject</label>
                                                 <input type="text" class="form-control" id="subject" placeholder="Enter subject">
@@ -71,18 +74,17 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-primary" onclick="sendMessage({{ ambassador.id }})">Send Message</button>
+                                        <button type="button" class="btn btn-primary" onclick="sendMessage({{ ambassador.user_id }})">Send Message</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                     
                         {% endfor %}
+
                         <br />
-                        <a type="button" class="btn btn-secondary" href="{% url 'destination_management' %}" >Back</a>
+                        <a type="button" class="btn btn-secondary" href="{% url 'destination_management' %}">Back</a>
                     </div>
                 </div>
-              
             </div>
         </div>
     </div>
@@ -99,7 +101,7 @@
                 ambassadorId: ambassadorId,
                 subject: subject,
                 message: messageText,
-                csrfmiddlewaretoken: '{{ csrf_token }}' // Ensure CSRF token is included for security
+                csrfmiddlewaretoken: '{{ csrf_token }}'
             };
 
             // Send data to the server using AJAX
@@ -130,7 +132,4 @@
         }
     }
 </script>
-
-
 {% endblock %}
-

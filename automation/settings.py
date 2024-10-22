@@ -1,18 +1,15 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
+from dotenv import load_dotenv
+load_dotenv(dotenv_path='./.env')
 
-load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Configuración del entorno
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower() == 'true'
 
-# Configuración de seguridad
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 #ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS=["*"]
@@ -68,7 +65,7 @@ if DEVELOPMENT_MODE:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'automation-121024'),
+            'NAME': os.getenv('DB_NAME', 'automation-18102024'),
             'USER': os.getenv('DB_USER', 'postgres'),
             'PASSWORD': os.getenv('DB_PASSWORD', 'Thesecret1'),
             'HOST': os.getenv('DB_HOST', 'localhost'),
@@ -87,44 +84,45 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+ 
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
+
+"""
 # Configuración de DigitalOcean Spaces
-USE_SPACES = os.getenv('USE_SPACES', 'False').lower() == 'true'
+USE_SPACES = False #os.getenv('USE_SPACES', 'False').lower() == 'true'
 
 if USE_SPACES:
-    # Credenciales
-    AWS_ACCESS_KEY_ID = os.getenv('SPACES_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = os.getenv('SPACES_SECRET_ACCESS_KEY')
-
-    # Configuración del bucket
-    AWS_STORAGE_BUCKET_NAME = os.getenv('SPACES_BUCKET_NAME', 'business-images')
-    AWS_S3_REGION_NAME = os.getenv('SPACES_REGION_NAME', 'nyc3')
-    AWS_S3_ENDPOINT_URL = f'https://{AWS_S3_REGION_NAME}.digitaloceanspaces.com'
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com'
-
-    # Configuraciones adicionales
+ 
+    AWS_ACCESS_KEY_ID = "DO00UTUFYM3UL9NG6AZD"  
+    AWS_SECRET_ACCESS_KEY = "PtSfCsITXsDWejh5/6MdQN0CAxw66/FXL6+CMDWXNDQ"  
+    AWS_STORAGE_BUCKET_NAME = "business-images"  
+    AWS_S3_REGION_NAME = "nyc3"  
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com'  
+ 
     AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
     AWS_DEFAULT_ACL = 'public-read'
     AWS_LOCATION = 'static'
-
-    # Configuración para archivos estáticos
+ 
     STATICFILES_STORAGE = 'automation.storage_backends.StaticStorage'
     STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
-
-    # Configuración para archivos de medios
-    DEFAULT_FILE_STORAGE = 'automation.storage_backends.MediaStorage'
-    #DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage' not this one :()
+ 
+    DEFAULT_FILE_STORAGE = 'automation.storage_backends.MediaStorage' 
 
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
-
-    # Configuraciones adicionales para DigitalOcean Spaces
+ 
     AWS_S3_ADDRESSING_STYLE = 'virtual'
     AWS_S3_SIGNATURE_VERSION = 's3v4'
+   
 else:
     # Usar almacenamiento local para desarrollo
     STATIC_URL = '/static/'
     MEDIA_URL = '/media/'
 
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+"""
 # Configuración de imagen por defecto
 DEFAULT_IMAGE_URL = os.getenv('DEFAULT_IMAGE_URL', 'https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png')
 
@@ -175,12 +173,12 @@ LOGGING = {
 
 # Configuración de correo electrónico
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = os.getenv('EMAIL_PORT')
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+EMAIL_HOST = "smtp.localsecrets.travel"#os.getenv('EMAIL_HOST', 'smtp.localsecrets.travel')  # Replace with your SMTP host
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = "evaldez@localsecrets.travel"#os.getenv('EMAIL_HOST_USER')  # Your email address
+EMAIL_HOST_PASSWORD = "fr@uoVbs8b}F$h" #os.getenv('EMAIL_HOST_PASSWORD')  # Your email password
+DEFAULT_FROM_EMAIL = "evaldez@localsecrets.travel"#os.getenv('DEFAULT_FROM_EMAIL', 'your-email@example.com')
 
 # Configuración adicional
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
@@ -247,6 +245,4 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
- 
-
-     
+GDAL_LIBRARY_PATH="" 

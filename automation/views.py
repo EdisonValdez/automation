@@ -31,13 +31,13 @@ from django.template.loader import render_to_string
 from .tasks import *
 from .serializers import BusinessSerializer
 from .permissions import IsAdminOrAmbassadorForDestination
-from .models import CustomUser, Destination, Level, ScrapingTask, Image, Business,  UserRole
+from .models import CustomUser, Destination, Level, ScrapingTask, Image, Business,  UserRole, Country
 from .forms import DestinationForm, UserProfileForm, CustomUserCreationForm, CustomUserChangeForm, ScrapingTaskForm, BusinessForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_GET
 from django.http import HttpResponse
-
+ 
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
@@ -120,6 +120,8 @@ def update_business_status(request, business_id):
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
  
+
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
@@ -155,8 +157,24 @@ class UploadFileView(View):
             task.status = 'QUEUED'
             task.save()
 
+            # Extract form data to pass to the scraping task
+            form_data = {
+                'country_id': form.cleaned_data.get('country').id if form.cleaned_data.get('country') else None,
+                'country_name': form.cleaned_data.get('country').name if form.cleaned_data.get('country') else '',
+                'destination_id': form.cleaned_data.get('destination').id if form.cleaned_data.get('destination') else None,
+                'destination_name': form.cleaned_data.get('destination').name if form.cleaned_data.get('destination') else '',
+                'level': form.cleaned_data.get('level').id if form.cleaned_data.get('level') else None,
+                'main_category': form.cleaned_data.get('main_category').title if form.cleaned_data.get('main_category') else '',  # Use 'title' or the correct field
+                'subcategory': form.cleaned_data.get('subcategory').title if form.cleaned_data.get('subcategory') else '',  # Adjust field as needed
+            }
+
             try:
-                process_scraping_task(task_id=task.id)
+                # asynchronous task processing Celery, use delay()
+                # process_scraping_task.delay(task.id, form_data=form_data)
+                
+                # For synchronous processing
+                process_scraping_task(task_id=task.id, form_data=form_data)
+                
                 logger.info(f"Scraping task {task.id} created and queued, project ID: {task.project_id}")
                 return JsonResponse({
                     'status': 'success',
@@ -168,7 +186,6 @@ class UploadFileView(View):
                 return JsonResponse({
                     'status': 'error',
                     'message': "Failed to start the scraping task. Please try again.",
- 
                 })
         else:
             logger.warning(f"Form validation failed: {form.errors}")
@@ -307,58 +324,32 @@ class AmbassadorDashboardView(View):
 
         return render(request, 'automation/ambassador_dashboard.html', context)
    
-@csrf_exempt
-@login_required
-def update_image_order(request, business_id):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            image_ids = data.get('order', [])
-            business = get_object_or_404(Business, id=business_id)
-            
-            # Use a transaction to ensure atomicity
-            with transaction.atomic():
-                for index, image_id in enumerate(image_ids):
-                    print(f"Updating image ID: {image_id} to order: {index}")
-                    image = Image.objects.get(id=image_id, business=business)
-                    image.order = index
-                    image.save()
-            
-            return JsonResponse({'status': 'success'})
-        except Exception as e:
-            logger.error(f"Error updating image order: {e}")
-            return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
- 
-@login_required
-def delete_image(request, image_id):
-    image = get_object_or_404(Image, id=image_id)
-    business_id = image.business.id
-    image.delete()
-    return redirect('business_detail', business_id=business_id)
 
 @login_required
 def ambassador_businesses(request):
-    # Check if user is not an ambassador, or if the user is an admin
+    # Check if the user is an ambassador or an admin
     if not request.user.roles.filter(role='AMBASSADOR').exists() and not request.user.is_superuser:
         return redirect('login')  # Redirect non-ambassadors and non-admins elsewhere
 
     # Get the ambassador's destinations and related businesses
     ambassador_destinations = request.user.destinations.all()
     businesses = Business.objects.filter(destination__in=ambassador_destinations)
- 
-    x_values = [business.city for business in businesses]
-    y_values = [business.reviews.count() for business in businesses]   
-    colors = ["red", "green", "blue", "orange", "brown"][:len(businesses)]  
 
-    # Pass chart data to the template
+    # Collecting city names and the number of reviews for charting
+    x_values = [business.destination.city.name for business in businesses]  # Using destination.city.name
+    y_values = [business.reviews_count for business in businesses]  # Using reviews_count field
+    
+    # Set colors for the chart (limiting the number of colors to the number of businesses)
+    colors = ["red", "green", "blue", "orange", "brown"][:len(businesses)]
+
+    # Render the template and pass the relevant data
     return render(request, 'automation/ambassador_business.html', {
         'businesses': businesses,
         'x_values': x_values,
         'y_values': y_values,
         'colors': colors
     })
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -500,7 +491,9 @@ class DashboardView(View):
 
     def get_user_context(self, user):
         return {}
-    
+
+#########USER###################USER###################USER###################USER##########
+  
 @login_required
 def logout_view(request):
     logout(request)
@@ -604,6 +597,12 @@ class CustomPasswordChangeView(PasswordChangeView):
 class CustomPasswordChangeDoneView(PasswordChangeDoneView):
     template_name = 'automation/password_change_done.html'
 
+
+def is_admin_or_ambassador(user):
+    return user.is_superuser or user.roles.filter(role__in=['ADMIN', 'AMBASSADOR']).exists()
+
+#########USER###################USER###################USER###################USER##########
+
 @login_required
 def task_list(request):
     if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
@@ -616,9 +615,8 @@ def task_list(request):
     
     return render(request, 'automation/task_list.html', {'tasks': tasks})
 
-def is_admin_or_ambassador(user):
-    return user.is_superuser or user.roles.filter(role__in=['ADMIN', 'AMBASSADOR']).exists()
 
+#########BUSINESS#########################BUSINESS#########################BUSINESS#########################BUSINESS################
 @login_required
 def business_list(request):
     # Check if the user is a superuser or has the 'ADMIN' role
@@ -648,9 +646,6 @@ def business_list(request):
 
     return render(request, 'automation/business_list.html', context)
 
-def is_admin_or_ambassador(user):
-    return user.is_superuser or user.roles.filter(role__in=['ADMIN', 'AMBASSADOR']).exists()
-
 @login_required
 @user_passes_test(is_admin_or_ambassador)
 def business_detail(request, business_id):
@@ -662,7 +657,8 @@ def business_detail(request, business_id):
         'status_choices': status_choices
     }
     return render(request, 'automation/business_detail.html', context)
- 
+  
+
 @csrf_protect
 def update_business(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -670,36 +666,38 @@ def update_business(request, business_id):
     if request.method == 'POST':
         post_data = request.POST.copy()
 
-        # Manejar las opciones de servicio JSON
+        # Handle 'service_options' JSON
         service_options_str = post_data.get('service_options', '').strip()
         logger.debug("Service Options String from POST: %s", service_options_str)
 
         try:
             if service_options_str:
                 service_options = json.loads(service_options_str.replace("'", '"'))
+                post_data['service_options'] = service_options
             else:
-                service_options = business.service_options  # Mantener las opciones existentes
+                # Remove service_options from post_data to prevent validation errors
+                post_data.pop('service_options', None)
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'errors': {'service_options': 'Invalid JSON format'}})
 
-        # Agregar las opciones de servicio procesadas de vuelta a los datos del formulario
-        post_data['service_options'] = service_options
+        # Handle 'operating_hours' JSON
+        operating_hours_str = post_data.get('operating_hours', '').strip()
+        logger.debug("Operating Hours String from POST: %s", operating_hours_str)
 
-        # Conservar las horas de operación existentes si no se proporcionan nuevas
-        if 'operating_hours' not in post_data:
-            post_data['operating_hours'] = business.operating_hours
+        try:
+            if operating_hours_str:
+                operating_hours = json.loads(operating_hours_str.replace("'", '"'))
+                post_data['operating_hours'] = operating_hours
+            else:
+                post_data.pop('operating_hours', None)
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'errors': {'operating_hours': 'Invalid JSON format'}})
 
-        # Inicializar el formulario
+        # Initialize the form
         form = BusinessForm(post_data, instance=business)
 
         if form.is_valid():
-            updated_business = form.save(commit=False)
-            
-            # Asegurarse de que las horas de operación se conserven
-            if not updated_business.operating_hours:
-                updated_business.operating_hours = business.operating_hours
-            
-            updated_business.save()
+            form.save()
             logger.info("Business %s updated successfully", business.project_title)
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -711,6 +709,7 @@ def update_business(request, business_id):
             return JsonResponse({'success': False, 'errors': form.errors})
     
     return redirect('business_detail', business_id=business_id)
+
  
 @csrf_exempt
 def update_business_hours(request):
@@ -770,54 +769,106 @@ def delete_business(request, business_id):
         return redirect('business_list')
     return render(request, 'automation/delete_business_confirm.html', {'business': business})
 
+@csrf_exempt
+@login_required
+def update_image_order(request, business_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            image_ids = data.get('order', [])
+            business = get_object_or_404(Business, id=business_id)
+            
+            # Ensure all images are related to this business and update their order
+            with transaction.atomic():
+                for index, image_id in enumerate(image_ids):
+                    image = Image.objects.get(id=image_id, business=business)
+                    image.order = index  # Update the 'order' field
+                    image.save()
+            
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            logger.error(f"Error updating image order: {e}")
+            return JsonResponse({'status': 'error', 'message': 'An error occurred'}, status=500)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+ 
+@login_required
+def delete_image(request, image_id):
+    if request.method == 'POST':
+        image = get_object_or_404(Image, id=image_id)
+        business_id = image.business.id
+        image.delete()
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+ 
+@login_required
+def update_image_approval(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        image_id = data.get('image_id')
+        is_approved = data.get('is_approved')
+
+        try:
+            image = Image.objects.get(id=image_id)
+            image.is_approved = is_approved
+            image.save()
+            return JsonResponse({'status': 'success'})
+        except Image.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Image not found'}, status=404)
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+
+#########BUSINESS#########################BUSINESS#########################BUSINESS#########################BUSINESS################
+
+#########DESTINATION#########################DESTINATION#########################DESTINATION#########################DESTINATION################
+
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def destination_management(request):
     if request.method == 'POST':
-        # Check if this is an edit request
         destination_id = request.POST.get('id', None)
         if destination_id:
-            # Edit existing destination
             destination = get_object_or_404(Destination, id=destination_id)
             form = DestinationForm(request.POST, instance=destination)
         else:
-            # Create a new destination
             form = DestinationForm(request.POST)
-        
+
         if form.is_valid():
             form.save()
             return JsonResponse({'status': 'success'})
         else:
             return JsonResponse({'status': 'error', 'errors': form.errors})
 
-    # Retrieve all destinations
     all_destinations = Destination.objects.all().order_by('name')
-    
-    # Use Paginator to limit to 24 destinations per page
     paginator = Paginator(all_destinations, 24)
     page_number = request.GET.get('page', 1)
     destinations = paginator.get_page(page_number)
-    
-    # Prepare a list to hold destination and associated ambassador information
+
     destination_data = []
-    
     for destination in destinations:
-        ambassadors = CustomUser.objects.filter(destinations=destination, roles__role='AMBASSADOR').distinct()
-        ambassador_names = [ambassador.username for ambassador in ambassadors] if ambassadors else ['No ambassadors assigned']
-        
+        ambassador = destination.ambassador
+        ambassador_name = ambassador.username if ambassador else 'No ambassador assigned'
+
         destination_data.append({
             'destination': destination,
-            'ambassador_names': ambassador_names
+            'ambassador_name': ambassador_name
         })
 
     # Retrieve all ambassadors for the dropdown list
     all_ambassadors = CustomUser.objects.filter(roles__role='AMBASSADOR').distinct()
 
+    # Retrieve all countries for the dropdown
+    all_countries = Country.objects.all()
+
     return render(request, 'automation/destination_management.html', {
         'destination_data': destination_data,
         'all_ambassadors': all_ambassadors,
         'destinations': destinations,  # This is the paginated QuerySet
+        'all_countries': all_countries,  # Pass all countries to the template
     })
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
@@ -829,7 +880,7 @@ def get_destination(request, destination_id):
         'country': destination.country
     }
     return JsonResponse(data)
- 
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def destination_detail(request, destination_id):
@@ -839,11 +890,12 @@ def destination_detail(request, destination_id):
     # Get ambassadors associated with the destination
     ambassadors = CustomUser.objects.filter(destinations=destination, roles__role='AMBASSADOR').distinct()
 
-    # Debugging output
+    # Debugging output for clarity
     logger.info(f"Destination: {destination.name}, Ambassadors Count: {ambassadors.count()}")
     for ambassador in ambassadors:
         logger.info(f"Ambassador: {ambassador.username} {ambassador.id}")
 
+    # Prepare ambassador details to be displayed in the template
     ambassador_details = [
         {
             'user_id': ambassador.id,
@@ -857,11 +909,12 @@ def destination_detail(request, destination_id):
         for ambassador in ambassadors
     ]
 
-    # Implement pagination
+    # Implement pagination to manage large lists of ambassadors
     paginator = Paginator(ambassador_details, 10)  # Show 10 ambassadors per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Pass relevant data to the template
     context = {
         'destination': destination,
         'ambassador_details': page_obj.object_list,
@@ -874,42 +927,34 @@ def destination_detail(request, destination_id):
 
     return render(request, 'automation/destination_detail.html', context)
 
+
 @login_required
 def ambassador_profile(request, ambassador_id):
     ambassador = get_object_or_404(UserRole, id=ambassador_id, role='AMBASSADOR')
     return render(request, 'ambassador_profile.html', {'ambassador': ambassador})
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def create_destination(request):
     if request.method == 'POST':
         form = DestinationForm(request.POST)
+        
         if form.is_valid():
-            # Check if destination already exists
-            if Destination.objects.filter(name=form.cleaned_data['name'], country=form.cleaned_data['country']).exists():
-                return JsonResponse({
-                    'status': 'error',
-                    'message': "This destination already exists."
-                }, status=400)
+            form.save()
+            return JsonResponse({'status': 'success', 'message': 'Destination successfully created!'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Failed to create destination. Please check your input.', 'errors': form.errors}, status=400)
 
-            destination = form.save()
-            return JsonResponse({
-                'status': 'success',
-                'message': f"Destination {destination.name} has been created successfully.",
-                'destination': {
-                    'id': destination.id,
-                    'name': destination.name,
-                    'country': destination.country
-                }
-            })
-        return JsonResponse({
-            'status': 'error',
-            'message': "Failed to create destination. Please check your input."
-        }, status=400)
-    else:
-        form = DestinationForm()
-        return render(request, 'automation/create_destination.html', {'form': form})
- 
+    # Get the list of countries and ambassadors for the form dropdowns
+    countries = Country.objects.all().order_by('name')
+    all_ambassadors = CustomUser.objects.filter(roles__role='AMBASSADOR').distinct()
+
+    return render(request, 'automation/create_destination.html', {
+        'countries': countries,
+        'all_ambassadors': all_ambassadors
+    })
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def edit_destination(request):
@@ -955,6 +1000,47 @@ def delete_destination(request, destination_id):
         'status': 'success',
         'message': f"Destination {name} - {country} has been deleted successfully."
     })
+
+@login_required
+@require_GET
+def search_destinations(request):
+    try:
+        name = request.GET.get('name', '').strip()
+        country = request.GET.get('country', '').strip()
+
+        # Start by filtering destinations with available filters
+        destinations = Destination.objects.all()
+
+        if name:
+            destinations = destinations.filter(name__icontains=name)
+        if country:
+            destinations = destinations.filter(country__icontains=country)
+        
+        # Annotate to prefetch the ambassador count to avoid N+1 queries
+        destinations = destinations.annotate(ambassador_count=Count('ambassador_destinations'))
+
+        destination_data = []
+        for destination in destinations:
+            destination_data.append({
+                'id': destination.id,
+                'name': destination.name,
+                'country': destination.country.name,  # Ensure we return the country name instead of the object
+                'ambassadors': destination.ambassador_count,
+            })
+
+        return JsonResponse({
+            'status': 'success',
+            'destinations': destination_data,
+            'is_admin': request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists()
+        })
+    except Exception as e:
+        logger.error(f"Error in search_destinations: {str(e)}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+
+#########DESTINATION#########################DESTINATION#########################DESTINATION#########################DESTINATION################
+   
 
 def start_scraping(request, project_id):
     logger.info(f"Attempting to start scraping for project_id: {project_id}")
@@ -1055,9 +1141,7 @@ def edit_business(request, business_id):
         logger.error(f"Error editing business {business_id}: {str(e)}", exc_info=True)
         messages.error(request, "An error occurred while editing the business.")
         return redirect('business_list')
-    
  
-
 def save_business_from_results(task, results, query):
     for local_result in results.get('local_results', []):
         business = save_business(task, local_result, query)
@@ -1073,8 +1157,7 @@ def load_categories(request):
     return render(request, 'automation/upload.html', {
         'main_categories': top_level_categories,
     })
-
-
+ 
 def get_categories(request):
     """
     Fetch categories based on the specified level.
@@ -1091,9 +1174,7 @@ def get_categories(request):
         return JsonResponse({'error': 'No categories found for this level'}, status=404)
 
     return JsonResponse(list(categories), safe=False)
-
  
-
 def get_subcategories(request):
     """
     Fetch subcategories based on the selected main category.
@@ -1108,6 +1189,18 @@ def get_subcategories(request):
 
     return JsonResponse(list(subcategories), safe=False)
 
+def get_countries(request):
+    countries = Country.objects.all().values('id', 'name')   
+    return JsonResponse(list(countries), safe=False)
+
+def get_destinations_by_country(request):
+    country_id = request.GET.get('country_id')
+    if country_id:
+        destinations = Destination.objects.filter(country_id=country_id).values('id', 'name')
+        return JsonResponse(list(destinations), safe=False)
+    else:
+        return JsonResponse({'error': 'No country_id provided'}, status=400)
+ 
 def parse_address(address):
     # This is a simplified address parser. You might want to use a more robust solution.
     components = address.split(',')
@@ -1126,13 +1219,23 @@ def parse_address(address):
             break
     
     return parsed
-
-
+ 
 @transaction.atomic
-def save_business_from_json(task, business_data, query):
+def save_business_from_json(task, business_data, query, form_data=None):
     logger.info(f"Saving business data from JSON for task {task.id}")
 
     try:
+        # If form data is passed, use it to override some of the fields (city and country from form inputs)
+        if form_data:
+            submitted_country = form_data.get('submitted_country')  # Country from form input
+            submitted_city = form_data.get('submitted_city')  # City from form input
+            destination_id = form_data.get('destination_id')  # Destination ID from form input
+        else:
+            submitted_country = None
+            submitted_city = None
+            destination_id = None
+
+        # Business object construction based on both JSON and form data
         business_obj = {
             'task': task,
             'project_id': task.project_id,
@@ -1143,7 +1246,7 @@ def save_business_from_json(task, business_data, query):
             'scraped_at': timezone.now(),
         }
 
-        # Field mapping
+        # Field mapping from JSON to Business model
         field_mapping = {
             'position': 'rank',
             'title': 'title',
@@ -1161,14 +1264,17 @@ def save_business_from_json(task, business_data, query):
             'thumbnail': 'thumbnail',
         }
 
+        # Populate business_obj with values from the business_data JSON
         for api_field, model_field in field_mapping.items():
             if api_field in business_data:
                 business_obj[model_field] = business_data[api_field]
 
+        # Handle GPS coordinates
         if 'gps_coordinates' in business_data:
             business_obj['latitude'] = business_data['gps_coordinates'].get('latitude')
             business_obj['longitude'] = business_data['gps_coordinates'].get('longitude')
 
+        # Handle types and operating hours
         if 'types' in business_data:
             business_obj['types'] = ', '.join(business_data['types'])
 
@@ -1178,22 +1284,29 @@ def save_business_from_json(task, business_data, query):
         if 'service_options' in business_data:
             business_obj['service_options'] = business_data['service_options']
 
-        # Parse address
+        # Parse address from JSON or use form input
         address = business_data.get('address', '')
         address_components = parse_address(address)
 
+        # Use JSON values for city/country or fall back to form data (submitted_city, submitted_country)
         business_obj['street'] = address_components.get('street', '')
-        business_obj['city'] = address_components.get('city', '')
+        business_obj['city'] = address_components.get('city', submitted_city)
         business_obj['state'] = address_components.get('state', '')
         business_obj['postal_code'] = address_components.get('postal_code', '')
-        business_obj['country'] = address_components.get('country', '')
+        business_obj['country'] = address_components.get('country', submitted_country)
 
-        # Fill in missing address components
-        fill_missing_address_components(business_obj, task, query)
+        # Handle destination: either from the form data (destination_id) or by country/state from the address
+        if destination_id:
+            try:
+                destination = Destination.objects.get(id=destination_id)
+            except Destination.DoesNotExist:
+                logger.error(f"Destination with ID {destination_id} does not exist")
+                raise ValueError(f"Invalid destination ID: {destination_id}")
+        else:
+            # Fallback: create or get destination by country and state
+            destination_name = f"{business_obj['country']}, {business_obj['state']}" if business_obj['state'] else business_obj['country']
+            destination, created = Destination.objects.get_or_create(name=destination_name)
 
-        # Get or create destination
-        destination_name = f"{business_obj['country']}, {business_obj['state']}" if business_obj['state'] else business_obj['country']
-        destination, created = Destination.objects.get_or_create(name=destination_name)
         business_obj['destination'] = destination
 
         # Create or update the Business object
@@ -1207,14 +1320,12 @@ def save_business_from_json(task, business_data, query):
         else:
             logger.info(f"Existing business updated from JSON: {business.title} (ID: {business.id})")
 
-        # Save categories
-        # Remove the old BusinessCategory logic, assuming business_data['categories'] contains category IDs
+        # Save categories from business_data['categories'] (assumed to be category IDs)
         categories = business_data.get('categories', [])
-        
         for category_id in categories:
             try:
-                category = Category.objects.get(id=category_id)  # Assume these are the IDs of existing categories
-                business.main_category.add(category)  # Associate main category if needed
+                category = Category.objects.get(id=category_id)
+                business.main_category.add(category)  # Assuming the relationship supports multiple categories
             except Category.DoesNotExist:
                 logger.warning(f"Category ID {category_id} does not exist.")
 
@@ -1222,20 +1333,13 @@ def save_business_from_json(task, business_data, query):
         additional_info = [
             AdditionalInfo(
                 business=business,
-                category=category,
                 key=key,
                 value=value
             )
-            for category, items in business_data.get('additionalInfo', {}).items()
-            for item in items
-            for key, value in item.items()
+            for key, value in business_data.get('additionalInfo', {}).items()
         ]
         AdditionalInfo.objects.bulk_create(additional_info, ignore_conflicts=True)
         logger.info(f"Additional data saved for business {business.id}")
-
-        # Queue translation task
-        enhance_translate_and_summarize_business(business.id)
-        logger.info(f"Translation task queued for business {business.id}")
 
         # Handle service options
         service_options = business_data.get('serviceOptions', {})
@@ -1282,7 +1386,6 @@ class UploadScrapingResultsView(View):
             messages.error(request, 'No file was uploaded.')
             return redirect('upload_scraping_results')
 
-
         results_file = request.FILES['results_file']
         
         if not results_file.name.endswith('.json'):
@@ -1317,11 +1420,9 @@ class UploadScrapingResultsView(View):
 
         return redirect('upload_scraping_results')
 
-
 def task_status(request, task_id):
     task = ScrapingTask.objects.get(id=task_id)
     return render(request, 'automation/task_status.html', {'task': task})
-
 
 def check_task_status(request, task_id):
     try:
@@ -1330,40 +1431,6 @@ def check_task_status(request, task_id):
     except ScrapingTask.DoesNotExist:
         return JsonResponse({'status': 'UNKNOWN'}, status=404)
 
-@login_required
-@require_GET
-def search_destinations(request):
-    try:
-        name = request.GET.get('name', '').strip()
-        country = request.GET.get('country', '').strip()
-        
-        destinations = Destination.objects.all()
-        if name:
-            destinations = destinations.filter(name__icontains=name)
-        if country:
-            destinations = destinations.filter(country__icontains=country)
-        
-        destination_data = []
-        for destination in destinations:
-            try:
-                destination_data.append({
-                    'id': destination.id,
-                    'name': destination.name,
-                    'country': destination.country,
-                    'ambassadors': destination.get_ambassador_count(),
-                })
-            except Exception as e:
-                logger.error(f"Error processing destination {destination.id}: {str(e)}")
-
-        return JsonResponse({
-            'status': 'success', 
-            'destinations': destination_data,
-            'is_admin': request.user.is_staff  # o is_admin si tienes ese campo
-        })
-    except Exception as e:
-        logger.error(f"Error in search_destinations: {str(e)}", exc_info=True)
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
 def view_report(request, task_id):
     task = get_object_or_404(ScrapingTask, id=task_id)
     report_filename = f"task_report_{task.id}.pdf"

@@ -2,7 +2,9 @@
 import logging
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import CustomUser, Business, Destination, ScrapingTask, UserRole, Category, Level
+from .models import Country, CustomUser, Business, Destination, ScrapingTask, UserRole, Category, Level
+from django.contrib.auth import get_user_model
+
 logger = logging.getLogger(__name__)
 
 class UserProfileForm(forms.ModelForm):
@@ -76,14 +78,34 @@ class CustomUserChangeForm(UserChangeForm):
             UserRole.objects.update_or_create(user=user, defaults={'role': role})
             user.destinations.set(destinations)
         return user
-
+ 
+class CountryForm(forms.ModelForm):
+    class Meta:
+        model = Country
+        fields = ['name', 'code', 'phone_code']
+ 
 class DestinationForm(forms.ModelForm):
     class Meta:
         model = Destination
-        fields = ['name', 'country']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-        }
+        fields = ['name', 'description', 'cp', 'province', 'slogan', 'latitude', 'longitude', 'country', 'ambassador']
+
+    def clean_country(self):
+        country = self.cleaned_data.get('country')
+        if not country:
+            raise forms.ValidationError("Country is required.")
+        return country
+    
+    def __init__(self, *args, **kwargs):
+        super(DestinationForm, self).__init__(*args, **kwargs)
+        self.fields['ambassador'].required = False  
+
+# automation/forms.py
+
+from django import forms
+from .models import ScrapingTask, Country, Destination, Category, Level
+import logging
+
+logger = logging.getLogger(__name__)
 
 class ScrapingTaskForm(forms.ModelForm):
     file = forms.FileField(
@@ -112,9 +134,23 @@ class ScrapingTaskForm(forms.ModelForm):
         empty_label="Select a subcategory (optional)"
     )
 
+    country = forms.ModelChoiceField(
+        queryset=Country.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label="Select a country",
+        error_messages={'required': 'Please select a country.'}
+    )
+
+    destination = forms.ModelChoiceField(
+        queryset=Destination.objects.none(),
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        empty_label="Select a destination",
+        error_messages={'required': 'Please select a destination.'}
+    )
+
     class Meta:
         model = ScrapingTask
-        fields = ['project_title', 'level', 'main_category', 'subcategory', 'description', 'file']
+        fields = ['project_title', 'level', 'main_category', 'subcategory', 'country', 'destination', 'description', 'file']
         widgets = {
             'project_title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
@@ -122,37 +158,59 @@ class ScrapingTaskForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Siempre poblar el queryset de main_category
+
+        # Initialize main category queryset to top-level categories
         self.fields['main_category'].queryset = Category.objects.filter(parent__isnull=True)
-        
-        # Si tenemos una instancia y el nivel está establecido, filtrar las categorías
+
+        # If instance exists and has a level, filter main categories by level
         if self.instance.pk and self.instance.level:
             self.fields['main_category'].queryset = Category.objects.filter(level=self.instance.level, parent__isnull=True)
-        
-        # Si main_category está en los datos POST, actualizar subcategory
+
+        # Handle main category-subcategory dependency in POST data
         if 'main_category' in self.data:
             try:
                 main_category_id = int(self.data.get('main_category'))
                 self.fields['subcategory'].queryset = Category.objects.filter(parent_id=main_category_id)
             except (ValueError, TypeError):
-                pass  # invalid input from the client; ignore and fallback to empty queryset
-        # Si estamos editando una instancia existente, poblar subcategory
+                pass  # Invalid input from the client; fallback to empty queryset
+
+        # If editing an existing instance, populate subcategory queryset
         elif self.instance.pk and self.instance.main_category:
             self.fields['subcategory'].queryset = Category.objects.filter(parent=self.instance.main_category)
+
+        # Handle country-destination dependency in POST data
+        if 'country' in self.data:
+            try:
+                country_id = int(self.data.get('country'))
+                self.fields['destination'].queryset = Destination.objects.filter(country_id=country_id)
+            except (ValueError, TypeError):
+                pass  # Invalid input from the client; fallback to empty queryset
+
+        # If editing an existing instance with a country, populate destination queryset
+        elif self.instance.pk and self.instance.country:
+            self.fields['destination'].queryset = Destination.objects.filter(country=self.instance.country)
 
     def clean(self):
         cleaned_data = super().clean()
         level = cleaned_data.get('level')
         main_category = cleaned_data.get('main_category')
         subcategory = cleaned_data.get('subcategory')
+        country = cleaned_data.get('country')
+        destination = cleaned_data.get('destination')
 
-        logger.debug(f"Cleaning form data: level={level}, main_category={main_category}, subcategory={subcategory}")
+        logger.debug(f"Cleaning form data: level={level}, main_category={main_category}, subcategory={subcategory}, country={country}, destination={destination}")
 
+        # Validate that main_category belongs to the selected level
         if main_category and level and main_category.level != level:
             self.add_error('main_category', 'The selected category does not belong to the selected level.')
 
+        # Validate that subcategory belongs to the selected main category
         if subcategory and main_category and subcategory.parent != main_category:
             self.add_error('subcategory', 'The selected subcategory does not belong to the selected main category.')
+
+        # Validate that destination belongs to the selected country
+        if destination and country and destination.country != country:
+            self.add_error('destination', 'The selected destination does not belong to the selected country.')
 
         return cleaned_data
 
@@ -174,9 +232,12 @@ class ScrapingTaskForm(forms.ModelForm):
 
 class CsvImportForm(forms.Form):
     csv_upload = forms.FileField(label='Select a CSV file')
-
-
+ 
 class BusinessForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ['status', 'city', 'price', 'description', 'description_esp', 'description_eng', 'operating_hours', 'category_name']
+        fields = ['status', 'city', 'price', 'description', 'description_esp', 'description_eng', 'operating_hours', 'category_name', 'service_options']
+        widgets = {
+            'service_options': forms.HiddenInput(),
+            'operating_hours': forms.HiddenInput(),
+        }

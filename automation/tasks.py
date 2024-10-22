@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from ratelimit import RateLimitException
 from automation.consumers import get_log_file_path
-from .models import BusinessImage, Destination, Review, ScrapingTask, Business, Category, OpeningHours, AdditionalInfo, Image
+from .models import BusinessImage, Country, Destination, Review, ScrapingTask, Business, Category, OpeningHours, AdditionalInfo, Image
 from django.conf import settings 
 from serpapi import GoogleSearch
 import json
@@ -63,7 +63,9 @@ from requests.exceptions import RequestException
 import backoff
 import time
 from requests.exceptions import RequestException
- 
+from django.utils.text import slugify
+
+
 SERPAPI_KEY = settings.SERPAPI_KEY  
 OPENAI_API_KEY = settings.TRANSLATION_OPENAI_API_KEY
 openai.api_key = OPENAI_API_KEY   
@@ -155,7 +157,8 @@ def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
 
-def process_scraping_task(task_id):
+
+def process_scraping_task(task_id, form_data=None):
     log_file_path = get_log_file_path(task_id)
     file_handler = logging.FileHandler(log_file_path)
     logger.addHandler(file_handler)
@@ -166,12 +169,9 @@ def process_scraping_task(task_id):
         task.status = 'IN_PROGRESS'
         task.save()
 
-        # Prepare backup directory locally
-        #backup_directory = os.path.join(settings.MEDIA_ROOT, f"backup_images/{task_id}")
-        #os.makedirs(backup_directory, exist_ok=True)
+        # Prepare directories
         business_images_directory = os.path.join(settings.MEDIA_ROOT, 'business_images')
         os.makedirs(business_images_directory, exist_ok=True)
-
 
         queries = read_queries(task.file.path)
         logger.info(f"Total queries to process: {len(queries)}")
@@ -182,16 +182,16 @@ def process_scraping_task(task_id):
             query = query_data['query']
             page_num = 1
             start_offset = 0
-            
+
             while start_offset < 100:
                 logger.info(f"Processing query {index}/{len(queries)}: {query} (Page {page_num})")
                 query_data['start'] = start_offset
-                
+
                 results = process_query(query_data)
-                
+
                 if results is None:
-                    break  # Si hay un error, pasamos a la siguiente consulta
-                
+                    break  # If there's an error, skip to the next query
+
                 local_results = results.get('local_results', [])
                 if not local_results:
                     logger.info(f"No results found for query '{query}' (Page {page_num})")
@@ -204,28 +204,23 @@ def process_scraping_task(task_id):
                     try:
                         with transaction.atomic():
                             logger.info(f"Saving business {result_index}/{len(local_results)} for query '{query}' (Page {page_num})")
-                            business = save_business(task, local_result, query)
-                            logger.info(f"Downloading images for business {business.id}")
-                            image_paths = download_images(business, local_result)
-                            successful_images = 0
-                            for image_path in image_paths:
-                                try:
-                                    update_image_url(business, image_path, image_path)
-                                    logger.info(f"Image {image_path} processed for business {business.id}")
-                                    successful_images += 1
-                                except Exception as e:
-                                    logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
-                            logger.info(f"Successfully processed {successful_images}/{len(image_paths)} images for business {business.id}")
-                        
-                        #for image_path in image_paths:
-                            #try:
-                                #local_backup_path = os.path.join(backup_directory, os.path.basename(image_path))
-                               # shutil.move(image_path, local_backup_path)
-                                #logger.info(f"Image {image_path} saved locally as {local_backup_path}")
-                               # update_image_url(business, image_path, local_backup_path)
-                           # except Exception as e:
-                              #  logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
-
+                            business = save_business(task, local_result, query, form_data=form_data)
+                            
+                            if business:
+                                logger.info(f"Downloading images for business {business.id}")
+                                image_paths = download_images(business, local_result)
+                                successful_images = 0
+                                for image_path in image_paths:
+                                    try:
+                                        update_image_url(business, image_path, image_path)
+                                        logger.info(f"Image {image_path} processed for business {business.id}")
+                                        successful_images += 1
+                                    except Exception as e:
+                                        logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
+                                logger.info(f"Successfully processed {successful_images}/{len(image_paths)} images for business {business.id}")
+                            else:
+                                logger.warning(f"Business '{local_result.get('title', 'Unknown')}' skipped due to missing country information.")
+                    
                     except Exception as e:
                         logger.error(f"Error processing business result {result_index} for query '{query}': {str(e)}", exc_info=True)
                         continue
@@ -241,14 +236,6 @@ def process_scraping_task(task_id):
             logger.info(f"Finished processing query: {query}")
 
         logger.info(f"Total results processed across all queries: {total_results}")
-        
-        report_url = generate_task_report(task_id)
-        if report_url:
-            task.report_url = report_url
-            logger.info(f"Report generated and available at: {report_url}")
-        else:
-            logger.warning("Failed to generate report")
-
 
         logger.info(f"Scraping task {task_id} completed successfully")
         task.status = 'COMPLETED'
@@ -266,23 +253,28 @@ def process_scraping_task(task_id):
         logger.removeHandler(file_handler)
         file_handler.close()
  
- 
+
 def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
 
 def update_image_url(business, local_path, new_path):
     try:
-        image = Image.objects.get(business=business, local_path=local_path)
-        # Update the S3/Spaces URL
-        s3_url = default_storage.url(new_path)
-        image.image_url = s3_url
-        image.local_path = new_path
-        image.save()
-        logger.info(f"Image URL and local path updated for business {business.id}: {s3_url}")
-    except Image.DoesNotExist:
-        logger.warning(f"No Image found for business {business.id} with local path {local_path}")
+        images = Image.objects.filter(business=business, local_path=local_path)
+        if not images.exists():
+            logger.warning(f"No Image found for business {business.id} with local path {local_path}")
+            return
+        for image in images:
+            try:
+                media_url = default_storage.url(new_path)
+                image.image_url = media_url
+                image.local_path = new_path
+                image.save()
+                logger.info(f"Image URL and local path updated for business {business.id}: {media_url}")
+            except Exception as e:
+                logger.error(f"Error updating image for business {business.id}: {str(e)}")
     except Exception as e:
-        logger.error(f"Error updating image for business {business.id}: {str(e)}")
+        logger.error(f"Error fetching images for update: {str(e)}")
+
 
 def download_images(business, local_result):
     photos_link = local_result.get('photos_link')
@@ -305,7 +297,7 @@ def download_images(business, local_result):
             logger.error(f"API Error fetching photos for business '{business.title}': {photos_results['error']}")
             return image_paths
 
-        # Create a slug of the business name
+        # Create a slug of the business name using Django's slugify
         business_slug = slugify(business.title)
 
         for i, photo in enumerate(photos_results.get('photos', [])):
@@ -331,38 +323,46 @@ def download_images(business, local_result):
                         bottom = (img.height + new_height) / 2
                         img_cropped = img.crop((left, top, right, bottom))
 
-                        # Save to Spaces
+                        # Save the image to local media storage
                         file_name = f"{business_slug}_{i}.jpg"
                         file_path = f'business_images/{business.id}/{file_name}'
-                        
-                        # Save the image to Spaces
+
+                        # Ensure the directory exists
+                        os.makedirs(os.path.dirname(os.path.join(settings.MEDIA_ROOT, file_path)), exist_ok=True)
+
+                        # Save the image
                         buffer = BytesIO()
                         img_cropped.save(buffer, 'JPEG', quality=85)
                         default_storage.save(file_path, ContentFile(buffer.getvalue()))
-                        
-                        # Get the S3/Spaces URL
-                        s3_url = default_storage.url(file_path)
-                        logger.info(f"Image saved to Spaces: {s3_url}")
-                        
-                        Image.objects.create(
+
+                        # Get the local media URL
+                        media_url = default_storage.url(file_path)
+                        logger.info(f"Image saved to media directory: {media_url}")
+
+                        # Use get_or_create to prevent duplicates
+                        image, created = Image.objects.get_or_create(
                             business=business,
-                            image_url=s3_url,
-                            local_path=file_path,  # Save the relative path
-                            order=i
+                            local_path=file_path,
+                            defaults={
+                                'image_url': media_url,
+                                'order': i
+                            }
                         )
+                        if created:
+                            logger.info(f"Downloaded and processed image {i} for business {business.id}")
+                        else:
+                            logger.info(f"Image already exists for {file_path}")
+
                         image_paths.append(file_path)
-                        logger.info(f"Downloaded and processed image {i} for business {business.id}")
                     else:
                         logger.error(f"Failed to download image {i} for business {business.id}: HTTP {response.status_code}")
                 except Exception as e:
                     logger.error(f"Error downloading image {i} for business {business.id}: {str(e)}", exc_info=True)
 
             time.sleep(1)  # To avoid overloading the server
- 
-        # Set the first image as the main image if it exists
         first_image = Image.objects.filter(business=business).order_by('order').first()
         if first_image:
-            business.main_image = first_image.local_path
+            business.main_image = first_image.image_url  # Use image_url instead of local_path
             business.save()
             logger.info(f"Set main image for business {business.id}")
 
@@ -370,7 +370,7 @@ def download_images(business, local_result):
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
 
     return image_paths
- 
+
 def save_results(task, results, query):
     results_dir = os.path.join(settings.MEDIA_ROOT, 'scraping_results', str(task.id))
     os.makedirs(results_dir, exist_ok=True)
@@ -380,13 +380,12 @@ def save_results(task, results, query):
         json.dump(results, f)
     logger.info(f"Saved results for query '{query}' to {file_path}")
 
-def slugify(value):
-    """
-    Convierte una cadena en un slug válido para nombres de archivo.
-    """
+"""
+def slugify(value): 
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value.lower())
     return re.sub(r'[-\s]+', '_', value).strip('-_')
+"""
 
 async def translate_text(text, language="spanish"):
     if text and text.strip():
@@ -485,8 +484,11 @@ def enhance_translate_and_summarize_business(business_id, languages=["spanish", 
         logger.error(f"Error processing business {business_id}: {str(e)}")
 
     logger.info(f"Completed enhancement, translation, and summarisation for business {business_id}")
-                
+
 def fill_missing_address_components(business_data, task, query):
+    """
+    Fills in any missing address components using existing data from the same task or by extracting from the query.
+    """
     # Get all businesses for this task
     task_businesses = Business.objects.filter(task=task)
 
@@ -504,32 +506,42 @@ def fill_missing_address_components(business_data, task, query):
     if not business_data['country']:
         if address_components['country']:
             business_data['country'] = next(iter(address_components['country']))
+            logger.debug(f"Filled missing country with existing data: {business_data['country']}")
         else:
             business_data['country'] = extract_country_from_query(query)
+            logger.debug(f"Filled missing country by extracting from query: {business_data['country']}")
 
     if not business_data['state']:
         if address_components['state']:
             business_data['state'] = next(iter(address_components['state']))
+            logger.debug(f"Filled missing state with existing data: {business_data['state']}")
         else:
             business_data['state'] = extract_state_from_query(query)
+            logger.debug(f"Filled missing state by extracting from query: {business_data['state']}")
 
     if not business_data['city']:
         if address_components['city']:
             business_data['city'] = next(iter(address_components['city']))
+            logger.debug(f"Filled missing city with existing data: {business_data['city']}")
         else:
             business_data['city'] = extract_city_from_query(query)
+            logger.debug(f"Filled missing city by extracting from query: {business_data['city']}")
 
     # If we still don't have a country, state, or city, use parts of the query as a last resort
     if not business_data['country']:
         business_data['country'] = query.split(',')[-1].strip()
+        logger.warning(f"Filled missing country by splitting query: {business_data['country']}")
     if not business_data['state']:
         business_data['state'] = query.split(',')[-2].strip() if len(query.split(',')) > 1 else ''
+        logger.warning(f"Filled missing state by splitting query: {business_data['state']}")
     if not business_data['city']:
         business_data['city'] = query.split(',')[0].strip()
+        logger.warning(f"Filled missing city by splitting query: {business_data['city']}")
 
     # Ensure we have at least a country
     if not business_data['country']:
         business_data['country'] = 'Unknown'
+        logger.error("Failed to fill country; set to 'Unknown'")
 
 def extract_country_from_query(query):
     # Split the query into words
@@ -576,21 +588,72 @@ def extract_city_from_query(query):
         pass
     
     return ''  # Return empty string if no city is found
-            
+ 
+
+def parse_address_task(address):
+    """
+    Parses the address string and extracts components: street, city, state, postal_code, country.
+    This is a placeholder implementation; ensure it accurately parses your address formats.
+    """
+    components = [component.strip() for component in address.split(',')]
+    parsed = {
+        'street': '',
+        'city': '',
+        'state': '',
+        'postal_code': '',
+        'country': ''
+    }
+
+    if len(components) >= 1:
+        parsed['street'] = components[0]
+    if len(components) >= 2:
+        parsed['city'] = components[1]
+    if len(components) >= 3:
+        parsed['state'] = components[2]
+    if len(components) >= 4:
+        # Assume the fourth component is postal_code if it's all digits
+        if components[3].isdigit():
+            parsed['postal_code'] = components[3]
+            if len(components) >= 5:
+                parsed['country'] = components[4]
+        else:
+            parsed['country'] = components[3]
+    elif len(components) == 3:
+        parsed['country'] = components[2]
+
+    # Optional: Use pycountry to standardize country name
+    if parsed['country']:
+        try:
+            import pycountry
+            country = pycountry.countries.search_fuzzy(parsed['country'])[0]
+            parsed['country'] = country.name
+        except LookupError:
+            logger.warning(f"Unable to match country: {parsed['country']}")
+            parsed['country'] = ''
+
+    return parsed 
+
 @transaction.atomic
-def save_business(task, local_result, query):
+def save_business(task, local_result, query, form_data=None):
+    """
+    Save business information from a scraped result or form data.
+    The form_data parameter is optional and used only when business info is submitted via a form.
+    """
     logger.info(f"Saving business data for task {task.id}")
     try:
+        # Initialize business_data with scraped data
         business_data = {
             'task': task,
             'project_id': task.project_id,
             'project_title': task.project_title,
-            'main_category': task.main_category,
-            'tailored_category': task.tailored_category,
+            'main_category': form_data['main_category'] if form_data and form_data.get('main_category') else task.main_category,
+            'tailored_category': form_data['subcategory'] if form_data and form_data.get('subcategory') else task.tailored_category,
             'search_string': query,
             'scraped_at': timezone.now(),
+            'level': form_data['level'] if form_data and form_data.get('level') else task.level,
         }
 
+        # Field mapping from the scraped result to business model
         field_mapping = {
             'position': 'rank',
             'title': 'title',
@@ -611,56 +674,97 @@ def save_business(task, local_result, query):
         for api_field, model_field in field_mapping.items():
             if local_result.get(api_field) is not None:
                 business_data[model_field] = local_result[api_field]
-            else:
-                logger.warning(f"Missing expected field '{api_field}' in local result")
 
+        # Handle GPS coordinates
         if 'gps_coordinates' in local_result:
             business_data['latitude'] = local_result['gps_coordinates'].get('latitude')
             business_data['longitude'] = local_result['gps_coordinates'].get('longitude')
 
+        # Handle types and operating hours
         if 'types' in local_result:
             business_data['types'] = ', '.join(local_result['types'])
-
         if 'operating_hours' in local_result:
             business_data['operating_hours'] = local_result['operating_hours']
-
         if 'service_options' in local_result:
             business_data['service_options'] = local_result['service_options']
 
-        # Parse address using geopy
+        # Parse address
         address = local_result.get('address', '')
-        geolocator = Nominatim(user_agent="your_app_name")
-        try:
-            location = geolocator.geocode(address, addressdetails=True)
-        except (GeocoderTimedOut, GeocoderServiceError):
-            location = None
+        address_components = parse_address_task(address)  # Parse the address
 
-        if location and location.raw.get('address'):
-            address_components = location.raw['address']
-            
-            business_data['street'] = address_components.get('road', '')
-            if 'house_number' in address_components:
-                business_data['street'] = f"{address_components['house_number']} {business_data['street']}"
-            
-            business_data['city'] = address_components.get('city', '')
-            business_data['state'] = address_components.get('state', '')
-            business_data['postal_code'] = address_components.get('postcode', '')
-            business_data['country'] = address_components.get('country', '')
-        else:
-            # If geolocation fails, store the full address in the street field
-            business_data['street'] = address
-            business_data['city'] = ''
-            business_data['state'] = ''
-            business_data['postal_code'] = ''
-            business_data['country'] = ''
+        # Assign address components
+        business_data['street'] = address_components.get('street', '')
+        business_data['city'] = address_components.get('city', '')
+        business_data['state'] = address_components.get('state', '')
+        business_data['postal_code'] = address_components.get('postal_code', '')
+        business_data['country'] = address_components.get('country', '')
 
-        # Fill in missing address components
+        # Fill missing address components
         fill_missing_address_components(business_data, task, query)
 
-        # Find or create the destination based on the country and state
-        destination_name = f"{business_data['country']}, {business_data['state']}" if business_data['state'] else business_data['country']
-        destination, created = Destination.objects.get_or_create(name=destination_name)
-        business_data['destination'] = destination
+        # If form_data is provided, override country and destination fields
+        if form_data:
+            # Validate form-submitted data
+            form_country_id = form_data.get('country_id')
+            form_country_name = form_data.get('country_name')
+            form_destination_id = form_data.get('destination_id')
+            form_destination_name = form_data.get('destination_name')
+
+            # Validate that the IDs and names correspond to existing records
+            if form_country_id and form_country_name:
+                try:
+                    country_obj = Country.objects.get(id=form_country_id, name__iexact=form_country_name)
+                except Country.DoesNotExist:
+                    logger.error(f"Form-submitted Country ID {form_country_id} with name '{form_country_name}' does not exist.")
+                    raise ValueError(f"Invalid country selection: {form_country_name}")
+
+                business_data['form_country_id'] = form_country_id
+                business_data['form_country_name'] = form_country_name
+            else:
+                business_data['form_country_id'] = None
+                business_data['form_country_name'] = ''
+
+            if form_destination_id and form_destination_name:
+                try:
+                    destination_obj = Destination.objects.get(id=form_destination_id, name__iexact=form_destination_name)
+                except Destination.DoesNotExist:
+                    logger.error(f"Form-submitted Destination ID {form_destination_id} with name '{form_destination_name}' does not exist.")
+                    raise ValueError(f"Invalid destination selection: {form_destination_name}")
+
+                business_data['form_destination_id'] = form_destination_id
+                business_data['form_destination_name'] = form_destination_name
+            else:
+                business_data['form_destination_id'] = None
+                business_data['form_destination_name'] = ''
+
+        else:
+            # Handle country and destination based on scraped data
+            if business_data['country']:
+                try:
+                    country_obj = Country.objects.get(name__iexact=business_data['country'])
+                except Country.DoesNotExist:
+                    logger.error(f"Country '{business_data['country']}' does not exist.")
+                    raise ValueError(f"Invalid country name: {business_data['country']}")
+
+                # Determine destination name based on available data
+                if business_data['state']:
+                    destination_name = f"{business_data['country']}, {business_data['state']}"
+                elif business_data['city']:
+                    destination_name = business_data['city']
+                else:
+                    destination_name = business_data['country']
+
+                try:
+                    destination = Destination.objects.get(name__iexact=destination_name, country=country_obj)
+                except Destination.DoesNotExist:
+                    logger.error(f"Destination '{destination_name}' does not exist for country '{business_data['country']}'.")
+                    raise ValueError(f"Invalid destination name: {destination_name}")
+
+                business_data['destination'] = destination
+            else:
+                # Cannot create destination without country
+                logger.error("Country information is missing, cannot create Destination.")
+                raise ValueError("Country information is missing, cannot create Destination.")
 
         # Create or update the Business object
         business, created = Business.objects.update_or_create(
@@ -673,31 +777,26 @@ def save_business(task, local_result, query):
         else:
             logger.info(f"Existing business updated: {business.title} (ID: {business.id})")
 
-        # Save categories
-        Category.objects.bulk_create([
-            Category(business=business, name=category)
-            for category in local_result.get('categories', [])
-        ], ignore_conflicts=True)
+        # Save categories from business_data['categories'] (assumed to be category IDs)
+        categories = local_result.get('categories', [])
+        for category_id in categories:
+            try:
+                category = Category.objects.get(id=category_id)
+                business.main_category.add(category)
+            except Category.DoesNotExist:
+                logger.warning(f"Category ID {category_id} does not exist.")
 
         # Save additional info
         additional_info = [
             AdditionalInfo(
                 business=business,
-                category=category,
                 key=key,
                 value=value
             )
-            for category, items in local_result.get('additionalInfo', {}).items()
-            for item in items
-            for key, value in item.items()
+            for key, value in local_result.get('additionalInfo', {}).items()
         ]
         AdditionalInfo.objects.bulk_create(additional_info, ignore_conflicts=True)
-
         logger.info(f"Additional data saved for business {business.id}")
-        
-        # Queue translation task
-        #enhance_translate_and_summarize_business(business.id)
-        #logger.info(f"Translation task queued for business {business.id}")
 
         # Handle service options
         service_options = local_result.get('serviceOptions', {})
@@ -707,15 +806,31 @@ def save_business(task, local_result, query):
 
         logger.info(f"All business data processed and saved for business {business.id}")
 
+        # Handle image downloading separately to prevent transaction rollback
+        try:
+            image_paths = download_images(business, local_result)
+            logger.info(f"Downloaded {len(image_paths)} images for business {business.id}")
+        except Exception as e:
+            logger.error(f"Error downloading images for business {business.id}: {str(e)}", exc_info=True)
+
         return business
+
     except Exception as e:
         logger.error(f"Error saving business data for task {task.id}: {str(e)}", exc_info=True)
-        raise
- 
+        raise  # Re-raise the exception to trigger transaction rollback if necessary
+
+@sync_to_async
+def get_categories(business):
+    return list(business.categories.all())
+
 @sync_to_async
 def get_additional_info(business):
     return list(business.additional_info.all())
  
+@sync_to_async
+def save_category(category):
+    category.save()
+
 @sync_to_async
 def save_info(info):
     info.save()
@@ -1041,85 +1156,6 @@ def update_all_task_rankings():
     for task in tasks:
         update_business_rankings(task.id)
  
-def generate_task_report(task_id):
-    """
-    Generate a report for a specific task
-    """
-    try:
-        task = ScrapingTask.objects.get(id=task_id)
-        businesses = Business.objects.filter(task=task)
-
-        report_data = {
-            'task_id': task.id,
-            'project_title': task.project_title,
-            'created_at': task.created_at,
-            'completed_at': task.completed_at,
-            'status': task.status,
-            'total_businesses': businesses.count(),
-            'rating': businesses.aggregate(Avg('rating'))['rating__avg'] or 0,
-            'top_categories': list(businesses.values('category_name').annotate(count=Count('id')).order_by('-count')[:5]),
-            'businesses': [],
-            'check_status_url': reverse('check_task_status', kwargs={'task_id': task.id})
-        }
-
-        for business in businesses:
-            report_data['businesses'].append({
-                'id': business.id,
-                'title': business.title,
-                'rating': business.rating or 0,  # Use 0 if None
-                'reviews_count': business.reviews_count or 0,  # Use 0 if None
-                'category': business.category_name,
-                'address': business.address,
-                'phone': business.phone,
-                'website': business.website,
-                'rank': business.rank
-            })
-
-        # Generate PDF report
-        template = get_template('automation/report_template.html')
-        html = template.render(report_data)
-        
-        # Create a BytesIO buffer to receive PDF data
-        result = BytesIO()
-        
-        # Generate PDF
-        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
-        
-        if not pdf.err:
-            # Save the PDF report
-            report_filename = f"task_report_{task.id}.pdf"
-            report_dir = os.path.join(settings.MEDIA_ROOT, 'reports')
-            os.makedirs(report_dir, exist_ok=True)
-            report_path = os.path.join(report_dir, report_filename)
-            
-            with open(report_path, 'wb') as f:
-                f.write(result.getvalue()) 
-            # Update task with report information
-            task.report_file = f'reports/{report_filename}'
-            task.save()
- 
-            logger.info(f"Generated report for task {task_id}")
-            print(report_path)
-            report_url = reverse('view_report', kwargs={'task_id': task.id})
-            return report_url
-        else:
-            logger.error(f"Error generating PDF for task {task_id}: {pdf.err}")
-            return None
-
-    except ScrapingTask.DoesNotExist:
-        logger.error(f"Task with id {task_id} not found")
-        return None
-    except Exception as e:
-        logger.error(f"Error generating report for task {task_id}: {str(e)}", exc_info=True)
-        return None
-
-def generate_all_task_reports():
-    """
-    Generate reports for all completed tasks
-    """
-    tasks = ScrapingTask.objects.filter(status='COMPLETED', report_file__isnull=True)
-    for task in tasks:
-        generate_task_report(task.id)
  
 def send_task_completion_email(task_id):
     """
@@ -1176,8 +1212,6 @@ def task_status_changed(sender, instance, **kwargs):
     Trigger actions when a task's status changes to 'COMPLETED'
     """
     if instance.status == 'COMPLETED' and instance.completed_at:
-        # Generate report
-        generate_task_report(instance.id)
         # Send email notification
         send_task_completion_email(instance.id)
  

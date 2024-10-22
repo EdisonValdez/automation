@@ -20,9 +20,12 @@ urlpatterns = [
     #path('business/<int:business_id>/', views.BusinessDetailView.as_view(), name='business_detail'),
     path('business/<int:business_id>/', views.business_detail, name='business_detail'),
     path('update-image-status/', views.update_image_status, name="update_image_status"),
-    #path('update-business-field/', views.update_business_field, name='update_business_field'),
+
+    path('update-image-order/', views.update_image_order, name='update_image_order'),
+    path('update-image-approval/', views.update_image_approval, name='update_image_approval'),
+
     path('update-business-hours/', views.update_business_hours, name='update_business_hours'),
-    #path('update-business-info/', views.update_business_info, name='update_business_info'),
+
 
 
     path('businesses/', views.business_list, name='business_list'),
@@ -34,7 +37,7 @@ urlpatterns = [
     path('admin-view/', views.admin_view, name='admin_view'),
     
     path('dashboard', views.DashboardView.as_view(), name='dashboard'),     
-    #path('', views.health_check, name='health_check'), 
+ 
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
 
@@ -60,7 +63,7 @@ urlpatterns = [
     path('businesses/<int:business_id>/edit/', views.edit_business, name='edit_business'),
 
     path('destinations/', views.destination_management, name='destination_management'),
-    path('destinations/create/', views.create_destination, name='create_destination'),
+    path('destinations-create/', views.create_destination, name='create_destination'),
     path('destinations/<int:destination_id>/edit/', views.edit_destination, name='edit_destination'),
     path('destinations/<int:destination_id>/delete/', views.delete_destination, name='delete_destination'),
     path('destinations/<int:destination_id>/', views.destination_detail, name='destination_detail'),
@@ -86,10 +89,11 @@ urlpatterns = [
 
  
  
-    path('load-categories/', views.load_categories, name='load_categories'),  # For loading the form
-    path('categories/', views.get_categories, name='get_categories'),         # For fetching main categories by level
-    path('subcategories/', views.get_subcategories, name='get_subcategories'),# For fetching subcategories
- 
+    path('load-categories/', views.load_categories, name='load_categories'),  
+    path('categories/', views.get_categories, name='get_categories'),         
+    path('subcategories/', views.get_subcategories, name='get_subcategories'), 
+    path('get-countries/', views.get_countries, name='get_countries'),
+    path('get-destinations/', views.get_destinations_by_country, name='get_destinations_by_country'),
 
 
 ]

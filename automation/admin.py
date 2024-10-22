@@ -53,11 +53,23 @@ class ReviewInline(admin.TabularInline):
 
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category_name', 'status', 'task', 'scraped_at')
-    list_filter = ('status', 'category_name', 'task')
-    search_fields = ('title', 'category_name')
+    list_display = ('get_title', 'get_category_name', 'status', 'task', 'scraped_at')
+    list_filter = ('status', 'main_category', 'task')
+    search_fields = ('get_title', 'main_category__title', 'tailored_category')
     readonly_fields = ('scraped_at',)
     inlines = [CategoryInline, OpeningHoursInline, AdditionalInfoInline, ImageInline, ReviewInline]  
+
+    # Assuming 'project_title' is the actual field name you want to display
+    def get_title(self, obj):
+        return obj.project_title
+    get_title.short_description = 'Title'
+
+    # Method to get category name
+    def get_category_name(self, obj):
+        return obj.main_category.title if obj.main_category else None
+    get_category_name.short_description = 'Category Name'
+
+
 
  
 @admin.register(ScrapingTask)

@@ -1,24 +1,45 @@
 {
-    "levels": [
+  "levels": [
       {
-        "title": "Rental Services",
-        "categories": [
-          {
-            "title": "General",
-            "subcategories": [
-              { "title": "Car rental" },
-              { "title": "Motorcycle rental agency" },
-              { "title": "Bicycle rental service" },
-              { "title": "Electric Scooter Rental" },
-              { "title": "Boat rental service" },
-              { "title": "Jet Ski Rental" },
-              { "title": "Clothing Rental" },
-              { "title": "Limo Rental" },
-              { "title": "Segway" }
-            ]
-          }
-        ]
+          "title": "Rental Services",
+          "categories": [
+              {
+                  "title": "Car rental",
+                  "subcategories": []
+              },
+              {
+                  "title": "Motorcycle rental agency",
+                  "subcategories": []
+              },
+              {
+                  "title": "Bicycle rental service",
+                  "subcategories": []
+              },
+              {
+                  "title": "Electric Scooter Rental",
+                  "subcategories": []
+              },
+              {
+                  "title": "Boat rental service",
+                  "subcategories": []
+              },
+              {
+                  "title": "Jet Ski Rental",
+                  "subcategories": []
+              },
+              {
+                  "title": "Clothing Rental",
+                  "subcategories": []
+              },
+              {
+                  "title": "Limo Rental",
+                  "subcategories": []
+              },
+              {
+                  "title": "Segway",
+                  "subcategories": []
+              }
+          ]
       }
-    ]
-  }
-  
+  ]
+}

@@ -1,3 +1,4 @@
+#automation/upload_bucket.py
 import os
 import boto3
 import click
@@ -8,17 +9,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuración de DigitalOcean Spaces
-spaces_endpoint_url = f"https://{os.getenv('SPACES_REGION_NAME')}.digitaloceanspaces.com"
-spaces_access_key = os.getenv('SPACES_ACCESS_KEY_ID')
-spaces_secret_key = os.getenv('SPACES_SECRET_ACCESS_KEY')
-spaces_bucket_name = os.getenv('SPACES_BUCKET_NAME')
+spaces_endpoint_url = f"https://{os.getenv('AWS_S3_REGION_NAME')}.digitaloceanspaces.com"
+spaces_access_key = os.getenv('AWS_ACCESS_KEY_ID')
+spaces_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+spaces_bucket_name = os.getenv('AWS_STORAGE_BUCKET_NAME')
 
 # Crear una sesión de boto3
 session = boto3.session.Session()
 
 # Crear un cliente de S3 para DigitalOcean Spaces
 s3_client = session.client('s3',
-                           region_name=os.getenv('SPACES_REGION_NAME'),
+                           region_name=os.getenv('AWS_S3_REGION_NAME'),
                            endpoint_url=spaces_endpoint_url,
                            aws_access_key_id=spaces_access_key,
                            aws_secret_access_key=spaces_secret_key)

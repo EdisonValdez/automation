@@ -74,236 +74,319 @@
                     <form id="upload-form" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
-                            <div class="col-md-3 col-sm-12 mb-24">
+                            <div class="col-md-4 col-sm-12 mb-24">
                                 <div class="form-group">
                                     <label for="{{ form.project_title.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Project Title</label>
                                     {{ form.project_title }}
                                 </div>
                             </div>
-                             
-                            <div class="col-md-3 col-sm-12 mb-24">
+                            
+                        <!-- Country Dropdown -->
+                        <div class="col-md-4 col-sm-12 mb-24">
+                            <div class="form-group">
+                                <label for="id_country" class="form-label mt-1 fs-18 font-w500 color-primary">Country</label>
+                                <select name="country" class="form-control" id="id_country">
+                                    <option value="">Select a country</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Destination Dropdown -->
+                        <div class="col-md-4 col-sm-12 mb-24">
+                            <div class="form-group">
+                                <label for="id_destination" class="form-label mt-1 fs-18 font-w500 color-primary">Destination</label>
+                                <select name="destination" class="form-control" id="id_destination">
+                                    <option value="">Select a destination</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                        </div>
+
+                        <div class="row">
+
+                        
+                            <div class="col-md-4 col-sm-12 mb-24">
                                 <div class="form-group">
                                     <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
                                     {{ form.level }}
                                 </div>
                             </div>
-  
-                                <!-- Main Category Dropdown -->
-                                <div class="col-md-3 col-sm-12 mb-24">
-                                    <div class="form-group">
-                                        <label for="id_main_category" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
-                                        <select name="main_category" class="form-control" required id="id_main_category">
-                                            <option value="">Select a category</option>
-                                            <!-- Loop through the main categories and populate the dropdown -->
-                                            {% for category in main_categories %}
-                                                <option value="{{ category.id }}">{{ category.title }}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
+
+                            <!-- Main Category Dropdown -->
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="id_main_category" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
+                                    <select name="main_category" class="form-control" required id="id_main_category">
+                                        <option value="">Select a category</option>
+                                        {% for category in main_categories %}
+                                            <option value="{{ category.id }}">{{ category.title }}</option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
-                            
-                                <!-- Subcategory Dropdown -->
-                                <div class="col-md-3 col-sm-12 mb-24">
-                                    <div class="form-group">
-                                        <label for="id_subcategory" class="form-label mt-1 fs-18 font-w500 color-primary">Subcategory (optional)</label>
-                                        <select name="subcategory" class="form-control" id="id_subcategory">
-                                            <option value="">Select a subcategory (optional)</option>
-                                        </select>
-                                    </div>
-                                </div> 
-                            
+                            </div>
 
-
+                            <!-- Subcategory Dropdown -->
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="id_subcategory" class="form-label mt-1 fs-18 font-w500 color-primary">Subcategory (optional)</label>
+                                    <select name="subcategory" class="form-control" id="id_subcategory">
+                                        <option value="">Select a subcategory (optional)</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
+
                         <div class="form-group mb-24">
                             <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description (optional)</label>
                             {{ form.description }}
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
                                 <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
                                 <div class="input-group file-browser">
-                                  
-                              
-                                        {{ form.file }}
-                                  
+                                    {{ form.file }}
                                 </div>
                                 <div class="form-text">{{ form.file.help_text }}</div>
                             </div>
- 
                         </div>
 
                         <div class="row">
                             <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                             <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Get Business</label>
+                                <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Get Businesses</label>
                                 <div class="input-group file-browser">
                                     <button type="submit" class="btn btn-primary">Start process</button>
-                                </div>  
+                                </div>
                             </div>
                         </div>
                     </form>
  
-<script>
+                    <script>
 $(document).ready(function() {
+    // Handle Level and Main Category changes
     $('#id_level').change(function() {
-        var levelId = $(this).val();  // Get the selected level ID
-        // Clear the existing categories and subcategories
+        var levelId = $(this).val();
         $('#id_main_category').empty().append('<option value="">Select a category</option>');
         $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
 
         if (levelId) {
             $.ajax({
-                url: '{% url "get_categories" %}',  // Fetch categories by level
-                data: {
-                    'level_id': levelId
-                },
+                url: '{% url "get_categories" %}',
+                data: { 'level_id': levelId },
                 success: function(data) {
-                    // Populate the main category dropdown with fetched categories
-                    data.forEach(function(category) {
-                        $('#id_main_category').append(
-                            $('<option></option>').attr('value', category.id).text(category.title)
-                        );
-                    });
+                    if (data.length > 0) {
+                        data.forEach(function(category) {
+                            $('#id_main_category').append($('<option></option>').attr('value', category.id).text(category.title));
+                        });
+                    } else {
+                        $('#id_main_category').append('<option value="">No categories available</option>');
+                    }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error fetching categories:', error);  // For debugging
+                    console.error('Error fetching categories: ' + error);
                 }
             });
         }
     });
-});
 
-</script> 
-<script>
- $(document).ready(function() {
+    // Handle Main Category and Subcategory changes
     $('#id_main_category').change(function() {
-        var categoryId = $(this).val();  // Get the selected main category ID
-
-        // Clear and reset the subcategory dropdown
+        var categoryId = $(this).val();
         $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
 
         if (categoryId) {
             $.ajax({
-                url: '{% url "get_subcategories" %}',  // Fetch subcategories based on main category
-                data: {
-                    'category_id': categoryId
-                },
+                url: '{% url "get_subcategories" %}',
+                data: { 'category_id': categoryId },
                 success: function(data) {
-                    // Populate the subcategory dropdown with fetched subcategories
-                    data.forEach(function(subcategory) {
-                        $('#id_subcategory').append(
-                            $('<option></option>').attr('value', subcategory.id).text(subcategory.title)
-                        );
-                    });
+                    if (data.length > 0) {
+                        data.forEach(function(subcategory) {
+                            $('#id_subcategory').append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
+                        });
+                    } else {
+                        $('#id_subcategory').append('<option value="">No subcategories available</option>');
+                    }
                 },
                 error: function(xhr, status, error) {
-                    console.error("Error fetching subcategories: " + error);  // For debugging
+                    console.error('Error fetching subcategories: ' + error);
+                }
+            });
+        }
+    });
+
+    
+    // Handle Country and Destination changes
+    $('#id_country').change(function() {
+        var countryId = $(this).val();
+        $('#id_destination').empty().append('<option value="">Select a destination</option>');
+
+        if (countryId) {
+            $.ajax({
+                url: '{% url "get_destinations_by_country" %}',
+                data: { 'country_id': countryId },
+                success: function(data) {
+                    if (data.length > 0) {
+                        data.forEach(function(destination) {
+                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
+                        });
+                    } else {
+                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching destinations: ' + error);
                 }
             });
         }
     });
 });
 
-</script>
 
-<div class="overlay" ></div>                 
+$(document).ready(function() {
+    // Load countries when the page loads
+    $.ajax({
+        url: '{% url "get_countries" %}',
+        method: 'GET',
+        success: function(data) {
+            $('#id_country').empty().append('<option value="">Select a country</option>');
+            if (data.length > 0) {
+                data.forEach(function(country) {
+                    $('#id_country').append($('<option></option>').attr('value', country.id).text(country.name));
+                });
+            } else {
+                $('#id_country').append('<option value="">No countries available</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching countries: ' + error);
+        }
+    });
 
-<div id="log-container"></div>
- 
-<hr />
-<div class="box ">
-<div class="box-header pt-0">
-    <div class="me-auto">
-        <h4 class="card-title mb-0 fs-22">Recent Activity</h4>
-    </div>
-    <div class="card-options pr-3">
-        <div class="dropdown"> 
-            <a href="#" class="btn ripple btn-outline-light dropdown-toggle fs-14" data-bs-toggle="dropdown" aria-expanded="false"> 
-                See All 
-                <i class="feather feather-chevron-down"></i> 
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" role="menu">
-                <li><a href="#">Monthly</a></li>
-                <li><a href="#">Yearly</a></li>
-                <li><a href="#">Weekly</a></li>
-            </ul>
-        </div>
-    </div>
-</div>
-<div class="box-body pb-0 table-responsive activity mt-18">
-    <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-profile" role="grid">
-        <thead>
-            <tr class="top">
-                <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Project</th>
-                <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Business(es)</th>
-                <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Start</th>
-                    <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Work Status</th>
-                <th class="border-bottom-0 sorting_disabled fs-14 font-w500" rowspan="1" colspan="1">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-            <tr>
-                <td>
-                    <a href="{% url 'task_detail' task.id %}" class="d-flex ">
-                        <span>{{ task.project_title }}</span>
-                    </a>
-                </td>
-                <td>
-                    <ul class="user-list mb-0">
-                
-                        <li>{{ task.businesses.count }}</li> 
-                    
-                    </ul>
-                </td>
-                <td>{{ task.created_at|date:"d-m-Y" }}</td>
-                
-                <td>
-                    <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% elif task.status == 'TRANSLATED' %} badge-success {% endif %}">
-                        {{ task.get_status_display }}
-                    </span>
-                </td>
-                <td>
-                    <div class="dropdown">
-                        <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bx bx-dots-horizontal-rounded"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_client"><i class="bx bx-trash"></i> Delete</a>
-                            
-                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_client"><a href="{% url 'task_detail' task.id %}" style="margin-left:20px"><i class="bx bx-edit"></i> Edit</a></a>
+    // Handle country and destination changes
+    $('#id_country').change(function() {
+        var countryId = $(this).val();
+        $('#id_destination').empty().append('<option value="">Select a destination</option>');
+
+        if (countryId) {
+            $.ajax({
+                url: '{% url "get_destinations_by_country" %}',
+                data: { 'country_id': countryId },
+                success: function(data) {
+                    if (data.length > 0) {
+                        data.forEach(function(destination) {
+                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
+                        });
+                    } else {
+                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error fetching destinations: ' + error);
+                }
+            });
+        }
+    });
+});
+                    </script>
+                        <div class="overlay" ></div>                 
+
+                        <div id="log-container"></div>
+                        
+                        <hr />
+                    <div class="box ">
+                        <div class="box-header pt-0">
+                            <div class="me-auto">
+                                <h4 class="card-title mb-0 fs-22">Recent Activity</h4>
+                            </div>
+                            <div class="card-options pr-3">
+                                <div class="dropdown"> 
+                                    <a href="#" class="btn ripple btn-outline-light dropdown-toggle fs-14" data-bs-toggle="dropdown" aria-expanded="false"> 
+                                        See All 
+                                        <i class="feather feather-chevron-down"></i> 
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" role="menu">
+                                        <li><a href="#">Monthly</a></li>
+                                        <li><a href="#">Yearly</a></li>
+                                        <li><a href="#">Weekly</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-body pb-0 table-responsive activity mt-18">
+                            <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-profile" role="grid">
+                                <thead>
+                                    <tr class="top">
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Project</th>
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Business(es)</th>
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Start</th>
+                                            <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Work Status</th>
+                                        <th class="border-bottom-0 sorting_disabled fs-14 font-w500" rowspan="1" colspan="1">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for task in tasks %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'task_detail' task.id %}" class="d-flex ">
+                                                <span>{{ task.project_title }}</span>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <ul class="user-list mb-0">
+                                        
+                                                <li>{{ task.businesses.count }}</li> 
+                                            
+                                            </ul>
+                                        </td>
+                                        <td>{{ task.created_at|date:"d-m-Y" }}</td>
+                                        
+                                        <td>
+                                            <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% elif task.status == 'TRANSLATED' %} badge-success {% endif %}">
+                                                {{ task.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bx bx-dots-horizontal-rounded"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_client"><i class="bx bx-trash"></i> Delete</a>
+                                                    
+                                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_client"><a href="{% url 'task_detail' task.id %}" style="margin-left:20px"><i class="bx bx-edit"></i> Edit</a></a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7">No projects yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <!-- Paginator with Custom Styling -->
+                            <div class="pagination">
+                                <span class="step-links">
+                                    {% if page_obj.has_previous %}
+                                        <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+                                        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+                                    {% endif %}
+
+                                    <span class="current">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                                    </span>
+
+                                    {% if page_obj.has_next %}
+                                        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                                        <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+                                    {% endif %}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="7">No projects yet.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <!-- Paginator with Custom Styling -->
-    <div class="pagination">
-        <span class="step-links">
-            {% if page_obj.has_previous %}
-                <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
-                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
-            {% endif %}
-
-            <span class="current">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-            </span>
-
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
-            {% endif %}
-        </span>
-    </div>
-</div>
-</div>
      
 
 <!-- Overlay -->
