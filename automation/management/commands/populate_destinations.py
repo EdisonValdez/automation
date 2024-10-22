@@ -65,3 +65,4 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"Encoding error while reading file: {str(e)}"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"An error occurred: {str(e)}"))
+#python manage.py populate_destinations automation/data_load_db/City-csv.csv

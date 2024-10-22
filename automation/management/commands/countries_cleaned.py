@@ -22,4 +22,4 @@ class Command(BaseCommand):
                     self.stdout.write(self.style.SUCCESS(f'Added {country.name}'))
                 else:
                     self.stdout.write(f'{country.name} already exists')
-#python manage.py load_countries
+#python manage.py countries_cleaned
