@@ -284,6 +284,7 @@ def download_images(business, local_result):
 
     image_paths = []
     try:
+        # Fetch image results from the API
         photos_search = GoogleSearch({
             "api_key": SERPAPI_KEY,
             "engine": "google_maps_photos",
@@ -297,11 +298,17 @@ def download_images(business, local_result):
             logger.error(f"API Error fetching photos for business '{business.title}': {photos_results['error']}")
             return image_paths
 
-        # Create a slug of the business name using Django's slugify
+        # Create a slug of the business name
         business_slug = slugify(business.title)
 
         for i, photo in enumerate(photos_results.get('photos', [])):
             image_url = photo.get('image')
+
+            # Check if the image_url already exists for this business
+            if Image.objects.filter(business=business, image_url=image_url).exists():
+                logger.info(f"Image already exists for business {business.id}, skipping download.")
+                continue  # Skip if image already exists
+
             if image_url:
                 try:
                     response = requests.get(image_url, timeout=10)
@@ -323,46 +330,42 @@ def download_images(business, local_result):
                         bottom = (img.height + new_height) / 2
                         img_cropped = img.crop((left, top, right, bottom))
 
-                        # Save the image to local media storage
+                        # Ensure file name is unique by appending a counter or UUID
                         file_name = f"{business_slug}_{i}.jpg"
                         file_path = f'business_images/{business.id}/{file_name}'
 
-                        # Ensure the directory exists
-                        os.makedirs(os.path.dirname(os.path.join(settings.MEDIA_ROOT, file_path)), exist_ok=True)
+                        # Check if the file already exists before saving
+                        if default_storage.exists(file_path):
+                            logger.info(f"File {file_name} already exists, skipping.")
+                            continue  # Skip if the file already exists
 
                         # Save the image
                         buffer = BytesIO()
                         img_cropped.save(buffer, 'JPEG', quality=85)
                         default_storage.save(file_path, ContentFile(buffer.getvalue()))
 
-                        # Get the local media URL
-                        media_url = default_storage.url(file_path)
-                        logger.info(f"Image saved to media directory: {media_url}")
-
-                        # Use get_or_create to prevent duplicates
-                        image, created = Image.objects.get_or_create(
+                        # Create an image object in the database
+                        Image.objects.create(
                             business=business,
+                            image_url=image_url,
                             local_path=file_path,
-                            defaults={
-                                'image_url': media_url,
-                                'order': i
-                            }
+                            order=i
                         )
-                        if created:
-                            logger.info(f"Downloaded and processed image {i} for business {business.id}")
-                        else:
-                            logger.info(f"Image already exists for {file_path}")
 
                         image_paths.append(file_path)
+                        logger.info(f"Downloaded and processed image {i} for business {business.id}")
+
                     else:
                         logger.error(f"Failed to download image {i} for business {business.id}: HTTP {response.status_code}")
                 except Exception as e:
                     logger.error(f"Error downloading image {i} for business {business.id}: {str(e)}", exc_info=True)
 
             time.sleep(1)  # To avoid overloading the server
+
+        # Set the first image as the main image if it exists
         first_image = Image.objects.filter(business=business).order_by('order').first()
         if first_image:
-            business.main_image = first_image.image_url  # Use image_url instead of local_path
+            business.main_image = first_image.local_path
             business.save()
             logger.info(f"Set main image for business {business.id}")
 
