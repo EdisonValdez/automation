@@ -1,23 +1,25 @@
-# automation/management/commands/load_countries.py
 import csv
-import os
 from django.core.management.base import BaseCommand
-from django.conf import settings
+from automation.models import Country  
 
 class Command(BaseCommand):
-    help = 'Load countries from CSV'
+    help = 'Load countries data from CSV into the Country model - '
 
-    def handle(self, *args, **options):
-        file_path = os.path.join(settings.BASE_DIR, 'automation', 'data_load_db', 'countries_cleaned.csv')
-        self.stdout.write(f"Looking for countries CSV file at: {file_path}")
-        try:
-            with open(file_path, 'r') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    # Process each row
-                    pass
-            self.stdout.write(self.style.SUCCESS('Successfully loaded countries.'))
-        except FileNotFoundError:
-            self.stderr.write(self.style.ERROR(f"File not found: {file_path}"))
-
+    def handle(self, *args, **kwargs):
+        file_path = 'countries_cleaned.csv'  
+        with open(file_path, 'r', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                country, created = Country.objects.get_or_create(
+                    id=row['id'],
+                    defaults={
+                        'name': row['name'],
+                        'code': row['code'],
+                        'phone_code': row['phone_code']
+                    }
+                )
+                if created:
+                    self.stdout.write(self.style.SUCCESS(f'Added {country.name}'))
+                else:
+                    self.stdout.write(f'{country.name} already exists')
 #python manage.py load_countries
