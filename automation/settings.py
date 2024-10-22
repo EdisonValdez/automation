@@ -8,10 +8,9 @@ load_dotenv(dotenv_path='./.env')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
-DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower() == 'false'
+DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower() == 'true'
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
-#ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 ALLOWED_HOSTS=["*"]
 
 # Aplicaciones instaladas
@@ -88,42 +87,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-
-"""
-# Configuración de DigitalOcean Spaces
-USE_SPACES = False #os.getenv('USE_SPACES', 'False').lower() == 'true'
-
-if USE_SPACES:
- 
-    AWS_ACCESS_KEY_ID = "DO00UTUFYM3UL9NG6AZD"  
-    AWS_SECRET_ACCESS_KEY = "PtSfCsITXsDWejh5/6MdQN0CAxw66/FXL6+CMDWXNDQ"  
-    AWS_STORAGE_BUCKET_NAME = "business-images"  
-    AWS_S3_REGION_NAME = "nyc3"  
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com'  
- 
-    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-    AWS_DEFAULT_ACL = 'public-read'
-    AWS_LOCATION = 'static'
- 
-    STATICFILES_STORAGE = 'automation.storage_backends.StaticStorage'
-    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
- 
-    DEFAULT_FILE_STORAGE = 'automation.storage_backends.MediaStorage' 
-
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
- 
-    AWS_S3_ADDRESSING_STYLE = 'virtual'
-    AWS_S3_SIGNATURE_VERSION = 's3v4'
-   
-else:
-    # Usar almacenamiento local para desarrollo
-    STATIC_URL = '/static/'
-    MEDIA_URL = '/media/'
-
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-"""
-# Configuración de imagen por defecto
 DEFAULT_IMAGE_URL = os.getenv('DEFAULT_IMAGE_URL', 'https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png')
 
 # Configuración de internacionalización
@@ -245,4 +208,4 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
-GDAL_LIBRARY_PATH="" 
+ 
