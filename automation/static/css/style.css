@@ -1784,14 +1784,14 @@ button#page-header-user-dropdown {
 .sidebar-expand.active .sidebar {
     transition: transform 0.3s ease-in-out;
     max-width: 100%;
-    z-index: 999;
+    z-index: 9999;
     transform: translateX(-120%);
 }
 
 .sidebar-expand .sidebar {
     transform: translateX(0);
     transition: transform 0.3s ease-in-out;
-    z-index: 999;
+    z-index: 9999;
 }
 
 .sidebar-expand .main {
