@@ -4,6 +4,12 @@
 
 {% block content %}
 <style>
+    .sidebar-expand.active .sidebar {
+    transition: transform 0.3s ease-in-out;
+    max-width: 100%;
+    z-index: 99999;
+    transform: translateX(-120%);
+}
     .badge-info {
     color: rgb(255, 255, 255);
     background-color: rgb(10, 153, 46);
@@ -503,7 +509,7 @@ $(document).ready(function() {
                     if (xhr.status === 0) {
                         errorMessage = "Network error: Please check your internet connection.";
                     } else if (xhr.status >= 500) {
-                        errorMessage = "Server error (" + xhr.status + "): Please try again later.";
+                        errorMessage = "Server error (" + xhr.status + "): The server failed to perform a typical action in the background, however the task might continue....comeback later.";
                     } else if (xhr.status >= 400) {
                         errorMessage = "Client error (" + xhr.status + "): Please check your input.";
                     }
