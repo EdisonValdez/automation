@@ -13,7 +13,7 @@ DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'  # Set to 'True' in production when using S3
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 ALLOWED_HOSTS = ["*"]
-
+ 
 # Installed Apps
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -60,11 +60,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'automation.wsgi.application'
 
-# Get DEBUG and USE_S3 settings from the environment
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
-USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
 
 # Database configuration
 DATABASES = {
