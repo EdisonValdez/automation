@@ -170,8 +170,7 @@ def read_queries_from_content(file_content):
     except Exception as e:
         logger.error(f"Error reading queries from content: {str(e)}", exc_info=True)
         return []
-
-
+ 
 def process_scraping_task(task_id, form_data=None):
     log_file_path = get_log_file_path(task_id)
     file_handler = logging.FileHandler(log_file_path)
@@ -255,8 +254,7 @@ def process_scraping_task(task_id, form_data=None):
     finally:
         logger.removeHandler(file_handler)
         file_handler.close()
-
-
+ 
 def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
 
@@ -277,8 +275,7 @@ def update_image_url(business, local_path, new_path):
                 logger.error(f"Error updating image for business {business.id}: {str(e)}")
     except Exception as e:
         logger.error(f"Error fetching images for update: {str(e)}")
-
-
+ 
 def crop_image_to_aspect_ratio(img, aspect_ratio):
     img_width, img_height = img.size
     img_aspect_ratio = img_width / img_height
@@ -299,7 +296,16 @@ def crop_image_to_aspect_ratio(img, aspect_ratio):
         bottom = top + new_height
 
     return img.crop((left, top, right, bottom))
-
+ 
+def get_s3_client():
+    return boto3.client(
+        's3',
+        region_name=settings.AWS_S3_REGION_NAME,
+        endpoint_url=settings.AWS_S3_ENDPOINT_URL,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
+    )
+ 
 def download_images(business, local_result):
     photos_link = local_result.get('photos_link')
     if not photos_link:
@@ -325,6 +331,9 @@ def download_images(business, local_result):
         # Create a slug of the business name
         business_slug = slugify(business.title)
 
+        # Initialize the S3 client
+        s3_client = get_s3_client()
+
         for i, photo in enumerate(photos_results.get('photos', [])):
             image_url = photo.get('image')
 
@@ -347,19 +356,24 @@ def download_images(business, local_result):
                         file_name = f"{business_slug}_{i}.jpg"
                         file_path = f'business_images/{business.id}/{file_name}'
 
-                        # Check if the file already exists before saving
-                        if default_storage.exists(file_path):
-                            logger.info(f"File {file_name} already exists in storage, skipping.")
-                            continue  # Skip if the file already exists
-
-                        # Save the image to DigitalOcean Spaces
+                        # Save the image to a temporary buffer
                         buffer = BytesIO()
                         img_cropped.save(buffer, 'JPEG', quality=85)
                         buffer.seek(0)  # Reset buffer position
-                        default_storage.save(file_path, ContentFile(buffer.read()))
 
-                        # Get the URL of the saved image
-                        media_url = default_storage.url(file_path)
+                        # Upload the image using boto3 client
+                        s3_client.upload_fileobj(
+                            buffer,
+                            settings.AWS_STORAGE_BUCKET_NAME,
+                            file_path,
+                            ExtraArgs={
+                                'ACL': 'public-read',
+                                'ContentType': 'image/jpeg'
+                            }
+                        )
+
+                        # Construct the URL of the uploaded image
+                        media_url = f"{settings.AWS_S3_ENDPOINT_URL}/{file_path}"
 
                         # Create an image object in the database
                         Image.objects.create(
@@ -390,7 +404,6 @@ def download_images(business, local_result):
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
 
     return image_paths
-
 
 def save_results(task, results, query):
     try:

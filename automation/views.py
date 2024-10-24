@@ -1145,8 +1145,6 @@ def edit_business(request, business_id):
 def save_business_from_results(task, results, query):
     for local_result in results.get('local_results', []):
         business = save_business(task, local_result, query)
-        #enhance_and_translate_description(business)
-        #translate_business_info_sync(business)
         download_images(business, local_result)
 
 def load_categories(request):
