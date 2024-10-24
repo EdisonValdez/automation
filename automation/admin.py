@@ -74,7 +74,7 @@ class BusinessAdmin(admin.ModelAdmin):
  
 @admin.register(ScrapingTask)
 class ScrapingTaskAdmin(admin.ModelAdmin):
-    list_display = ('project_title', 'main_category', 'tailored_category', 'status', 'created_at', 'completed_at')
+    list_display = ('project_title', 'level', 'main_category', 'subcategory', 'status', 'created_at', 'completed_at')
     list_filter = ('main_category', 'tailored_category')
     search_fields = ('project_title', 'main_category', 'tailored_category')
     readonly_fields = ('created_at', 'completed_at', 'status')

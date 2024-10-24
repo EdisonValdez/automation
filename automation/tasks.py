@@ -13,7 +13,6 @@ from serpapi import GoogleSearch
 import json
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-
 import requests
 from django.utils import timezone
 import os
@@ -98,7 +97,7 @@ def read_queries(file_path):
 def process_query(query_data):
     query = query_data['query']
     ll = query_data.get('ll')
-    
+
     params = {
         "api_key": settings.SERPAPI_KEY,
         "engine": "google_maps",
@@ -108,25 +107,23 @@ def process_query(query_data):
         "hl": "en",
         "no_cache": "true",
     }
-    
+
     if ll:
         params["ll"] = ll
-    
+
     try:
         results = fetch_search_results(params)
-        
+
         if 'error' in results:
             logger.error(f"API error for query '{query}': {results['error']}")
             return None
-        
+
         return results
-    
-    except (RequestException, RateLimitException) as e:
+
+    except (requests.RequestException, Exception) as e:
         logger.error(f"Error fetching results for query '{query}': {str(e)}")
         return None
-    except Exception as e:
-        logger.error(f"Unexpected error while fetching results for query '{query}': {str(e)}", exc_info=True)
-        return None
+
  
 # Implementación Manual de Control de Tasa
 def rate_limiter(max_calls, period):
@@ -156,6 +153,23 @@ def rate_limiter(max_calls, period):
 def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
+ 
+def read_queries_from_content(file_content):
+    logger.info("Reading queries from file content")
+    try:
+        queries = []
+        for line in file_content.strip().splitlines():
+            parts = line.strip().split('|')
+            if len(parts) == 2:
+                query, coords = parts
+                queries.append({'query': query.strip(), 'll': coords.strip()})
+            elif len(parts) == 1:
+                queries.append({'query': parts[0].strip(), 'll': None})
+        logger.info(f"Successfully read {len(queries)} queries")
+        return queries
+    except Exception as e:
+        logger.error(f"Error reading queries from content: {str(e)}", exc_info=True)
+        return []
 
 
 def process_scraping_task(task_id, form_data=None):
@@ -169,11 +183,9 @@ def process_scraping_task(task_id, form_data=None):
         task.status = 'IN_PROGRESS'
         task.save()
 
-        # Prepare directories
-        business_images_directory = os.path.join(settings.MEDIA_ROOT, 'business_images')
-        os.makedirs(business_images_directory, exist_ok=True)
-
-        queries = read_queries(task.file.path)
+        # Read queries from the uploaded file in DigitalOcean Spaces
+        file_content = default_storage.open(task.file.name).read().decode('utf-8')
+        queries = read_queries_from_content(file_content)
         logger.info(f"Total queries to process: {len(queries)}")
 
         total_results = 0
@@ -205,22 +217,13 @@ def process_scraping_task(task_id, form_data=None):
                         with transaction.atomic():
                             logger.info(f"Saving business {result_index}/{len(local_results)} for query '{query}' (Page {page_num})")
                             business = save_business(task, local_result, query, form_data=form_data)
-                            
+
                             if business:
                                 logger.info(f"Downloading images for business {business.id}")
-                                image_paths = download_images(business, local_result)
-                                successful_images = 0
-                                for image_path in image_paths:
-                                    try:
-                                        update_image_url(business, image_path, image_path)
-                                        logger.info(f"Image {image_path} processed for business {business.id}")
-                                        successful_images += 1
-                                    except Exception as e:
-                                        logger.error(f"Error handling image at {image_path}: {str(e)}", exc_info=True)
-                                logger.info(f"Successfully processed {successful_images}/{len(image_paths)} images for business {business.id}")
+                                download_images(business, local_result)
                             else:
                                 logger.warning(f"Business '{local_result.get('title', 'Unknown')}' skipped due to missing country information.")
-                    
+
                     except Exception as e:
                         logger.error(f"Error processing business result {result_index} for query '{query}': {str(e)}", exc_info=True)
                         continue
@@ -252,7 +255,7 @@ def process_scraping_task(task_id, form_data=None):
     finally:
         logger.removeHandler(file_handler)
         file_handler.close()
- 
+
 
 def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
@@ -276,6 +279,27 @@ def update_image_url(business, local_path, new_path):
         logger.error(f"Error fetching images for update: {str(e)}")
 
 
+def crop_image_to_aspect_ratio(img, aspect_ratio):
+    img_width, img_height = img.size
+    img_aspect_ratio = img_width / img_height
+
+    if img_aspect_ratio > aspect_ratio:
+        # Image is wider than desired aspect ratio
+        new_width = int(img_height * aspect_ratio)
+        left = (img_width - new_width) / 2
+        top = 0
+        right = left + new_width
+        bottom = img_height
+    else:
+        # Image is taller than desired aspect ratio
+        new_height = int(img_width / aspect_ratio)
+        left = 0
+        top = (img_height - new_height) / 2
+        right = img_width
+        bottom = top + new_height
+
+    return img.crop((left, top, right, bottom))
+
 def download_images(business, local_result):
     photos_link = local_result.get('photos_link')
     if not photos_link:
@@ -286,7 +310,7 @@ def download_images(business, local_result):
     try:
         # Fetch image results from the API
         photos_search = GoogleSearch({
-            "api_key": SERPAPI_KEY,
+            "api_key": settings.SERPAPI_KEY,
             "engine": "google_maps_photos",
             "data_id": local_result['data_id'],
             "hl": "en",
@@ -317,37 +341,30 @@ def download_images(business, local_result):
 
                         # Calculate and crop to the 3:2 aspect ratio
                         aspect_ratio = 3 / 2
-                        if img.width / img.height > aspect_ratio:
-                            new_width = int(img.height * aspect_ratio)
-                            new_height = img.height
-                        else:
-                            new_width = img.width
-                            new_height = int(img.width / aspect_ratio)
+                        img_cropped = crop_image_to_aspect_ratio(img, aspect_ratio)
 
-                        left = (img.width - new_width) / 2
-                        top = (img.height - new_height) / 2
-                        right = (img.width + new_width) / 2
-                        bottom = (img.height + new_height) / 2
-                        img_cropped = img.crop((left, top, right, bottom))
-
-                        # Ensure file name is unique by appending a counter or UUID
+                        # Ensure file name is unique
                         file_name = f"{business_slug}_{i}.jpg"
                         file_path = f'business_images/{business.id}/{file_name}'
 
                         # Check if the file already exists before saving
                         if default_storage.exists(file_path):
-                            logger.info(f"File {file_name} already exists, skipping.")
+                            logger.info(f"File {file_name} already exists in storage, skipping.")
                             continue  # Skip if the file already exists
 
-                        # Save the image
+                        # Save the image to DigitalOcean Spaces
                         buffer = BytesIO()
                         img_cropped.save(buffer, 'JPEG', quality=85)
-                        default_storage.save(file_path, ContentFile(buffer.getvalue()))
+                        buffer.seek(0)  # Reset buffer position
+                        default_storage.save(file_path, ContentFile(buffer.read()))
+
+                        # Get the URL of the saved image
+                        media_url = default_storage.url(file_path)
 
                         # Create an image object in the database
                         Image.objects.create(
                             business=business,
-                            image_url=image_url,
+                            image_url=media_url,
                             local_path=file_path,
                             order=i
                         )
@@ -365,7 +382,7 @@ def download_images(business, local_result):
         # Set the first image as the main image if it exists
         first_image = Image.objects.filter(business=business).order_by('order').first()
         if first_image:
-            business.main_image = first_image.local_path
+            business.main_image = first_image.image_url  # Use the URL instead of local path
             business.save()
             logger.info(f"Set main image for business {business.id}")
 
@@ -374,22 +391,23 @@ def download_images(business, local_result):
 
     return image_paths
 
+
 def save_results(task, results, query):
-    results_dir = os.path.join(settings.MEDIA_ROOT, 'scraping_results', str(task.id))
-    os.makedirs(results_dir, exist_ok=True)
-    file_name = f"{query.replace(' ', '_')}.json"
-    file_path = os.path.join(results_dir, file_name)
-    with open(file_path, 'w') as f:
-        json.dump(results, f)
-    logger.info(f"Saved results for query '{query}' to {file_path}")
+    try:
+        file_name = f"{query.replace(' ', '_')}.json"
+        file_path = f'scraping_results/{task.id}/{file_name}'
 
-"""
-def slugify(value): 
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub(r'[^\w\s-]', '', value.lower())
-    return re.sub(r'[-\s]+', '_', value).strip('-_')
-"""
+        # Convert results to JSON string
+        json_content = json.dumps(results)
 
+        # Save JSON content to DigitalOcean Spaces
+        default_storage.save(file_path, ContentFile(json_content))
+
+        logger.info(f"Saved results for query '{query}' to {file_path}")
+
+    except Exception as e:
+        logger.error(f"Error saving results for query '{query}': {str(e)}", exc_info=True)
+ 
 async def translate_text(text, language="spanish"):
     if text and text.strip():
         # Usamos 'en-GB' para el inglés británico
@@ -592,7 +610,6 @@ def extract_city_from_query(query):
     
     return ''  # Return empty string if no city is found
  
-
 def parse_address_task(address):
     """
     Parses the address string and extracts components: street, city, state, postal_code, country.
@@ -837,8 +854,7 @@ def save_category(category):
 @sync_to_async
 def save_info(info):
     info.save()
-
-
+ 
 def cleanup_old_tasks():
     """
     Delete tasks older than 30 days
@@ -1159,7 +1175,6 @@ def update_all_task_rankings():
     for task in tasks:
         update_business_rankings(task.id)
  
- 
 def send_task_completion_email(task_id):
     """
     Send an email notification when a task is completed
@@ -1207,8 +1222,7 @@ def send_task_completion_email(task_id):
         logger.error(f"Task with id {task_id} not found")
     except Exception as e:
         logger.error(f"Error sending completion email for task {task_id}: {str(e)}", exc_info=True)
-
-
+ 
 @receiver(post_save, sender=ScrapingTask)
 def task_status_changed(sender, instance, **kwargs):
     """

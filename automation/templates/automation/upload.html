@@ -434,27 +434,27 @@ $(document).ready(function() {
     $(document).ready(function() {
         $('#upload-form').on('submit', function(e) {
             e.preventDefault();
-    
+
             var formData = new FormData(this);
 
             // Clear previous messages
             $('#successMessage').text('');
             $('#errorMessage').text('');
             $('#form-errors').html('');  // Clear form error container if exists
-    
+
             function showLoader() {
                 $('#loader').removeClass('d-none'); // Show loader
             }
-    
+
             function hideLoader() {
                 $('#loader').addClass('d-none'); // Hide loader
             }
-    
+
             // Disable the submit button, show loading spinner, and display overlay
             $('#submit-button').attr('disabled', true);
             showLoader(); // Use the showLoader function
             $('.overlay').show();
-    
+
             $.ajax({
                 url: "{% url 'upload_file' %}",  // Django URL template tag
                 type: 'POST',
@@ -466,7 +466,7 @@ $(document).ready(function() {
                     hideLoader(); // Use the hideLoader function
                     $('.overlay').hide(); // Hide the overlay
                     $('#submit-button').attr('disabled', false);
-    
+
                     if (response.status === 'success') {
                         $('#successMessage').text(response.message);
                         $('#successModal').modal('show');
@@ -480,7 +480,16 @@ $(document).ready(function() {
                             }
                         }, 1000);
                     } else {
-                        $('#errorMessage').text(response.message);
+                        // Display detailed error messages from the server
+                        $('#errorMessage').text(response.message || "An error occurred. Please check the form and try again.");
+                        if (response.errors) {
+                            var errorList = '<ul>';
+                            $.each(response.errors, function(field, errors) {
+                                errorList += '<li><strong>' + field + ':</strong> ' + errors.join(', ') + '</li>';
+                            });
+                            errorList += '</ul>';
+                            $('#form-errors').html(errorList);
+                        }
                         $('#errorModal').modal('show');
                     }
                 },
@@ -488,7 +497,36 @@ $(document).ready(function() {
                     hideLoader(); // Use the hideLoader function
                     $('.overlay').hide(); // Hide the overlay on error
                     $('#submit-button').attr('disabled', false);
-                    $('#errorMessage').text("An error occurred. However, the process might be running in the background. Check later the logs.");
+
+                    var errorMessage = "An unexpected error occurred.";
+
+                    if (xhr.status === 0) {
+                        errorMessage = "Network error: Please check your internet connection.";
+                    } else if (xhr.status >= 500) {
+                        errorMessage = "Server error (" + xhr.status + "): Please try again later.";
+                    } else if (xhr.status >= 400) {
+                        errorMessage = "Client error (" + xhr.status + "): Please check your input.";
+                    }
+
+                    // Attempt to parse and display server-side validation errors
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                        if (response.errors) {
+                            var errorList = '<ul>';
+                            $.each(response.errors, function(field, errors) {
+                                errorList += '<li><strong>' + field + ':</strong> ' + errors.join(', ') + '</li>';
+                            });
+                            errorList += '</ul>';
+                            $('#form-errors').html(errorList);
+                        }
+                    } catch (e) {
+                        // If response is not JSON, display the default error message
+                    }
+
+                    $('#errorMessage').text(errorMessage);
                     $('#errorModal').modal('show');
                 },
                 cache: false,
@@ -497,7 +535,8 @@ $(document).ready(function() {
             });
         });
     });
-    </script>
+</script>
+
 
     <script>
         $(document).ready(function() {

@@ -3,17 +3,18 @@ from pathlib import Path
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
 from dotenv import load_dotenv
+
 load_dotenv(dotenv_path='./.env')
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Environment Variables
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
-DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower() == 'true'
-
+USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'  # Set to 'True' in production when using S3
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
-ALLOWED_HOSTS=["*"]
+ALLOWED_HOSTS = ["*"]
 
-# Aplicaciones instaladas
+# Installed Apps
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,8 +60,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'automation.wsgi.application'
 
-# Configuración de la base de datos
-if DEVELOPMENT_MODE:
+# Database Configuration
+if DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -73,32 +74,68 @@ if DEVELOPMENT_MODE:
     }
 else:
     DATABASES = {
-        'default': dj_database_url.parse(os.getenv('DATABASE_URL'), conn_max_age=600, ssl_require=True)
+        'default': dj_database_url.parse(
+            os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
 
-# Configuración de archivos estáticos y medios
+
+# Static Files
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
- 
-DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+# Media Files Configuration
+if USE_S3:
+    # Production settings using DigitalOcean Spaces (S3)
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+    AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+
+    AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', 'https://nyc3.digitaloceanspaces.com')
+    AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'nyc3')
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+
+    AWS_S3_CUSTOM_DOMAIN = os.getenv(
+        'AWS_S3_CUSTOM_DOMAIN',
+        f"{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT_URL.replace('https://', '')}"
+    )
+
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_OBJECT_PARAMETERS = {
+        'CacheControl': 'max-age=86400',
+    }
+
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    # Do not set MEDIA_ROOT when using S3 storage
+else:
+    # Development settings using local file system
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Static Files Storage
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
-DEFAULT_IMAGE_URL = os.getenv('DEFAULT_IMAGE_URL', 'https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png')
+DEFAULT_IMAGE_URL = os.getenv(
+    'DEFAULT_IMAGE_URL',
+    'https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png'
+)
 
-# Configuración de internacionalización
+# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Configuración de autenticación
+# Authentication Configuration
 AUTH_USER_MODEL = 'automation.CustomUser'
 
-# Configuración de logging
+# Logging Configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -114,63 +151,63 @@ LOGGING = {
     },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'debug.log',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
             'formatter': 'verbose',
         },
     },
     'loggers': {
         'automation': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': True,
         },
     },
 }
 
-# Configuración de correo electrónico
+# Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = "smtp.localsecrets.travel"#os.getenv('EMAIL_HOST', 'smtp.localsecrets.travel')  # Replace with your SMTP host
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.localsecrets.travel')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = "evaldez@localsecrets.travel"#os.getenv('EMAIL_HOST_USER')  # Your email address
-EMAIL_HOST_PASSWORD = "fr@uoVbs8b}F$h" #os.getenv('EMAIL_HOST_PASSWORD')  # Your email password
-DEFAULT_FROM_EMAIL = "evaldez@localsecrets.travel"#os.getenv('DEFAULT_FROM_EMAIL', 'your-email@example.com')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'evaldez@localsecrets.travel')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'fr@uoVbs8b}F$h')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'evaldez@localsecrets.travel')
 
-# Configuración adicional
+# File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 FILE_UPLOAD_PERMISSIONS = 0o644
-REQUEST_TIMEOUT = 120  # en segundos
+REQUEST_TIMEOUT = 120  # in seconds
 
-# Configuración de la base de datos
+# Database Options
 DATABASE_OPTIONS = {
     'connect_timeout': 60,
 }
 
-# Configuración de caché
+# Cache Configuration
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
 
-# Configuración de CORS 
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Permitir todos los orígenes en desarrollo
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 
-# Configuración de API keys
+# API Keys Configuration
 TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
 GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
 SERPAPI_KEY = os.getenv('SERPAPI_KEY')
 
-# Configuración de Django Rest Framework 
+# Django REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
@@ -183,20 +220,20 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-# Configuración de compresión de archivos estáticos  
+# Static Files Finders
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 
-# Configuración de sesiones
+# Session Configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 1209600  # 2 semanas
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
 
-# Configuración de mensajes
+# Message Storage
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
-# Configuración de seguridad adicional para producción
+# Security Settings for Production
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
@@ -204,8 +241,6 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000  # 1 año
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-
- 
