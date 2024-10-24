@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Environment Variables
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower() == 'true'  #original in pro set true
 USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'  # Set to 'True' in production when using S3
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 ALLOWED_HOSTS = ["*"]
@@ -62,10 +63,22 @@ WSGI_APPLICATION = 'automation.wsgi.application'
 
 
 
-# Database configuration
-DATABASES = {
-    'default': dj_database_url.parse(os.getenv('DATABASE_URL'), conn_max_age=600, ssl_require=not DEBUG)
-}
+# Configuración de la base de datos
+if DEVELOPMENT_MODE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'automation-18102024'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'Thesecret1'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.parse(os.getenv('DATABASE_URL'), conn_max_age=600, ssl_require=True)
+    }
 
 # Static and Media file settings
 STATIC_URL = '/static/'
