@@ -372,19 +372,19 @@ def download_images(business, local_result):
                             }
                         )
 
-                        # Construct the URL of the uploaded image
-                        media_url = f"{settings.AWS_S3_ENDPOINT_URL}/{file_path}"
+                        # Create an image object in the database only if it doesn't exist
+                        if not Image.objects.filter(business=business, local_path=file_path).exists():
+                            Image.objects.create(
+                                business=business,
+                                image_url=image_url,
+                                local_path=file_path,
+                                order=i
+                            )
+                            image_paths.append(file_path)
+                            logger.info(f"Downloaded and processed image {i} for business {business.id}")
 
-                        # Create an image object in the database
-                        Image.objects.create(
-                            business=business,
-                            image_url=media_url,
-                            local_path=file_path,
-                            order=i
-                        )
-
-                        image_paths.append(file_path)
-                        logger.info(f"Downloaded and processed image {i} for business {business.id}")
+                        else:
+                            logger.info(f"Image with local path {file_path} already exists for business {business.id}, skipping.")
 
                     else:
                         logger.error(f"Failed to download image {i} for business {business.id}: HTTP {response.status_code}")
@@ -404,6 +404,7 @@ def download_images(business, local_result):
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
 
     return image_paths
+
 
 def save_results(task, results, query):
     try:
@@ -668,10 +669,6 @@ def parse_address_task(address):
 
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):
-    """
-    Save business information from a scraped result or form data.
-    The form_data parameter is optional and used only when business info is submitted via a form.
-    """
     logger.info(f"Saving business data for task {task.id}")
     try:
         # Initialize business_data with scraped data
@@ -679,11 +676,11 @@ def save_business(task, local_result, query, form_data=None):
             'task': task,
             'project_id': task.project_id,
             'project_title': task.project_title,
-            'main_category': form_data['main_category'] if form_data and form_data.get('main_category') else task.main_category,
-            'tailored_category': form_data['subcategory'] if form_data and form_data.get('subcategory') else task.tailored_category,
+            'main_category': form_data.get('main_category', task.main_category),
+            'tailored_category': form_data.get('subcategory', task.tailored_category),
             'search_string': query,
             'scraped_at': timezone.now(),
-            'level': form_data['level'] if form_data and form_data.get('level') else task.level,
+            'level': form_data.get('level', task.level),
         }
 
         # Field mapping from the scraped result to business model
@@ -713,24 +710,18 @@ def save_business(task, local_result, query, form_data=None):
             business_data['latitude'] = local_result['gps_coordinates'].get('latitude')
             business_data['longitude'] = local_result['gps_coordinates'].get('longitude')
 
-        # Handle types and operating hours
-        if 'types' in local_result:
-            business_data['types'] = ', '.join(local_result['types'])
-        if 'operating_hours' in local_result:
-            business_data['operating_hours'] = local_result['operating_hours']
-        if 'service_options' in local_result:
-            business_data['service_options'] = local_result['service_options']
-
         # Parse address
         address = local_result.get('address', '')
         address_components = parse_address_task(address)  # Parse the address
 
         # Assign address components
-        business_data['street'] = address_components.get('street', '')
-        business_data['city'] = address_components.get('city', '')
-        business_data['state'] = address_components.get('state', '')
-        business_data['postal_code'] = address_components.get('postal_code', '')
-        business_data['country'] = address_components.get('country', '')
+        business_data.update({
+            'street': address_components.get('street', ''),
+            'city': address_components.get('city', ''),
+            'state': address_components.get('state', ''),
+            'postal_code': address_components.get('postal_code', ''),
+            'country': address_components.get('country', ''),
+        })
 
         # Fill missing address components
         fill_missing_address_components(business_data, task, query)
@@ -851,6 +842,7 @@ def save_business(task, local_result, query, form_data=None):
     except Exception as e:
         logger.error(f"Error saving business data for task {task.id}: {str(e)}", exc_info=True)
         raise  # Re-raise the exception to trigger transaction rollback if necessary
+
 
 @sync_to_async
 def get_categories(business):
