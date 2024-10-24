@@ -60,60 +60,42 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'automation.wsgi.application'
 
-# Database Configuration
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'automation-18102024'),
-            'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD', 'Thesecret1'),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
-    }
-else:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            os.getenv('DATABASE_URL'),
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
+# Get DEBUG and USE_S3 settings from the environment
+DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
+# Database configuration
+DATABASES = {
+    'default': dj_database_url.parse(os.getenv('DATABASE_URL'), conn_max_age=600, ssl_require=not DEBUG)
+}
 
-# Static Files
+# Static and Media file settings
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Media Files Configuration
 if USE_S3:
-    # Production settings using DigitalOcean Spaces (S3)
+    # DigitalOcean Spaces (S3) settings for production
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-
     AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', 'https://nyc3.digitaloceanspaces.com')
     AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'nyc3')
     AWS_S3_SIGNATURE_VERSION = 's3v4'
 
-    AWS_S3_CUSTOM_DOMAIN = os.getenv(
-        'AWS_S3_CUSTOM_DOMAIN',
-        f"{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT_URL.replace('https://', '')}"
-    )
+    # Correctly handle S3 custom domain
+    AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', f"{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT_URL.replace('https://', '')}")
 
     AWS_DEFAULT_ACL = 'public-read'
-    AWS_S3_OBJECT_PARAMETERS = {
-        'CacheControl': 'max-age=86400',
-    }
-
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
-    # Do not set MEDIA_ROOT when using S3 storage
 else:
-    # Development settings using local file system
+    # Local file storage for development
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -233,14 +215,19 @@ SESSION_COOKIE_AGE = 1209600  # 2 weeks
 # Message Storage
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
-# Security Settings for Production
+
+# Ensure SECURITY settings for production
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+
+# API keys and additional configs
+TRANSLATION_OPENAI_API_KEY = os.getenv('TRANSLATION_OPENAI_API_KEY')
+GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
+SERPAPI_KEY = os.getenv('SERPAPI_KEY')
