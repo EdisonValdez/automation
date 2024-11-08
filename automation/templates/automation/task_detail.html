@@ -5,6 +5,28 @@
 
 {% block content %}
 <style>
+ 
+.business-title {
+    font-size: 1.25em; /* Adjust as needed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+
+.business-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    padding: 5px 0;
+    width: 100%;
+}
+
+.business-link:hover {
+    color: #007bff; /* Or your desired hover color */
+    text-decoration: underline;
+} 
+
 .dropdown, .dropup {
 position: absolute;
 }
@@ -260,7 +282,7 @@ margin-top: 10px;
                         {% if business.status == status %}
                         <div class="panel" data-id="{{ business.id }}" data-status="{{ business.status }}">
                             <div class="kanban-box item-box">
-                                <div class="dropdown edit">
+                                <!-- <div class="dropdown edit">
                                     <a href="#" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-pencil-alt"></i>
                                     </a>
@@ -268,21 +290,20 @@ margin-top: 10px;
                                         <a class="dropdown-item" href="{% url 'business_detail' business.id %}">
                                             <i class="bx bx-show mr-5"></i>View
                                         </a>
-                                        <!--<a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_card_modal">
+                                       <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_card_modal">
                                             <i class="bx bx-edit mr-5"></i>Edit
-                                        </a>-->
+                                        </a>
                                     </div>
-                                </div>
+                                </div>-->
     
                                 <!-- Title Box -->
                                 <div class="title-box">
-                                    <strong class="business-title">
-                                        <a class="dropdown-item d-inline-block text-truncate" 
-                                           href="{% url 'business_detail' business.id %}" 
-                                           style="max-width: 100%;">
+                                    <h4 class="business-title text-truncate">
+                                        <a href="{% url 'business_detail' business.id %}" class="business-link" title="{{ business.title }}">
                                             {{ business.title|truncatechars:20 }}
                                         </a>
-                                    </strong>
+                                    </h4>
+                                    
                                     
                                 </div>
     
