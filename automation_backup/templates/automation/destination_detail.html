@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="main-content project">
+    <div class="container mt-5">
+        <h2>Destination Details</h2>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="box">
+                    <div class="box-body">
+                        <h3>Destination:</h3>
+                        <h5>{{ destination.name }}</h5>
+
+                        <!-- Iterate over ambassador details -->
+                        {% for ambassador in ambassador_details %}
+                        <div class="box client mt-4">
+                            <div class="dropdown">
+                                <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bx bx-dots-horizontal-rounded"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ ambassador.user_id }}"><i class="bx bx-edit mr-5"></i>Edit</a>
+                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal{{ ambassador.user_id }}"><i class="bx bx-trash"></i> Delete</a>
+                                </div>
+                            </div>
+
+                            <div class="box-body pt-5 pb-0">
+                                <div class="img-box">
+                                    <img src="./images/client/2.png" alt="Ambassador Image">
+                                    <div class="pulse-css"></div>
+                                </div>
+
+                                <h5 class="mt-17">{{ ambassador.username }}</h5>
+                                <p class="fs-14">Ambassador at <strong>{{ destination.name }}</strong></p>
+                                
+                                <ul class="info">
+                                    <li class="fs-14">
+                                        <i class="bx bxs-phone"></i>
+                                        <a href="tel:{{ ambassador.mobile }}" class="text-decoration-none">{{ ambassador.mobile }}</a>
+                                    </li>
+                                    <li class="fs-14">
+                                        <i class="bx bxs-envelope"></i>
+                                        <a href="mailto:{{ ambassador.email }}" class="text-decoration-none">{{ ambassador.email }}</a>
+                                    </li>
+                                    <li class="fs-14"><strong>Ambassador Destinations:</strong> {{ ambassador.dest }}</li>
+                                </ul>
+
+                                <div class="group-btn d-flex justify-content-between">
+                                    <a class="bg-btn-pri color-white" href="#" data-bs-toggle="modal" data-bs-target="#messageModal{{ ambassador.user_id }}">Message</a> 
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modal for Sending Message -->
+                        <div class="modal fade" id="messageModal{{ ambassador.user_id }}" tabindex="-1" aria-labelledby="messageModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="messageModalLabel">Send Message to {{ ambassador.username }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="messageForm{{ ambassador.user_id }}">
+                                            <div class="form-group mb-3">
+                                                <label for="subject" class="form-label">Subject</label>
+                                                <input type="text" class="form-control" id="subject" placeholder="Enter subject">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="messageText" class="form-label">Message</label>
+                                                <textarea class="form-control" id="messageText" rows="5" placeholder="Write your message here..."></textarea>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="button" class="btn btn-primary" onclick="sendMessage({{ ambassador.user_id }})">Send Message</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <br />
+                        <a type="button" class="btn btn-secondary" href="{% url 'destination_management' %}">Back</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function sendMessage(ambassadorId) {
+        var subject = document.querySelector(`#messageForm${ambassadorId} #subject`).value;
+        var messageText = document.querySelector(`#messageForm${ambassadorId} #messageText`).value;
+
+        if (subject && messageText) {
+            // Prepare data to send
+            var data = {
+                ambassadorId: ambassadorId,
+                subject: subject,
+                message: messageText,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            };
+
+            // Send data to the server using AJAX
+            fetch('/send-message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Message sent to ambassador with ID ${ambassadorId}`);
+                    var messageModal = new bootstrap.Modal(document.getElementById(`messageModal${ambassadorId}`));
+                    messageModal.hide();
+                } else {
+                    alert('There was a problem sending the message. Please try again.');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('There was a problem connecting to the server.');
+            });
+
+        } else {
+            alert("Please fill in both the subject and message fields.");
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,91 @@
+{
+  "levels": [
+      {
+          "title": "What to do?",
+          "categories": [
+              {
+                  "title": "Guided Tour",
+                  "subcategories": [
+                      { "title": "Tourist guide" },
+                      { "title": "One Day Trip" },
+                      { "title": "Bike Tours" },
+                      { "title": "Bicitaxi Tours" },
+                      { "title": "Tuc Tuck" },
+                      { "title": "Horse-drawn carriage tour" },
+                      { "title": "Boat Tour" },
+                      { "title": "Adventure Tour" },
+                      { "title": "Air Tour" },
+                      { "title": "Urban Walk" },
+                      { "title": "Popular Beaches" }
+                  ]
+              },
+              {
+                  "title": "Family Plans",
+                  "subcategories": [
+                      { "title": "Children's amusement center" }
+                  ]
+              },
+              {
+                  "title": "Amusement Parks",
+                  "subcategories": []
+              },
+              {
+                  "title": "Zoo",
+                  "subcategories": []
+              },
+              {
+                  "title": "Cinemas",
+                  "subcategories": []
+              },
+              {
+                  "title": "Nature & Adventure",
+                  "subcategories": [
+                      { "title": "Adventure Sports" },
+                      { "title": "Natural Parks" },
+                      { "title": "Trekking & Hiking" },
+                      { "title": "Pilgrimage Routes" }
+                  ]
+              },
+              {
+                  "title": "WATER SPORTS",
+                  "subcategories": [
+                      { "title": "Surf" },
+                      { "title": "Kitesurf" },
+                      { "title": "Bodyboard" },
+                      { "title": "Scuba Diving" },
+                      { "title": "Wakeboard" },
+                      { "title": "Sail" }
+                  ]
+              },
+              {
+                  "title": "Pools",
+                  "subcategories": []
+              },
+              {
+                  "title": "INDOOR SPORTS",
+                  "subcategories": [
+                      { "title": "Gym" },
+                      { "title": "Tai Chi" },
+                      { "title": "Yoga" },
+                      { "title": "Sports Swimming Pool" }
+                  ]
+              },
+              {
+                  "title": "Bowling",
+                  "subcategories": []
+              },
+              {
+                  "title": "Field Sports",
+                  "subcategories": [
+                      { "title": "Golf court" },
+                      { "title": "Ski Resort" },
+                      { "title": "Race tracks" },
+                      { "title": "Tennis court" },
+                      { "title": "Padel club" },
+                      { "title": "Baseball Field" }
+                  ]
+              }
+          ]
+      }
+  ]
+}

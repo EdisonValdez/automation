@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="main-title">
+                Business List
+            </div>
+            <div class="box">
+                <div class="box-body">
+                                            
+    <h1>Task review</h1>
+    <h2>{{ project_title }}</h2>
+    
+    <h3>Task details</h3>
+    <p>ID: {{ task_id }}</p>
+    <p>Created: {{ created_at }}</p>
+    <p>End: {{ completed_at }}</p>
+    <p>Status: {{ status }}</p>
+    <p>Total de Negocios: {{ total_businesses }}</p>
+    <p>Avg: {{ rating|floatformat:2 }}</p>
+    
+    <h3>Main Tasks</h3>
+    <ul>
+    {% for category in top_categories %}
+        <li>{{ category.category_name }} ({{ category.count }})</li>
+    {% endfor %}
+    </ul>
+    
+                    <div class="table-responsive">
+
+                        <h3>Business List</h3>
+                        <table>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Rate</th>
+                                <th>Reviews</th>
+                                <th>Category</th>
+                                <th>Address</th>
+                                <th>Phone</th>
+                                <th>Web</th>
+                                <th>Range</th>
+                            </tr>
+                            {% for business in businesses %}
+                            <tr>
+                                <td>{{ business.id }}</td>
+                                <td>{{ business.title }}</td>
+                                <td>{{ business.rating }}</td>
+                                <td>{{ business.reviews_count }}</td>
+                                <td>{{ business.category }}</td>
+                                <td>{{ business.address }}</td>
+                                <td>{{ business.phone }}</td>
+                                <td>{{ business.website }}</td>
+                                <td>{{ business.rank }}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

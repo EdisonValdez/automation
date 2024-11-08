@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block content %}
+ 
+<div class="main-content project">
+ 
+        <h2>Ambassador Dashboard</h2>
+        <div class="row">
+            <div class="col-12">
+                <div class="">
+                    <div class="box-header pt-0">
+                        <div class="me-auto">
+                            <h2 class="card-title mb-25 fs-22">Places to review</h2>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        {% for task in tasks %}
+                        <div class="col-3 col-xl-6 col-md-6 col-sm-12">
+                            <div class="box left-dot">
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="col-12 mb-10">
+                                            <div class="mt-0 text-start">
+                                                <a href="{% url 'task_detail' task.id %}" class="box-title mb-0 mt-1 mb-3 font-w600 fs-18">{{ task.project_title }}</a>
+                                                <p class="fs-14 font-w500 text-muted mb-6">Start: {{ task.created_at|date:"d-m-Y" }}</p>
+                                                <p class="fs-14 font-w500 text-muted mb-6">Deadline: {{ task.deadline|date:"d-m-Y" }}</p>
+ 
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="box-footer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="d-flex mb-3 mb-md-0">
+                                            <div class="task-btn {% if task.status == 'IN_PROGRESS' %}bg-success-1 text-success-1{% elif task.status == 'PENDING' %}bg-warning text-warning{% elif task.status == 'FAILED' %}bg-danger text-danger{% elif task.status == 'COMPLETED' %}bg-success-1 text-success-1 {% endif %} fs-14" data-bs-toggle="tooltip" title="Task Status">
+                                                 {{ task.get_status_display }} 
+                                            </div>
+                                        </div>
+                                        <div class="ms-auto mt-3 mt-sm-0">
+                                            <div class="d-flex">
+                                                <a class="btn btn-outline-light text-muted pd-0 fs-34" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                                </a>
+                                                <ul class="dropdown-menu" role="menu">
+                                                    <li><a href="{% url 'task_detail' task.id %}"><i class="far fa-eye"></i> View</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <p>No tasks found.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="box">
+                    <div class="box-header pt-0">
+                        <div class="me-auto">
+                            <h4 class="card-title mb-15 fs-22">Recent Businesses</h4>
+                        </div>
+                    </div>
+                    
+                        <div class="box-body">
+                            <div class="table-responsive">
+                            <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="business-profile" role="grid">
+                                <thead>
+                                    <tr class="top">
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1"  tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1" >Business Name</th>
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1" >Category</th>
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1" >Address</th>
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1" >City</th>
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1" >Status</th>
+                                        <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1" >Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for business in businesses %}
+                                    <tr class="{% cycle 'odd' 'even' %}">
+                                        <td>
+                                            <a href="{% url 'business_detail' business.id %}" class="d-flex"><span>{{ business.title }}</span></a>
+                                        </td>
+                                        <td>{{ business.category_name }}</td>
+                                        <td>
+                                            {% if business.address %}
+                                                {{ business.address|truncatechars:30 }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ business.destination }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if business.status == 'REVIEWED' %} badge-success 
+                                                {% elif business.status == 'PENDING' %} badge-warning 
+                                                {% elif business.status == 'DISCARDED' %} badge-danger 
+                                                {% elif business.status == 'IN_PRODUCTION' %} badge-primary 
+                                                {% endif %}">
+                                                {{ business.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="dropdown">
+                                                <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="bx bx-dots-horizontal-rounded"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" href="{% url 'business_detail' business.id %}">
+                                                        <i class="bx bx-info-circle font-size-16 align-middle me-1"></i>View
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6">No businesses found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                                        
+           <!-- Paginator with Custom Styling -->
+           <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+                {% endif %}
+    
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+    
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+         <!-- Paginator with Custom Styling -->
+                            
+                            </div>
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+        
+<script>
+    $(document).ready(function() {
+        $('#business-profile').DataTable({
+            "pageLength": 30,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false
+        });
+    });
+</script>
+ 
+</div>
+{% endblock %}

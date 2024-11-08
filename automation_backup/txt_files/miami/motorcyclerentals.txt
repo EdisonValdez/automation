@@ -1,0 +1,22 @@
+Miami, United States of America, Motorcycle rental services
+
+
+username = doadmin
+password = AVNS_iVtRO4ey6QwMIIMno6Q
+host = db-postgresql-nyc3-95678-do-user-17931963-0.f.db.ondigitalocean.com
+port = 25060
+database = defaultdb
+sslmode = require
+
+postgresql://doadmin:AVNS_iVtRO4ey6QwMIIMno6Q@db-postgresql-nyc3-95678-do-user-17931963-0.f.db.ondigitalocean.com:25060/defaultdb?sslmode=require
+PGPASSWORD=AVNS_iVtRO4ey6QwMIIMno6Q pg_restore -U doadmin -h db-postgresql-nyc3-95678-do-user-17931963-0.f.db.ondigitalocean.com -p 25060 -d defaultdb 
+
+
+vieja
+
+host=db-postgresql-nyc3-17893-do-user-17931963-0.k.db.ondigitalocean.com 
+port=25060 
+username=doadmin 
+password=AVNS_YWE0W4iKfTKLDxCzhjf 
+database=defaultdb 
+sslmode=require

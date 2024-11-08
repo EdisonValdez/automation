@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load business_filters %}
+
+{% block title %}{{ task.project_title }}{% endblock %}
+
+{% block content %}
+
+
+<div class="main-content user">
+    <div class="row">
+ 
+        <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+            <div class="box user-pro-list overflow-hidden mb-30">
+                <div class="box-body">
+                    <div class="user-pic text-center">
+                        <div class="avatar ">
+                            <img src="https://avatar.iran.liara.run" alt="" width="120px">
+                            <div class="pulse-css"></div>
+                        </div>
+                        <div class="pro-user mt-40">
+                            <h5 class="pro-user-username text-dark mb-1 fs-15">{{ user.username }}</h5>
+                            <h6 class="pro-user-desc text-muted fs-14">{{ user.email }}</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="box-body pt-19">
+                    <div class="row">
+                        <div class="col-6 text-center mb-0 pd-0">
+                            <div class="icon-box">
+                                <i class="bx bxs-briefcase"></i>
+                            </div>
+                            <h5 class="fs-14 font-w400 mb-0">Total Projects</h5>
+                            <h5 class="mb-2"> <span class="fs-14 font-w600 ">{{ total_projects }}</span> </h5>
+                        </div>
+                        <div class="col-6  text-center mb-0 pd-0">
+                            <div class="icon-box">
+                                <i class="bx bxs-shopping-bags"></i>
+                            </div>
+                            <h5 class="fs-14 font-w400 mb-0">Completed Tasks</h5>
+                            <h5 class="mb-2"> <span class="fs-14 font-w600">{{ completed_projects }}</span> </h5>
+                        </div>
+                        
+                    </div>
+                </div>
+       
+            </div>
+        </div>
+       <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12" >
+            <div class="box left-dot pt-39 mb-30">
+                <div class="box-header  border-0 ">
+                    <div class="box-title fs-20 font-w600">User Info</div>
+                </div>
+                <div class="box-body pt-16 user-profile">
+                    <div class="table-responsive">
+                        <table class="table mb-0 mw-100 color-span">
+                            <tbody>
+                                <tr>
+                                    <td class="py-2 px-0"> <span class="w-50">User ID</span> </td>
+                                    <td>:</td>
+                                    <td class="py-2 px-0"> <span class="">#{{ user.id }}</span> </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-0"> <span class="w-50">Username</span> </td>
+                                    <td>:</td>
+                                    <td class="py-2 px-0"> <span class="">{{ user.username }}</span> </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-0"> <span class="w-50">Email</span> </td>
+                                    <td>:</td>
+                                    <td class="py-2 px-0"> <span class="">{{ user.email }}</span> </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-0"> <span class="w-50">Join Date</span> </td>
+                                    <td>:</td>
+                                    <td class="py-2 px-0"> <span class="">{{ user.date_joined|date:"d-m-Y" }}</span> </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-0"> <span class="w-50">Last Login</span> </td>
+                                    <td>:</td>
+                                    <td class="py-2 px-0"> <span class="">{{ user.last_login|date:"d-m-Y H:i" }}</span> </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-0"> <span class="w-50">Status</span> </td>
+                                    <td>:</td>
+                                    <td class="py-2 px-0"> 
+                                        <span class="badge {% if user.is_active %}badge-success{% else %}badge-danger{% endif %}">
+                                            {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span> 
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-0"> <span class="w-50">Role</span> </td>
+                                    <td>:</td>
+                                    <td class="py-2 px-0"> 
+                                        <span class="badge {% if user.is_active %}badge-success{% else %}badge-danger{% endif %}">
+                                       {{ user_role }} 
+                                        </span> 
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-0"> <span class="w-50">Destinations</span> </td>
+                                    <td>:</td>
+                                    <td class="py-2 px-0"> 
+                                        <span class="badge badge-danger">
+                                            {% for destination in user.destinations.all %}
+                                            {{ destination.name }}<br>
+                                        {% empty %}
+                                            -
+                                        {% endfor %}
+                                        </span> 
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+ 
+        </div>
+        </div>
+    </div>
+    
+
+</div>
+
+{% endblock %}

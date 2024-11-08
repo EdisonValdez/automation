@@ -1,0 +1,100 @@
+{
+  "levels": [
+      {
+          "title": "Food & Drink",
+          "categories": [
+              {
+                  "title": "Gastronomic Experience",
+                  "subcategories": [
+                      { "title": "Michelin Stars" },
+                      { "title": "Gourmet" }
+                  ]
+              },
+              {
+                  "title": "RESTAURANTS",
+                  "subcategories": [
+                      { "title": "Local Specialties" },
+                      { "title": "Dinner with Show" },
+                      { "title": "Tapas" },
+                      { "title": "Meat - Grill" },
+                      { "title": "Hamburger Restaurant" },
+                      { "title": "Seafood and Fish" },
+                      { "title": "Rice" },
+                      { "title": "Vegan / Vegetarian" },
+                      { "title": "Organic" }
+                  ]
+              },
+              {
+                  "title": "Rest International Food",
+                  "subcategories": [
+                      { "title": "Italian food" },
+                      { "title": "French Food" },
+                      { "title": "Chinese food" },
+                      { "title": "Japanese Food" },
+                      { "title": "Mexican food" },
+                      { "title": "Indian food" },
+                      { "title": "Thai Food" },
+                      { "title": "Spanish food" },
+                      { "title": "Greek food" },
+                      { "title": "Lebanese food" },
+                      { "title": "Turkish food" },
+                      { "title": "Korean Food" },
+                      { "title": "Portuguese food" },
+                      { "title": "Peruvian Food" },
+                      { "title": "Vietnamese food" },
+                      { "title": "Argentinian food" },
+                      { "title": "Brazilian food" },
+                      { "title": "Moroccan food" },
+                      { "title": "Ethiopian food" },
+                      { "title": "Russian Food" },
+                      { "title": "German food" }
+                  ]
+              },
+              {
+                  "title": "Beach club",
+                  "subcategories": []
+              },
+              {
+                  "title": "Beach bar",
+                  "subcategories": []
+              },
+              {
+                  "title": "Brunch",
+                  "subcategories": []
+              },
+              {
+                  "title": "Bars",
+                  "subcategories": []
+              },
+              {
+                  "title": "Local Markets",
+                  "subcategories": []
+              },
+              {
+                  "title": "Bakeries",
+                  "subcategories": []
+              },
+              {
+                  "title": "Coffee shops",
+                  "subcategories": []
+              },
+              {
+                  "title": "Teahouse",
+                  "subcategories": []
+              },
+              {
+                  "title": "Ice Cream Shops",
+                  "subcategories": []
+              },
+              {
+                  "title": "Sports bars",
+                  "subcategories": []
+              },
+              {
+                  "title": "Winery",
+                  "subcategories": []
+              }
+          ]
+      }
+  ]
+}

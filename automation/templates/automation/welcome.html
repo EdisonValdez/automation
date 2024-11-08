@@ -1,0 +1,35 @@
+<!-- templates/welcome.html -->
+ 
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="main-content project">
+    <div class="row">
+        <div class="container text-center">
+
+            <div class="box mt-25">
+                <div class="box-body center">
+                    <div class="w-100"><span class="donut-2 w-100" data-peity="{ &quot;fill&quot;: [&quot;#9B8DFF&quot;, &quot;#E4EAF8&quot;]}" style="display: none;">228,134</span><svg class="peity" height="232" width="232"><path d="M 115.9985 0 A 115.9985 115.9985 0 1 1 31.521973322255832 195.49295542120768 L 73.76023666112792 155.74572771060386 A 57.99925 57.99925 0 1 0 115.9985 57.99925" data-value="228" fill="#9B8DFF"></path><path d="M 31.521973322255832 195.49295542120768 A 115.9985 115.9985 0 0 1 115.99849999999999 0 L 115.99849999999999 57.99925 A 57.99925 57.99925 0 0 0 73.76023666112792 155.74572771060386" data-value="134" fill="#E4EAF8"></path></svg>
+                    </div>
+                    <h5 class="fs-20 mb-0 mt-20 font-w500 color-text mt-28">We are<span class="text-primary font-w600 pl-8">Loading...</span></h5>
+                    {% if user.is_authenticated %} 
+                    <h5 class="fs-22 mt-18 mb-10 font-wb">Welcome, {{ user.username }}!</h5>
+                    
+                    <p class="fs-18 mt-18">Workload Dashboard For Business QA.</p>
+                    {% else %}
+                        <p>Please <a href="{% url 'login' %}">log in</a> to continue.</p>
+                    {% endif %}
+                    
+               
+                </div>
+            </div>
+
+
+
+          
+        </div>
+    </div>
+</div>
+{% endblock %}

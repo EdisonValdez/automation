@@ -1,0 +1,24 @@
+{
+  "levels": [
+      {
+          "title": "Transportation",
+          "categories": [
+              {
+                  "title": "Private Transportation",
+                  "subcategories": [
+                      { "title": "Taxi" },
+                      { "title": "Private driver with vehicle" }
+                  ]
+              },
+              {
+                  "title": "Public Transportation",
+                  "subcategories": [
+                      { "title": "Train Station" },
+                      { "title": "Bus Station" },
+                      { "title": "Metro/Subway Station" }
+                  ]
+              }
+          ]
+      }
+  ]
+}

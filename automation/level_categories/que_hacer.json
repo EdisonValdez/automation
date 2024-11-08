@@ -1,0 +1,91 @@
+{
+    "levels": [
+        {
+            "title": "¿Qué hacer?",
+            "categories": [
+                {
+                    "title": "Tour Guiado",
+                    "subcategories": [
+                        { "title": "Guia turístico" },
+                        { "title": "Viaje de un día" },
+                        { "title": "Tour de Bicicletas" },
+                        { "title": "Tours en Bicitaxi" },
+                        { "title": "Tuc Tuck" },
+                        { "title": "Tour calesa de caballos" },
+                        { "title": "Paseos en Barco" },
+                        { "title": "Tour Aventura" },
+                        { "title": "Tour Aéreo" },
+                        { "title": "Paseo Urbano" },
+                        { "title": "Playas" }
+                    ]
+                },
+                {
+                    "title": "En Familia",
+                    "subcategories": [
+                        { "title": "Centros de entretenimiento Infantil" }
+                    ]
+                },
+                {
+                    "title": "Parques de atracciones",
+                    "subcategories": []
+                },
+                {
+                    "title": "Zoo",
+                    "subcategories": []
+                },
+                {
+                    "title": "Cines",
+                    "subcategories": []
+                },
+                {
+                    "title": "Naturaleza & Aventura",
+                    "subcategories": [
+                        { "title": "Deportes de Aventura" },
+                        { "title": "Parques Naturales" },
+                        { "title": "Rutas de Senderismo" },
+                        { "title": "Rutas de Peregrinaje" }
+                    ]
+                },
+                {
+                    "title": "DEPORTES ACUÁTICOS",
+                    "subcategories": [
+                        { "title": "Surf" },
+                        { "title": "Kitesurf" },
+                        { "title": "Bodyboard" },
+                        { "title": "Buceo" },
+                        { "title": "Wakeboard" },
+                        { "title": "Vela" }
+                    ]
+                },
+                {
+                    "title": "Piscinas",
+                    "subcategories": []
+                },
+                {
+                    "title": "DEPORTES DE INTERIOR",
+                    "subcategories": [
+                        { "title": "Gimnasio" },
+                        { "title": "Tai Chi" },
+                        { "title": "Yoga" },
+                        { "title": "Piscina deportiva" }
+                    ]
+                },
+                {
+                    "title": "Bolos",
+                    "subcategories": []
+                },
+                {
+                    "title": "Deportes de Campo",
+                    "subcategories": [
+                        { "title": "Campo de Golf" },
+                        { "title": "Estación de Esquí" },
+                        { "title": "Circuitos de Velocidad" },
+                        { "title": "Campo de Tenis" },
+                        { "title": "Pista de Padel" },
+                        { "title": "Campo de Béisbol" }
+                    ]
+                }
+            ]
+        }
+    ]
+}

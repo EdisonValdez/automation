@@ -1,0 +1,366 @@
+<!-- templates/automation/dashboard.html -->
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+
+<div class="main-content project">   
+    <div class="overlay" ></div>   
+    <!--Total Projects-->
+    <div class="row">
+    
+        {% if user.is_admin %} 
+        <div class="col-12 col-xl-12 col-md-12 col-sm-12">
+ 
+        <div class="box card-box">
+            <div class="icon-box bg-color-6 d-block">
+                <div class="content text-center color-0">
+                    <h5 class="title-box fs-17 font-w500">
+                        <i class="fas fa-tasks color-0"></i> Total Projects
+                    </h5>
+                    <div class="themesflat-counter fs-14 font-wb">
+                        <span class="number" data-from="0" data-to="{{ total_projects }}" data-speed="2500" data-inviewport="yes">{{ tasks.count }} +</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="icon-box bg-color-7 d-block">
+                <div class="content text-center color-0">
+                    <h5 class="title-box fs-17 font-w500">
+                        <i class="fas fa-language color-0"></i> Translated Projects
+                    </h5>
+                    <div class="themesflat-counter fs-14 font-wb">
+                        <span class="number" data-from="0" data-to="{{ translated_projects }}" data-speed="2500" data-inviewport="yes">{{ translated_projects }}</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="icon-box bg-color-8 d-block">
+                <div class="content text-center color-0">
+                    <h5 class="title-box fs-17 font-w500">
+                        <i class="fas fa-building color-0"></i> Total Businesses
+                    </h5>
+                    <div class="themesflat-counter fs-14 font-wb">
+                        <span class="number" data-from="0" data-to="{{ total_businesses }}" data-speed="2500" data-inviewport="yes">{{ total_businesses }}</span>
+                    </div>
+                </div>
+            </div>
+        
+            <div class="icon-box bg-color-1 d-block">
+                <div class="content text-center color-0">
+                    <h5 class="title-box fs-17 font-w500">
+                         Total Destinations
+                    </h5>
+                    <div class="themesflat-counter fs-14 font-wb">
+                        <span class="number" data-from="0" data-to="" data-speed="2500" data-inviewport="yes">{{ total_destinations }} +</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="box card-box">
+          
+ 
+            <div class="box">
+                <div class="box-body d-flex pb-0">
+                    <div class="me-auto">
+                        <h4 class="numb fs-30 font-wb">  {{ total_users }}  </h4>
+                        <h5 class="card-title fs-18 font-w400">Total Users</h5>
+                        <p class="fs-14 mb-0 mt-11"><span class="text-primary"></span>Please assign destinations</p>
+                    </div>
+                    <div id="total-revenue-chart" style="min-height: 40px;"><div id="apexchartsjtmqrjq6" class="apexcharts-canvas apexchartsjtmqrjq6 apexcharts-theme-light" style="width: 70px; height: 40px;"><svg id="SvgjsSvg1861" width="70" height="40" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev" class="apexcharts-svg" xmlns:data="ApexChartsNS" transform="translate(0, 0)" style="background: transparent;"><g id="SvgjsG1863" class="apexcharts-inner apexcharts-graphical" transform="translate(0, 0)"><defs id="SvgjsDefs1862"><clipPath id="gridRectMaskjtmqrjq6"><rect id="SvgjsRect1869" width="79" height="45" x="-4.5" y="-2.5" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="forecastMaskjtmqrjq6"></clipPath><clipPath id="nonForecastMaskjtmqrjq6"></clipPath><clipPath id="gridRectMarkerMaskjtmqrjq6"><rect id="SvgjsRect1870" width="74" height="44" x="-2" y="-2" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath></defs><line id="SvgjsLine1868" x1="0" y1="0" x2="0" y2="40" stroke="#b6b6b6" stroke-dasharray="3" stroke-linecap="butt" class="apexcharts-xcrosshairs" x="0" y="0" width="1" height="40" fill="#b1b9c4" filter="none" fill-opacity="0.9" stroke-width="1"></line><g id="SvgjsG1876" class="apexcharts-xaxis" transform="translate(0, 0)"><g id="SvgjsG1877" class="apexcharts-xaxis-texts-g" transform="translate(0, 4)"></g></g><g id="SvgjsG1890" class="apexcharts-grid"><g id="SvgjsG1891" class="apexcharts-gridlines-horizontal" style="display: none;"><line id="SvgjsLine1893" x1="0" y1="0" x2="70" y2="0" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1894" x1="0" y1="8" x2="70" y2="8" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1895" x1="0" y1="16" x2="70" y2="16" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1896" x1="0" y1="24" x2="70" y2="24" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1897" x1="0" y1="32" x2="70" y2="32" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1898" x1="0" y1="40" x2="70" y2="40" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line></g><g id="SvgjsG1892" class="apexcharts-gridlines-vertical" style="display: none;"></g><line id="SvgjsLine1900" x1="0" y1="40" x2="70" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line><line id="SvgjsLine1899" x1="0" y1="1" x2="0" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line></g><g id="SvgjsG1871" class="apexcharts-line-series apexcharts-plot-series"><g id="SvgjsG1872" class="apexcharts-series" seriesName="seriesx1" data:longestSeries="true" rel="1" data:realIndex="0"><path id="SvgjsPath1875" d="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" fill="none" fill-opacity="1" stroke="rgba(0,143,251,0.85)" stroke-opacity="1" stroke-linecap="butt" stroke-width="5" stroke-dasharray="0" class="apexcharts-line" index="0" clip-path="url(#gridRectMaskjtmqrjq6)" pathTo="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" pathFrom="M -1 40L -1 40L 7 40L 14 40L 21 40L 28 40L 35 40L 42 40L 49 40L 56 40L 63 40L 70 40"></path><g id="SvgjsG1873" class="apexcharts-series-markers-wrap" data:realIndex="0"><g class="apexcharts-series-markers"><circle id="SvgjsCircle1906" r="0" cx="0" cy="0" class="apexcharts-marker wwzmj5l52 no-pointer-events" stroke="#ffffff" fill="#008ffb" fill-opacity="1" stroke-width="2" stroke-opacity="0.9" default-marker-size="0"></circle></g></g></g><g id="SvgjsG1874" class="apexcharts-datalabels" data:realIndex="0"></g></g><line id="SvgjsLine1901" x1="0" y1="0" x2="70" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line><line id="SvgjsLine1902" x1="0" y1="0" x2="70" y2="0" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line><g id="SvgjsG1903" class="apexcharts-yaxis-annotations"></g><g id="SvgjsG1904" class="apexcharts-xaxis-annotations"></g><g id="SvgjsG1905" class="apexcharts-point-annotations"></g></g><rect id="SvgjsRect1867" width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe"></rect><g id="SvgjsG1889" class="apexcharts-yaxis" rel="0" transform="translate(-18, 0)"></g><g id="SvgjsG1864" class="apexcharts-annotations"></g></svg><div class="apexcharts-legend" style="max-height: 20px;"></div><div class="apexcharts-tooltip apexcharts-theme-light"><div class="apexcharts-tooltip-series-group" style="order: 1;"><span class="apexcharts-tooltip-marker" style="background-color: rgb(0, 143, 251);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div></div><div class="apexcharts-yaxistooltip apexcharts-yaxistooltip-0 apexcharts-yaxistooltip-left apexcharts-theme-light"><div class="apexcharts-yaxistooltip-text"></div></div></div></div>
+                <div class="resize-triggers"><div class="expand-trigger"><div style="width: 487px; height: 108px;"></div></div><div class="contract-trigger"></div></div></div>
+            </div>
+
+ 
+                <div class="box">
+                    <div class="box-body d-flex pb-0">
+                        <div class="me-auto">
+                            <h4 class="numb fs-30 font-wb">{{ ambassador_count }}</h4>
+                            <h5 class="card-title fs-18 font-w400">Total Ambassadors</h5>
+                            <p class="fs-14 mb-0 mt-11"><span class="text-primary"></span>Please assign destinations</p>
+                        </div>
+                        <div id="total-revenue-chart" style="min-height: 40px;"><div id="apexchartsjtmqrjq6" class="apexcharts-canvas apexchartsjtmqrjq6 apexcharts-theme-light" style="width: 70px; height: 40px;"><svg id="SvgjsSvg1861" width="70" height="40" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev" class="apexcharts-svg" xmlns:data="ApexChartsNS" transform="translate(0, 0)" style="background: transparent;"><g id="SvgjsG1863" class="apexcharts-inner apexcharts-graphical" transform="translate(0, 0)"><defs id="SvgjsDefs1862"><clipPath id="gridRectMaskjtmqrjq6"><rect id="SvgjsRect1869" width="79" height="45" x="-4.5" y="-2.5" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="forecastMaskjtmqrjq6"></clipPath><clipPath id="nonForecastMaskjtmqrjq6"></clipPath><clipPath id="gridRectMarkerMaskjtmqrjq6"><rect id="SvgjsRect1870" width="74" height="44" x="-2" y="-2" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath></defs><line id="SvgjsLine1868" x1="0" y1="0" x2="0" y2="40" stroke="#b6b6b6" stroke-dasharray="3" stroke-linecap="butt" class="apexcharts-xcrosshairs" x="0" y="0" width="1" height="40" fill="#b1b9c4" filter="none" fill-opacity="0.9" stroke-width="1"></line><g id="SvgjsG1876" class="apexcharts-xaxis" transform="translate(0, 0)"><g id="SvgjsG1877" class="apexcharts-xaxis-texts-g" transform="translate(0, 4)"></g></g><g id="SvgjsG1890" class="apexcharts-grid"><g id="SvgjsG1891" class="apexcharts-gridlines-horizontal" style="display: none;"><line id="SvgjsLine1893" x1="0" y1="0" x2="70" y2="0" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1894" x1="0" y1="8" x2="70" y2="8" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1895" x1="0" y1="16" x2="70" y2="16" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1896" x1="0" y1="24" x2="70" y2="24" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1897" x1="0" y1="32" x2="70" y2="32" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1898" x1="0" y1="40" x2="70" y2="40" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line></g><g id="SvgjsG1892" class="apexcharts-gridlines-vertical" style="display: none;"></g><line id="SvgjsLine1900" x1="0" y1="40" x2="70" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line><line id="SvgjsLine1899" x1="0" y1="1" x2="0" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line></g><g id="SvgjsG1871" class="apexcharts-line-series apexcharts-plot-series"><g id="SvgjsG1872" class="apexcharts-series" seriesName="seriesx1" data:longestSeries="true" rel="1" data:realIndex="0"><path id="SvgjsPath1875" d="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" fill="none" fill-opacity="1" stroke="rgba(0,143,251,0.85)" stroke-opacity="1" stroke-linecap="butt" stroke-width="5" stroke-dasharray="0" class="apexcharts-line" index="0" clip-path="url(#gridRectMaskjtmqrjq6)" pathTo="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" pathFrom="M -1 40L -1 40L 7 40L 14 40L 21 40L 28 40L 35 40L 42 40L 49 40L 56 40L 63 40L 70 40"></path><g id="SvgjsG1873" class="apexcharts-series-markers-wrap" data:realIndex="0"><g class="apexcharts-series-markers"><circle id="SvgjsCircle1906" r="0" cx="0" cy="0" class="apexcharts-marker wwzmj5l52 no-pointer-events" stroke="#ffffff" fill="#008ffb" fill-opacity="1" stroke-width="2" stroke-opacity="0.9" default-marker-size="0"></circle></g></g></g><g id="SvgjsG1874" class="apexcharts-datalabels" data:realIndex="0"></g></g><line id="SvgjsLine1901" x1="0" y1="0" x2="70" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line><line id="SvgjsLine1902" x1="0" y1="0" x2="70" y2="0" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line><g id="SvgjsG1903" class="apexcharts-yaxis-annotations"></g><g id="SvgjsG1904" class="apexcharts-xaxis-annotations"></g><g id="SvgjsG1905" class="apexcharts-point-annotations"></g></g><rect id="SvgjsRect1867" width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe"></rect><g id="SvgjsG1889" class="apexcharts-yaxis" rel="0" transform="translate(-18, 0)"></g><g id="SvgjsG1864" class="apexcharts-annotations"></g></svg><div class="apexcharts-legend" style="max-height: 20px;"></div><div class="apexcharts-tooltip apexcharts-theme-light"><div class="apexcharts-tooltip-series-group" style="order: 1;"><span class="apexcharts-tooltip-marker" style="background-color: rgb(0, 143, 251);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div></div><div class="apexcharts-yaxistooltip apexcharts-yaxistooltip-0 apexcharts-yaxistooltip-left apexcharts-theme-light"><div class="apexcharts-yaxistooltip-text"></div></div></div></div>
+                    <div class="resize-triggers"><div class="expand-trigger"><div style="width: 487px; height: 108px;"></div></div><div class="contract-trigger"></div></div></div>
+                </div>
+  
+ 
+    <div class="icon-box bg-color-4">
+        <a class="create d-flex" href="{% url 'upload_file' %}">
+            <div class="icon bg-white">
+                <i class='bx bx-plus'></i>
+            </div>
+            <div class="content d-flex align-items-center">
+                <h5 class="color-white">Create New Project</h5>
+            </div>
+        </a>
+    </div>
+ 
+        </div>
+        
+        </div>
+        {% endif %}
+
+    </div>
+    <!--Recent Business Update-->
+    <div class="row">
+        <div class="col-xl-12 col-lg-12 col-md-6 col-sm-12">
+            <div class="box-header pt-0 pl-0 ms-0 mb-4 mt-4 border-bottom-0 responsive-header">
+                <h4 class="box-title fs-22">Recent Business Update</h4>
+                
+                <div class="box box-manage">
+                    <div class="box-body d-flex pd-7 pb-0">
+                        <div class="me-auto w-55">
+                            <h5 class="card-title text-white fs-30 font-w500 mt-4">Manage Business in Queue</h5>
+                            <p class="mb-0 text-o7 fs-18 font-w500 pb-11">You´ll need to upload the Json manually.</p>
+                        </div>
+                        <div class="btn-now">
+                            <a class="h6 font-w500" href="{% url 'upload_scraping_results' %}"><span>Upload JSON</span></a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="row">
+                {% for task in tasks|slice:":10" %}
+                <div class="col-xl-3 col-xl-4 col-md-6 col-sm-12">
+            
+                        <div class="box left-dot">
+                            <div class="box-body">
+                                 
+                                        <div class="mt-0 text-start">
+                                            <a href="{% url 'task_detail' id=task.id %}" class="box-title mb-0 mt-1 mb-3 font-w600 fs-14">{{task.id}} - {{ task.project_title }} </a>
+                                            <p class="fs-14 font-w600 text-start"># Businesses: {{ task.businesses.count }}</p>
+                                            <p class="fs-14 font-w600 text-muted">Category: {{ task.main_category }}</p>
+                                            <p class="fs-14 text-muted">User: {{ task.user }}</p>
+                                            <p class="fs-14 text-muted">Level: {{ task.level }}</p>
+                                            <p class="fs-14 text-muted">Created: {{ task.created_at }}</p>
+                                            <p class="fs-14 text-muted">Completed: {{ task.completed_at }}</p>
+ 
+                                        </div>
+                                     
+                            </div>                            
+                            <div class="box-footer">
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex mb-3 mb-md-0">
+                                        <div class="task-btn status-{{ task.status|lower }} text-muted fs-14" data-bs-toggle="tooltip" data-bs-placement="top" title="Project Status">
+                                            {{ task.status }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="ms-auto mt-3 mt-sm-0">
+                                        {% if task.status != 'TRANSLATED' %}
+                                        <button class="btn btn-outline-light text-muted pd-1 fs-14 start-translating-btn"
+                                                data-task-id="{{ task.id }}">
+                                            <i class="fas fa-sync"></i> Start Translating 
+                                        </button>
+                                        {% else %}                                   
+                                        <button class="btn btn-outline-light text-muted pd-1 fs-14 disabled">
+                                            <i class="fas fa-check"></i> Translation Completed
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                </div>
+                {% endfor %}
+                
+            </div>
+        </div>
+    </div>
+    <!--Recent Business Update-->
+
+    <!--Recent Activity-->
+    <div class="box">
+    <div class="box-header pt-0">
+        <div class="me-auto">
+            <h4 class="card-title mb-0 fs-22" id="scraped-list">Recent Activity</h4>
+        </div>
+
+    </div>
+    <div class="box-body pb-0 table-responsive activity mt-18">
+        <div class="box-body pb-0 table-responsive activity mt-18">
+            <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-activity" role="grid">
+                <thead>
+                    <tr class="top">
+                        <th class="border-bottom-0 sorting fs-14 font-w500">Project</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500">Start</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500">Business(es)</th>
+                        <th class="border-bottom-0 sorting fs-14 font-w500">Work Status</th>
+                        <th class="border-bottom-0 sorting_disabled fs-14 font-w500">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'task_detail' task.id %}" class="d-flex">
+                                <span>{{ task.project_title }}</span>
+                            </a>
+                        </td>
+                        <td>{{ task.created_at|date:"d-m-Y" }}</td>
+                        <td>  {{ task.businesses.count }} </td>
+                        <td>
+                            <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% elif task.status == 'TRANSLATED' %} badge-success {% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <a href="#" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bx bx-dots-horizontal-rounded"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    {% if task.status != 'TRANSLATED' %}
+                                    <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                                        <i class="fas fa-sync"></i> Translate and Enhance
+                                    </a>
+                                    {% endif %}
+                                    <a class="dropdown-item" href="{% url 'task_detail' task.id %}">
+                                        <i class="bx bx-info-circle font-size-16 align-middle me-1"></i>View
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5">No tasks found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                
+                
+            </table>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const translatingButtons = document.querySelectorAll('.start-translating-btn');
+                    
+                    translatingButtons.forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            
+                            if (this.classList.contains('disabled')) {
+                                return;
+                            }
+                            
+                            this.classList.add('disabled');
+                            this.textContent = 'Translating and Enhancing...';
+                            
+                            const taskId = this.getAttribute('data-task-id');
+                            
+                            fetch(`/tasks/${taskId}/translate/`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRFToken': getCookie('csrftoken')
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    this.textContent = 'Translation and Enhancement Complete';
+                                } else {
+                                    this.textContent = 'Error Translating and Enhancing';
+                                    this.classList.remove('disabled');
+                                }
+                                console.log(data.message);
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                this.textContent = 'Error Translating and Enhancing';
+                                this.classList.remove('disabled');
+                            });
+                        });
+                    });
+                
+                    function getCookie(name) {
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
+                });
+            </script>
+            
+            <!-- Paginator with Custom Styling -->
+            <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+            <!-- Paginator with Custom Styling -->
+    </div>
+    </div>
+
+    <div class="modal custom-modal fade" id="delete_project" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="form-header">
+                        <h3>Delete Project</h3>
+                        <p>Are you sure you want to delete this project?</p>
+                    </div>
+                    <div class="modal-btn delete-action">
+                        <div class="row">
+                            <div class="col-6 mb-0">
+                                <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                            </div>
+                            <div class="col-6 mb-0">
+                                <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+    <!--Recent Activity-->
+
+
+    </div>
+    <!--Total Projects-->
+   
+</div>
+ 
+
+<script>
+    $(document).ready(function() {
+        $('#task-activity').DataTable({
+            "pageLength": 6,  // Number of records per page
+            "lengthChange": true,  // Allow user to change the number of records per page
+            "searching": true,     // Enable search filter
+            "ordering": true,      // Enable column ordering
+            "info": true,          // Show page info
+            "autoWidth": false     // Disable auto width adjustment
+        });
+    });</script>
+{% endblock %}

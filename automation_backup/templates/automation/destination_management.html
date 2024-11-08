@@ -1,0 +1,557 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+    .box.client .group-btn a {
+        padding: 8px 17px;
+        border-radius: 5px;
+        transition: all .3s ease;
+        margin-bottom: 10px;
+    }
+</style>
+ 
+ 
+<div class="main-content project">
+   
+        <h2>Destination Management</h2>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="box">
+                    <div class="box-body d-flex justify-content-between pt-0 pb-0">
+                        <div class="search-form d-flex">
+    
+                            <div class="col-12">
+                                <div class="list-action">
+                                    {% if user.is_admin %}
+                                        <a href="#" class="add" id="newDestinationBtn">Add Destination<i class="fas fa-plus-circle"></i></a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+                
+                <div id="destinationResults">
+                    <!-- The filtered destinations will be dynamically inserted here -->
+                </div> 
+           
+                <div class="card" id="destinationFormCard" style="display: none;">
+                    <br />
+                    <div class="box left-dot pt-39 mb-30">
+                        <h5 id="formTitle">Add New Destination</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="destinationForm">
+                            {% csrf_token %}
+                            <input type="hidden" id="destinationId" name="id"> <!-- Used only for editing -->
+                            
+                            <!-- Destination Name -->
+                            <div class="mb-3">
+                                <label for="destinationName" class="form-label">Destination Name</label>
+                                <input type="text" class="form-control" id="destinationName" name="name" required>
+                            </div>
+
+                            <!-- Country -->
+                            <div class="mb-3">
+                                <label for="destinationCountry" class="form-label">Country</label>
+                                <select class="form-control" id="destinationCountry" name="country" required>
+                                    <option value="">Select Country</option>
+                                    {% for country in all_countries %}
+                                    <option value="{{ country.id }}">{{ country.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+
+                            <!-- Postal Code (CP) -->
+                            <div class="mb-3">
+                                <label for="destinationCp" class="form-label">Postal Code (CP)</label>
+                                <input type="text" class="form-control" id="destinationCp" name="cp">
+                            </div>
+
+                            <!-- Province -->
+                            <div class="mb-3">
+                                <label for="destinationProvince" class="form-label">Province</label>
+                                <input type="text" class="form-control" id="destinationProvince" name="province">
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-3">
+                                <label for="destinationDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="destinationDescription" name="description"></textarea>
+                            </div>
+
+                            <!-- Link -->
+                            <div class="mb-3">
+                                <label for="destinationLink" class="form-label">Link</label>
+                                <input type="url" class="form-control" id="destinationLink" name="link">
+                            </div>
+
+                            <!-- Slogan -->
+                            <div class="mb-3">
+                                <label for="destinationSlogan" class="form-label">Slogan</label>
+                                <input type="text" class="form-control" id="destinationSlogan" name="slogan">
+                            </div>
+
+                            <!-- Latitude -->
+                            <div class="mb-3">
+                                <label for="destinationLatitude" class="form-label">Latitude</label>
+                                <input type="number" step="any" class="form-control" id="destinationLatitude" name="latitude">
+                            </div>
+
+                            <!-- Longitude -->
+                            <div class="mb-3">
+                                <label for="destinationLongitude" class="form-label">Longitude</label>
+                                <input type="number" step="any" class="form-control" id="destinationLongitude" name="longitude">
+                            </div>
+                
+                            <!-- Ambassador -->
+                            <div class="mb-3">
+                                <label for="destinationAmbassador" class="form-label">Ambassador</label>
+                                <select class="form-control" id="destinationAmbassador" name="ambassador">
+                                    <option value="">Select Ambassador</option>
+                                    {% for ambassador in all_ambassadors %}
+                                        <option value="{{ ambassador.id }}">{{ ambassador.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+               
+       <br />  <br />
+       <table id="destinationTable" class="table table-striped table-bordered dataTable no-footer mw-100">
+           <thead>
+               <tr>
+                   <th>Destination Name</th> 
+                   <th>Destination Country</th>
+                   <th>Ambassadors</th>
+                   <th>View</th>
+                   <th>Actions</th>
+               </tr>
+           </thead>
+           <tbody>
+            {% for item in destination_data %}
+            <tr data-id="{{ item.destination.id }}">
+                <td>
+                    <a href="{% url 'destination_detail' item.destination.id %}">
+                        {{ item.destination.name }}
+                    </a>
+                </td>
+ 
+                <td>
+                    <a href="{% url 'destination_detail' item.destination.id %}">
+                        {{ item.destination.country.name }}
+                    </a>
+                </td>
+                <td>{{ item.ambassador_name }}{{ item.destination.ambassador_name }} </td>
+                <td>
+                    <a href="{% url 'destination_detail' item.destination.id %}" class="btn btn-sm btn-primary">View Details</a>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                        <span class="visually-hidden">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item editDestinationBtn" href="#" data-id="{{ item.destination.id }}" data-name="{{ item.destination.name }}">
+                            <i class="bx bx-edit"></i>Edit
+                        </a></li>
+                        <li><a class="dropdown-item deleteDestinationBtn" href="#" data-id="{{ item.destination.id }}">
+                            <i class="bx bx-trash"></i> Delete
+                        </a></li>
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        
+       </table>
+       <!-- Pagination Destination -->        
+       <script>
+       $(document).ready(function() {
+       $('#destinationTable').DataTable({
+       // Opciones de DataTables aquí
+       "pageLength": 25,
+       "lengthChange": false,
+       "searching": true,
+       "ordering": true,
+       "info": true,
+       "autoWidth": false,
+       "responsive": true,
+       });
+       });
+       </script>
+       <!-- Pagination Destination -->   
+   
+  
+    
+</div>
+<!--// JavaScript for adding and editing destinations--> 
+<script>
+// JavaScript for adding and editing destinations
+$(document).ready(function() {
+    // Show the form to add a new destination
+    $('#newDestinationBtn').on('click', function(event) {
+        event.preventDefault();
+        $('#destinationFormCard').show();
+        $('#formTitle').text('Add New Destination');
+        $('#destinationForm')[0].reset();
+        $('#destinationId').val('');
+    });
+
+    // Handle edit button click
+    $(document).on('click', '.editDestinationBtn', function() {
+        let destinationId = $(this).data('id');
+        let destinationName = $(this).data('name');
+        let destinationCountry = $(this).data('country');
+        let destinationCp = $(this).data('cp');
+        let destinationProvince = $(this).data('province');
+        let destinationDescription = $(this).data('description');
+        let destinationLink = $(this).data('link');
+        let destinationSlogan = $(this).data('slogan');
+        let destinationLatitude = $(this).data('latitude');
+        let destinationLongitude = $(this).data('longitude');
+        let destinationAmbassador = $(this).data('ambassador');
+        
+        $('#destinationFormCard').show();
+        $('#formTitle').text('Edit Destination');
+        $('#destinationId').val(destinationId);
+        $('#destinationName').val(destinationName);
+        $('#destinationCountry').val(destinationCountry);
+        $('#destinationCp').val(destinationCp);
+        $('#destinationProvince').val(destinationProvince);
+        $('#destinationDescription').val(destinationDescription);
+        $('#destinationLink').val(destinationLink);
+        $('#destinationSlogan').val(destinationSlogan);
+        $('#destinationLatitude').val(destinationLatitude);
+        $('#destinationLongitude').val(destinationLongitude);
+        $('#destinationAmbassador').val(destinationAmbassador);
+    });
+
+    // Submit the form via AJAX
+    $('#destinationForm').on('submit', function(event) {
+        event.preventDefault();
+
+        let url = '{% url "edit_destination" %}';
+        if (!$('#destinationId').val()) {
+            url = '{% url "create_destination" %}';
+        }
+        
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: $(this).serialize(),
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert(response.message);
+                    if (!$('#destinationId').val()) {
+                        appendNewDestination(response.data);
+                    }
+                    $('#destinationFormCard').hide();
+                    $('#destinationForm')[0].reset();
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr) {
+                alert('An error occurred. Please try again.');
+            }
+        });
+    });
+
+    // Append new destination to the DOM without reloading
+    function appendNewDestination(data) {
+        const newDestinationHtml = `
+            <div class="col-3 col-md-6 col-sm-12 mb-25" data-id="${data.id}">
+                <div class="box destination client">
+                    <div class="dropdown">
+                        <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bx bx-dots-horizontal-rounded"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item editDestinationBtn" href="#" data-id="${data.id}" data-name="${data.name}">
+                                <i class="bx bx-edit mr-5"></i>Edit
+                            </a>
+                            <a class="dropdown-item deleteDestinationBtn" href="#" data-id="${data.id}">
+                                <i class="bx bx-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                    <div class="box-body pt-5 pb-0">
+                        <a href="${data.url}">
+                            <h5 class="mt-17">${data.name}</h5>
+                        </a>
+                        <p class="fs-14 font-w400 font-main">Ambassadors: 
+                            <span class="text-clo-primary font-w500 pl-4">${data.ambassador_name}</span>
+                        </p>
+                        <div class="group-btn d-flex justify-content-between">
+                            <a class="bg-btn-pri color-white" href="${data.url}">View Details</a>
+                        </div> 
+                    </div>
+                </div>
+            </div>`;
+        
+        $('#destinationResults').prepend(newDestinationHtml);
+    }
+
+    // Cancel button hides the form
+    $('#cancelBtn').on('click', function() {
+        $('#destinationFormCard').hide();
+        $('#destinationForm')[0].reset();
+    });
+});
+</script> 
+
+<!--// JavaScript for adding and editing destinations-->
+
+
+
+    
+    
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this destination?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<script>
+    $(document).ready(function() {
+        // Event handler for edit button
+        $(document).on('click', '.editDestinationBtn', function() {
+            let destinationId = $(this).data('id');
+            let destinationName = $(this).data('name');
+            
+            console.log('Editing destination with ID:', destinationId, 'and Name:', destinationName);
+
+            // Populate the form fields with existing data
+            $('#destinationFormCard').show();
+            $('#formTitle').text('Edit Destination');
+            $('#destinationId').val(destinationId);
+            $('#destinationName').val(destinationName);
+        });
+
+        // Submit form via AJAX
+        $('#destinationForm').on('submit', function(event) {
+            event.preventDefault();
+            
+            $.ajax({
+                url: '{% url "edit_destination" %}',
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    console.log(response);  // Log response
+                    if (response.status === 'success') {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    console.error('An error occurred:', xhr);  // Log error
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+
+        // Cancel button to hide form
+        $('#cancelBtn').on('click', function() {
+            $('#destinationFormCard').hide();
+            $('#destinationForm')[0].reset();  // Reset form
+        }); 
+    });
+</script>
+
+   
+<!--Create and edit Destinations -->
+<script>
+    $(document).ready(function() {
+       // Show the form to add a new destination
+       $('#newDestinationBtn').on('click', function(event) {
+           event.preventDefault();  // Prevent the default anchor behavior
+           $('#destinationFormCard').show();  // Show the form
+           $('#formTitle').text('Add New Destination');
+           $('#destinationForm')[0].reset();  // Reset the form fields
+           $('#destinationId').val('');  // Clear the hidden input field
+       });
+   
+       // Handle edit button click
+       $(document).on('click', '.editDestinationBtn', function() {
+           let destinationId = $(this).data('id');
+           let destinationName = $(this).data('name');
+           let destinationCountry = $(this).data('country');
+           let destinationAmbassador = $(this).data('ambassador');
+           
+           console.log('Editing destination with ID:', destinationId, 'and Name:', destinationName);
+   
+           // Fill the form with existing data
+           $('#destinationFormCard').show();
+           $('#formTitle').text('Edit Destination');
+           $('#destinationId').val(destinationId);
+           $('#destinationName').val(destinationName);
+           $('#destinationCountry').val(destinationCountry);
+           $('#destinationAmbassador').val(destinationAmbassador);
+       });
+   
+       // Submit the form via AJAX
+       $('#destinationForm').on('submit', function(event) {
+           event.preventDefault();
+   
+           let url = '{% url "edit_destination" %}';
+           if (!$('#destinationId').val()) {
+               url = '{% url "create_destination" %}';
+           }
+           
+           $.ajax({
+               url: url,
+               type: 'POST',
+               data: $(this).serialize(),
+               success: function(response) {
+                   console.log(response);  // Log the response
+                   if (response.status === 'success') {
+                       alert(response.message);
+                       
+                       // If creating a new destination, append it to the list
+                       if (!$('#destinationId').val()) {
+                           appendNewDestination(response.data);
+                       }
+   
+                       // Hide the form after successful submission
+                       $('#destinationFormCard').hide();
+                       $('#destinationForm')[0].reset();  // Reset the form
+                   } else {
+                       alert(response.message);
+                   }
+               },
+               error: function(xhr) {
+                   console.error('An error occurred:', xhr);  // Log the error
+                   alert('An error occurred. Please try again.');
+               }
+           });
+       });
+   
+       // Append new destination to the DOM without reloading
+       function appendNewDestination(data) {
+           const newDestinationHtml = `
+               <div class="col-3 col-md-6 col-sm-12 mb-25" data-id="${data.id}">
+                   <div class="box destination client">
+                       <div class="dropdown">
+                           <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                               <i class="bx bx-dots-horizontal-rounded"></i>
+                           </a>
+                           <div class="dropdown-menu dropdown-menu-right">
+                               <a class="dropdown-item editDestinationBtn" href="#" data-id="${data.id}" data-name="${data.name}" data-country="${data.country}" data-ambassador="${data.ambassador}">
+                                   <i class="bx bx-edit mr-5"></i>Edit
+                               </a>
+                               <a class="dropdown-item deleteDestinationBtn" href="#" data-id="${data.id}">
+                                   <i class="bx bx-trash"></i> Delete
+                               </a>
+                           </div>
+                       </div>
+                       <div class="box-body pt-5 pb-0">
+                           <a href="${data.url}">
+                               <h5 class="mt-17">${data.name}</h5>
+                           </a>
+                           <p class="fs-14 font-w400 font-main">Ambassadors: 
+                               <span class="text-clo-primary font-w500 pl-4">${data.ambassador || 'No ambassador assigned'}</span>
+                           </p>
+                           <div class="group-btn d-flex justify-content-between">
+                               <a class="bg-btn-pri color-white" href="${data.url}">View Details</a>
+                           </div> 
+                       </div>
+                   </div>
+               </div>`;
+           
+           $('#destinationResults').prepend(newDestinationHtml);
+       }
+   
+       // Cancel button hides the form
+       $('#cancelBtn').on('click', function() {
+           $('#destinationFormCard').hide();
+           $('#destinationForm')[0].reset();  // Reset the form
+       });
+   });
+</script> 
+<!--Create and edit Destinations -->
+ 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageDiv = document.getElementById('message'); // Assuming you have a message div to show messages
+
+        // Add event listener for delete buttons
+        document.querySelectorAll('.deleteDestinationBtn').forEach(function(btn) {
+            btn.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default anchor behavior
+
+                const destinationId = this.getAttribute('data-id');
+
+                // Confirm deletion
+                if (confirm("Are you sure you want to delete this destination?")) {
+                    fetch(`/destinations/${destinationId}/delete`, {  // Use your URL path for deletion
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCookie('csrftoken'), // CSRF token for safety
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                            // Optionally, remove the deleted item from the UI
+                            // For example, you can find the parent element and remove it
+                            btn.closest('li').remove(); // Remove the parent <li> of the button
+                        } else {
+                            messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred while deleting. Please try again.</div>`;
+                    });
+                }
+            });
+        });
+
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Check if this cookie string begins with the desired name
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+
+{% endblock %}

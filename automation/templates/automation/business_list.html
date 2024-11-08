@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="main-title">
+                Business List
+            </div>
+            <div class="box">
+                <div class="box-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <form method="GET" action="{% url 'business_list' %}">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="category" placeholder="Search by category" value="{{ category_filter }}">
+                                    <input type="text" class="form-control" name="country" placeholder="Search by country" value="{{ country_filter }}">
+                                    <button class="btn btn-primary" type="submit">Search</button>
+                                    {% if category_filter or country_filter %}
+                                    <a href="{% url 'business_list' %}" class="btn btn-outline-secondary">Clear</a>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-vcenter table-bordered dataTable" id="task-profile">
+                            <thead>
+                                <tr class="top">
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 4%;">ID</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 23%;">Business Name</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 15%;">Category</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 20%;">Address</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 11%;">City</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 11%;">Destination</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 10%;">Progress</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 6%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for business in businesses %}
+                                <tr class="{% if forloop.counter0|divisibleby:2 %}even{% else %}odd{% endif %}">
+                                    <td><a href="{% url 'business_detail' business.id %}">{{ business.id }}</a></td>
+                                    <td><a href="{% url 'business_detail' business.id %}">{{ business.title }}</a></td>
+                                    <td>{{ business.category_name }}</td>
+                                    <td>{{ business.address }}</td>
+                                    <td>{{ business.destination }} </td>
+                                    <td>{{ business.city }} </td>
+                                    <td>
+                                        <p class="{% if business.get_status_display == 'Discarded' %} color-9 {% elif business.get_status_display == 'Pending' %} color-1 {% elif business.get_status_display == 'Completed' %} color-3 {% else %} color-4 {% endif %}">
+                                        {{ business.get_status_display }}
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <a href="#" class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bx bx-dots-horizontal-rounded"></i>
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-end">
+                                                <a class="dropdown-item" href="{% url 'business_detail' business.id %}">View</a>
+                                                <a class="dropdown-item" href="{% url 'edit_business' business.id %}">Edit</a>
+                                                <a class="dropdown-item" href="{% url 'delete_business' business.id %}" data-bs-toggle="modal" data-bs-target="#deleteBusinessModal_{{ business.id }}">Delete</a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6">No businesses found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <div class="pagination">
+                            <span class="step-links">
+                                {% if page_obj.has_previous %}
+                                    <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+                                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+                                {% endif %}
+                                <span class="current">
+                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                                </span>
+                                {% if page_obj.has_next %}
+                                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#task-profile').DataTable({
+            "pageLength": 50,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false
+        });
+    });
+</script>
+
+{% endblock %}

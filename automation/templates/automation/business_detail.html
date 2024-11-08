@@ -1,0 +1,549 @@
+<!-- templates/automation/business_detail.html -->
+{% extends "base.html" %}
+{% load static %}
+ 
+{% load custom_filters %}
+{% block title %}{{ business.title }}{% endblock %}
+{% block content %}
+<style>.image-management-container{display: flex;justify-content: center;padding: 10px}.image-container{width: 100%;padding: 15px;min-height: 300px}.images-wrapper{display: flex;flex-wrap: wrap;gap: 30px}.image-card{position: relative;display: flex;flex-direction: column;align-items: center;width: 250px;min-height: 200px;padding: 7px;border: 1px solid #ccc;border-radius: 8px;background-color: white;cursor: grab}.thumbnail{width: 100%;height: auto;object-fit: cover;border-radius: 5px}.checkbox-container{margin-top: 5px}.draggable.dragging{opacity: 0.5}.delete-image-btn{margin-top: 10px;padding: 5px 10px;background-color: #dc3545;border: none;color: white;border-radius: 5px;cursor: pointer}small{font-size: 10px }#taskDetailsContainer{transition: all 0.3s ease-in-out}.kanban-list.wide{min-width: 32.5%;width: 32.5%}.kanban-list.narrow{min-width: 24.5%;width: 24.5%}.edit{z-index: 1;width: 30px;height: 30px;position: absolute;right: 10px;top: 10px;background: rgba(246, 248, 253, 0.7);border-radius: 4px;display: flex;justify-content: center;align-items: center;transition: .3s}.thumbnail-container{width: 100%;height: 150px;max-height:350px;overflow: hidden;margin-bottom: 10px}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.thumbnail-placeholder{width: 100%;height: 150px;max-height:350px;background-color: #f0f0f0;display: flex;justify-content: center;align-items: center;color: #888;font-size: 14px}.kanban-box{display: flex;flex-direction: column;cursor:move}.content-box{flex-grow: 1;display: flex;flex-direction: column}.image-container{position: relative;overflow: hidden}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%}.business-stats{display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px}.rank, .total-score{background-color: #f0f0f0;padding: 3px 6px;border-radius: 3px}.kanban-cont{display: flex;overflow-x: auto;padding-bottom: 20px}.kanban-list{min-width: 25%;width: 25%;margin-right: 10px;background-color: #f4f5f7;border-radius: 5px}.kanban-wrap{max-height: 1200px;overflow-y: auto}.kanban-header{margin-bottom: 10px;padding: 10px;background-color: #e4e6e9;border-radius: 5px}.panel{margin-bottom: 10px}.kanban-box{background-color: white;border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)}.load-more{width: 100%;margin-top: 10px}.image-container{position: relative;width: 100%;padding-top: 5%}.thumbnail-image{position: absolute;top: 0;left: 0;width: 100%;height: 100%;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0,0,0,0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 20px;position: absolute;top: 50%;left: 50%;-webkit-transform: translate(-50%, -50%);-ms-transform: translate(-50%, -50%);transform: translate(-50%, -50%);text-align: center}.business-title:hover::after{content: "";display: inline-block;background-image: url('');width: 150px;height: 150px;position: absolute;left: 100%;top: -10px;background-size: cover;background-position: center;box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1)}</style> 
+<div class="main-content">
+<!--box card-->
+<div class="box"> 
+    <form id="business-form" method="post" action="{% url 'update_business' business.id %}">
+        {% csrf_token %}  
+        <div class="row">          
+            <div class="col-md-6">
+                <h2>{{ business.title }}</h2>
+    
+                <!-- Status -->
+                <p><strong>Status:</strong>
+                    <span id="status-display">{{ business.get_status_display }}</span>
+                    <select name="status" id="status-edit" class="form-control" style="display:none;">
+                        {% for status_code, status_name in status_choices %}
+                            <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>{{ status_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-link" onclick="toggleEdit('status')"><i class="bx bx-pencil"></i></button>
+                </p>
+    
+                <!-- City -->
+                <p><strong>City:</strong>
+                    <span id="city-display">{{ business.city|default:"N/A" }}</span>
+                    <input type="text" name="city" id="city-edit" class="form-control" value="{{ business.city }}" style="display:none;">
+                    <button type="button" class="btn btn-link" onclick="toggleEdit('city')"><i class="bx bx-pencil"></i></button>
+                </p>
+    
+                <!-- Price -->
+
+                <p><strong>Price:</strong>
+                    <span id="price-display">{{ business.price|default:"N/A" }}</span>
+                    <input type="text" name="price" id="price-edit" class="form-control" value="{{ business.price }}" style="display:none;">
+                    <button type="button" class="btn btn-link" onclick="toggleEdit('price')"><i class="bx bx-pencil"></i></button>
+                </p>
+
+                <!-- Description English -->
+          
+                <div class="box left-dot">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-12 mb-10"> 
+                                <h3>Description (Original)
+                                    <button type="button" class="btn btn-link" onclick="toggleEdit('description')"><i class="bx bx-pencil"></i></button>
+                                </h3>
+                                <p id="description-display">{{ business.description }}</p>
+                                <textarea name="description" id="description-edit" class="form-control" style="display:none;">{{ business.description }}</textarea>
+        
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+    
+                <!-- Description English -->
+                {% if business.description_eng %}
+                <div class="box left-dot">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-12 mb-10"> 
+                                <h3>Description (UK)
+                                    <button type="button" class="btn btn-link" onclick="toggleEdit('description-eng')"><i class="bx bx-pencil"></i></button>
+                                </h3>
+                                <p id="description-eng-display">{{ business.description_eng }}</p>
+                                <textarea name="description_eng" id="description-eng-edit" class="form-control" style="display:none;">{{ business.description_eng }}</textarea>
+        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    {% endif %}
+    
+                <!-- Description Spanish -->
+                {% if business.description_esp %}
+                <div class="box left-dot">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-12 mb-10"> 
+                                <h3>Description (Spanish)
+                                    <button type="button" class="btn btn-link" onclick="toggleEdit('description-esp')"><i class="bx bx-pencil"></i></button>
+                                </h3>
+                                <p id="description-esp-display">{{ business.description_esp }}</p>
+                                <textarea name="description_esp" id="description-esp-edit" class="form-control" style="display:none;">{{ business.description_esp }}</textarea>
+        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                    {% endif %}
+            </div>
+    
+            <div class="col-md-6">
+                {% if business.service_options %}
+                    <h4>Service Options
+
+                    </h4>
+                    <div id="service-options-display">
+                        <ul>
+                            {% for option, value in business.service_options.items %}
+                                <li>{{ option|title }}: {{ value|yesno:"Yes,No" }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div> 
+
+                {% endif %}
+            
+                <!-- Operating Hours -->
+                {% if business.operating_hours %}
+                <div class="box left-dot">
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-12 mb-10"> 
+                    <h3>Operating Hours
+                        <button type="button" class="btn btn-link" onclick="editOperatingHours()">
+                            <i class="bx bx-pencil"></i>
+                        </button>
+                    </h3>
+                    <ul class="box-list mt-25" style="float: inline-start;">
+                        {% for day, hours in business.operating_hours.items %}
+                            <li>
+                                <span id="{{ day }}_display"><strong>{{ day|title }}:</strong> {{ hours }}</span>
+                                <span>{{ day|title }}<input type="text" name="operating_hours[{{ day }}]" id="{{ day }}_edit" class="form-control" value="{{ hours }}" style="display:none;"></span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    </div>
+                </div>
+            </div>
+
+                {% endif %}
+            </div>
+      
+            </div> <!--row-->
+            <div class="row mt-25">
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                         <!-- Save Button -->
+            <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+        
+            {% if business.place_id %}
+                <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" class="btn btn-primary mt-3" target="_blank">View on Google Maps</a>
+            {% endif %}
+            <a href="{% url 'task_detail' business.task.id %}" class="btn btn-secondary mt-3">Back to Task</a>
+
+                </div>
+
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                    <!-- Navigation Buttons -->
+                    <div class="navigation-buttons">
+                        {% if prev_url %}
+                            <a href="{{ prev_url }}" class="btn btn-link"><< Previous Business</a>
+                        {% endif %}
+                        
+                        {% if next_url %}
+                            <a href="{{ next_url }}" class="btn btn-link">Next Business >></a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+            </div>
+        
+    </form>   
+</div> 
+<!--box card-->
+
+<!-- Include Sortable.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+<!-- Include SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Image Management Container -->
+<div class="image-management-container">
+    <div class="image-container single-container">
+        <h4 class="mb-30">Images</h4>
+        <div class="images-wrapper" id="image-list">
+            {% for image in business.images.all %}
+            <div class="image-card draggable" data-id="{{ image.id }}" data-approved="{{ image.is_approved }}" draggable="true">
+                <div class="checkbox-container mb-25" style="cursor: pointer;">
+                    <strong>Approve</strong>
+                    <input type="checkbox" class="approve-checkbox" data-id="{{ image.id }}" {% if image.is_approved %}checked{% endif %}>
+                </div>
+
+                <img class="thumbnail"
+                     src="{% if image.local_path %}{{ MEDIA_URL }}{{ image.local_path }}{% else %}{{ image.image_url }}{% endif %}"
+                     alt="Image"> 
+                <!-- Add Delete Button -->
+                <button class="btn btn-danger delete-image-btn" data-id="{{ image.id }}">Delete</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+ 
+<!-- Include Toastr CSS and JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<!-- JavaScript for Handling Image Operations, edit -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const imageList = document.getElementById('image-list');
+
+        // Initialize Sortable.js for sorting images
+        const sortable = new Sortable(imageList, {
+            animation: 150,
+            onEnd: function () {
+                // Get the new order of image IDs after sorting
+                const sortedImageIds = Array.from(document.querySelectorAll('#image-list .draggable'))
+                                            .map(el => el.getAttribute('data-id'));
+
+                // Send AJAX request to update the order in the backend
+                updateImageOrder(sortedImageIds);
+            }
+        });
+
+        // Handle image approval using checkboxes
+        document.querySelectorAll('.approve-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('click', function (e) {
+                e.stopPropagation();  // Prevent interfering with drag functionality
+                const imageId = this.dataset.id;
+                const isApproved = this.checked;
+
+                // Update the approval status via AJAX
+                updateImageApproval(imageId, isApproved);
+            });
+        });
+
+        // Handle image deletion using SweetAlert
+        document.querySelectorAll('.delete-image-btn').forEach(button => {
+            button.addEventListener('click', function (e) {
+                const imageId = this.dataset.id;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you really want to delete this image?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Call the function to delete the image
+                        deleteImage(imageId);
+                    }
+                });
+            });
+        });
+
+        // Function to send AJAX request to update image approval status
+        function updateImageApproval(imageId, isApproved) {
+            const csrfToken = getCookie('csrftoken');
+
+            fetch('/update-image-approval/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    image_id: imageId,
+                    is_approved: isApproved
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    toastr.success('Image approval status updated.');
+                } else {
+                    toastr.error('Error updating image approval status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred while updating approval status.');
+            });
+        }
+
+        // Function to delete an image via AJAX
+        function deleteImage(imageId) {
+            const csrfToken = getCookie('csrftoken');
+
+            fetch(`/delete-image/${imageId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Remove the image from the DOM
+                    const imageCard = document.querySelector(`.image-card[data-id="${imageId}"]`);
+                    if (imageCard) {
+                        imageCard.remove();
+                    }
+                    toastr.success('The image has been deleted.');
+                } else {
+                    toastr.error('Error deleting image: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred while deleting the image.');
+            });
+        }
+
+        // Function to send the new order to the backend
+        function updateImageOrder(sortedImageIds) {
+            const csrfToken = getCookie('csrftoken');
+            const businessId = '{{ business.id }}';
+
+            fetch(`/update-image-order/${businessId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    order: sortedImageIds
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    toastr.success('Image order updated successfully.');
+                } else {
+                    toastr.error('Error updating image order: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred while updating the image order.');
+            });
+        }
+
+        // Get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+<!-- JavaScript for Handling Image Operations, edit -->
+
+ <!--change-business-status-->
+ <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusDisplay = document.getElementById('business-status-display');
+        const statusOptions = document.querySelectorAll('.status-option');
+        const businessId = '{{ business.id }}';
+    
+        statusOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const newStatus = this.getAttribute('data-status');
+                const newStatusText = this.textContent.trim();
+    
+                fetch(`/change-business-status/${businessId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: `status=${newStatus}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        statusDisplay.textContent = newStatusText + ' ';
+                        const icon = document.createElement('i');
+                        icon.className = 'bx bx-caret-down';
+                        statusDisplay.appendChild(icon);
+                        toastr.success(`Business status updated to ${data.new_status}`);
+                    } else {
+                        toastr.error('Error updating business status');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('An error occurred while updating the status');
+                });
+            });
+        });
+    
+        // Function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+ <!--change-business-status-->
+ 
+<!--Edit-business-->          
+<script>
+document.getElementById('business-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+
+    // Collect operating hours
+    const operatingHours = {};
+    document.querySelectorAll('#business-form .box-list input').forEach(input => {
+        const day = input.name.replace('operating_hours[', '').replace(']', '');
+        operatingHours[day] = input.value;
+    });
+
+    // Add operating hours to formData as a JSON string
+    formData.set('operating_hours', JSON.stringify(operatingHours));
+
+    // Handle service options if necessary (similar to operating hours)
+
+    fetch(this.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success('Business information updated successfully!').then(() => {
+                location.reload();
+            });
+        } else {
+            toastr.error('There were errors: ' + JSON.stringify(data.errors));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toastr.error('An error occurred while updating the business.');
+    });
+}); 
+// Restore toggled edit states on page load
+window.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('description-eng-edit') === 'true') {
+        toggleEdit('description-eng');
+    }
+    if (localStorage.getItem('description-esp-edit') === 'true') {
+        toggleEdit('description-esp');
+    }
+});
+
+// Toggle edit functionality for Service Options
+function toggleEdit(field) {
+    const displayElement = document.getElementById(`${field}-display`);
+    const editElement = document.getElementById(`${field}-edit`);
+    
+    if (displayElement && editElement) {
+        const isVisible = displayElement.style.display === 'none';
+        displayElement.style.display = isVisible ? '' : 'none';
+        editElement.style.display = isVisible ? 'none' : '';
+        
+        // Store the toggle state in localStorage to persist between page loads
+        localStorage.setItem(`${field}-edit`, !isVisible);
+    }
+}
+
+// Restore toggled states on page load
+window.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('service-options-edit') === 'true') {
+        toggleEdit('service-options');
+    }
+});
+
+
+// Function to edit Operating Hours
+function editOperatingHours() {
+    document.querySelectorAll('#business-form .box-list input').forEach(input => {
+        const day = input.name.replace('operating_hours[', '').replace(']', '');
+        const displayElem = document.getElementById(`${day}_display`);
+
+        if (input.style.display === 'none') {
+            displayElem.style.display = 'none';
+            input.style.display = 'block';
+            localStorage.setItem(`operating_hours_${day}_edit`, true);
+        } else {
+            displayElem.textContent = input.value; // Update displayed text
+            displayElem.style.display = 'block';
+            input.style.display = 'none';
+            localStorage.setItem(`operating_hours_${day}_edit`, false);
+        }
+    });
+}
+
+// Restore operating hours edit states on page load
+window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#business-form .box-list input').forEach(input => {
+        const day = input.name.replace('operating_hours[', '').replace(']', '');
+        const displayElem = document.getElementById(`${day}_display`);
+        if (localStorage.getItem(`operating_hours_${day}_edit`) === 'true') {
+            displayElem.style.display = 'none';
+            input.style.display = 'block';
+        } else {
+            displayElem.textContent = input.value; // Ensure displayed text is updated
+        }
+    });
+});
+
+// Helper function for CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie) {
+        const cookies = document.cookie.split(';');
+        cookies.forEach(cookie => {
+            const trimmed = cookie.trim();
+            if (trimmed.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+            }
+        });
+    }
+    return cookieValue;
+}
+</script>
+<!--Edit-business-->
+
+ 
+{% endblock %}
+
