@@ -16,12 +16,13 @@
                                 <tr class="top">
                                     <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 5%;">ID</th>
                                     <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 25%;">project_title</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 15%;">level</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 10%;">level</th>
                                     <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 10%;">Category</th>
                                     <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 10%;">subcategory</th>
                                      <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 10%;">country_name</th>
                                     <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 10%;">destination</th>
                                     <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 5%;">created_at</th>
+                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 5%;">Status</th>
                                     
                                 </tr>
                             </thead>
@@ -34,9 +35,13 @@
                                     <td>{{ task.main_category }}</td>
                                     <td>{{ task.subcategory }} </td>
                                      <td>{{ task.country_name }} </td>
-                                    <td>{{ task.destination }}</td>
+                                    <td>{{ task.destination_name }}</td>
                                     <td>{{ task.created_at }}</td>
-                                   
+                                    <td style="{% if task.status == 'DONE' %} color:green; font-weight:bold; {% elif task.status == 'TRANSLATED'  %} color:orange; {% endif %}">
+                                        <span class="badge">
+                                            {{ task.status }}
+                                        </span>
+                                       </td>
                                 </tr>
                                 {% empty %}
                                 <tr>

@@ -666,32 +666,39 @@ def is_admin_or_ambassador(user):
 
 #########USER###################USER###################USER###################USER##########
  
-
 @login_required
 def task_list(request):
     if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
         tasks = ScrapingTask.objects.all()
+        # Check for businesses in the task and update the task status
+        for task in tasks:
+            task.save()  # This will automatically check if the task can be marked as 'DONE'
+        businesses = Business.objects.filter(id__in=tasks.values_list('project_id', flat=True)).all()
     elif request.user.roles.filter(role='AMBASSADOR').exists():
         ambassador_destinations = request.user.destinations.all()
- 
-        tasks = ScrapingTask.objects.filter(
-            Q(destination__in=ambassador_destinations)  
-        )
+        tasks = ScrapingTask.objects.filter(Q(destination__in=ambassador_destinations))
+        
+        # Check for businesses in the task and update the task status
+        for task in tasks:
+            task.save()  # This will automatically check if the task can be marked as 'DONE'
+        businesses = Business.objects.filter(id__in=tasks.values_list('project_id', flat=True)).all()
     else:
         tasks = ScrapingTask.objects.none()
- 
+        businesses = Business.objects.none()  # No businesses for non-allowed users
+
     # Apply pagination
     paginator = Paginator(tasks, 100000)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-
     context = {
+        'businesses': businesses,
         'tasks': page_obj.object_list,
         'page_obj': page_obj,
     }
 
     return render(request, 'automation/task_list.html', context)
+
 
 #########BUSINESS#########################BUSINESS#########################BUSINESS#########################BUSINESS################
  

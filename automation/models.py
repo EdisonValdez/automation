@@ -1,5 +1,5 @@
 # models.py
-from datetime import timezone
+from django.utils import timezone
 import os
 from django.contrib.auth.models import  AbstractUser, BaseUserManager
 import uuid
@@ -158,20 +158,30 @@ class ScrapingTask(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
-    status = models.CharField(max_length=20, choices=[
+    # New 'DONE' status added here
+    STATUS_CHOICES = [
         ('QUEUED', 'QUEUED'),
-        ('PENDING', 'Pending'),
-        ('IN_PROGRESS', 'In Progress'),
-        ('COMPLETED', 'Completed'),
-        ('FAILED', 'Failed'),
-        ('TRANSLATED', 'Translated'),
-    ], default='PENDING')
+        ('PENDING', 'PENDING'),
+        ('IN_PROGRESS', 'IN PROGRESS'),
+        ('COMPLETED', 'COMPLETED'),
+        ('FAILED', 'FAILED'),
+        ('TRANSLATED', 'TRANSLATED'),
+        ('DONE', 'DONE'),  # New status
+    ]
 
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     file = models.FileField(upload_to='scraping_files/')
 
     def save(self, *args, **kwargs):
-        if self.status == 'COMPLETED' and not self.completed_at:
-            self.completed_at = timezone.now()
+        # Check if all related businesses are not in "PENDING" status
+        if self.status != 'DONE':  # Only check if not already done
+            # Fetch all businesses related to this task
+            businesses = self.businesses.all()  # Assuming reverse relation is set on Business model
+            # Check if all businesses have status other than "PENDING"
+            if not businesses.filter(status='PENDING').exists():
+                self.status = 'DONE'
+                self.completed_at = timezone.now()  # Update completed_at when marked as DONE
+
         super().save(*args, **kwargs)
 
 class Business(models.Model):
