@@ -97,7 +97,9 @@ urlpatterns = [
     path('get-destinations/', views.get_destinations_by_country, name='get_destinations_by_country'),
     path('events/search/', views.search_events, name='search_events'),
     path('events/save_selected/', views.save_selected_events, name='save_selected_events'),
-
+ 
+    path('get-destinations-tasks/', views.get_destinations_tasks, name='get_destinations_tasks'),
+ 
 
 ]
  

@@ -336,7 +336,7 @@ $(document).ready(function() {
             <tr>
                 <td>
                     <a href="{% url 'task_detail' task.id %}" class="d-flex ">
-                        <span>{{ task.project_title }}</span>
+                        <span>{{ task.project_title|truncatechars:35 }}</span>
                     </a>
                 </td>
                 <td>
@@ -547,7 +547,7 @@ $(document).ready(function() {
 <script>
 $(document).ready(function() {
     $('#task-profile').DataTable({
-        "pageLength": 5,  // Number of records per page
+        "pageLength": 15,  // Number of records per page
         "lengthChange": true,  // Allow user to change the number of records per page
         "searching": true,     // Enable search filter
         "ordering": true,      // Enable column ordering

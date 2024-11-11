@@ -123,9 +123,13 @@
 
                 </div>
             </div>
-            <div class="row">
-                {% for task in tasks|slice:":10" %}
-                <div class="col-xl-3 col-xl-4 col-md-6 col-sm-12">
+            <div class="row"> 
+                    <div class="col-12">
+                        <a href="{% url 'task_list' %}" class="btn bx-dots-horizontal-rounded" >View all tasks</a>
+                    </div>
+         
+                {% for task in tasks|slice:":15" %}
+                <div class="col-xl-3 col-xl-4 col-md-6 col-sm-12 float mt-11">
             
                         <div class="box left-dot">
                             <div class="box-body">
@@ -136,8 +140,8 @@
                                             <p class="fs-14 font-w600 text-muted">Category: {{ task.main_category }}</p>
                                             <p class="fs-14 text-muted">User: {{ task.user }}</p>
                                             <p class="fs-14 text-muted">Level: {{ task.level }}</p>
-                                            <p class="fs-14 text-muted">Created: {{ task.created_at }}</p>
-                                            <p class="fs-14 text-muted">Completed: {{ task.completed_at }}</p>
+                                            <p class="fs-12 text-muted">Created: {{ task.created_at }}</p>
+                                            <p class="fs-12 text-muted">Completed: {{ task.completed_at }}</p>
  
                                         </div>
                                      
@@ -168,8 +172,7 @@
                         </div>
                     
                 </div>
-                {% endfor %}
-                
+                {% endfor %}                
             </div>
         </div>
     </div>
@@ -355,7 +358,7 @@
 <script>
     $(document).ready(function() {
         $('#task-activity').DataTable({
-            "pageLength": 6,  // Number of records per page
+            "pageLength": 12,  // Number of records per page
             "lengthChange": true,  // Allow user to change the number of records per page
             "searching": true,     // Enable search filter
             "ordering": true,      // Enable column ordering

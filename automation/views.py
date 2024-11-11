@@ -53,17 +53,9 @@ def health_check(request):
  
 def welcome_view(request):
     if request.user.is_authenticated:
-        # User is logged in, check their roles
-        if request.user.is_superuser:
-            return render(request, 'automation/welcome.html')   
-        elif request.user.roles.filter(role='AMBASSADOR').exists():
-            return render(request, 'automation/welcome.html')  
-        else:
-            return render(request, 'automation/welcome.html')  
+        return render(request, 'automation/welcome.html')
     else:
-       
-        return redirect('login')   
-
+        return redirect('login')
 
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = Business.objects.all()
@@ -122,8 +114,6 @@ def update_business_status(request, business_id):
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
  
-
-
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
@@ -135,7 +125,7 @@ class UploadFileView(View):
 
         # Fetch tasks with pagination
         tasks = ScrapingTask.objects.all().order_by('-created_at')
-        paginator = Paginator(tasks, 5)
+        paginator = Paginator(tasks, 1000000)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -214,7 +204,6 @@ class UploadFileView(View):
                 'message': "There was an error with your submission. Please check the form.",
                 'errors': form.errors  # Return form errors to the frontend
             })
-
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
@@ -343,8 +332,7 @@ class AmbassadorDashboardView(View):
         }
 
         return render(request, 'automation/ambassador_dashboard.html', context)
-   
-
+ 
 @login_required
 def ambassador_businesses(request):
     # Check if the user is an ambassador or an admin
@@ -372,8 +360,7 @@ def ambassador_businesses(request):
         'y_values': y_values,
         'colors': colors
     })
-
-
+ 
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -389,8 +376,7 @@ def login_view(request):
         else:
             messages.error(request, "Invalid username or password.")
     return render(request, 'automation/login.html')
-
-
+ 
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class DashboardView(View):
@@ -426,7 +412,7 @@ class DashboardView(View):
         else:
             tasks = ScrapingTask.objects.none()
 
-        paginator = Paginator(tasks, 6)  # Show 6 tasks per page
+        paginator = Paginator(tasks, 1000000)  # Show 6 tasks per page
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -659,47 +645,67 @@ class CustomPasswordChangeView(PasswordChangeView):
 
 class CustomPasswordChangeDoneView(PasswordChangeDoneView):
     template_name = 'automation/password_change_done.html'
-
-
+ 
 def is_admin_or_ambassador(user):
     return user.is_superuser or user.roles.filter(role__in=['ADMIN', 'AMBASSADOR']).exists()
 
 #########USER###################USER###################USER###################USER##########
- 
+  
+
 @login_required
 def task_list(request):
+    search_destination = request.GET.get('destination')
+    search_country = request.GET.get('country')
+    search_status = request.GET.get('status')
+
+    # Fetch available countries and destinations for the search form
+    countries = Country.objects.all()
+    destinations = Destination.objects.exclude(name__isnull=True, name='')  # Exclude 'None' values
+
+    # Fetch tasks based on user role
     if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
         tasks = ScrapingTask.objects.all()
-        # Check for businesses in the task and update the task status
         for task in tasks:
-            task.save()  # This will automatically check if the task can be marked as 'DONE'
-        businesses = Business.objects.filter(id__in=tasks.values_list('project_id', flat=True)).all()
+            task.save()  # Check and update task status
+        businesses = Business.objects.filter(task__in=tasks)
     elif request.user.roles.filter(role='AMBASSADOR').exists():
         ambassador_destinations = request.user.destinations.all()
-        tasks = ScrapingTask.objects.filter(Q(destination__in=ambassador_destinations))
-        
-        # Check for businesses in the task and update the task status
+        tasks = ScrapingTask.objects.filter(destination__in=ambassador_destinations)
         for task in tasks:
-            task.save()  # This will automatically check if the task can be marked as 'DONE'
-        businesses = Business.objects.filter(id__in=tasks.values_list('project_id', flat=True)).all()
+            task.save()
+        businesses = Business.objects.filter(task__in=tasks)
     else:
         tasks = ScrapingTask.objects.none()
-        businesses = Business.objects.none()  # No businesses for non-allowed users
+        businesses = Business.objects.none()
+
+    # Apply search filters if they exist
+    if search_destination:
+        tasks = tasks.filter(destination_name__icontains=search_destination)
+    if search_country:
+        tasks = tasks.filter(country_name__icontains=search_country)
+    if search_status:
+        tasks = tasks.filter(status__iexact=search_status)
 
     # Apply pagination
-    paginator = Paginator(tasks, 100000)
+    paginator = Paginator(tasks, 10)  # Show 10 tasks per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'businesses': businesses,
         'tasks': page_obj.object_list,
+        'businesses': businesses,
         'page_obj': page_obj,
+        'search_destination': search_destination,
+        'search_country': search_country,
+        'search_status': search_status,
+        'countries': countries,
+        'destinations': destinations,  
     }
 
     return render(request, 'automation/task_list.html', context)
 
 
+ 
 #########BUSINESS#########################BUSINESS#########################BUSINESS#########################BUSINESS################
  
 @login_required
@@ -814,8 +820,7 @@ def update_business(request, business_id):
 
     # For GET requests or in case of errors, redirect back to business_detail
     return redirect('business_detail', business_id=business.id)
-
-
+ 
 @csrf_exempt
 def update_business_hours(request):
     if request.method == 'POST':
@@ -982,8 +987,7 @@ def destination_management(request):
         'destinations': destinations,  # This is the paginated QuerySet
         'all_countries': all_countries,  # Pass all countries to the template
     })
-
-
+ 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def get_destination(request, destination_id):
@@ -994,6 +998,18 @@ def get_destination(request, destination_id):
         'country': destination.country
     }
     return JsonResponse(data)
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
+def get_destinations_tasks(request):
+    country_id = request.GET.get('country_id')
+    if not country_id:
+        return JsonResponse({'error': 'No country selected'}, status=400)
+    destinations = Destination.objects.filter(country_id=country_id).values('id', 'name')
+    destinations_data = list(destinations)
+
+    return JsonResponse({'destinations': destinations_data})
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
@@ -1046,8 +1062,7 @@ def destination_detail(request, destination_id):
 def ambassador_profile(request, ambassador_id):
     ambassador = get_object_or_404(UserRole, id=ambassador_id, role='AMBASSADOR')
     return render(request, 'ambassador_profile.html', {'ambassador': ambassador})
-
-
+ 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def create_destination(request):
@@ -1151,8 +1166,7 @@ def search_destinations(request):
     except Exception as e:
         logger.error(f"Error in search_destinations: {str(e)}", exc_info=True)
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-
+ 
 
 #########DESTINATION#########################DESTINATION#########################DESTINATION#########################DESTINATION################
    
@@ -1552,8 +1566,7 @@ def view_report(request, task_id):
     report_filename = f"task_report_{task.id}.pdf"
     report_path = os.path.join(settings.MEDIA_ROOT, 'reports', report_filename)
     return FileResponse(open(report_path, 'rb'), content_type='application/pdf')
-
-
+ 
 def get_log_file_path(task_id):
     log_dir = os.path.join(settings.MEDIA_ROOT, 'task_logs')
     os.makedirs(log_dir, exist_ok=True)
@@ -1570,24 +1583,13 @@ def send_task_completion_email(task_id):
     recipient_list = [task.user.email]  # Asumiendo que tiene un campo de usuario asociado a la tarea
     
     send_mail(subject, message, from_email, recipient_list)
-
-
+ 
 def custom_404_view(request, exception):
     return render(request, 'automation/404.html', status=404)
 
 def custom_500_view(request):
     return render(request, 'automation/500.html', status=500)
  
-
-# views.py
-import json
-from django.conf import settings
-from django.http import JsonResponse
-from django.shortcuts import render
-from serpapi import GoogleSearch
-from django.views.decorators.csrf import csrf_exempt
-from .models import Event
-
 def search_events(request):
     query = request.GET.get("location", "")
     page = int(request.GET.get("page", 1))
