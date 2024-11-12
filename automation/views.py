@@ -202,7 +202,7 @@ class UploadFileView(View):
             return JsonResponse({
                 'status': 'error',
                 'message': "There was an error with your submission. Please check the form.",
-                'errors': form.errors   
+                'errors': form.errors  # Return form errors to the frontend
             })
 
 
@@ -714,7 +714,7 @@ def task_list(request):
         tasks = tasks.filter(status__iexact=search_status)
 
     # Apply pagination
-    paginator = Paginator(tasks, 10)  # Show 10 tasks per page for better user experience
+    paginator = Paginator(tasks, 10000000)   
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 

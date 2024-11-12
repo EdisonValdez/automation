@@ -414,9 +414,9 @@ def download_images(business, local_result):
         s3_client = get_s3_client()
 
         for i, photo in enumerate(photos_results.get('photos', [])):
-            if len(image_paths) >= 12:
-                logger.info(f"Maximum of 12 images reached for business {business.id}")
-                break  # Exit loop when 12 images have been processed
+            if len(image_paths) >= 10:
+                logger.info(f"Maximum of 10 images reached for business {business.id}")
+                break   
 
             image_url = photo.get('image')
 

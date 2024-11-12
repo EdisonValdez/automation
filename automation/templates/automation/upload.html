@@ -7,8 +7,7 @@
 .sidebar-expand.active .sidebar {
     transition: transform 0.3s ease-in-out;
     max-width: 100%;
-    z-index: 1111;
-    transform: translateX(0%);
+    z-index: 1111; 
 }
     .badge-info {
     color: rgb(255, 255, 255);
@@ -26,7 +25,7 @@
     width: 50px;
     height: 50px;
     animation: spin 1s linear infinite;
-    display: none; /* Hidden by default */
+    display: none; 
 }
 
 @keyframes spin {
@@ -150,8 +149,17 @@
                                 {{ form.description }}
                             </div>
                         </div>
+                        
                     
-                        <div class="row">
+                         <!-- Toggle button to show/hide the file input -->
+                        <div class="row mb-3">
+                            <div class="col">
+                                <button type="button" id="toggle-file-upload" class="btn btn-secondary">Show File Upload</button>
+                            </div>
+                        </div>
+
+                        <!-- File upload section, hidden by default -->
+                        <div class="row d-none" id="file-upload-section">
                             <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
                                 <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
                                 <div class="input-group file-browser">
@@ -160,7 +168,8 @@
                                 <div class="form-text">{{ form.file.help_text }}</div>
                             </div>
                         </div>
-                    
+
+                                            
                         <div class="row">
                             <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                                 <label class="form-label mt-1 fs-18 font-w500 color-primary">Get Businesses</label>
@@ -185,6 +194,25 @@
                             }
                         });
                     </script>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const toggleFileUploadButton = document.getElementById('toggle-file-upload');
+                                const fileUploadSection = document.getElementById('file-upload-section');
+                                
+                                toggleFileUploadButton.addEventListener('click', function () {
+                                    // Toggle visibility
+                                    if (fileUploadSection.classList.contains('d-none')) {
+                                        fileUploadSection.classList.remove('d-none');
+                                        toggleFileUploadButton.textContent = 'Hide File Upload';
+                                    } else {
+                                        fileUploadSection.classList.add('d-none');
+                                        toggleFileUploadButton.textContent = 'Show File Upload';
+                                    }
+                                });
+                            });
+                        </script>
+
                     
  
 <script>
