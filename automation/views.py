@@ -113,7 +113,7 @@ def update_business_status(request, business_id):
     
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
- 
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
@@ -125,7 +125,7 @@ class UploadFileView(View):
 
         # Fetch tasks with pagination
         tasks = ScrapingTask.objects.all().order_by('-created_at')
-        paginator = Paginator(tasks, 1000000)
+        paginator = Paginator(tasks, 15)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -202,8 +202,9 @@ class UploadFileView(View):
             return JsonResponse({
                 'status': 'error',
                 'message': "There was an error with your submission. Please check the form.",
-                'errors': form.errors  # Return form errors to the frontend
+                'errors': form.errors   
             })
+
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):

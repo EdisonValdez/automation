@@ -1,0 +1,318 @@
+ 
+    <style></style>
+    <div class="tab-menu-heading hremp-tabs p-0 ">
+        <div class="tabs-menu1">
+            <ul class="nav panel-tabs" id="scrapingOptionsTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="queryInput-tab" data-toggle="tab" href="#queryInput" role="tab" aria-controls="queryInput" aria-selected="false">Use Query Input</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="uploadFile-tab" data-toggle="tab" href="#uploadFile" role="tab" aria-controls="uploadFile" aria-selected="true">Upload File</a>
+                </li>
+                
+            </ul>
+    
+            <div class="tab-content" id="scrapingOptionsTabContent">
+                <!-- Query Input Form Tab -->
+                <div class="tab-pane fade show active" id="queryInput" role="tabpanel" aria-labelledby="queryInput-tab">
+                    <br /> <br />
+                    <form id="query-form" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="{{ form.project_title.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary disabled" aria-disabled="disabled" disabled>Project Title</label>
+                                    {{ form.project_title }}
+                                </div>
+                            </div>
+                            
+                        <!-- Country Dropdown -->
+                        <div class="col-md-4 col-sm-12 mb-24">
+                            <div class="form-group">
+                                <label for="id_country" class="form-label mt-1 fs-18 font-w500 color-primary">Country</label>
+                                <select name="country" class="form-control" id="id_country">
+                                    <option value="">Select a country</option>
+                                </select>
+                            </div>
+                        </div>
+    
+                        <!-- Destination Dropdown -->
+                        <div class="col-md-4 col-sm-12 mb-24">
+                            <div class="form-group">
+                                <label for="id_destination" class="form-label mt-1 fs-18 font-w500 color-primary">Destination</label>
+                                <select name="destination" class="form-control" id="id_destination">
+                                    <option value="">Select a destination</option>
+                                </select>
+                            </div>
+                        </div>
+    
+    
+                        </div>
+    
+                        <div class="row">
+    
+                        
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
+                                    {{ form.level }}
+                                </div>
+                            </div>
+    
+                            <!-- Main Category Dropdown -->
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="id_main_category" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
+                                    <select name="main_category" class="form-control" required id="id_main_category">
+                                        <option value="">Select a category</option>
+                                        {% for category in main_categories %}
+                                            <option value="{{ category.id }}">{{ category.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+    
+                            <!-- Subcategory Dropdown -->
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="id_subcategory" class="form-label mt-1 fs-18 font-w500 color-primary">Subcategory (optional)</label>
+                                    <select name="subcategory" class="form-control" id="id_subcategory">
+                                        <option value="">Select a subcategory (optional)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+    
+                        
+                        <div class="row">
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                                <label class="form-label mt-1 fs-18 font-w500 color-primary">Start Process</label>
+                                <div class="input-group">
+                                    <button type="submit" class="btn btn-primary">Start Process</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Upload File Form Tab -->
+                <div class="tab-pane fade" id="uploadFile" role="tabpanel" aria-labelledby="uploadFile-tab">
+                    <br /> <br />
+                    <form id="upload-form" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="{{ form.project_title.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary disabled" aria-disabled="disabled" disabled>Project Title</label>
+                                    {{ form.project_title }}
+                                </div>
+                            </div>
+                            
+                        <!-- Country Dropdown -->
+                        <div class="col-md-4 col-sm-12 mb-24">
+                            <div class="form-group">
+                                <label for="id_country" class="form-label mt-1 fs-18 font-w500 color-primary">Country</label>
+                                <select name="country" class="form-control" id="id_country">
+                                    <option value="">Select a country</option>
+                                </select>
+                            </div>
+                        </div>
+    
+                        <!-- Destination Dropdown -->
+                        <div class="col-md-4 col-sm-12 mb-24">
+                            <div class="form-group">
+                                <label for="id_destination" class="form-label mt-1 fs-18 font-w500 color-primary">Destination</label>
+                                <select name="destination" class="form-control" id="id_destination">
+                                    <option value="">Select a destination</option>
+                                </select>
+                            </div>
+                        </div>
+    
+    
+                        </div>
+    
+                        <div class="row">
+    
+                        
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
+                                    {{ form.level }}
+                                </div>
+                            </div>
+    
+                            <!-- Main Category Dropdown -->
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="id_main_category" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
+                                    <select name="main_category" class="form-control" required id="id_main_category">
+                                        <option value="">Select a category</option>
+                                        {% for category in main_categories %}
+                                            <option value="{{ category.id }}">{{ category.title }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+    
+                            <!-- Subcategory Dropdown -->
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="id_subcategory" class="form-label mt-1 fs-18 font-w500 color-primary">Subcategory (optional)</label>
+                                    <select name="subcategory" class="form-control" id="id_subcategory">
+                                        <option value="">Select a subcategory (optional)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+    
+                        <div class="form-group mb-24">
+                            <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description (optional)</label>
+                            {{ form.description }}
+                        </div>
+    
+                        <div class="row">
+                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
+                                <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File (optional)</label>
+                                <div class="input-group file-browser">
+                                    {{ form.file }}
+                                </div>
+                                <div class="form-text">{{ form.file.help_text }}</div>
+                            </div>
+                        </div>
+    
+                        <div class="row">
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                                <label class="form-label mt-1 fs-18 font-w500 color-primary">Start Process</label>
+                                <div class="input-group">
+                                    <button type="submit" class="btn btn-primary">Start Process</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+    
+    
+                </div>                    
+            </div>
+        </div>
+     </div>
+     <script>
+        $(document).ready(function() {
+            // Function to load countries and set event listeners for destination selection in both forms
+            function loadCountryAndDestination(countrySelectId, destinationSelectId) {
+                // Load countries on page load for each form
+                $.ajax({
+                    url: '{% url "get_countries" %}',
+                    method: 'GET',
+                    success: function(data) {
+                        $('#' + countrySelectId).empty().append('<option value="">Select a country</option>');
+                        if (data.length > 0) {
+                            data.forEach(function(country) {
+                                $('#' + countrySelectId).append($('<option></option>').attr('value', country.id).text(country.name));
+                            });
+                        } else {
+                            $('#' + countrySelectId).append('<option value="">No countries available</option>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching countries: ' + error);
+                    }
+                });
+        
+                // Event listener for destination changes based on selected country
+                $('#' + countrySelectId).change(function() {
+                    var countryId = $(this).val();
+                    $('#' + destinationSelectId).empty().append('<option value="">Select a destination</option>');
+        
+                    if (countryId) {
+                        $.ajax({
+                            url: '{% url "get_destinations_by_country" %}',
+                            data: { 'country_id': countryId },
+                            success: function(data) {
+                                if (data.length > 0) {
+                                    data.forEach(function(destination) {
+                                        $('#' + destinationSelectId).append($('<option></option>').attr('value', destination.id).text(destination.name));
+                                    });
+                                } else {
+                                    $('#' + destinationSelectId).append('<option value="">No destinations available for this country</option>');
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error fetching destinations: ' + error);
+                            }
+                        });
+                    }
+                });
+            }
+        
+            // Function to load categories and set event listeners for subcategory selection in each form
+            function loadCategoryAndSubcategory(levelSelectId, mainCategorySelectId, subcategorySelectId) {
+                // Event listener for main category changes based on selected level
+                $('#' + levelSelectId).change(function() {
+                    var levelId = $(this).val();
+                    $('#' + mainCategorySelectId).empty().append('<option value="">Select a category</option>');
+                    $('#' + subcategorySelectId).empty().append('<option value="">Select a subcategory (optional)</option>');
+        
+                    if (levelId) {
+                        $.ajax({
+                            url: '{% url "get_categories" %}',
+                            data: { 'level_id': levelId },
+                            success: function(data) {
+                                if (data.length > 0) {
+                                    data.forEach(function(category) {
+                                        $('#' + mainCategorySelectId).append($('<option></option>').attr('value', category.id).text(category.title));
+                                    });
+                                } else {
+                                    $('#' + mainCategorySelectId).append('<option value="">No categories available</option>');
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error fetching categories: ' + error);
+                            }
+                        });
+                    }
+                });
+        
+                // Event listener for subcategory changes based on selected main category
+                $('#' + mainCategorySelectId).change(function() {
+                    var categoryId = $(this).val();
+                    $('#' + subcategorySelectId).empty().append('<option value="">Select a subcategory (optional)</option>');
+        
+                    if (categoryId) {
+                        $.ajax({
+                            url: '{% url "get_subcategories" %}',
+                            data: { 'category_id': categoryId },
+                            success: function(data) {
+                                if (data.length > 0) {
+                                    data.forEach(function(subcategory) {
+                                        $('#' + subcategorySelectId).append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
+                                    });
+                                } else {
+                                    $('#' + subcategorySelectId).append('<option value="">No subcategories available</option>');
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error fetching subcategories: ' + error);
+                            }
+                        });
+                    }
+                });
+            }
+        
+            // Initialize country, destination, category, and subcategory functions for each form
+            loadCountryAndDestination('query_id_country', 'query_id_destination');  // For the query form
+            loadCountryAndDestination('upload_id_country', 'upload_id_destination');  // For the upload form
+            loadCategoryAndSubcategory('query_id_level', 'query_id_main_category', 'query_id_subcategory');    // For the query form
+            loadCategoryAndSubcategory('upload_id_level', 'upload_id_main_category', 'upload_id_subcategory');  // For the upload form
+        
+            // Tab navigation to set form action based on selected tab
+            $('#scrapingOptionsTab a').on('shown.bs.tab', function (e) {
+                let activeTab = $(e.target).attr("href");
+                if (activeTab === '#uploadFile') {
+                    $('#upload-form').prop('action', '{% url "process_file_upload" %}');
+                } else if (activeTab === '#queryInput') {
+                    $('#query-form').prop('action', '{% url "process_query" %}');
+                }
+            });
+        });
+        </script>
+        

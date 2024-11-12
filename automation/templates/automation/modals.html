@@ -1,0 +1,44 @@
+<div class="overlay" ></div>  
+<div id="log-container"></div>
+ 
+<!-- Overlay -->
+<div class="overlay d-none" id="loader" style="position: fixed; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999;">
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Please wait it is loading...</span>
+            <a  class="visually-hidden btn btn-outline-light" href="{% url 'dashboard' %}">Or head to the dashboard instead.</a>
+
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Your file has been successfully uploaded! We will process your request in the background.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage">An unexpected error occurred. Please try again.</p>
+            </div>
+        </div>
+    </div>
+</div>
+ 

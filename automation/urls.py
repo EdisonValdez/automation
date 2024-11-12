@@ -15,7 +15,12 @@ app_name = 'automation'
 urlpatterns = [
     path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
-    path('upload/', views.UploadFileView.as_view(), name='upload_file'),
+ 
+    path('upload/', views.UploadFileView.as_view(), name='upload_file'),  # Main view
+    path('process-file-upload/', views.UploadFileView.as_view(), name='process_file_upload'),  # This points to the POST handler in UploadFileView
+    path('process-query/', views.UploadFileView.as_view(), name='process_query'),  # For the query input form
+
+
     path('task/<int:id>/', views.TaskDetailView.as_view(), name='task_detail'),
     #path('business/<int:business_id>/', views.BusinessDetailView.as_view(), name='business_detail'),
     path('business/<int:business_id>/', views.business_detail, name='business_detail'),
@@ -77,6 +82,7 @@ urlpatterns = [
     path('ambassador-businesses/', views.ambassador_businesses, name='ambassador_businesses'),
     path('ambassadors/<int:ambassador_id>/', views.ambassador_profile, name='ambassador_profile'),
     path('upload-scraping-results/', views.UploadScrapingResultsView.as_view(), name='upload_scraping_results'),
+
 
     #path('api/categories/', views.get_categories, name='get_categories'),
     #path('api/subcategories/', views.get_subcategories, name='get_subcategories'),

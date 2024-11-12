@@ -99,11 +99,11 @@ class DestinationForm(forms.ModelForm):
         super(DestinationForm, self).__init__(*args, **kwargs)
         self.fields['ambassador'].required = False  
  
-
 class ScrapingTaskForm(forms.ModelForm):
     file = forms.FileField(
+        required=False,  # Mark the file field as optional
         help_text="Upload a file containing search queries (one per line)",
-        widget=forms.FileInput(attrs={'class': 'btn btn-light  mr-5'})
+        widget=forms.FileInput(attrs={'class': 'btn btn-light mr-5'})
     )
 
     level = forms.ModelChoiceField(
@@ -145,7 +145,7 @@ class ScrapingTaskForm(forms.ModelForm):
         model = ScrapingTask
         fields = ['project_title', 'level', 'main_category', 'subcategory', 'country', 'destination', 'description', 'file']
         widgets = {
-             'project_title': forms.TextInput(attrs={'class': 'form-control', 'readonly': True, }),
+            'project_title': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
 
@@ -155,7 +155,7 @@ class ScrapingTaskForm(forms.ModelForm):
         # Initialize main category queryset to top-level categories
         self.fields['main_category'].queryset = Category.objects.filter(parent__isnull=True)
 
-        # If instance exists and has a level, filter main categories by level
+        # Set main category queryset based on level if available
         if self.instance.pk and self.instance.level:
             self.fields['main_category'].queryset = Category.objects.filter(level=self.instance.level, parent__isnull=True)
 
@@ -165,9 +165,9 @@ class ScrapingTaskForm(forms.ModelForm):
                 main_category_id = int(self.data.get('main_category'))
                 self.fields['subcategory'].queryset = Category.objects.filter(parent_id=main_category_id)
             except (ValueError, TypeError):
-                pass  # Invalid input from the client; fallback to empty queryset
+                pass  # Fallback to empty queryset if invalid
 
-        # If editing an existing instance, populate subcategory queryset
+        # Populate subcategory queryset if editing an existing instance
         elif self.instance.pk and self.instance.main_category:
             self.fields['subcategory'].queryset = Category.objects.filter(parent=self.instance.main_category)
 
@@ -177,12 +177,11 @@ class ScrapingTaskForm(forms.ModelForm):
                 country_id = int(self.data.get('country'))
                 self.fields['destination'].queryset = Destination.objects.filter(country_id=country_id)
             except (ValueError, TypeError):
-                pass  # Invalid input from the client; fallback to empty queryset
+                pass  # Fallback to empty queryset if invalid
 
-        # If editing an existing instance with a country, populate destination queryset
+        # Populate destination queryset if editing an existing instance
         elif self.instance.pk and self.instance.country:
             self.fields['destination'].queryset = Destination.objects.filter(country=self.instance.country)
-
 
     def clean(self):
         cleaned_data = super().clean()
@@ -210,6 +209,7 @@ class ScrapingTaskForm(forms.ModelForm):
 
     def clean_file(self):
         file = self.cleaned_data.get('file')
+        # Validate file type only if a file is provided
         if file:
             if file.content_type not in ['text/plain']:
                 raise forms.ValidationError("Only text files are allowed.")

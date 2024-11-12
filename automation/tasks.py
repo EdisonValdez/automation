@@ -218,6 +218,8 @@ def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
  
+
+
 def process_scraping_task(task_id, form_data=None):
     log_file_path = get_log_file_path(task_id)
     file_handler = logging.FileHandler(log_file_path)
@@ -229,21 +231,36 @@ def process_scraping_task(task_id, form_data=None):
         task.status = 'IN_PROGRESS'
         task.save()
 
-        # Check if a file is uploaded
-        if 'file' in form_data and form_data['file']:
-            # Process the file if available
-            file_content = form_data['file'].read().decode('utf-8')
+        queries = []
+
+        if task.file:  # If a file is uploaded, read the queries from it
+            logger.info("Using uploaded file for queries.")
+            file_content = default_storage.open(task.file.name).read().decode('utf-8')
             queries = read_queries_from_content(file_content)
-            logger.info(f"Total queries to process: {len(queries)}")
-        else:
-            # If no file, use the description field as the query
+            logger.info(f"Total queries to process from file: {len(queries)}")
+        elif form_data:  # If no file is uploaded, use form data to build a query
+            logger.info("No file uploaded, using form data to create queries.")
+            country_name = form_data.get('country_name', '')
+            destination_name = form_data.get('destination_name', '')
+            level = form_data.get('level', '')
+            main_category = form_data.get('main_category', '')
+            subcategory = form_data.get('subcategory', '')
             description = form_data.get('description', '')
-            queries = [{'query': description}]  # Use description as a single query
-            logger.info(f"Using description as query: {description}")
-        
+
+            # Construct a query based on the form data
+            query = f"{country_name}, {destination_name}, {main_category} {subcategory} {description}".strip()
+            if query:  # Only add the query if it's not empty
+                queries.append({'query': query})
+
+            logger.info(f"Form-based query: {query}")
+
+        if not queries:
+            logger.error("No valid queries to process.")
+            return
+
         total_results = 0
 
-        # Loop over all queries
+        # Process each query
         for index, query_data in enumerate(queries, start=1):
             query = query_data['query']
             page_num = 1
@@ -313,6 +330,7 @@ def process_scraping_task(task_id, form_data=None):
     finally:
         logger.removeHandler(file_handler)
         file_handler.close()
+
 
 
 
@@ -396,6 +414,10 @@ def download_images(business, local_result):
         s3_client = get_s3_client()
 
         for i, photo in enumerate(photos_results.get('photos', [])):
+            if len(image_paths) >= 12:
+                logger.info(f"Maximum of 12 images reached for business {business.id}")
+                break  # Exit loop when 12 images have been processed
+
             image_url = photo.get('image')
 
             # Check if the image_url already exists for this business
@@ -465,7 +487,8 @@ def download_images(business, local_result):
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
 
     return image_paths
- 
+
+
 def save_results(task, results, query):
     try:
         file_name = f"{query.replace(' ', '_')}.json"
@@ -481,6 +504,9 @@ def save_results(task, results, query):
 
     except Exception as e:
         logger.error(f"Error saving results for query '{query}': {str(e)}", exc_info=True)
+
+
+#####################DESCRIPTION TRANSLATE##################################
  
 async def translate_text(text, language="spanish"):
     if text and text.strip():
@@ -492,9 +518,6 @@ async def translate_text(text, language="spanish"):
         return translated_doc.transformed_content
     return text
 
-
-
-#####################DESCRIPTION TRANSLATE##################################
 
 def translate_or_fetch_and_translate(business_id, languages=["spanish", "eng"]):
     """
@@ -775,7 +798,10 @@ def save_business(task, local_result, query, form_data=None):
         # Call the updated fill_missing_address_components function
         fill_missing_address_components(business_data, task, query, form_data=form_data)
 
-        # Create or update the Business object
+        if 'place_id' not in business_data:
+            logger.warning(f"Skipping business entry for task {task.id} due to missing 'place_id'")
+            return None   
+    
         business, created = Business.objects.update_or_create(
             place_id=business_data['place_id'],
             defaults=business_data

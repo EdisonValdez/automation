@@ -3,6 +3,58 @@
 {% block title %}Upload File{% endblock %}
 
 {% block content %}
+<style>
+.sidebar-expand.active .sidebar {
+    transition: transform 0.3s ease-in-out;
+    max-width: 100%;
+    z-index: 1111;
+    transform: translateX(0%);
+}
+    .badge-info {
+    color: rgb(255, 255, 255);
+    background-color: rgb(10, 153, 46);
+}
+ 
+    .badge-info {
+        color: rgb(255, 255, 255);
+        background-color: rgb(10, 153, 46);
+    }
+    .loader {
+    border: 5px solid #f3f3f3; /* Light grey */
+    border-top: 5px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    display: none; /* Hidden by default */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+    /* Overlay style */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+        z-index: 1000; /* Ensure it's above other elements */
+        display: none; /* Initially hidden */
+    }
+
+    #loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1001; /* Above the overlay */
+        display: none;
+    }
+</style>
 
  
 <div class="main-content project">
@@ -35,39 +87,35 @@
                                 </div>
                             </div>
                             
-                        <!-- Country Dropdown -->
-                        <div class="col-md-4 col-sm-12 mb-24">
-                            <div class="form-group">
-                                <label for="id_country" class="form-label mt-1 fs-18 font-w500 color-primary">Country</label>
-                                <select name="country" class="form-control" id="id_country">
-                                    <option value="">Select a country</option>
-                                </select>
+                            <!-- Country Dropdown -->
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="id_country" class="form-label mt-1 fs-18 font-w500 color-primary">Country</label>
+                                    <select name="country" class="form-control" id="id_country">
+                                        <option value="">Select a country</option>
+                                    </select>
+                                </div>
+                            </div>
+                    
+                            <!-- Destination Dropdown -->
+                            <div class="col-md-4 col-sm-12 mb-24">
+                                <div class="form-group">
+                                    <label for="id_destination" class="form-label mt-1 fs-18 font-w500 color-primary">Destination</label>
+                                    <select name="destination" class="form-control" id="id_destination">
+                                        <option value="">Select a destination</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Destination Dropdown -->
-                        <div class="col-md-4 col-sm-12 mb-24">
-                            <div class="form-group">
-                                <label for="id_destination" class="form-label mt-1 fs-18 font-w500 color-primary">Destination</label>
-                                <select name="destination" class="form-control" id="id_destination">
-                                    <option value="">Select a destination</option>
-                                </select>
-                            </div>
-                        </div>
-
-
-                        </div>
-
+                    
                         <div class="row">
-
-                        
                             <div class="col-md-4 col-sm-12 mb-24">
                                 <div class="form-group">
                                     <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
                                     {{ form.level }}
                                 </div>
                             </div>
-
+                    
                             <!-- Main Category Dropdown -->
                             <div class="col-md-4 col-sm-12 mb-24">
                                 <div class="form-group">
@@ -80,7 +128,7 @@
                                     </select>
                                 </div>
                             </div>
-
+                    
                             <!-- Subcategory Dropdown -->
                             <div class="col-md-4 col-sm-12 mb-24">
                                 <div class="form-group">
@@ -91,31 +139,53 @@
                                 </div>
                             </div>
                         </div>
-
+                    
+                        <!-- Toggleable Description Field -->
                         <div class="form-group mb-24">
-                            <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description (optional)</label>
-                            {{ form.description }}
+                            <label class="form-label mt-1 fs-18 font-w500 color-primary">
+                                <a href="#" id="toggle-description" class="text-primary">+ Add Description (optional)</a>
+                            </label>
+                            <div id="description-container" style="display: none;">
+                                <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description</label>
+                                {{ form.description }}
+                            </div>
                         </div>
-
+                    
                         <div class="row">
                             <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
-                                <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File (optional)</label>
+                                <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
                                 <div class="input-group file-browser">
                                     {{ form.file }}
                                 </div>
                                 <div class="form-text">{{ form.file.help_text }}</div>
                             </div>
                         </div>
-
+                    
                         <div class="row">
                             <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                                <label class="form-label mt-1 fs-18 font-w500 color-primary">Start Process</label>
-                                <div class="input-group">
-                                    <button type="submit" class="btn btn-primary">Start Process</button>
+                                <label class="form-label mt-1 fs-18 font-w500 color-primary">Get Businesses</label>
+                                <div class="input-group file-browser">
+                                    <button type="submit" class="btn btn-primary">Start process</button>
                                 </div>
                             </div>
                         </div>
                     </form>
+                    
+                    <!-- JavaScript to toggle the description field -->
+                    <script>
+                        document.getElementById("toggle-description").addEventListener("click", function(event) {
+                            event.preventDefault();
+                            var descriptionContainer = document.getElementById("description-container");
+                            if (descriptionContainer.style.display === "none") {
+                                descriptionContainer.style.display = "block";
+                                this.textContent = "- Hide Description";
+                            } else {
+                                descriptionContainer.style.display = "none";
+                                this.textContent = "+ Add Description (optional)";
+                            }
+                        });
+                    </script>
+                    
  
 <script>
 $(document).ready(function() {
@@ -245,7 +315,6 @@ $(document).ready(function() {
 });
 </script>
 <div class="overlay" ></div>                 
- 
 
 <div id="log-container"></div>
 
@@ -285,7 +354,7 @@ $(document).ready(function() {
             <tr>
                 <td>
                     <a href="{% url 'task_detail' task.id %}" class="d-flex ">
-                        <span>{{ task.project_title|truncatechars:35 }}</span>
+                        <span>{{ task.project_title }}</span>
                     </a>
                 </td>
                 <td>
@@ -343,47 +412,7 @@ $(document).ready(function() {
 </div>
 </div>
 
-
-<!-- Overlay -->
-<div class="overlay d-none" id="loader" style="position: fixed; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999;">
-    <div class="d-flex justify-content-center align-items-center h-100">
-        <div class="spinner-border text-light" role="status">
-            <span class="visually-hidden">Please wait it is loading...</span>
-            <a  class="visually-hidden btn btn-outline-light" href="{% url 'dashboard' %}">Or head to the dashboard instead.</a>
-
-        </div>
-    </div>
-</div>
-
-<!-- Success Modal -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="successModalLabel">Success</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="successMessage">Your file has been successfully uploaded! We will process your request in the background.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Error Modal -->
-<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="errorModalLabel">Error</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="errorMessage">An unexpected error occurred. Please try again.</p>
-            </div>
-        </div>
-    </div>
-</div>
+{% include 'automation/modals.html' %}
  
 <script>
     $(document).ready(function() {
@@ -490,19 +519,6 @@ $(document).ready(function() {
             });
         });
     });
-
-$(document).ready(function() {
-    $('#upload-form').submit(function(event) {
-        var description = $('#id_description').val();  // Get description value
-        if (!description && !$('#id_file').val()) {
-            alert("Please provide either a file or a description.");
-            event.preventDefault(); // Prevent form submission if both are empty
-        }
-    });
-});
-
- 
-
 </script>
 
 
@@ -519,26 +535,6 @@ $(document).ready(function() {
 });
 </script>
 
-<script>/*
-const taskId = "{{ task.id }}";  // Assuming you pass the task ID from the view
-const logContainer = document.getElementById('log-container');
-
-const socket = new WebSocket(
-    'wss://' + window.location.host + '/ws/logs/' + taskId + '/'
-);
-
-socket.onmessage = function(e) {
-    const data = JSON.parse(e.data);
-    const logs = data.logs;
-    logContainer.innerHTML += logs + '<br>';
-    logContainer.scrollTop = logContainer.scrollHeight;
-};
-
-socket.onclose = function(e) {
-    console.error('Log socket closed unexpectedly');
-};*/
-</script>
-    
 {% endblock %}
 
  

@@ -179,23 +179,28 @@ class ScrapingTask(models.Model):
     file = models.FileField(upload_to='scraping_files/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        # Automatically mark task as DONE if all businesses are completed
-        if self.status != 'DONE':  # Only check if not already done
-            businesses = self.businesses.all()
-            if not businesses.filter(status='PENDING').exists():
-                self.status = 'DONE'
-                self.completed_at = timezone.now()
-
-        # Handle translation status based on the translation process
-        if self.translation_status == 'TRANSLATED' and self.status != 'TRANSLATED':
-            self.status = 'TRANSLATED'
-        elif self.translation_status == 'TRANSLATION_FAILED' and self.status == 'IN_PROGRESS':
-            self.status = 'FAILED'
-
+        # First, save the instance to generate a primary key if not already present
+        is_new_instance = self.pk is None
         super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return f"{self.project_title} ({self.status})"
+
+        # Only check for related `businesses` if the instance already exists (has a primary key)
+        if not is_new_instance:
+            # Check if the task should be marked as DONE based on `businesses` statuses
+            if self.status != 'DONE':  # Only check if not already done
+                businesses = self.businesses.all()  # Assuming reverse relation exists
+                if not businesses.filter(status='PENDING').exists():
+                    self.status = 'DONE'
+                    self.completed_at = timezone.now()
+
+            # Update status based on translation status if applicable
+            if self.translation_status == 'TRANSLATED' and self.translation_status != 'TRANSLATED':
+                self.translation_status = 'TRANSLATED'
+            elif self.translation_status == 'TRANSLATION_FAILED':
+                self.translation_status = 'TRANSLATION_FAILED'
+            
+            # Save the instance again if status or completed_at fields were modified
+            super().save(update_fields=['status', 'completed_at'])
+
 
 class Business(models.Model):
     STATUS_CHOICES = [
