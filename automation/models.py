@@ -141,6 +141,7 @@ class Category(models.Model):
         """Check if this category has any subcategories."""
         return self.subcategories.exists()
 
+
 class ScrapingTask(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
     project_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -157,32 +158,44 @@ class ScrapingTask(models.Model):
     destination_name = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-
-    # New 'DONE' status added here
+    
     STATUS_CHOICES = [
         ('QUEUED', 'QUEUED'),
         ('PENDING', 'PENDING'),
         ('IN_PROGRESS', 'IN PROGRESS'),
         ('COMPLETED', 'COMPLETED'),
         ('FAILED', 'FAILED'),
-        ('TRANSLATED', 'TRANSLATED'),
-        ('DONE', 'DONE'),  # New status
+        ('DONE', 'DONE'),
+    ]
+    TRANSLATION_STATUS_CHOICES = [
+        ('PENDING_TRANSLATION', 'Pending Translation'),
+        ('IN_PROGRESS', 'In Progress'),
+        ('TRANSLATED', 'Translated'),
+        ('TRANSLATION_FAILED', 'Translation Failed'),
     ]
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
-    file = models.FileField(upload_to='scraping_files/')
+    translation_status = models.CharField(max_length=20, choices=TRANSLATION_STATUS_CHOICES, default='PENDING_TRANSLATION')
+    file = models.FileField(upload_to='scraping_files/', null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        # Check if all related businesses are not in "PENDING" status
+        # Automatically mark task as DONE if all businesses are completed
         if self.status != 'DONE':  # Only check if not already done
-            # Fetch all businesses related to this task
-            businesses = self.businesses.all()  # Assuming reverse relation is set on Business model
-            # Check if all businesses have status other than "PENDING"
+            businesses = self.businesses.all()
             if not businesses.filter(status='PENDING').exists():
                 self.status = 'DONE'
-                self.completed_at = timezone.now()  # Update completed_at when marked as DONE
+                self.completed_at = timezone.now()
+
+        # Handle translation status based on the translation process
+        if self.translation_status == 'TRANSLATED' and self.status != 'TRANSLATED':
+            self.status = 'TRANSLATED'
+        elif self.translation_status == 'TRANSLATION_FAILED' and self.status == 'IN_PROGRESS':
+            self.status = 'FAILED'
 
         super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.project_title} ({self.status})"
 
 class Business(models.Model):
     STATUS_CHOICES = [

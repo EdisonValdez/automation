@@ -3,58 +3,6 @@
 {% block title %}Upload File{% endblock %}
 
 {% block content %}
-<style>
-.sidebar-expand.active .sidebar {
-    transition: transform 0.3s ease-in-out;
-    max-width: 100%;
-    z-index: 1111;
-    transform: translateX(0%);
-}
-    .badge-info {
-    color: rgb(255, 255, 255);
-    background-color: rgb(10, 153, 46);
-}
- 
-    .badge-info {
-        color: rgb(255, 255, 255);
-        background-color: rgb(10, 153, 46);
-    }
-    .loader {
-    border: 5px solid #f3f3f3; /* Light grey */
-    border-top: 5px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    animation: spin 1s linear infinite;
-    display: none; /* Hidden by default */
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-    /* Overlay style */
-    .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-        z-index: 1000; /* Ensure it's above other elements */
-        display: none; /* Initially hidden */
-    }
-
-    #loading-spinner {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1001; /* Above the overlay */
-        display: none;
-    }
-</style>
 
  
 <div class="main-content project">
@@ -151,7 +99,7 @@
 
                         <div class="row">
                             <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
-                                <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
+                                <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File (optional)</label>
                                 <div class="input-group file-browser">
                                     {{ form.file }}
                                 </div>
@@ -161,9 +109,9 @@
 
                         <div class="row">
                             <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                                <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Get Businesses</label>
-                                <div class="input-group file-browser">
-                                    <button type="submit" class="btn btn-primary">Start process</button>
+                                <label class="form-label mt-1 fs-18 font-w500 color-primary">Start Process</label>
+                                <div class="input-group">
+                                    <button type="submit" class="btn btn-primary">Start Process</button>
                                 </div>
                             </div>
                         </div>
@@ -297,6 +245,7 @@ $(document).ready(function() {
 });
 </script>
 <div class="overlay" ></div>                 
+ 
 
 <div id="log-container"></div>
 
@@ -541,6 +490,19 @@ $(document).ready(function() {
             });
         });
     });
+
+$(document).ready(function() {
+    $('#upload-form').submit(function(event) {
+        var description = $('#id_description').val();  // Get description value
+        if (!description && !$('#id_file').val()) {
+            alert("Please provide either a file or a description.");
+            event.preventDefault(); // Prevent form submission if both are empty
+        }
+    });
+});
+
+ 
+
 </script>
 
 

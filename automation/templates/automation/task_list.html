@@ -12,41 +12,36 @@
                 <div class="box-body">
                     <form method="get" class="form-inline mb-4">
                        <div class="row">
-                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-                            <select name="country" id="country_select" class="form-control mr-2">
-                                <option value="">Select Country</option>
-                                {% for country in countries %}
-                                    <option value="{{ country.id }}" {% if search_country == country.name %}selected{% endif %}>{{ country.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-                            <select name="destination" id="destination_select" class="form-control mr-2">
-                                <option value="">Select Destination</option>
-                
-                            </select>
-                        </div>
-                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-                            <select name="status" id="status_select" class="form-control mr-2">
-                                <option value="">Select Status</option>
-                                <option value="PENDING" {% if search_status == 'PENDING' %}selected{% endif %}>Pending</option>
-                                <option value="IN_PROGRESS" {% if search_status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
-                                <option value="COMPLETED" {% if search_status == 'COMPLETED' %}selected{% endif %}>Completed</option>
-                                <option value="FAILED" {% if search_status == 'FAILED' %}selected{% endif %}>Failed</option>
-                                <option value="TRANSLATED" {% if search_status == 'TRANSLATED' %}selected{% endif %}>Translated</option>
-                                <option value="DONE" {% if search_status == 'DONE' %}selected{% endif %}>Done</option>
-                            </select>
-                        </div>
-                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-                            <button type="submit" class="btn btn-primary mr-2">Search</button>
-                        <button type="reset" class="btn btn-secondary" onclick="resetFilters()">Clear Results</button>
-                        </div>
-                        
-                       </div>
-                          
-                        
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                                <select name="country" id="country_select" class="form-control mr-2">
+                                    <option value="">Select Country</option>
+                                    {% for country in countries %}
+                                        <option value="{{ country.name }}" {% if search_country == country.name %}selected{% endif %}>{{ country.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                                <select name="destination" id="destination_select" class="form-control mr-2">
+                                    <option value="">Select Destination</option>
+                    
+                                </select>
+                            </div>
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                                <select name="status" id="status_select" class="form-control mr-2">
+                                    <option value="">Select Status</option>
+                                    <option value="PENDING" {% if search_status == 'PENDING' %}selected{% endif %}>Pending</option>
+                                    <option value="IN_PROGRESS" {% if search_status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                                    <option value="COMPLETED" {% if search_status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                                    <option value="FAILED" {% if search_status == 'FAILED' %}selected{% endif %}>Failed</option>
+                                    <option value="DONE" {% if search_status == 'DONE' %}selected{% endif %}>Done</option>
+                                </select>
+                            </div>
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+                                <button type="submit" class="btn btn-primary mr-2">Search</button>
+                            <button type="reset" class="btn btn-secondary" onclick="resetFilters()">Clear Results</button>
+                            </div>                        
+                       </div>  
                     </form>
-
                     <div class="table-responsive">
                         <table class="table table-vcenter table-bordered dataTable" id="task-profile">
                             <thead>
@@ -60,13 +55,14 @@
                                     <th>Destination</th>
                                     <th>Created At</th>
                                     <th>Status</th>
+                                    <th>Translation Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for task in tasks %}
                                 <tr>
                                     <td><a href="{% url 'task_detail' task.id %}">{{ task.id }}</a></td>
-                                    <td>{{ task.project_title }}</td>
+                                    <td><a href="{% url 'task_detail' task.id %}">{{ task.project_title|truncatechars:30}}</a></td>
                                     <td>{{ task.level }}</td>
                                     <td>{{ task.main_category }}</td>
                                     <td>{{ task.subcategory }}</td>
@@ -76,6 +72,11 @@
                                     <td>
                                         <span class="badge {% if task.status == 'DONE' %}badge-success{% elif task.status == 'TRANSLATED' %}badge-warning{% elif task.status == 'FAILED' %}badge-danger{% else %}badge-secondary{% endif %}">
                                             {{ task.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if task.translation_status == 'DONE' %}badge-success{% elif task.translation_status == 'TRANSLATED' %}badge-warning{% elif task.translation_status == 'FAILED' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                            {{ task.translation_status }}
                                         </span>
                                     </td>
                                 </tr>
@@ -104,6 +105,7 @@
                             {% endif %}
                         </span>
                     </div>
+                    <!-- Pagination -->
                 </div>
             </div>
         </div>
@@ -111,40 +113,39 @@
 </div>
 
 <script>
-    // JavaScript to handle country selection and fetch destinations via AJAX
-    $(document).ready(function() {
-        $('#country_select').change(function() {
-            var country_id = $(this).val();  // Get selected country ID
+$(document).ready(function() {
+    $('#country_select').change(function() {
+        var country_name = $(this).val();  // Get selected country name
 
-            // Clear the destination select dropdown
-            $('#destination_select').empty();
-            $('#destination_select').append('<option value="">Select Destination</option>');
+        // Clear the destination select dropdown
+        $('#destination_select').empty();
+        $('#destination_select').append('<option value="">Select Destination</option>');
 
-            if (country_id) {
-                // Make an AJAX request to get destinations based on the selected country
-                $.ajax({
-                    url: '{% url "get_destinations_tasks" %}',
-                    data: {
-                        'country_id': country_id
-                    },
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.destinations) {
-                            // Populate the destination dropdown with the fetched destinations
-                            $.each(response.destinations, function(index, destination) {
-                                $('#destination_select').append('<option value="' + destination.id + '">' + destination.name + '</option>');
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log('Error fetching destinations: ' + error);
+        if (country_name) {
+            // Make an AJAX request to get destinations based on the selected country name
+            $.ajax({
+                url: '{% url "get_destinations_tasks" %}',
+                data: {
+                    'country_name': country_name
+                },
+                dataType: 'json',
+                success: function(response) {
+                    if (response.destinations) {
+                        // Populate the destination dropdown with the fetched destinations
+                        $.each(response.destinations, function(index, destination) {
+                            $('#destination_select').append('<option value="' + destination.name + '">' + destination.name + '</option>');
+                        });
                     }
-                });
-            }
-        });
+                },
+                error: function(xhr, status, error) {
+                    console.log('Error fetching destinations: ' + error);
+                }
+            });
+        }
     });
+});
 
-    // Reset the form filters
+// Function to reset form filters
     function resetFilters() {
         $('#country_select').val('');
         $('#destination_select').val('');
@@ -152,15 +153,16 @@
         $('form').submit();  // Trigger form submission after resetting
     }
 </script>
+
 <script>
         $(document).ready(function() {
         $('#task-profile').DataTable({
             "pageLength": 50,
             "lengthChange": true,
-            "searching": false,  // Disable DataTable's own search
+            "searching": true,  // Disable DataTable's own search
             "ordering": true,
             "info": true,
-            "autoWidth": false
+            "autoWidth": true
         });
     });
 

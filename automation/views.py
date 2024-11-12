@@ -249,30 +249,56 @@ class TaskDetailView(View):
         logger.info(f"Retrieved task {id} with {business_count} businesses")
         return render(request, 'automation/task_detail.html', context)
 
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class TranslateBusinessesView(View):
+    
     def get(self, request, task_id):
         task = get_object_or_404(ScrapingTask, id=task_id)
         return render(request, 'automation/task_detail.html', {'task': task})
 
     def post(self, request, task_id):
         logger.info(f"Received request to translate businesses for task {task_id}")
+        
         task = get_object_or_404(ScrapingTask, id=task_id)
-        businesses = task.businesses.all()
+        
+        # Check if the translation status allows proceeding
+        if task.translation_status == 'TRANSLATED':
+            return JsonResponse({'status': 'error', 'message': 'Task already translated.'}, status=400)
+        elif task.translation_status == 'IN_PROGRESS':
+            return JsonResponse({'status': 'error', 'message': 'Translation already in progress.'}, status=400)
 
-        for business in businesses:
-            logger.info(f"Translating and enhancing business: {business.title}")
-            enhance_and_translate_description(business)
-            translate_business_info_sync(business)
-            business.save()
+        # Mark translation as in progress
+        task.translation_status = 'IN_PROGRESS'
+        task.save(update_fields=['translation_status'])
 
-        task.status = 'TRANSLATED'
-        task.save()
-        logger.info(f"Task {task_id} marked as 'TRANSLATED'")
+        try:
+            businesses = task.businesses.all()
+            
+            # Process translation for each business
+            for business in businesses:
+                logger.info(f"Translating and enhancing business: {business.title}")
+                enhance_and_translate_description(business)
+                translate_business_info_sync(business)
+                business.save()
 
-        return JsonResponse({'status': 'success', 'message': 'Businesses translated and enhanced successfully.'})
-     
+            # Mark task as successfully translated
+            task.translation_status = 'TRANSLATED'
+            task.status = 'TRANSLATED'  # Update main task status if needed
+            task.save(update_fields=['translation_status', 'status'])
+            logger.info(f"Task {task_id} marked as 'TRANSLATED'")
+
+            return JsonResponse({'status': 'success', 'message': 'Businesses translated and enhanced successfully.'})
+        
+        except Exception as e:
+            logger.error(f"Error translating businesses for task {task_id}: {e}", exc_info=True)
+            # Set the translation status to failed if an error occurs
+            task.translation_status = 'TRANSLATION_FAILED'
+            task.save(update_fields=['translation_status'])
+            return JsonResponse({'status': 'error', 'message': 'Translation failed.'}, status=500)
+        
+
 @login_required
 def task_detail(request, task_id):
     task = get_object_or_404(ScrapingTask, id=task_id)
@@ -442,7 +468,7 @@ class DashboardView(View):
             context['ongoing_projects'] = next((item['count'] for item in status_counts if item['status'] == 'IN_PROGRESS'), 0)
             context['completed_projects'] = next((item['count'] for item in status_counts if item['status'] == 'COMPLETED'), 0)
             context['failed_projects'] = next((item['count'] for item in status_counts if item['status'] == 'FAILED'), 0)
-            context['translated_projects'] = next((item['count'] for item in status_counts if item['status'] == 'TRANSLATED'), 0)
+            context['translated_projects'] = next((item['count'] for item in status_counts if item['translation_status'] == 'TRANSLATED'), 0)
 
             # Get project statistics
             context['projects'] = ScrapingTask.objects.all().order_by('-created_at')[:5]  # Recent projects
@@ -651,7 +677,6 @@ def is_admin_or_ambassador(user):
 
 #########USER###################USER###################USER###################USER##########
   
-
 @login_required
 def task_list(request):
     search_destination = request.GET.get('destination')
@@ -660,7 +685,7 @@ def task_list(request):
 
     # Fetch available countries and destinations for the search form
     countries = Country.objects.all()
-    destinations = Destination.objects.exclude(name__isnull=True, name='')  # Exclude 'None' values
+    destinations = Destination.objects.exclude(name__isnull=True).exclude(name='')  # Exclude empty 'None' values
 
     # Fetch tasks based on user role
     if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
@@ -682,12 +707,12 @@ def task_list(request):
     if search_destination:
         tasks = tasks.filter(destination_name__icontains=search_destination)
     if search_country:
-        tasks = tasks.filter(country_name__icontains=search_country)
+        tasks = tasks.filter(country_name__icontains=search_country)  # Filter by country name
     if search_status:
         tasks = tasks.filter(status__iexact=search_status)
 
     # Apply pagination
-    paginator = Paginator(tasks, 10)  # Show 10 tasks per page
+    paginator = Paginator(tasks, 10)  # Show 10 tasks per page for better user experience
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -699,13 +724,12 @@ def task_list(request):
         'search_country': search_country,
         'search_status': search_status,
         'countries': countries,
-        'destinations': destinations,  
+        'destinations': destinations,  # Only pass valid destinations
     }
 
     return render(request, 'automation/task_list.html', context)
 
 
- 
 #########BUSINESS#########################BUSINESS#########################BUSINESS#########################BUSINESS################
  
 @login_required
@@ -1000,16 +1024,26 @@ def get_destination(request, destination_id):
     return JsonResponse(data)
 
 
+
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def get_destinations_tasks(request):
-    country_id = request.GET.get('country_id')
-    if not country_id:
+    country_name = request.GET.get('country_name')
+    
+    # Validate that country_name is provided
+    if not country_name:
         return JsonResponse({'error': 'No country selected'}, status=400)
-    destinations = Destination.objects.filter(country_id=country_id).values('id', 'name')
-    destinations_data = list(destinations)
 
-    return JsonResponse({'destinations': destinations_data})
+    # Filter by country name to retrieve the matching destinations
+    try:
+        country = get_object_or_404(Country, name=country_name)
+        destinations = Destination.objects.filter(country=country).values('id', 'name')
+        destinations_data = list(destinations)
+        
+        return JsonResponse({'destinations': destinations_data})
+    
+    except Country.DoesNotExist:
+        return JsonResponse({'error': 'Country not found'}, status=404)
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())

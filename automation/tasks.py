@@ -217,7 +217,7 @@ def process_next_page(task_id, query, next_page_token):
 def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
-
+ 
 def process_scraping_task(task_id, form_data=None):
     log_file_path = get_log_file_path(task_id)
     file_handler = logging.FileHandler(log_file_path)
@@ -229,13 +229,21 @@ def process_scraping_task(task_id, form_data=None):
         task.status = 'IN_PROGRESS'
         task.save()
 
-        # Read queries from the uploaded file in DigitalOcean Spaces
-        file_content = default_storage.open(task.file.name).read().decode('utf-8')
-        queries = read_queries_from_content(file_content)
-        logger.info(f"Total queries to process: {len(queries)}")
-
+        # Check if a file is uploaded
+        if 'file' in form_data and form_data['file']:
+            # Process the file if available
+            file_content = form_data['file'].read().decode('utf-8')
+            queries = read_queries_from_content(file_content)
+            logger.info(f"Total queries to process: {len(queries)}")
+        else:
+            # If no file, use the description field as the query
+            description = form_data.get('description', '')
+            queries = [{'query': description}]  # Use description as a single query
+            logger.info(f"Using description as query: {description}")
+        
         total_results = 0
 
+        # Loop over all queries
         for index, query_data in enumerate(queries, start=1):
             query = query_data['query']
             page_num = 1
@@ -305,6 +313,8 @@ def process_scraping_task(task_id, form_data=None):
     finally:
         logger.removeHandler(file_handler)
         file_handler.close()
+
+
 
 def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
@@ -455,8 +465,7 @@ def download_images(business, local_result):
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
 
     return image_paths
-
-
+ 
 def save_results(task, results, query):
     try:
         file_name = f"{query.replace(' ', '_')}.json"
