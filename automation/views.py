@@ -266,11 +266,11 @@ class TranslateBusinessesView(View):
         # Check if the translation status allows proceeding
         if task.translation_status == 'TRANSLATED':
             return JsonResponse({'status': 'error', 'message': 'Task already translated.'}, status=400)
-        elif task.translation_status == 'IN_PROGRESS':
+        elif task.translation_status == 'PENDING_TRANSLATION':
             return JsonResponse({'status': 'error', 'message': 'Translation already in progress.'}, status=400)
 
         # Mark translation as in progress
-        task.translation_status = 'IN_PROGRESS'
+        task.translation_status = 'PENDING_TRANSLATION'
         task.save(update_fields=['translation_status'])
 
         try:
@@ -463,12 +463,13 @@ class DashboardView(View):
             context['total_businesses'] = Business.objects.count()
 
             # Get status counts
+            translation_status_counts = ScrapingTask.objects.values('translation_status').annotate(count=Count('id')).order_by()
             status_counts = ScrapingTask.objects.values('status').annotate(count=Count('id')).order_by()
             context['pending_projects'] = next((item['count'] for item in status_counts if item['status'] == 'PENDING'), 0)
             context['ongoing_projects'] = next((item['count'] for item in status_counts if item['status'] == 'IN_PROGRESS'), 0)
             context['completed_projects'] = next((item['count'] for item in status_counts if item['status'] == 'COMPLETED'), 0)
             context['failed_projects'] = next((item['count'] for item in status_counts if item['status'] == 'FAILED'), 0)
-            context['translated_projects'] = next((item['count'] for item in status_counts if item['translation_status'] == 'TRANSLATED'), 0)
+            context['translated_projects'] = next((item['count'] for item in translation_status_counts if item['translation_status'] == 'TRANSLATED'), 0)
 
             # Get project statistics
             context['projects'] = ScrapingTask.objects.all().order_by('-created_at')[:5]  # Recent projects
