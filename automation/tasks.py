@@ -407,19 +407,21 @@ def download_images(business, local_result):
             logger.error(f"API Error fetching photos for business '{business.title}': {photos_results['error']}")
             return image_paths
 
+        # Limit photos to a maximum of 10 images
+        photos = photos_results.get('photos', [])[:10]
+        if not photos:
+            logger.info(f"No photos found for business {business.id} in fetched results")
+            return image_paths
+
         # Create a slug of the business name
         business_slug = slugify(business.title)
 
         # Initialize the S3 client
         s3_client = get_s3_client()
 
-        for i, photo in enumerate(photos_results.get('photos', [])):
-            if len(image_paths) >= 10:
-                logger.info(f"Maximum of 10 images reached for business {business.id}")
-                break   
-
+        for i, photo in enumerate(photos):
             image_url = photo.get('image')
-
+            
             # Check if the image_url already exists for this business
             if Image.objects.filter(business=business, image_url=image_url).exists():
                 logger.info(f"Image already exists for business {business.id}, skipping download.")
