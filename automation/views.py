@@ -606,7 +606,12 @@ def create_user(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']  
+            user = User.objects.create(username=username, email=email)
+            user.set_password(password)
+            user.save()
             logger.info(f"User {user.username} has been created successfully")
             messages.success(request, f"User {user.username} has been created successfully.")
 
@@ -615,8 +620,8 @@ def create_user(request):
             email_context = {
                 'user_name': user.get_full_name(),
                 'login_url': login_url,
-                'username': user.username,
-                'password': user.password,
+                'username':  username,
+                'password':  password,
             }
 
             html_message = render_to_string('emails/welcome_email.html', email_context)
@@ -776,12 +781,17 @@ def business_detail(request, business_id):
     prev_url = reverse('business_detail', args=[prev_business.id]) if prev_business else None
     next_url = reverse('business_detail', args=[next_business.id]) if next_business else None
 
+    is_admin = request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists()
+    
+    form = BusinessForm(instance=business)
     # Pass prev_url and next_url to the template
     context = {
+        'form':form,
         'business': business,
         'status_choices': Business.STATUS_CHOICES,
         'prev_url': prev_url,
         'next_url': next_url,
+        'is_admin': is_admin,
     }
 
     return render(request, 'automation/business_detail.html', context)
@@ -822,7 +832,7 @@ def update_business(request, business_id):
 
         try:
             if operating_hours_str:
-                operating_hours = json.loads(operating_hours_str.replace("'", '"'))
+                operating_hours = json.loads(operating_hours_str)
                 post_data['operating_hours'] = operating_hours
             else:
                 post_data.pop('operating_hours', None)
@@ -847,6 +857,79 @@ def update_business(request, business_id):
     # For GET requests or in case of errors, redirect back to business_detail
     return redirect('business_detail', business_id=business.id)
  
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
+def delete_business(request, business_id):
+    try:
+        business = Business.objects.get(id=business_id)
+        business.delete()
+        messages.success(request, f"Business '{business.title}' has been deleted successfully.")
+    except Business.DoesNotExist:
+        messages.error(request, "The requested business does not exist.")
+    except Exception as e:
+        logger.error(f"Error deleting business {business_id}: {str(e)}", exc_info=True)
+        messages.error(request, "An error occurred while deleting the business.")
+    return redirect('business_list')
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
+def edit_business(request, business_id):
+    try:
+        business = Business.objects.get(id=business_id)
+        if request.method == 'POST':
+            form = BusinessForm(request.POST, instance=business)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f"Business '{business.title}' has been updated successfully.")
+                return redirect('business_detail', business_id=business.id)
+        else:
+            form = BusinessForm(instance=business)
+        return render(request, 'automation/edit_business.html', {'form': form, 'business': business})
+    except Business.DoesNotExist:
+        messages.error(request, "The requested business does not exist.")
+        return redirect('business_list')
+    except Exception as e:
+        logger.error(f"Error editing business {business_id}: {str(e)}", exc_info=True)
+        messages.error(request, "An error occurred while editing the business.")
+        return redirect('business_list')
+ 
+@csrf_exempt
+@login_required
+def generate_description(request):
+    if request.method== 'POST':
+        try:
+            data = json.loads(request.body)
+            business_id = data.get('business_id')
+            title = data.get('title')
+            city = data.get('city')
+            country = data.get('country')
+            category = data.get('category')
+
+            prompt = f"Make a brief description of 220 words with formal language for {title} in the city of {city}, {country}, and category: {category}, creating a paragraph every 25 words. Avoid words like: in the heart of, vibrant."
+
+            openai.api_key = settings.TRANSLATION_OPENAI_API_KEY
+
+            response = openai.Completion.create(
+                engine="text-davinci-003",
+                prompt=prompt,
+                max_tokens=600,
+                n=1,
+                stop=None,
+                temperature=0.7, 
+            )
+            description = response.choices[0].text.strip()
+
+            return JsonResponse({'success': True, 'description': description})
+            
+        except Exception as e:
+            logger.error(f"Error generating description {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'error': 'Failed to generate description'})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+
+
 @csrf_exempt
 def update_business_hours(request):
     if request.method == 'POST':
@@ -896,15 +979,6 @@ def update_image_status(request):
         logger.error(f'JSON decode error: {e}')
         return JsonResponse({'success': False, 'error': 'Invalid JSON'})
  
-@user_passes_test(is_admin)
-def delete_business(request, business_id):
-    business = get_object_or_404(Business, id=business_id)
-    if request.method == 'POST':
-        business.delete()
-        messages.success(request, "Business deleted successfully.")
-        return redirect('business_list')
-    return render(request, 'automation/delete_business_confirm.html', {'business': business})
-
 @csrf_exempt
 @login_required
 def update_image_order(request, business_id):
@@ -1274,42 +1348,6 @@ def ambassador_businesses_view(request):
     businesses = get_ambassador_businesses(request.user)
     return render(request, 'automation/ambassador_businesses.html', {'businesses': businesses})
 
-@login_required
-@user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
-def delete_business(request, business_id):
-    try:
-        business = Business.objects.get(id=business_id)
-        business.delete()
-        messages.success(request, f"Business '{business.title}' has been deleted successfully.")
-    except Business.DoesNotExist:
-        messages.error(request, "The requested business does not exist.")
-    except Exception as e:
-        logger.error(f"Error deleting business {business_id}: {str(e)}", exc_info=True)
-        messages.error(request, "An error occurred while deleting the business.")
-    return redirect('business_list')
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
-def edit_business(request, business_id):
-    try:
-        business = Business.objects.get(id=business_id)
-        if request.method == 'POST':
-            form = BusinessForm(request.POST, instance=business)
-            if form.is_valid():
-                form.save()
-                messages.success(request, f"Business '{business.title}' has been updated successfully.")
-                return redirect('business_detail', business_id=business.id)
-        else:
-            form = BusinessForm(instance=business)
-        return render(request, 'automation/edit_business.html', {'form': form, 'business': business})
-    except Business.DoesNotExist:
-        messages.error(request, "The requested business does not exist.")
-        return redirect('business_list')
-    except Exception as e:
-        logger.error(f"Error editing business {business_id}: {str(e)}", exc_info=True)
-        messages.error(request, "An error occurred while editing the business.")
-        return redirect('business_list')
- 
 def save_business_from_results(task, results, query):
     for local_result in results.get('local_results', []):
         business = save_business(task, local_result, query)
@@ -1616,8 +1654,7 @@ def send_task_completion_email(task_id):
         report_full_url = f"{settings.BASE_URL}{task.report_url}"
         message += f'You can view the report at: {report_full_url}\n'
     from_email = settings.DEFAULT_FROM_EMAIL
-    recipient_list = [task.user.email]  # Asumiendo que tiene un campo de usuario asociado a la tarea
-    
+    recipient_list = [task.user.email]   
     send_mail(subject, message, from_email, recipient_list)
  
 def custom_404_view(request, exception):

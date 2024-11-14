@@ -228,9 +228,25 @@ class CsvImportForm(forms.Form):
     csv_upload = forms.FileField(label='Select a CSV file')
  
 class BusinessForm(forms.ModelForm):
+    categories = forms.ModelMultipleChoiceField(
+        queryset=Category.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
     class Meta:
         model = Business
-        fields = ['status', 'city', 'price', 'description', 'description_esp', 'description_eng', 'operating_hours', 'category_name', 'service_options']
+        fields = ['status', 
+                  'title', 
+                  'city', 
+                  'price', 
+                  'website', 
+                  'categories', 
+                  'description', 
+                  'description_esp', 
+                  'description_eng', 
+                  'operating_hours', 
+                  'category_name', 
+                  'service_options']
         widgets = {
             'service_options': forms.HiddenInput(),
             'operating_hours': forms.HiddenInput(),

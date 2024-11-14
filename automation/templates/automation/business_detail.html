@@ -8,167 +8,276 @@
 <style>.image-management-container{display: flex;justify-content: center;padding: 10px}.image-container{width: 100%;padding: 15px;min-height: 300px}.images-wrapper{display: flex;flex-wrap: wrap;gap: 30px}.image-card{position: relative;display: flex;flex-direction: column;align-items: center;width: 250px;min-height: 200px;padding: 7px;border: 1px solid #ccc;border-radius: 8px;background-color: white;cursor: grab}.thumbnail{width: 100%;height: auto;object-fit: cover;border-radius: 5px}.checkbox-container{margin-top: 5px}.draggable.dragging{opacity: 0.5}.delete-image-btn{margin-top: 10px;padding: 5px 10px;background-color: #dc3545;border: none;color: white;border-radius: 5px;cursor: pointer}small{font-size: 10px }#taskDetailsContainer{transition: all 0.3s ease-in-out}.kanban-list.wide{min-width: 32.5%;width: 32.5%}.kanban-list.narrow{min-width: 24.5%;width: 24.5%}.edit{z-index: 1;width: 30px;height: 30px;position: absolute;right: 10px;top: 10px;background: rgba(246, 248, 253, 0.7);border-radius: 4px;display: flex;justify-content: center;align-items: center;transition: .3s}.thumbnail-container{width: 100%;height: 150px;max-height:350px;overflow: hidden;margin-bottom: 10px}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.thumbnail-placeholder{width: 100%;height: 150px;max-height:350px;background-color: #f0f0f0;display: flex;justify-content: center;align-items: center;color: #888;font-size: 14px}.kanban-box{display: flex;flex-direction: column;cursor:move}.content-box{flex-grow: 1;display: flex;flex-direction: column}.image-container{position: relative;overflow: hidden}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%}.business-stats{display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px}.rank, .total-score{background-color: #f0f0f0;padding: 3px 6px;border-radius: 3px}.kanban-cont{display: flex;overflow-x: auto;padding-bottom: 20px}.kanban-list{min-width: 25%;width: 25%;margin-right: 10px;background-color: #f4f5f7;border-radius: 5px}.kanban-wrap{max-height: 1200px;overflow-y: auto}.kanban-header{margin-bottom: 10px;padding: 10px;background-color: #e4e6e9;border-radius: 5px}.panel{margin-bottom: 10px}.kanban-box{background-color: white;border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)}.load-more{width: 100%;margin-top: 10px}.image-container{position: relative;width: 100%;padding-top: 5%}.thumbnail-image{position: absolute;top: 0;left: 0;width: 100%;height: 100%;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0,0,0,0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 20px;position: absolute;top: 50%;left: 50%;-webkit-transform: translate(-50%, -50%);-ms-transform: translate(-50%, -50%);transform: translate(-50%, -50%);text-align: center}.business-title:hover::after{content: "";display: inline-block;background-image: url('');width: 150px;height: 150px;position: absolute;left: 100%;top: -10px;background-size: cover;background-position: center;box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1)}</style> 
 <div class="main-content">
 <!--box card-->
-<div class="box"> 
+<div class="box">
     <form id="business-form" method="post" action="{% url 'update_business' business.id %}">
         {% csrf_token %}  
-        <div class="row">          
-            <div class="col-md-6">
-                <h2>{{ business.title }}</h2>
+        <div class="row">               
+            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                <div class="box left-dot">
+                    <h3>Business Details</h3>
+                    <!-- Business Title -->
+                    <h5>
+                        <span id="title-display">{{ business.title }}</span>
+                        <input type="text" name="title" id="title-edit" class="form-control" value="{{ business.title }}" style="display:none;">
+                        <button type="button" class="btn btn-link" onclick="toggleEdit('title')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </h5>
     
-                <!-- Status -->
-                <p><strong>Status:</strong>
-                    <span id="status-display">{{ business.get_status_display }}</span>
-                    <select name="status" id="status-edit" class="form-control" style="display:none;">
-                        {% for status_code, status_name in status_choices %}
-                            <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>{{ status_name }}</option>
-                        {% endfor %}
-                    </select>
-                    <button type="button" class="btn btn-link" onclick="toggleEdit('status')"><i class="bx bx-pencil"></i></button>
-                </p>
+                    <!-- Status -->
+                    <p>
+                        <strong>Status:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('status')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="status-display">{{ business.get_status_display }}</span>
+                        <select name="status" id="status-edit" class="form-control" style="display:none;">
+                            {% for status_code, status_name in status_choices %}
+                                {% if status_code != 'IN_PRODUCTION' %}
+                                    <!-- Show all statuses except 'IN_PRODUCTION' -->
+                                    <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
+                                        {{ status_name }}
+                                    </option>
+                                {% elif is_admin %}
+                                    <!-- If user is admin, show 'IN_PRODUCTION' -->
+                                    <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
+                                        {{ status_name }}
+                                    </option>
+                                {% elif business.status == status_code %}
+                                    <!-- If the business is already 'IN_PRODUCTION', show it but disable selection -->
+                                    <option value="{{ status_code }}" selected disabled>{{ status_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </p>
     
-                <!-- City -->
-                <p><strong>City:</strong>
-                    <span id="city-display">{{ business.city|default:"N/A" }}</span>
-                    <input type="text" name="city" id="city-edit" class="form-control" value="{{ business.city }}" style="display:none;">
-                    <button type="button" class="btn btn-link" onclick="toggleEdit('city')"><i class="bx bx-pencil"></i></button>
-                </p>
+                    <!-- City -->
+                    <p>
+                        <strong>City:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('city')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="city-display">{{ business.city|default:"N/A" }}</span>
+                        <input type="text" name="city" id="city-edit" class="form-control" value="{{ business.city }}" style="display:none;">
+                    </p>
     
-                <!-- Price -->
-
-                <p><strong>Price:</strong>
-                    <span id="price-display">{{ business.price|default:"N/A" }}</span>
-                    <input type="text" name="price" id="price-edit" class="form-control" value="{{ business.price }}" style="display:none;">
-                    <button type="button" class="btn btn-link" onclick="toggleEdit('price')"><i class="bx bx-pencil"></i></button>
-                </p>
-
-                <!-- Description English -->
-          
+                    <!-- Price -->
+                    <p>
+                        <strong>Price:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('price')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="price-display">{{ business.price|default:"N/A" }}</span>
+                        <input type="text" name="price" id="price-edit" class="form-control" value="{{ business.price }}" style="display:none;">
+                    </p>
+    
+                    <!-- Website -->
+                    {% if business.website %}
+                    <p>
+                        <strong>Website:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('website')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="website-display">{{ business.website }}</span>
+                        <input type="text" name="website" id="website-edit" class="form-control" value="{{ business.website }}" style="display:none;">
+                    </p>
+                    {% else %}
+                    <p><strong>Website:</strong> N/A</p>
+                    {% endif %}
+    
+                    <!-- Main Categories -->
+                    <p>
+                        <strong>LS Main Category:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('main_category')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="main_category-display">{{ business.main_category|default:"N/A" }}</span>
+                        <input type="text" name="main_category" id="main_category-edit" class="form-control" value="{{ business.main_category }}" style="display:none;">
+                    </p>
+    
+                    <!-- Types -->
+                    <p>
+                        <strong>Types:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('types')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="types-display">{{ business.types|default:"N/A" }}</span>
+                        <input type="text" name="types" id="types-edit" class="form-control" value="{{ business.types }}" style="display:none;">
+                    </p>
+    
+                    <!-- Tailored Category -->
+                    <p>
+                        <strong>Tailored Category:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('tailored_category')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="tailored_category-display">{{ business.tailored_category|default:"N/A" }}</span>
+                        <input type="text" name="tailored_category" id="tailored_category-edit" class="form-control" value="{{ business.tailored_category }}" style="display:none;">
+                    </p>
+    
+                    <!-- Category Name -->
+                    <p>
+                        <strong>Category Name:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('category_name')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="category_name-display">{{ business.category_name|default:"N/A" }}</span>
+                        <input type="text" name="category_name" id="category_name-edit" class="form-control" value="{{ business.category_name }}" style="display:none;">
+                    </p>
+                </div>
+    
+                <!-- Description (Original) -->
                 <div class="box left-dot">
                     <div class="box-body">
-                        <div class="row">
-                            <div class="col-12 mb-10"> 
-                                <h3>Description (Original)
-                                    <button type="button" class="btn btn-link" onclick="toggleEdit('description')"><i class="bx bx-pencil"></i></button>
-                                </h3>
-                                <p id="description-display">{{ business.description }}</p>
-                                <textarea name="description" id="description-edit" class="form-control" style="display:none;">{{ business.description }}</textarea>
-        
-                            </div>
-                        </div>
+                        <h3>Description (Original)
+                            {% if not business.description or business.description == 'None' %}
+                                <button type="button" class="btn btn-primary" id="generate-description-btn">
+                                    <i class="fas fa-magic"></i> Generate Description
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-link" onclick="toggleEdit('description')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                            {% endif %}
+                        </h3>
+                        <p id="description-display">{{ business.description|default:"No description available." }}</p>
+                        <textarea name="description" id="description-edit" class="form-control" style="display:none;">{{ business.description }}</textarea>
                     </div>
-                </div> 
+                </div>
     
-                <!-- Description English -->
+                <!-- Description (UK) -->
                 {% if business.description_eng %}
                 <div class="box left-dot">
                     <div class="box-body">
-                        <div class="row">
-                            <div class="col-12 mb-10"> 
-                                <h3>Description (UK)
-                                    <button type="button" class="btn btn-link" onclick="toggleEdit('description-eng')"><i class="bx bx-pencil"></i></button>
-                                </h3>
-                                <p id="description-eng-display">{{ business.description_eng }}</p>
-                                <textarea name="description_eng" id="description-eng-edit" class="form-control" style="display:none;">{{ business.description_eng }}</textarea>
-        
-                            </div>
-                        </div>
+                        <h3>Description (UK)
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('description-eng')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </h3>
+                        <p id="description-eng-display">{{ business.description_eng }}</p>
+                        <textarea name="description_eng" id="description-eng-edit" class="form-control" style="display:none;">{{ business.description_eng }}</textarea>
                     </div>
                 </div>
-
-                    {% endif %}
+                {% endif %}
     
-                <!-- Description Spanish -->
+                <!-- Description (Spanish) -->
                 {% if business.description_esp %}
                 <div class="box left-dot">
                     <div class="box-body">
-                        <div class="row">
-                            <div class="col-12 mb-10"> 
-                                <h3>Description (Spanish)
-                                    <button type="button" class="btn btn-link" onclick="toggleEdit('description-esp')"><i class="bx bx-pencil"></i></button>
-                                </h3>
-                                <p id="description-esp-display">{{ business.description_esp }}</p>
-                                <textarea name="description_esp" id="description-esp-edit" class="form-control" style="display:none;">{{ business.description_esp }}</textarea>
-        
-                            </div>
-                        </div>
+                        <h3>Description (Spanish)
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('description-esp')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </h3>
+                        <p id="description-esp-display">{{ business.description_esp }}</p>
+                        <textarea name="description_esp" id="description-esp-edit" class="form-control" style="display:none;">{{ business.description_esp }}</textarea>
                     </div>
                 </div>
-
-
-                    {% endif %}
+                {% endif %}
             </div>
     
-            <div class="col-md-6">
-                {% if business.service_options %}
-                    <h4>Service Options
-
-                    </h4>
-                    <div id="service-options-display">
-                        <ul>
-                            {% for option, value in business.service_options.items %}
-                                <li>{{ option|title }}: {{ value|yesno:"Yes,No" }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div> 
-
-                {% endif %}
-            
-                <!-- Operating Hours -->
-                {% if business.operating_hours %}
+            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                 <div class="box left-dot">
                     <div class="box-body">
-                        <div class="row">
-                            <div class="col-12 mb-10"> 
-                    <h3>Operating Hours
-                        <button type="button" class="btn btn-link" onclick="editOperatingHours()">
-                            <i class="bx bx-pencil"></i>
-                        </button>
-                    </h3>
-                    <ul class="box-list mt-25" style="float: inline-start;">
-                        {% for day, hours in business.operating_hours.items %}
+                        {% if business.service_options %}
+                        <h3>Service Options</h3>
+                        <div id="service-options-display">
+                            <ul>
+                                {% for option, value in business.service_options.items %}
+                                <li>{{ option|title }}: {{ value|yesno:"Yes,No" }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                    <!-- Latitude -->
+                    <p>
+                        <strong>Latitude:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('latitude')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="latitude-display">{{ business.latitude|default:"N/A" }}</span>
+                        <input type="text" name="latitude" id="latitude-edit" class="form-control" value="{{ business.latitude }}" style="display:none;">
+                    </p>
+                    <!-- longitude -->
+                    <p>
+                        <strong>Longitude:
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('longitude')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </strong>
+                        <span id="longitude-display">{{ business.longitude|default:"N/A" }}</span>
+                        <input type="text" name="longitude" id="longitude-edit" class="form-control" value="{{ business.longitude }}" style="display:none;">
+                    </p>
+    
+                        <!-- Operating Hours -->
+                        {% if business.operating_hours %}
+                        <h3>Operating Hours
+                            <button type="button" class="btn btn-link" onclick="editOperatingHours()">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </h3>
+                        <ul class="box-list mt-25" style="float: inline-start;">
+                            {% for day, hours in business.operating_hours.items %}
                             <li>
-                                <span id="{{ day }}_display"><strong>{{ day|title }}:</strong> {{ hours }}</span>
-                                <span>{{ day|title }}<input type="text" name="operating_hours[{{ day }}]" id="{{ day }}_edit" class="form-control" value="{{ hours }}" style="display:none;"></span>
+                                <p id="{{ day }}_display"><strong>{{ day|title }}:</strong> {{ hours }}</p>&nbsp;&nbsp;
+                                <p>{{ day|title }}<input type="text" name="operating_hours[{{ day }}]" id="{{ day }}_edit" class="form-control" value="{{ hours }}" style="display:none;"></p>
                             </li>
-                        {% endfor %}
-                    </ul>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
                     </div>
                 </div>
             </div>
-
-                {% endif %}
-            </div>
-      
-            </div> <!--row-->
-            <div class="row mt-25">
-                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                         <!-- Save Button -->
-            <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
-        
-            {% if business.place_id %}
-                <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" class="btn btn-primary mt-3" target="_blank">View on Google Maps</a>
-            {% endif %}
-            <a href="{% url 'task_detail' business.task.id %}" class="btn btn-secondary mt-3">Back to Task</a>
-
+    
+            <div class="box">
+                <div class="box-body">
+                    <!-- Save Button -->
+                    <button type="submit" class="btn btn-danger mt-3">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+    
+                    {% if business.place_id %}
+                    <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" class="btn btn-primary mt-3" target="_blank">
+                        <i class="fas fa-map-marked-alt"></i> View on Google Maps
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'task_detail' business.task.id %}" class="btn btn-secondary mt-3">
+                        <i class="fas fa-arrow-left"></i> Back to Task
+                    </a>
                 </div>
-
-                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+    
+                <div class="mt-25">
                     <!-- Navigation Buttons -->
                     <div class="navigation-buttons">
                         {% if prev_url %}
-                            <a href="{{ prev_url }}" class="btn btn-link"><< Previous Business</a>
+                        <a href="{{ prev_url }}" class="btn btn-link">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </a>
                         {% endif %}
-                        
+    
                         {% if next_url %}
-                            <a href="{{ next_url }}" class="btn btn-link">Next Business >></a>
+                        <a href="{{ next_url }}" class="btn btn-link">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </a>
                         {% endif %}
                     </div>
                 </div>
-                
             </div>
-        
-    </form>   
-</div> 
+        </div> <!--row-->        
+    </form>
+    
+</div>
 <!--box card-->
 
 <!-- Include Sortable.js -->
@@ -177,28 +286,34 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- Image Management Container -->
-<div class="image-management-container">
-    <div class="image-container single-container">
-        <h4 class="mb-30">Images</h4>
-        <div class="images-wrapper" id="image-list">
-            {% for image in business.images.all %}
-            <div class="image-card draggable" data-id="{{ image.id }}" data-approved="{{ image.is_approved }}" draggable="true">
-                <div class="checkbox-container mb-25" style="cursor: pointer;">
-                    <strong>Approve</strong>
-                    <input type="checkbox" class="approve-checkbox" data-id="{{ image.id }}" {% if image.is_approved %}checked{% endif %}>
-                </div>
+<div class="box image-management-container">
+    <div class="box left-dot">
+        <div class="box-body">
+            <div class="image-container single-container">
+                <h3 class="mb-30">Images</h3>
+                <div class="images-wrapper" id="image-list">
+                    {% for image in business.images.all %}
+                    <div class="image-card draggable" data-id="{{ image.id }}" data-approved="{{ image.is_approved }}" draggable="true">
+                        <div class="checkbox-container mb-25" style="cursor: pointer;">
+                            <strong>Approve</strong>
+                            <input type="checkbox" class="approve-checkbox" data-id="{{ image.id }}" {% if image.is_approved %}checked{% endif %}>
+                        </div>
 
-                <img class="thumbnail"
-                     src="{% if image.local_path %}{{ MEDIA_URL }}{{ image.local_path }}{% else %}{{ image.image_url }}{% endif %}"
-                     alt="Image"> 
-                <!-- Add Delete Button -->
-                <button class="btn btn-danger delete-image-btn" data-id="{{ image.id }}">Delete</button>
+                        <img class="thumbnail"
+                            src="{% if image.local_path %}{{ MEDIA_URL }}{{ image.local_path }}{% else %}{{ image.image_url }}{% endif %}"
+                            alt="Image"> 
+                        <!-- Add Delete Button -->
+                        <button class="btn btn-danger delete-image-btn" data-id="{{ image.id }}">Delete</button>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
         </div>
     </div>
-</div>
- 
+</div> <!--box image-management-container-->
+
+</div><!--Main content-->
+
 <!-- Include Toastr CSS and JS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
@@ -421,129 +536,195 @@
  
 <!--Edit-business-->          
 <script>
-document.getElementById('business-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    const formData = new FormData(this);
-
-    // Collect operating hours
-    const operatingHours = {};
-    document.querySelectorAll('#business-form .box-list input').forEach(input => {
-        const day = input.name.replace('operating_hours[', '').replace(']', '');
-        operatingHours[day] = input.value;
-    });
-
-    // Add operating hours to formData as a JSON string
-    formData.set('operating_hours', JSON.stringify(operatingHours));
-
-    // Handle service options if necessary (similar to operating hours)
-
-    fetch(this.action, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            toastr.success('Business information updated successfully!').then(() => {
-                location.reload();
+    // Helper function for CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie) {
+            const cookies = document.cookie.split(';');
+            cookies.forEach(cookie => {
+                const trimmed = cookie.trim();
+                if (trimmed.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+                    return;
+                }
             });
-        } else {
-            toastr.error('There were errors: ' + JSON.stringify(data.errors));
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        toastr.error('An error occurred while updating the business.');
-    });
-}); 
-// Restore toggled edit states on page load
-window.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('description-eng-edit') === 'true') {
-        toggleEdit('description-eng');
+        return cookieValue;
     }
-    if (localStorage.getItem('description-esp-edit') === 'true') {
-        toggleEdit('description-esp');
-    }
-});
 
-// Toggle edit functionality for Service Options
-function toggleEdit(field) {
-    const displayElement = document.getElementById(`${field}-display`);
-    const editElement = document.getElementById(`${field}-edit`);
-    
-    if (displayElement && editElement) {
-        const isVisible = displayElement.style.display === 'none';
-        displayElement.style.display = isVisible ? '' : 'none';
-        editElement.style.display = isVisible ? 'none' : '';
-        
-        // Store the toggle state in localStorage to persist between page loads
-        localStorage.setItem(`${field}-edit`, !isVisible);
-    }
-}
+    // Initialize the isOperatingHoursEditMode variable
+    let isOperatingHoursEditMode = false;
 
-// Restore toggled states on page load
-window.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('service-options-edit') === 'true') {
-        toggleEdit('service-options');
-    }
-});
+    // Function to toggle edit mode for a field
+    function toggleEdit(field) {
+        const displayElement = document.getElementById(`${field}-display`);
+        const editElement = document.getElementById(`${field}-edit`);
 
+        if (displayElement && editElement) {
+            const isVisible = window.getComputedStyle(editElement).display !== 'none';
+            displayElement.style.display = isVisible ? '' : 'none';
+            editElement.style.display = isVisible ? 'none' : 'block';
 
-// Function to edit Operating Hours
-function editOperatingHours() {
-    document.querySelectorAll('#business-form .box-list input').forEach(input => {
-        const day = input.name.replace('operating_hours[', '').replace(']', '');
-        const displayElem = document.getElementById(`${day}_display`);
-
-        if (input.style.display === 'none') {
-            displayElem.style.display = 'none';
-            input.style.display = 'block';
-            localStorage.setItem(`operating_hours_${day}_edit`, true);
-        } else {
-            displayElem.textContent = input.value; // Update displayed text
-            displayElem.style.display = 'block';
-            input.style.display = 'none';
-            localStorage.setItem(`operating_hours_${day}_edit`, false);
+            // Store the toggle state in localStorage to persist between page loads
+            localStorage.setItem(`${field}-edit`, !isVisible);
         }
-    });
-}
+    }
 
-// Restore operating hours edit states on page load
-window.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('#business-form .box-list input').forEach(input => {
-        const day = input.name.replace('operating_hours[', '').replace(']', '');
-        const displayElem = document.getElementById(`${day}_display`);
-        if (localStorage.getItem(`operating_hours_${day}_edit`) === 'true') {
-            displayElem.style.display = 'none';
-            input.style.display = 'block';
-        } else {
-            displayElem.textContent = input.value; // Ensure displayed text is updated
-        }
-    });
-});
+    function editOperatingHours() {
+        isOperatingHoursEditMode = !isOperatingHoursEditMode;
+        localStorage.setItem('isOperatingHoursEditMode', isOperatingHoursEditMode);
 
-// Helper function for CSRF token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie) {
-        const cookies = document.cookie.split(';');
-        cookies.forEach(cookie => {
-            const trimmed = cookie.trim();
-            if (trimmed.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+        document.querySelectorAll('#business-form .box-list li').forEach(li => {
+            const day = li.querySelector('input').name.replace('operating_hours[', '').replace(']', '');
+            const displayElem = document.getElementById(`${day}_display`);
+            const inputElem = document.getElementById(`${day}_edit`);
+
+            if (isOperatingHoursEditMode) {
+                displayElem.style.display = 'none';
+                inputElem.style.display = 'block';
+            } else {
+                displayElem.textContent = inputElem.value; // Update displayed text
+                displayElem.style.display = 'block';
+                inputElem.style.display = 'none';
             }
         });
     }
-    return cookieValue;
-}
-</script>
-<!--Edit-business-->
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // Restore toggled edit states on page load
+        const fields = ['title', 'website', 'status', 'city', 'price', 'description', 'description-eng', 'description-esp', 'categories', 'main_category', 'types', 'operating_hours', 'tailored_category'];
+        fields.forEach(field => {
+            if (localStorage.getItem(`${field}-edit`) === 'true') {
+                toggleEdit(field);
+            }
+        });
+
+        // Restore operating hours edit state
+        isOperatingHoursEditMode = localStorage.getItem('isOperatingHoursEditMode') === 'true';
+
+        document.querySelectorAll('#business-form .box-list li').forEach(li => {
+            const day = li.querySelector('input').name.replace('operating_hours[', '').replace(']', '');
+            const displayElem = document.getElementById(`${day}_display`);
+            const inputElem = document.getElementById(`${day}_edit`);
+
+            if (isOperatingHoursEditMode) {
+                displayElem.style.display = 'none';
+                inputElem.style.display = 'block';
+            } else {
+                displayElem.style.display = 'block';
+                inputElem.style.display = 'none';
+            }
+        });
+
+        // Add event listener for the form submission
+        const businessForm = document.getElementById('business-form');
+        businessForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+
+            // Collect operating hours
+            const operatingHours = {};
+            document.querySelectorAll('#business-form .box-list input').forEach(input => {
+                const day = input.name.replace('operating_hours[', '').replace(']', '');
+                operatingHours[day] = input.value;
+            });
+
+            // Add operating hours to formData as a JSON string
+            formData.set('operating_hours', JSON.stringify(operatingHours));
+
+            // Collect categories
+            const categories = [];
+            document.querySelectorAll('input[name="categories"]:checked').forEach(input => {
+                categories.push(input.value);
+            });
+            formData.delete('categories'); // Remove existing categories entries
+            categories.forEach(id => {
+                formData.append('categories', id);
+            });
+
+            // Collect other fields as necessary
+
+            fetch(this.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success('Business information updated successfully!');
+                    location.reload();
+                } else {
+                    toastr.error('There were errors: ' + JSON.stringify(data.errors));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred while updating the business.');
+            });
+        });
+
+    // Add event listener for the Generate Description button
+    const generateDescriptionBtn = document.getElementById('generate-description-btn');
+    if (generateDescriptionBtn) {
+        generateDescriptionBtn.addEventListener('click', function() {
+            // Collect business details
+            const businessId = '{{ business.id }}';
+            const businessTitle = '{{ business.title }}';
+            const city = '{{ business.city }}';
+            const country = '{{ business.form_country_name }}';  // Adjust based on your model
+            const category = '{{ business.main_category }}';
+
+            // Prepare data to send
+            const data = {
+                business_id: businessId,
+                title: businessTitle,
+                city: city,
+                country: country,
+                category: category,
+            };
+
+            // Send AJAX request to generate description
+            fetch('{% url "generate_description" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // Populate the description field
+                    const descriptionEdit = document.getElementById('description-edit');
+                    descriptionEdit.value = result.description;
+                    // Show the textarea
+                    descriptionEdit.style.display = 'block';
+                    // Hide the display paragraph
+                    const descriptionDisplay = document.getElementById('description-display');
+                    descriptionDisplay.style.display = 'none';
+                    // Remove the generate button
+                    generateDescriptionBtn.style.display = 'none';
+                    toastr.success('Description generated successfully!');
+                } else {
+                    toastr.error('Error generating description: ' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred while generating the description.');
+            });
+        });
+    }
+});
+</script>
+
+<!--Edit-business-->
  
 {% endblock %}
 

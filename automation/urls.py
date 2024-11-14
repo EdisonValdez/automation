@@ -25,7 +25,7 @@ urlpatterns = [
     #path('business/<int:business_id>/', views.BusinessDetailView.as_view(), name='business_detail'),
     path('business/<int:business_id>/', views.business_detail, name='business_detail'),
     path('update-image-status/', views.update_image_status, name="update_image_status"),
-
+    path('generate-description', views.generate_description, name="generate_description"),
     path('update-image-order/', views.update_image_order, name='update_image_order'),
     path('update-image-approval/', views.update_image_approval, name='update_image_approval'),
 
