@@ -607,22 +607,26 @@
     let isOperatingHoursEditMode = false;
 
     // Function to toggle edit mode for a field
-        function toggleEdit(field) {
-        const displayElement = document.getElementById(`${field}-display`);
-        const editElement = $(`#${field}-edit`);  // Use jQuery to select the element
+    function toggleEdit(field) {
+    const displayElement = document.getElementById(`${field}-display`);
+    const editElement = $(`#${field}-edit`);
 
-        if (displayElement && editElement.length) {
-            const isVisible = editElement.is(':visible');
-            if (isVisible) {
-                // Hide the Select2 element
-                editElement.select2('destroy');  // Destroy Select2 instance
-                editElement.hide();
-                displayElement.style.display = '';
-            } else {
-                // Show the Select2 element
-                displayElement.style.display = 'none';
-                editElement.show();
-                // Re-initialize Select2
+    if (displayElement && editElement.length) {
+        const isVisible = editElement.is(':visible');
+        if (isVisible) {
+            // Hide the edit element
+            if (editElement.hasClass('select2-hidden-accessible')) {
+                // Destroy Select2 instance if initialized
+                editElement.select2('destroy');
+            }
+            editElement.hide();
+            displayElement.style.display = '';
+        } else {
+            // Show the edit element
+            displayElement.style.display = 'none';
+            editElement.show();
+            // Initialize Select2 only if the element has class 'select2'
+            if (editElement.hasClass('select2')) {
                 editElement.select2({
                     placeholder: "Select options",
                     allowClear: true,
@@ -631,6 +635,7 @@
             }
         }
     }
+}
 
 
     function editOperatingHours() {
