@@ -606,12 +606,9 @@ def create_user(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']  
-            user = User.objects.create(username=username, email=email)
-            user.set_password(password)
-            user.save()
+            # Access password1 from cleaned_data
+            password = form.cleaned_data['password1']
+            user = form.save()
             logger.info(f"User {user.username} has been created successfully")
             messages.success(request, f"User {user.username} has been created successfully.")
 
@@ -620,8 +617,8 @@ def create_user(request):
             email_context = {
                 'user_name': user.get_full_name(),
                 'login_url': login_url,
-                'username':  username,
-                'password':  password,
+                'username': user.username,
+                'password': password,  # Plain text password
             }
 
             html_message = render_to_string('emails/welcome_email.html', email_context)
