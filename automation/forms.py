@@ -20,8 +20,16 @@ class UserProfileForm(forms.ModelForm):
         }
 
 class CustomUserCreationForm(UserCreationForm):
-    role = forms.ChoiceField(choices=UserRole.ROLE_CHOICES, required=True)
-    destinations = forms.ModelMultipleChoiceField(queryset=Destination.objects.all(), required=False)
+    role = forms.ChoiceField(
+        choices=UserRole.ROLE_CHOICES,
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control select2'})
+    )
+    destinations = forms.ModelMultipleChoiceField(
+        queryset=Destination.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control select2'})
+    )
 
     class Meta(UserCreationForm.Meta):
         model = CustomUser
@@ -29,15 +37,14 @@ class CustomUserCreationForm(UserCreationForm):
         widgets = {
             'email': forms.TextInput(attrs={'class': 'form-control'}),
             'mobile': forms.TextInput(attrs={'class': 'form-control'}),
-            'role': forms.Select(attrs={'class': 'select'}),
-            'destinations': forms.Select(attrs={'class': 'select'})
-
-
+            # 'role' and 'destinations' widgets are set in field definitions
         }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
-            self.fields[field].widget.attrs.update({'class': 'form-control'})
+            existing_classes = self.fields[field].widget.attrs.get('class', '')
+            self.fields[field].widget.attrs['class'] = f"{existing_classes} form-control".strip()
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -50,8 +57,16 @@ class CustomUserCreationForm(UserCreationForm):
         return user
 
 class CustomUserChangeForm(UserChangeForm):
-    role = forms.ChoiceField(choices=UserRole.ROLE_CHOICES, required=True)
-    destinations = forms.ModelMultipleChoiceField(queryset=Destination.objects.all(), required=False)
+    role = forms.ChoiceField(
+        choices=UserRole.ROLE_CHOICES,
+        required=True,
+        widget=forms.Select(attrs={'class': 'form-control select2'})
+    )
+    destinations = forms.ModelMultipleChoiceField(
+        queryset=Destination.objects.all(),
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control select2'})
+    )
 
     class Meta:
         model = CustomUser
@@ -60,7 +75,8 @@ class CustomUserChangeForm(UserChangeForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
-            self.fields[field].widget.attrs.update({'class': 'form-control'})
+            existing_classes = self.fields[field].widget.attrs.get('class', '')
+            self.fields[field].widget.attrs['class'] = f"{existing_classes} form-control".strip()
         if self.instance:
             try:
                 user_role = self.instance.roles.first()
@@ -78,7 +94,8 @@ class CustomUserChangeForm(UserChangeForm):
             UserRole.objects.update_or_create(user=user, defaults={'role': role})
             user.destinations.set(destinations)
         return user
- 
+
+
 class CountryForm(forms.ModelForm):
     class Meta:
         model = Country
@@ -228,26 +245,66 @@ class CsvImportForm(forms.Form):
     csv_upload = forms.FileField(label='Select a CSV file')
  
 class BusinessForm(forms.ModelForm):
+    main_category = forms.MultipleChoiceField(
+        choices=[],
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control select2'})
+    )
+    tailored_category = forms.MultipleChoiceField(
+        choices=[],
+        required=False,
+        widget=forms.SelectMultiple(attrs={'class': 'form-control select2'})
+    )
+    
+    # Retain your categories field if necessary
     categories = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all(),
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
+
     class Meta:
         model = Business
-        fields = ['status', 
-                  'title', 
-                  'city', 
-                  'price', 
-                  'website', 
-                  'categories', 
-                  'description', 
-                  'description_esp', 
-                  'description_eng', 
-                  'operating_hours', 
-                  'category_name', 
-                  'service_options']
+        fields = [
+            'status', 
+            'title', 
+            'city', 
+            'price', 
+            'phone',
+            'website', 
+            'main_category',
+            'tailored_category',
+            'categories', 
+            'description', 
+            'description_esp', 
+            'description_eng', 
+            'operating_hours', 
+            'category_name', 
+            'service_options'
+        ]
         widgets = {
             'service_options': forms.HiddenInput(),
             'operating_hours': forms.HiddenInput(),
         }
+
+    def __init__(self, *args, **kwargs):
+        super(BusinessForm, self).__init__(*args, **kwargs)
+        # Populate main_category choices
+        main_categories = Category.objects.filter(parent__isnull=True)
+        self.fields['main_category'].choices = [(cat.title, cat.title) for cat in main_categories]
+        if self.instance and self.instance.main_category:
+            self.fields['main_category'].initial = [cat.strip() for cat in self.instance.main_category.split(',')]
+        
+        # Populate tailored_category choices
+        subcategories = Category.objects.filter(parent__isnull=False)
+        self.fields['tailored_category'].choices = [(cat.title, cat.title) for cat in subcategories]
+        if self.instance and self.instance.tailored_category:
+            self.fields['tailored_category'].initial = [cat.strip() for cat in self.instance.tailored_category.split(',')]
+
+    def clean_main_category(self):
+        data = self.cleaned_data.get('main_category', [])
+        return ', '.join(data)
+
+    def clean_tailored_category(self):
+        data = self.cleaned_data.get('tailored_category', [])
+        return ', '.join(data)

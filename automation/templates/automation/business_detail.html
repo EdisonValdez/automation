@@ -5,7 +5,8 @@
 {% load custom_filters %}
 {% block title %}{{ business.title }}{% endblock %}
 {% block content %}
-<style>.image-management-container{display: flex;justify-content: center;padding: 10px}.image-container{width: 100%;padding: 15px;min-height: 300px}.images-wrapper{display: flex;flex-wrap: wrap;gap: 30px}.image-card{position: relative;display: flex;flex-direction: column;align-items: center;width: 250px;min-height: 200px;padding: 7px;border: 1px solid #ccc;border-radius: 8px;background-color: white;cursor: grab}.thumbnail{width: 100%;height: auto;object-fit: cover;border-radius: 5px}.checkbox-container{margin-top: 5px}.draggable.dragging{opacity: 0.5}.delete-image-btn{margin-top: 10px;padding: 5px 10px;background-color: #dc3545;border: none;color: white;border-radius: 5px;cursor: pointer}small{font-size: 10px }#taskDetailsContainer{transition: all 0.3s ease-in-out}.kanban-list.wide{min-width: 32.5%;width: 32.5%}.kanban-list.narrow{min-width: 24.5%;width: 24.5%}.edit{z-index: 1;width: 30px;height: 30px;position: absolute;right: 10px;top: 10px;background: rgba(246, 248, 253, 0.7);border-radius: 4px;display: flex;justify-content: center;align-items: center;transition: .3s}.thumbnail-container{width: 100%;height: 150px;max-height:350px;overflow: hidden;margin-bottom: 10px}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.thumbnail-placeholder{width: 100%;height: 150px;max-height:350px;background-color: #f0f0f0;display: flex;justify-content: center;align-items: center;color: #888;font-size: 14px}.kanban-box{display: flex;flex-direction: column;cursor:move}.content-box{flex-grow: 1;display: flex;flex-direction: column}.image-container{position: relative;overflow: hidden}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%}.business-stats{display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px}.rank, .total-score{background-color: #f0f0f0;padding: 3px 6px;border-radius: 3px}.kanban-cont{display: flex;overflow-x: auto;padding-bottom: 20px}.kanban-list{min-width: 25%;width: 25%;margin-right: 10px;background-color: #f4f5f7;border-radius: 5px}.kanban-wrap{max-height: 1200px;overflow-y: auto}.kanban-header{margin-bottom: 10px;padding: 10px;background-color: #e4e6e9;border-radius: 5px}.panel{margin-bottom: 10px}.kanban-box{background-color: white;border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)}.load-more{width: 100%;margin-top: 10px}.image-container{position: relative;width: 100%;padding-top: 5%}.thumbnail-image{position: absolute;top: 0;left: 0;width: 100%;height: 100%;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0,0,0,0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 20px;position: absolute;top: 50%;left: 50%;-webkit-transform: translate(-50%, -50%);-ms-transform: translate(-50%, -50%);transform: translate(-50%, -50%);text-align: center}.business-title:hover::after{content: "";display: inline-block;background-image: url('');width: 150px;height: 150px;position: absolute;left: 100%;top: -10px;background-size: cover;background-position: center;box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1)}</style> 
+<style>
+.image-management-container{display: flex;justify-content: center;padding: 10px}.image-container{width: 100%;padding: 15px;min-height: 300px}.images-wrapper{display: flex;flex-wrap: wrap;gap: 30px}.image-card{position: relative;display: flex;flex-direction: column;align-items: center;width: 250px;min-height: 200px;padding: 7px;border: 1px solid #ccc;border-radius: 8px;background-color: white;cursor: grab}.thumbnail{width: 100%;height: auto;object-fit: cover;border-radius: 5px}.checkbox-container{margin-top: 5px}.draggable.dragging{opacity: 0.5}.delete-image-btn{margin-top: 10px;padding: 5px 10px;background-color: #dc3545;border: none;color: white;border-radius: 5px;cursor: pointer}small{font-size: 10px }#taskDetailsContainer{transition: all 0.3s ease-in-out}.kanban-list.wide{min-width: 32.5%;width: 32.5%}.kanban-list.narrow{min-width: 24.5%;width: 24.5%}.edit{z-index: 1;width: 30px;height: 30px;position: absolute;right: 10px;top: 10px;background: rgba(246, 248, 253, 0.7);border-radius: 4px;display: flex;justify-content: center;align-items: center;transition: .3s}.thumbnail-container{width: 100%;height: 150px;max-height:350px;overflow: hidden;margin-bottom: 10px}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.thumbnail-placeholder{width: 100%;height: 150px;max-height:350px;background-color: #f0f0f0;display: flex;justify-content: center;align-items: center;color: #888;font-size: 14px}.kanban-box{display: flex;flex-direction: column;cursor:move}.content-box{flex-grow: 1;display: flex;flex-direction: column}.image-container{position: relative;overflow: hidden}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%}.business-stats{display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px}.rank, .total-score{background-color: #f0f0f0;padding: 3px 6px;border-radius: 3px}.kanban-cont{display: flex;overflow-x: auto;padding-bottom: 20px}.kanban-list{min-width: 25%;width: 25%;margin-right: 10px;background-color: #f4f5f7;border-radius: 5px}.kanban-wrap{max-height: 1200px;overflow-y: auto}.kanban-header{margin-bottom: 10px;padding: 10px;background-color: #e4e6e9;border-radius: 5px}.panel{margin-bottom: 10px}.kanban-box{background-color: white;border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)}.load-more{width: 100%;margin-top: 10px}.image-container{position: relative;width: 100%;padding-top: 5%}.thumbnail-image{position: absolute;top: 0;left: 0;width: 100%;height: 100%;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0,0,0,0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 20px;position: absolute;top: 50%;left: 50%;-webkit-transform: translate(-50%, -50%);-ms-transform: translate(-50%, -50%);transform: translate(-50%, -50%);text-align: center}.business-title:hover::after{content: "";display: inline-block;background-image: url('');width: 150px;height: 150px;position: absolute;left: 100%;top: -10px;background-size: cover;background-position: center;box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1)}</style> 
 <div class="main-content">
 <!--box card-->
 <div class="box">
@@ -88,43 +89,75 @@
                     {% else %}
                     <p><strong>Website:</strong> N/A</p>
                     {% endif %}
-    
+
+                        <!-- Phone Number -->
+                        {% if business.website %}
+                        <p>
+                            <strong>Phone number:
+                                <button type="button" class="btn btn-link" onclick="toggleEdit('phone')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                            </strong>
+                            <span id="phone-display">{{ business.phone }}</span>
+                            <input type="text" name="phone" id="phone-edit" class="form-control" value="{{ business.phone }}" style="display:none;">
+                        </p>
+                        {% else %}
+                        <p><strong>Phone:</strong> N/A</p>
+                        {% endif %}
+ 
                     <!-- Main Categories -->
                     <p>
-                        <strong>LS Main Category:
+                        <strong>LS Main Categories:
                             <button type="button" class="btn btn-link" onclick="toggleEdit('main_category')">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
                         </strong>
-                        <span id="main_category-display">{{ business.main_category|default:"N/A" }}</span>
-                        <input type="text" name="main_category" id="main_category-edit" class="form-control" value="{{ business.main_category }}" style="display:none;">
+                        <span id="main_category-display">
+                            {% with business.main_category|split_by_comma as main_categories_list %}
+                                {% for category in main_categories_list %}
+                                    {{ category }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </span>
+                        <select name="main_category" id="main_category-edit" class="form-control select2" style="display:none;" multiple>
+                            {% with business.main_category|split_by_comma as selected_main_categories %}
+                                {% for category in main_categories %}
+                                    <option value="{{ category.title }}" {% if category.title in selected_main_categories %}selected{% endif %}>
+                                        {{ category.title }}
+                                    </option>
+                                {% endfor %}
+                            {% endwith %}
+                        </select>
                     </p>
-    
-                    <!-- Types -->
+
+                    <!-- Tailored Categories -->
                     <p>
-                        <strong>Types:
-                            <button type="button" class="btn btn-link" onclick="toggleEdit('types')">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                        </strong>
-                        <span id="types-display">{{ business.types|default:"N/A" }}</span>
-                        <input type="text" name="types" id="types-edit" class="form-control" value="{{ business.types }}" style="display:none;">
-                    </p>
-    
-                    <!-- Tailored Category -->
-                    <p>
-                        <strong>Tailored Category:
+                        <strong>Sub-categories:
                             <button type="button" class="btn btn-link" onclick="toggleEdit('tailored_category')">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
                         </strong>
-                        <span id="tailored_category-display">{{ business.tailored_category|default:"N/A" }}</span>
-                        <input type="text" name="tailored_category" id="tailored_category-edit" class="form-control" value="{{ business.tailored_category }}" style="display:none;">
+                        <span id="tailored_category-display">
+                            {% with business.tailored_category|split_by_comma as tailored_categories_list %}
+                                {% for category in tailored_categories_list %}
+                                    {{ category }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            {% endwith %}
+                        </span>
+                        <select name="tailored_category" id="tailored_category-edit" class="form-control select2" style="display:none;" multiple>
+                            {% with business.tailored_category|split_by_comma as selected_tailored_categories %}
+                                {% for category in subcategories %}
+                                    <option value="{{ category.title }}" {% if category.title in selected_tailored_categories %}selected{% endif %}>
+                                        {{ category.title }}
+                                    </option>
+                                {% endfor %}
+                            {% endwith %}
+                        </select>
                     </p>
     
-                    <!-- Category Name -->
+                    <!-- Category Name Now Tags -->
                     <p>
-                        <strong>Category Name:
+                        <strong>Tags:
                             <button type="button" class="btn btn-link" onclick="toggleEdit('category_name')">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
@@ -133,6 +166,17 @@
                         <input type="text" name="category_name" id="category_name-edit" class="form-control" value="{{ business.category_name }}" style="display:none;">
                     </p>
                 </div>
+
+                <!-- Types -->
+                <p>
+                    <strong>Google types:
+                        <button type="button" class="btn btn-link" onclick="toggleEdit('types')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </strong>
+                    <span id="types-display">{{ business.types|default:"N/A" }}</span>
+                    <input type="text" name="types" id="types-edit" class="form-control" value="{{ business.types }}" style="display:none;">
+                </p>                    
     
                 <!-- Description (Original) -->
                 <div class="box left-dot">
@@ -152,6 +196,7 @@
                         <textarea name="description" id="description-edit" class="form-control" style="display:none;">{{ business.description }}</textarea>
                     </div>
                 </div>
+
     
                 <!-- Description (UK) -->
                 {% if business.description_eng %}
@@ -279,7 +324,13 @@
     
 </div>
 <!--box card-->
-
+<!-- Loading Modal -->
+<div id="loading-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="spinner"></div>
+        <p>Generating description, please wait...</p>
+    </div>
+</div>
 <!-- Include Sortable.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 <!-- Include SweetAlert2 -->
@@ -556,19 +607,31 @@
     let isOperatingHoursEditMode = false;
 
     // Function to toggle edit mode for a field
-    function toggleEdit(field) {
+        function toggleEdit(field) {
         const displayElement = document.getElementById(`${field}-display`);
-        const editElement = document.getElementById(`${field}-edit`);
+        const editElement = $(`#${field}-edit`);  // Use jQuery to select the element
 
-        if (displayElement && editElement) {
-            const isVisible = window.getComputedStyle(editElement).display !== 'none';
-            displayElement.style.display = isVisible ? '' : 'none';
-            editElement.style.display = isVisible ? 'none' : 'block';
-
-            // Store the toggle state in localStorage to persist between page loads
-            localStorage.setItem(`${field}-edit`, !isVisible);
+        if (displayElement && editElement.length) {
+            const isVisible = editElement.is(':visible');
+            if (isVisible) {
+                // Hide the Select2 element
+                editElement.select2('destroy');  // Destroy Select2 instance
+                editElement.hide();
+                displayElement.style.display = '';
+            } else {
+                // Show the Select2 element
+                displayElement.style.display = 'none';
+                editElement.show();
+                // Re-initialize Select2
+                editElement.select2({
+                    placeholder: "Select options",
+                    allowClear: true,
+                    width: '100%'
+                });
+            }
         }
     }
+
 
     function editOperatingHours() {
         isOperatingHoursEditMode = !isOperatingHoursEditMode;
@@ -592,7 +655,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         // Restore toggled edit states on page load
-        const fields = ['title', 'website', 'status', 'city', 'price', 'description', 'description-eng', 'description-esp', 'categories', 'main_category', 'types', 'operating_hours', 'tailored_category'];
+        const fields = ['title', 'website', 'status', 'city', 'price', 'phone', 'description', 'description-eng', 'description-esp', 'categories', 'main_category', 'types', 'operating_hours', 'tailored_category'];
         fields.forEach(field => {
             if (localStorage.getItem(`${field}-edit`) === 'true') {
                 toggleEdit(field);
@@ -668,15 +731,36 @@
             });
         });
 
-    // Add event listener for the Generate Description button
-    const generateDescriptionBtn = document.getElementById('generate-description-btn');
+        // Function to show the loading modal
+        function showLoadingModal() {
+            document.getElementById('loading-modal').style.display = 'block';
+        }
+
+        // Function to hide the loading modal
+        function hideLoadingModal() {
+            document.getElementById('loading-modal').style.display = 'none';
+        }
+
+
+     // Add event listener for the Generate Description button
+     const generateDescriptionBtn = document.getElementById('generate-description-btn');
     if (generateDescriptionBtn) {
         generateDescriptionBtn.addEventListener('click', function() {
+            // Show loading modal using SweetAlert2
+            Swal.fire({
+                title: 'Generating Description',
+                text: 'Please wait while the description is being generated...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             // Collect business details
             const businessId = '{{ business.id }}';
             const businessTitle = '{{ business.title }}';
             const city = '{{ business.city }}';
-            const country = '{{ business.form_country_name }}';  // Adjust based on your model
+            const country = '{{ business.form_country_name }}';
             const category = '{{ business.main_category }}';
 
             // Prepare data to send
@@ -699,16 +783,15 @@
             })
             .then(response => response.json())
             .then(result => {
+                // Close the loading modal
+                Swal.close();
+
                 if (result.success) {
-                    // Populate the description field
                     const descriptionEdit = document.getElementById('description-edit');
                     descriptionEdit.value = result.description;
-                    // Show the textarea
                     descriptionEdit.style.display = 'block';
-                    // Hide the display paragraph
                     const descriptionDisplay = document.getElementById('description-display');
                     descriptionDisplay.style.display = 'none';
-                    // Remove the generate button
                     generateDescriptionBtn.style.display = 'none';
                     toastr.success('Description generated successfully!');
                 } else {
@@ -716,6 +799,9 @@
                 }
             })
             .catch(error => {
+                // Close the loading modal
+                Swal.close();
+
                 console.error('Error:', error);
                 toastr.error('An error occurred while generating the description.');
             });
@@ -725,6 +811,16 @@
 </script>
 
 <!--Edit-business-->
- 
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 on elements with class 'select2'
+        $('.select2').select2({
+            placeholder: "Select options",
+            allowClear: true,
+            width: '100%'  // Ensures the dropdown fits the container
+        });
+    });
+  </script>
+  
 {% endblock %}
 

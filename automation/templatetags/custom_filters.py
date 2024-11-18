@@ -14,3 +14,11 @@ def replace(value, args):
 @register.filter
 def filter_by_status(businesses, status):
     return [b for b in businesses if b.status == status]
+
+
+@register.filter
+def split_by_comma(value):
+    if value:
+        return [s.strip() for s in value.split(',')]
+    else:
+        return []

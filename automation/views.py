@@ -783,18 +783,46 @@ def business_detail(request, business_id):
 
     is_admin = request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists()
     
-    form = BusinessForm(instance=business)
+    # Fetch main categories and subcategories
+    main_categories = Category.objects.filter(parent__isnull=True)
+    subcategories = Category.objects.filter(parent__isnull=False)
+
+    if request.method == 'POST':
+        post_data = request.POST.copy()
+
+        # Handle main_category selections
+        main_category_titles = post_data.getlist('main_category')
+        post_data['main_category'] = ', '.join(main_category_titles)
+
+        # Handle tailored_category selections
+        tailored_category_titles = post_data.getlist('tailored_category')
+        post_data['tailored_category'] = ', '.join(tailored_category_titles)
+
+        # Initialize the form with updated post_data
+        form = BusinessForm(post_data, instance=business)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Saved!")
+            return redirect('business_detail', business_id=business.id)
+        else:
+            messages.error(request, "An error occurred while saving the business.")
+    else:
+        form = BusinessForm(instance=business)
+
     # Pass prev_url and next_url to the template
     context = {
-        'form':form,
+        'form': form,
         'business': business,
         'status_choices': Business.STATUS_CHOICES,
         'prev_url': prev_url,
         'next_url': next_url,
         'is_admin': is_admin,
+        'main_categories': main_categories,
+        'subcategories': subcategories,
     }
 
     return render(request, 'automation/business_detail.html', context)
+
 
 @csrf_protect
 def update_business(request, business_id):
@@ -893,10 +921,10 @@ def edit_business(request, business_id):
         messages.error(request, "An error occurred while editing the business.")
         return redirect('business_list')
  
+
 @csrf_exempt
-@login_required
 def generate_description(request):
-    if request.method== 'POST':
+    if request.method == 'POST':
         try:
             data = json.loads(request.body)
             business_id = data.get('business_id')
@@ -905,31 +933,38 @@ def generate_description(request):
             country = data.get('country')
             category = data.get('category')
 
-            prompt = f"Make a brief description of 220 words with formal language for {title} in the city of {city}, {country}, and category: {category}, creating a paragraph every 25 words. Avoid words like: in the heart of, vibrant."
+            # Build the prompt in the chat format
+            system_prompt = "You are a helpful assistant that writes formal business descriptions."
+            user_prompt = (
+                f"Make a brief description of approximately 220 words with formal language for '{title}' "
+                f"in the city of {city}, {country}, and category: {category}, creating a paragraph every "
+                f"25 words. Avoid words like: 'in the heart of', 'vibrant'."
+            )
 
-            openai.api_key = settings.TRANSLATION_OPENAI_API_KEY
+            openai.api_key = settings.OPENAI_API_KEY
 
-            response = openai.Completion.create(
-                engine="text-davinci-003",
-                prompt=prompt,
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",  
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
                 max_tokens=600,
                 n=1,
                 stop=None,
-                temperature=0.7, 
+                temperature=0.7,
             )
-            description = response.choices[0].text.strip()
+
+            description = response['choices'][0]['message']['content'].strip()
 
             return JsonResponse({'success': True, 'description': description})
-            
+
         except Exception as e:
-            logger.error(f"Error generating description {str(e)}", exc_info=True)
+            logger.error(f"Error generating description: {str(e)}", exc_info=True)
             return JsonResponse({'success': False, 'error': 'Failed to generate description'})
     else:
         return JsonResponse({'success': False, 'error': 'Invalid request method.'})
-
-
-
-
+ 
 @csrf_exempt
 def update_business_hours(request):
     if request.method == 'POST':

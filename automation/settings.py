@@ -195,12 +195,7 @@ CACHES = {
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
-
-# API Keys Configuration
-TRANSLATION_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
-GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
-SERPAPI_KEY = os.getenv('SERPAPI_KEY')
-
+ 
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -242,6 +237,7 @@ if not DEBUG:
 # API keys and additional configs
 TRANSLATION_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
 GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 SERPAPI_KEY = os.getenv('SERPAPI_KEY')
  
 
