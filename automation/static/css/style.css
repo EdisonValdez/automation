@@ -1384,12 +1384,14 @@ ul {
 .sidebar {
     background-color: var(--box-bg);
     position: fixed;
-    top: 30px;
+    /*top: 30px;
+
+    */
     left: 30px;
     width: var(--sidebar-size);
     height: 100vh;
     box-shadow: var(--shadow);
-    border-radius: 30px;
+    border-radius: 10px;
 }
 
 .dark .sidebar {
