@@ -211,7 +211,14 @@ class TaskDetailView(View):
     def get(self, request, id):
         logger.info(f"Accessing TaskDetailView for task {id}")
         user = request.user
+        task = get_object_or_404(ScrapingTask.objects.prefetch_related(
+            Prefetch('businesses', queryset=Business.objects.filter(is_deleted=False))
+        ), id=id)
 
+        businesses = task.businesses.filter(is_deleted=False).prefetch_related(
+        Prefetch('images', queryset=Image.objects.filter(is_deleted=False).order_by('id'), to_attr='first_image')
+        )
+ 
         if user.is_superuser or user.roles.filter(role='ADMIN').exists():
             task_queryset = ScrapingTask.objects.filter(id=id)
         elif user.roles.filter(role='AMBASSADOR').exists():
@@ -249,8 +256,7 @@ class TaskDetailView(View):
 
         logger.info(f"Retrieved task {id} with {business_count} businesses")
         return render(request, 'automation/task_detail.html', context)
-
-
+ 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class TranslateBusinessesView(View):
@@ -275,8 +281,9 @@ class TranslateBusinessesView(View):
         task.save(update_fields=['translation_status'])
 
         try:
-            businesses = task.businesses.all()
-            
+            # Exclude businesses with status 'DISCARDED'
+            businesses = task.businesses.exclude(status='DISCARDED')
+           
             # Process translation for each business
             for business in businesses:
                 logger.info(f"Translating and enhancing business: {business.title}")
@@ -284,11 +291,24 @@ class TranslateBusinessesView(View):
                 translate_business_info_sync(business)
                 business.save()
 
-            # Mark task as successfully translated
-            task.translation_status = 'TRANSLATED'
-            task.status = 'TRANSLATED'  # Update main task status if needed
-            task.save(update_fields=['translation_status', 'status'])
-            logger.info(f"Task {task_id} marked as 'TRANSLATED'")
+            # Check if all businesses are translated
+            if not task.businesses.filter(status='DISCARDED').exists():
+                # If no 'DISCARDED' businesses left, mark task as translated
+                task.translation_status = 'TRANSLATED'
+                task.status = 'TRANSLATED'  # Update main task status if needed
+                task.save(update_fields=['translation_status', 'status'])
+                logger.info(f"Task {task_id} marked as 'TRANSLATED'")
+            else:
+                # If there are 'DISCARDED' businesses, update translation status accordingly
+                task.translation_status = 'PARTIALLY_TRANSLATED'
+                task.save(update_fields=['translation_status'])
+                logger.info(f"Task {task_id} marked as 'PARTIALLY_TRANSLATED' due to discarded businesses")
+
+            if not businesses.exists():
+                logger.info(f"No businesses to translate for task {task_id}")
+                task.translation_status = 'NO_BUSINESSES_TO_TRANSLATE'
+                task.save(update_fields=['translation_status'])
+                return JsonResponse({'status': 'success', 'message': 'No businesses to translate.'})
 
             return JsonResponse({'status': 'success', 'message': 'Businesses translated and enhanced successfully.'})
         
@@ -298,7 +318,7 @@ class TranslateBusinessesView(View):
             task.translation_status = 'TRANSLATION_FAILED'
             task.save(update_fields=['translation_status'])
             return JsonResponse({'status': 'error', 'message': 'Translation failed.'}, status=500)
-        
+
 
 @login_required
 def task_detail(request, task_id):
@@ -1746,3 +1766,22 @@ def save_selected_events(request):
         return JsonResponse({"success": True})
 
     return JsonResponse({"success": False})
+
+@login_required
+@require_POST
+def delete_task(request, id):
+    user = request.user
+
+    try:
+        if user.is_superuser or user.roles.filter(role='ADMIN').exists():
+            task = ScrapingTask.objects.get(id=id)
+        else:
+            # Ensure the user has permission to delete this task
+            task = ScrapingTask.objects.get(id=id, user=user)
+
+        task.delete()
+        return JsonResponse({'status': 'success'})
+    except ScrapingTask.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Task not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

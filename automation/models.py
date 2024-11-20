@@ -132,7 +132,7 @@ class Category(models.Model):
     title = models.CharField(max_length=100)
     value = models.CharField(max_length=50, unique=True)
     level = models.ForeignKey(Level, on_delete=models.CASCADE)  # Link to Level
-    parent = models.ForeignKey('self', null=True, blank=True, related_name='subcategories', on_delete=models.CASCADE)  # Parent for subcategories
+    parent = models.ForeignKey('self', null=True, blank=True, related_name='subcategories', on_delete=models.CASCADE)  
 
     def __str__(self):
         return self.title
@@ -141,6 +141,9 @@ class Category(models.Model):
         """Check if this category has any subcategories."""
         return self.subcategories.exists()
 
+class ActiveTaskManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
 
 class ScrapingTask(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
@@ -171,37 +174,51 @@ class ScrapingTask(models.Model):
         ('PENDING_TRANSLATION', 'Pending Translation'),
         ('IN_PROGRESS', 'In Progress'),
         ('TRANSLATED', 'Translated'),
+        ('PARTIALLY_TRANSLATED', 'Partially Translated'), 
         ('TRANSLATION_FAILED', 'Translation Failed'),
     ]
-
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     translation_status = models.CharField(max_length=20, choices=TRANSLATION_STATUS_CHOICES, default='PENDING_TRANSLATION')
     file = models.FileField(upload_to='scraping_files/', null=True, blank=True)
+    is_deleted = models.BooleanField(default=False)
+
+    objects = ActiveTaskManager()
+    all_objects = models.Manager()
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
+        # Soft delete related businesses
+        self.businesses.update(is_deleted=True)
+
+    def restore(self):
+        self.is_deleted = False
+        self.save()
+        self.businesses.update(is_deleted=False)
 
     def save(self, *args, **kwargs):
-        # First, save the instance to generate a primary key if not already present
         is_new_instance = self.pk is None
         super().save(*args, **kwargs)
 
-        # Only check for related `businesses` if the instance already exists (has a primary key)
         if not is_new_instance:
-            # Check if the task should be marked as DONE based on `businesses` statuses
-            if self.status != 'DONE':  # Only check if not already done
-                businesses = self.businesses.all()  # Assuming reverse relation exists
+  
+            if self.status != 'DONE': 
+                businesses = self.businesses.all() 
                 if not businesses.filter(status='PENDING').exists():
                     self.status = 'DONE'
                     self.completed_at = timezone.now()
 
-            # Update status based on translation status if applicable
             if self.translation_status == 'TRANSLATED' and self.translation_status != 'TRANSLATED':
                 self.translation_status = 'TRANSLATED'
             elif self.translation_status == 'TRANSLATION_FAILED':
                 self.translation_status = 'TRANSLATION_FAILED'
             
-            # Save the instance again if status or completed_at fields were modified
             super().save(update_fields=['status', 'completed_at'])
 
-
+class ActiveBusinessManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+    
 class Business(models.Model):
     STATUS_CHOICES = [
         ('DISCARDED', 'Discarded'),
@@ -268,7 +285,17 @@ class Business(models.Model):
     description_esp = models.TextField(blank=True, null=True)
     description_eng = models.TextField(blank=True, null=True)
     description_fr = models.TextField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
 
+    objects = ActiveBusinessManager()
+    all_objects = models.Manager()
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
+        # Soft delete related images
+        self.images.update(is_deleted=True)
+    
     def __str__(self):
         return self.title
 
@@ -300,6 +327,10 @@ class AdditionalInfo(models.Model):
     key = models.CharField(max_length=100)
     value = models.BooleanField()
 
+class ActiveImageManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+    
 class Image(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='images')
     image_url = models.URLField(max_length=500)
@@ -307,6 +338,20 @@ class Image(models.Model):
     order = models.IntegerField(default=0, db_index=True)  # Ensure fast ordering
     thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
     is_approved = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
+
+    objects = ActiveImageManager()
+    all_objects = models.Manager()
+
+    def delete(self, *args, **kwargs):
+        self.is_deleted = True
+        self.save()
+        self.images.update(is_deleted=True)
+
+    def restore(self):
+        self.is_deleted = False
+        self.save()
+        self.images.update(is_deleted=False)
 
     class Meta:
         ordering = ['order']

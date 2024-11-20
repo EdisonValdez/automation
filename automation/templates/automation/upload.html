@@ -55,7 +55,6 @@
     }
 </style>
 
- 
 <div class="main-content project">
     <div class="me-auto">
         <h4 class="card-title mb-25 fs-22">Start a Project</h4>
@@ -347,99 +346,246 @@ $(document).ready(function() {
 <div id="log-container"></div>
 
 <hr />
-<div class="box ">
-<div class="box-header pt-0">
-    <div class="me-auto">
-        <h4 class="card-title mb-0 fs-22">Recent Activity</h4>
-    </div>
-    <div class="card-options pr-3">
-        <div class="dropdown"> 
-            <a href="#" class="btn ripple btn-outline-light dropdown-toggle fs-14" data-bs-toggle="dropdown" aria-expanded="false"> 
-                See All 
-                <i class="feather feather-chevron-down"></i> 
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end" role="menu">
-                <li><a href="#">Monthly</a></li>
-                <li><a href="#">Yearly</a></li>
-                <li><a href="#">Weekly</a></li>
-            </ul>
+ 
+    <!--Recent Activity-->
+    <div class="box">
+        <div class="box-header pt-0">
+            <div class="me-auto">
+                <h4 class="card-title mb-0 fs-22" id="scraped-list">Recent Activity</h4>
+            </div>
+    
         </div>
-    </div>
-</div>
-<div class="box-body pb-0 table-responsive activity mt-18">
-    <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-profile" role="grid">
-        <thead>
-            <tr class="top">
-                <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Project</th>
-                <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Business(es)</th>
-                <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Start</th>
-                    <th class="border-bottom-0 sorting fs-14 font-w500" tabindex="0" aria-controls="task-profile" rowspan="1" colspan="1">Work Status</th>
-                <th class="border-bottom-0 sorting_disabled fs-14 font-w500" rowspan="1" colspan="1">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-            <tr>
-                <td>
-                    <a href="{% url 'task_detail' task.id %}" class="d-flex ">
-                        <span>{{ task.project_title }}</span>
-                    </a>
-                </td>
-                <td>
-                    <ul class="user-list mb-0">
-                
-                        <li>{{ task.businesses.count }}</li> 
+        <div class="box-body pb-0 table-responsive activity mt-18">
+            <div class="box-body pb-0 table-responsive activity mt-18">
+                <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-activity" role="grid">
                     
-                    </ul>
-                </td>
-                <td>{{ task.created_at|date:"d-m-Y" }}</td>
+                <thead>
+                    <tr class="top">
+                        <th>Project</th>
+                        <th>Start</th>
+                        <th>Business(es)</th> 
+                        <th>Work Status</th>
+                        <th>Translated Status</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr> 
+                        <th><input type="text" placeholder="Search Project" /></th>
+                        <th><input type="text" placeholder="Search Start Date" /></th>
+                        <th><input type="text" placeholder="Search Businesses" /></th>
+                        <th><input type="text" placeholder="Search Work Status" /></th>
+                        <th><input type="text" placeholder="Search Translated Status" /></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'task_detail' task.id %}" class="d-flex">
+                                    <span>{{ task.project_title }}</span>
+                                </a>
+                            </td>
+                            <td>{{ task.created_at|date:"d-m-Y" }}</td>
+                            <td>  {{ task.businesses.count }} </td>
+                            <td>
+                                <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% endif %}">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if task.translation_status == 'PENDING_TRANSLATION' %} badge-warning {% elif task.translation_status == 'TRANSLATION_FAILED' %} badge-danger {% elif task.translation_status == 'TRANSLATED' %} badge-success {% endif %}">
+                                    {{ task.translation_status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <a href="#" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bx bx-dots-horizontal-rounded"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        {% if task.translation_status != 'TRANSLATED' %}
+                                        <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                                            <i class="fas fa-sync"></i> Translate and Enhance
+                                        </a>
+                                        {% elif task.translation_status == 'PENDING_TRANSLATION' %}
+                                        <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                                            <i class="fas fa-sync danger"></i> Translate and Enhance
+                                        </a>
+                                        {% endif %}
+                                        <a class="dropdown-item" href="{% url 'task_detail' task.id %}">
+                                            <i class="bx bx-info-circle font-size-16 align-middle me-1"></i>View
+                                        </a>
+                                        <!-- Add Delete action -->
+                                        <a class="dropdown-item delete-task-btn" href="#" data-task-id="{{ task.id }}">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+ 
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">No tasks found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    
+                    
+                </table>
+    
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const translatingButtons = document.querySelectorAll('.start-translating-btn');
+                            // Handle Delete Task
+                        const deleteButtons = document.querySelectorAll('.delete-task-btn');
+    
+                        deleteButtons.forEach(button => {
+                            button.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const taskId = this.getAttribute('data-task-id');
+                                const row = this.closest('tr');
+    
+                                Swal.fire({
+                                    title: 'Are you sure?',
+                                    text: "Do you really want to delete this task?",
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#d33',
+                                    confirmButtonText: 'Yes, delete it!'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        fetch(`/tasks/${taskId}/delete/`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-Requested-With': 'XMLHttpRequest',
+                                                'X-CSRFToken': getCookie('csrftoken')
+                                            }
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.status === 'success') {
+                                                // Remove the row from the table
+                                                row.remove();
+                                                Swal.fire('Deleted!', 'The task has been deleted.', 'success');
+                                            } else {
+                                                Swal.fire('Error!', 'An error occurred while deleting the task.', 'error');
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Error:', error);
+                                            Swal.fire('Error!', 'An error occurred while deleting the task.', 'error');
+                                        });
+                                    }
+                                });
+                            });
+                        });
+    
+                        translatingButtons.forEach(button => {
+                            button.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                
+                                if (this.classList.contains('disabled')) {
+                                    return;
+                                }
+                                
+                                this.classList.add('disabled');
+                                this.textContent = 'Translating and Enhancing...';
+                                
+                                const taskId = this.getAttribute('data-task-id');
+                                
+                                fetch(`/tasks/${taskId}/translate/`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'X-CSRFToken': getCookie('csrftoken')
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.status === 'success') {
+                                        this.textContent = 'Translation and Enhancement Complete';
+                                    } else {
+                                        this.textContent = 'Error Translating and Enhancing';
+                                        this.classList.remove('disabled');
+                                    }
+                                    console.log(data.message);
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    this.textContent = 'Error Translating and Enhancing';
+                                    this.classList.remove('disabled');
+                                });
+                            });
+                        });
+                    
+                        function getCookie(name) {
+                            let cookieValue = null;
+                            if (document.cookie && document.cookie !== '') {
+                                const cookies = document.cookie.split(';');
+                                for (let i = 0; i < cookies.length; i++) {
+                                    const cookie = cookies[i].trim();
+                                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                        break;
+                                    }
+                                }
+                            }
+                            return cookieValue;
+                        }
+                    });
+                </script>
                 
-                <td>
-                    <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% elif task.status == 'TRANSLATED' %} badge-success {% endif %}">
-                        {{ task.get_status_display }}
+                <!-- Paginator with Custom Styling -->
+                <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+                    {% endif %}
+    
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
                     </span>
-                </td>
-                <td>
-                    <div class="dropdown">
-                        <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bx bx-dots-horizontal-rounded"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_client"><i class="bx bx-trash"></i> Delete</a>
-                            
-                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_client"><a href="{% url 'task_detail' task.id %}" style="margin-left:20px"><i class="bx bx-edit"></i> Edit</a></a>
+    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+                <!-- Paginator with Custom Styling -->
+        </div>
+        </div>
+    
+        <div class="modal custom-modal fade" id="delete_project" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="form-header">
+                            <h3>Delete Project</h3>
+                            <p>Are you sure you want to delete this project?</p>
+                        </div>
+                        <div class="modal-btn delete-action">
+                            <div class="row">
+                                <div class="col-6 mb-0">
+                                    <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                                </div>
+                                <div class="col-6 mb-0">
+                                    <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="7">No projects yet.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <!-- Paginator with Custom Styling -->
-    <div class="pagination">
-        <span class="step-links">
-            {% if page_obj.has_previous %}
-                <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
-                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
-            {% endif %}
-
-            <span class="current">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-            </span>
-
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
-            {% endif %}
-        </span>
-    </div>
-</div>
-</div>
-
+                </div>
+            </div>
+        </div>
+    
+        </div>
+        <!--Recent Activity-->
+    
+    
 {% include 'automation/modals.html' %}
  
 <script>
@@ -548,21 +694,39 @@ $(document).ready(function() {
         });
     });
 </script>
-
+ 
 
 <script>
-$(document).ready(function() {
-    $('#task-profile').DataTable({
-        "pageLength": 15,  // Number of records per page
-        "lengthChange": true,  // Allow user to change the number of records per page
-        "searching": true,     // Enable search filter
-        "ordering": true,      // Enable column ordering
-        "info": true,          // Show page info
-        "autoWidth": false     // Disable auto width adjustment
+    $(document).ready(function() {
+        // Setup - add a text input to each footer cell
+        $('#task-activity thead tr:eq(1) th').each(function (i) {
+            var title = $(this).text();
+            if (title !== 'Select' && title !== 'Action') {
+                $('input', this).on('keyup change', function () {
+                    if (table.column(i).search() !== this.value) {
+                        table
+                            .column(i)
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+        });
+    
+        // Initialize DataTable
+        var table = $('#task-activity').DataTable({
+            "pageLength": 12,
+            "lengthChange": true,
+            "searching": true,
+            "ordering": true,
+            "info": true,
+            "autoWidth": false,
+            orderCellsTop: true,
+            fixedHeader: true
+        });
     });
-});
-</script>
-
+    
+    </script>
 {% endblock %}
 
  

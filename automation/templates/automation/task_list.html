@@ -44,10 +44,12 @@
                     </form>
                     <div class="table-responsive">
                         <table class="table table-vcenter table-bordered dataTable" id="task-profile">
+
                             <thead>
                                 <tr class="top">
                                     <th>ID</th>
                                     <th>Project Title</th>
+                                    <th>Counts</th>
                                     <th>Level</th>
                                     <th>Category</th>
                                     <th>Subcategory</th>
@@ -57,13 +59,29 @@
                                     <th>Status</th>
                                     <th>Translation Status</th>
                                 </tr>
+                                <tr> 
+                                    <th><input type="text" placeholder="Search ID" /></th>
+                                    <th><input type="text" placeholder="Search Project Title" /></th>
+                                    <th><input type="text" placeholder="Search Counts" /></th>
+                                    <th><input type="text" placeholder="Search Level" /></th>
+                                    <th><input type="text" placeholder="Search Category" /></th>
+                                    <th><input type="text" placeholder="Search Subcategory" /></th>
+                                    <th><input type="text" placeholder="Search Country" /></th>
+                                    <th><input type="text" placeholder="Search Destination" /></th>
+                                    <th><input type="text" placeholder="Search Created At" /></th>
+                                    <th><input type="text" placeholder="Search Status" /></th>
+                                    <th><input type="text" placeholder="Search Translation Status" /></th>
+                                   
+                                </tr>
                             </thead>
+
                             <tbody>
                                 {% for task in tasks %}
                                 <tr>
                                     <td><a href="{% url 'task_detail' task.id %}">{{ task.id }}</a></td>
                                     <td><a href="{% url 'task_detail' task.id %}">{{ task.project_title|truncatechars:30}}</a></td>
-                                    <td>{{ task.level }}</td>
+                                    <td> {{ task.businesses.count }} </td>
+                                    <td>{{ task.level }}</td> 
                                     <td>{{ task.main_category }}</td>
                                     <td>{{ task.subcategory }}</td>
                                     <td>{{ task.country_name }}</td>
@@ -154,18 +172,38 @@ $(document).ready(function() {
     }
 </script>
 
+ 
+
 <script>
-        $(document).ready(function() {
-        $('#task-profile').DataTable({
-            "pageLength": 50,
+    $(document).ready(function() {
+        // Setup - add a text input to each footer cell
+        $('#task-profile thead tr:eq(1) th').each(function (i) {
+            var title = $(this).text();
+            if (title !== 'Select' && title !== 'Action') {
+                $('input', this).on('keyup change', function () {
+                    if (table.column(i).search() !== this.value) {
+                        table
+                            .column(i)
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+        });
+    
+        // Initialize DataTable
+        var table = $('#task-profile').DataTable({
+            "pageLength": 12,
             "lengthChange": true,
-            "searching": true,  // Disable DataTable's own search
+            "searching": true,
             "ordering": true,
             "info": true,
-            "autoWidth": true
+            "autoWidth": false,
+            orderCellsTop: true,
+            fixedHeader: true
         });
     });
-
-</script>
+    
+    </script>
 
 {% endblock %}

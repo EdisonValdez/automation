@@ -5,4 +5,5 @@ class AutomationConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
 
     def ready(self):
-        import automation.models  # This ensures models are loaded
+        import automation.models 
+        import automation.signals  

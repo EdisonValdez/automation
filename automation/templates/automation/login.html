@@ -1,117 +1,12 @@
 {% extends "base_login.html" %}
 {% load static %}
-<style>
-/* General Styles */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
-}
-
-.main-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-/* Login Section */
-.login {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    width: 100%;
-    max-width: 400px;
-}
-
-/* Box Header */
-.box-header {
-    margin-bottom: 20px;
-}
-
-.fs-30 {
-    font-size: 30px;
-    margin: 0;
-}
-
-/* Form Styles */
-.box-body {
-    padding: 20px;
-}
-
-.form-label {
-    font-weight: bold;
-}
-
-.form-control {
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    padding: 10px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
-/* Button Styles */
-.btn {
-    background-color: #007bff;
-    color: #ffffff;
-    border: none;
-    padding: 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.btn:hover {
-    background-color: #0056b3;
-}
-
-/* Alert Styles */
-.alert {
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-    .login {
-        padding: 15px;
-    }
-
-    .fs-30 {
-        font-size: 24px;
-    }
-
-    .btn {
-        font-size: 16px;
-    }
-}
-
-</style>
+ 
 {% block content %}
 <div class="main-content">
-    <section>
+    <section class="login" style="display: block;">
         <div class="row">
             <div class="col-12">
-                <div class="box">
+                 
                     <div class="box-header d-flex justify-content-between"> 
                         <div class="action-reg">
                             <h4 class="fs-30">Login</h4>
@@ -174,7 +69,7 @@ body {
  
                         </div>
                     </div>
-                </div>
+                 
             </div>
         </div>
     </section>

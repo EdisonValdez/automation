@@ -25,16 +25,28 @@
                     </div>
                     <div class="table-responsive">
                         <table class="table table-vcenter table-bordered dataTable" id="task-profile">
+                           
                             <thead>
                                 <tr class="top">
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 4%;">ID</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 23%;">Business Name</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 15%;">Category</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 20%;">Address</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 11%;">City</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 11%;">Destination</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 10%;">Progress</th>
-                                    <th class="border-bottom-0 sorting fs-14 font-w500" style="width: 6%;">Action</th>
+                                    <th>ID</th>
+                                    <th>Business Name</th>
+                                    <th>Category</th> 
+                                    <th>Address</th>
+                                    <th>City</th>
+                                    <th>Destination</th>
+                                    <th>Progress</th>
+                                    <th>Action</th>
+                                </tr>
+                                <tr> 
+                                    <th><input type="text" placeholder="Search ID" /></th>
+                                    <th><input type="text" placeholder="Search Business Name" /></th>
+                                    <th><input type="text" placeholder="Search Category" /></th>
+                                    <th><input type="text" placeholder="Search Address" /></th>
+                                    <th><input type="text" placeholder="Search City" /></th>
+                                    <th><input type="text" placeholder="Search Destination" /></th>
+                                    <th><input type="text" placeholder="Search Progress" /></th>
+                                   
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -94,17 +106,37 @@
     </div>
 </div>
 
+
 <script>
     $(document).ready(function() {
-        $('#task-profile').DataTable({
-            "pageLength": 50,
+        // Setup - add a text input to each footer cell
+        $('#task-profile thead tr:eq(1) th').each(function (i) {
+            var title = $(this).text();
+            if (title !== 'Select' && title !== 'Action') {
+                $('input', this).on('keyup change', function () {
+                    if (table.column(i).search() !== this.value) {
+                        table
+                            .column(i)
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+        });
+    
+        // Initialize DataTable
+        var table = $('#task-profile').DataTable({
+            "pageLength": 12,
             "lengthChange": true,
             "searching": true,
             "ordering": true,
             "info": true,
-            "autoWidth": false
+            "autoWidth": false,
+            orderCellsTop: true,
+            fixedHeader: true
         });
     });
-</script>
+    
+    </script>
 
 {% endblock %}
