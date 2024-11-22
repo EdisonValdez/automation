@@ -71,17 +71,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12 col-sm-12 mb-24">
-                                <div class="form-group">
-                                    <label class="form-label" for="{{ form.destinations.id_for_label }}">Destinations</label>
-                                    {{ form.destinations }}
-                                    {% if form.destinations.errors %}
-                                        <div class="text-danger">{{ form.destinations.errors }}</div>
-                                    {% endif %}
-                                </div>
+                         <!-- Destinations Field -->
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 mb-24">
+                            <div class="form-group">
+                                <label class="form-label" for="{{ form.destinations.id_for_label }}">Destinations</label>
+                                {{ form.destinations }}
+                                {% if form.destinations.errors %}
+                                    <div class="text-danger">{{ form.destinations.errors }}</div>
+                                {% endif %}
                             </div>
                         </div>
+                    </div>
                         <div class="gr-btn mt-15">
                             <button type="submit" class="btn btn-primary btn-lg fs-16">Update User</button>
                         </div>
@@ -94,4 +95,24 @@
         </div>
     </div>
 </div>
+<!-- Initialize Select2 -->
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.select2').select2({ 
+            placeholder: "Select destinations",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+
+<script>
+    $('.select2').select2({
+    theme: 'bootstrap-5',
+    placeholder: "Select destinations",
+    allowClear: true,
+    width: '100%'
+});
+
+</script>
 {% endblock %}
