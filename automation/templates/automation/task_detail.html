@@ -392,22 +392,36 @@ function updateBusinessStatus(businessId, newStatus, oldStatus) {
             updateStatusCount(newStatus, 1);
             // Actualizar el atributo data-status del elemento movido
             document.querySelector(`.panel[data-id="${businessId}"]`).dataset.status = newStatus;
-        } else {
-            alert('Error updating business status: '  + (data.message || 'Unknown error'));
+        } else {               
+            Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Cannot move to the next column. Business description is missing.',
+                    confirmButtonText: 'OK'
+                });
+                revertToOldColumn(businessId, oldStatus);
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while updating the business status');
-    });
+            console.error('Error fetching business details:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to validate business details. Please try again.',
+                confirmButtonText: 'OK'
+            });
+            revertToOldColumn(businessId, oldStatus);
+        });
 }
 
-function updateStatusCount(status, newCount) {
-    var countElement = document.querySelector(`.status-count[data-status="${status}"]`);
-    if (countElement) {
-        countElement.textContent = newCount;
+function revertToOldColumn(businessId, oldStatus) {
+    const oldColumn = document.querySelector(`#kanban-wrap-${oldStatus}`);
+    const itemEl = document.querySelector(`.panel[data-id="${businessId}"]`);
+    if (oldColumn && itemEl) {
+        oldColumn.appendChild(itemEl);
     }
 }
+ 
 
 function updateStatusCount(status, change) {
     var countElement = document.querySelector(`.status-count[data-status="${status}"]`);

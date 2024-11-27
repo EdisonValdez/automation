@@ -1,8 +1,9 @@
 import threading
+import traceback
 from django.conf import settings
 from django.db import DatabaseError
 from django.views import View
-from django.http import FileResponse, HttpResponseForbidden, JsonResponse
+from django.http import FileResponse, Http404, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
@@ -56,61 +57,6 @@ def welcome_view(request):
         return render(request, 'automation/welcome.html')
     else:
         return redirect('login')
-
-class BusinessViewSet(viewsets.ModelViewSet):
-    queryset = Business.objects.all()
-    serializer_class = BusinessSerializer
-    permission_classes = [IsAdminOrAmbassadorForDestination]
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.roles.filter(role='ADMIN').exists():
-            return Business.objects.all()
-        elif user.roles.filter(role='AMBASSADOR').exists():
-            return Business.objects.filter(city=user.destination)
-        return Business.objects.none()
-
-@require_POST
-def change_business_status(request, business_id):
-    business = get_object_or_404(Business, id=business_id)
-    new_status = request.POST.get('status')
-    if new_status in dict(Business.STATUS_CHOICES):
-        business.status = new_status
-        business.save()
-        return JsonResponse({'status': 'success', 'new_status': new_status})
-    return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
-
-@require_POST
-@csrf_exempt   
-def update_business_status(request, business_id):
-    try:
-        business = get_object_or_404(Business, id=business_id)
-        data = json.loads(request.body)
-        new_status = data.get('status')
-        
-        if new_status in dict(Business.STATUS_CHOICES):
-            old_status = business.status
-            business.status = new_status
-            business.save()
-            
-            # Get updated counts
-            old_status_count = Business.objects.filter(status=old_status).count()
-            new_status_count = Business.objects.filter(status=new_status).count()
-            
-            return JsonResponse({
-                'status': 'success',
-                'new_status': new_status,
-                'old_status': old_status,
-                'old_status_count': old_status_count,
-                'new_status_count': new_status_count
-            })
-        else:
-            return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
-    except json.JSONDecodeError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
 
@@ -318,11 +264,16 @@ class TranslateBusinessesView(View):
             task.translation_status = 'TRANSLATION_FAILED'
             task.save(update_fields=['translation_status'])
             return JsonResponse({'status': 'error', 'message': 'Translation failed.'}, status=500)
-
-
+ 
 @login_required
 def task_detail(request, task_id):
     task = get_object_or_404(ScrapingTask, id=task_id)
+
+    Business.objects.filter(
+        task=task,
+        status__in=[None, '', 'None']
+    ).update(status='PENDING')
+
     businesses = task.businesses.all()
     status_choices = Business.STATUS_CHOICES
 
@@ -755,34 +706,138 @@ def task_list(request):
 
 
 #########BUSINESS#########################BUSINESS#########################BUSINESS#########################BUSINESS################
+
+
+class BusinessViewSet(viewsets.ModelViewSet):
+    queryset = Business.objects.all()
+    serializer_class = BusinessSerializer
+    permission_classes = [IsAdminOrAmbassadorForDestination]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.roles.filter(role='ADMIN').exists():
+            return Business.objects.all()
+        elif user.roles.filter(role='AMBASSADOR').exists():
+            return Business.objects.filter(city=user.destination)
+        return Business.objects.none()
  
+@require_GET
+def business_details(request, business_id):
+    try:
+        business = get_object_or_404(Business, id=business_id)
+        return JsonResponse({
+            'id': business.id,
+            'description': business.description,
+            'status': business.status
+        })
+    except Http404:
+        logger.error(f"Business with ID {business_id} not found.")
+        return JsonResponse({'status': 'error', 'message': f'Business with ID {business_id} not found.'}, status=404)
+
+
+@require_POST
+def change_business_status(request, business_id):
+    business = get_object_or_404(Business, id=business_id)
+    new_status = request.POST.get('status', '').strip()
+ 
+    if new_status in ['IN_PRODUCTION', 'REVIEWED'] and (not business.description or business.description.strip() == ''):
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Description is mandatory for moving to {new_status}.'
+        }, status=400)
+     
+    if new_status in dict(Business.STATUS_CHOICES):
+        old_status = business.status
+        business.status = new_status
+        business.save()
+
+        logger.info(f"Business ID {business_id}: Status changed to {new_status}")
+
+        return JsonResponse({
+            'status': 'success',
+            'new_status': new_status,
+            'old_status': old_status,
+        })
+
+    logger.error(f"Business ID {business_id}: Invalid status {new_status}")
+    return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
+
+ 
+@require_POST
+@csrf_exempt
+def update_business_status(request, business_id):
+    try:
+        business = get_object_or_404(Business, id=business_id)
+        data = json.loads(request.body)
+        new_status = data.get('status', '').strip()
+
+        # Validate description
+        if not business.description or business.description.strip() in ['', 'None']:
+            # Automatically set to PENDING if in a higher status
+            if business.status in ['REVIEWED', 'IN_PRODUCTION']:
+                business.status = 'PENDING'
+                business.save()
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Business description is missing. Status moved to PENDING instead of {new_status}.'
+                }, status=400)
+
+            # Prevent moving to REVIEWED or IN_PRODUCTION
+            if new_status in ['REVIEWED', 'IN_PRODUCTION']:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'Cannot move to {new_status}: Description is missing. Status remains {business.status}.'
+                }, status=400)
+
+        # Validate and save the new status
+        if new_status in dict(Business.STATUS_CHOICES):
+            old_status = business.status
+            business.status = new_status
+            business.save()
+
+            # Update counts
+            old_status_count = Business.objects.filter(status=old_status).count()
+            new_status_count = Business.objects.filter(status=new_status).count()
+
+            return JsonResponse({
+                'status': 'success',
+                'new_status': new_status,
+                'old_status': old_status,
+                'old_status_count': old_status_count,
+                'new_status_count': new_status_count
+            })
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+
 @login_required
 def business_list(request):
     if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
         businesses = Business.objects.all()
     elif request.user.roles.filter(role='AMBASSADOR').exists():
         ambassador_destinations = request.user.destinations.all()
-        # Get city names from assigned destinations (since destinations typically represent cities)
         ambassador_city_names = ambassador_destinations.values_list('name', flat=True)
-        
-        # Filter businesses based on destination or city name match
+
         businesses = Business.objects.filter(
             Q(destination__in=ambassador_destinations) | Q(city__in=ambassador_city_names)
         )
     else:
         businesses = Business.objects.none()
 
-    # Apply pagination
-    paginator = Paginator(businesses, 100000)
+    paginator = Paginator(businesses, 100000)  # High limit for "unlimited" pagination
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = {
+    return render(request, 'automation/business_list.html', {
         'businesses': page_obj.object_list,
         'page_obj': page_obj,
-    }
+    })
 
-    return render(request, 'automation/business_list.html', context)
 
 @login_required
 def business_detail(request, business_id):
@@ -806,6 +861,14 @@ def business_detail(request, business_id):
 
     if request.method == 'POST':
         post_data = request.POST.copy()
+        
+        description = post_data.get('description', '').strip()
+        if not description:
+            logger.error("Cannot update business %s: description is blank or None", business.project_title)
+            return JsonResponse({
+                'success': False,
+                'errors': {'description': 'Description cannot be blank or None'}
+            })
 
         # Handle main_category selections
         main_category_titles = post_data.getlist('main_category')
@@ -840,7 +903,6 @@ def business_detail(request, business_id):
 
     return render(request, 'automation/business_detail.html', context)
 
-
 @csrf_protect
 def update_business(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -857,6 +919,15 @@ def update_business(request, business_id):
 
     if request.method == 'POST':
         post_data = request.POST.copy()
+
+        description = post_data.get('description', '').strip()
+        if not description:
+            logger.error("Cannot update business %s: description is blank or None", business.project_title)
+            return JsonResponse({
+                'success': False,
+                'errors': {'description': 'Description cannot be blank or None'}
+            })
+
 
         # Handle 'service_options' JSON
         service_options_str = post_data.get('service_options', '').strip()
@@ -883,8 +954,7 @@ def update_business(request, business_id):
                 post_data.pop('operating_hours', None)
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'errors': {'operating_hours': 'Invalid JSON format'}})
-
-        # Initialize the form
+ 
         form = BusinessForm(post_data, instance=business)
 
         if form.is_valid():
@@ -898,23 +968,8 @@ def update_business(request, business_id):
         else:
             logger.error("Form Errors: %s", form.errors)
             return JsonResponse({'success': False, 'errors': form.errors})
-
-    # For GET requests or in case of errors, redirect back to business_detail
-    return redirect('business_detail', business_id=business.id)
  
-@login_required
-@user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
-def delete_business(request, business_id):
-    try:
-        business = Business.objects.get(id=business_id)
-        business.delete()
-        messages.success(request, f"Business '{business.title}' has been deleted successfully.")
-    except Business.DoesNotExist:
-        messages.error(request, "The requested business does not exist.")
-    except Exception as e:
-        logger.error(f"Error deleting business {business_id}: {str(e)}", exc_info=True)
-        messages.error(request, "An error occurred while deleting the business.")
-    return redirect('business_list')
+    return redirect('business_detail', business_id=business.id)
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
@@ -938,6 +993,20 @@ def edit_business(request, business_id):
         messages.error(request, "An error occurred while editing the business.")
         return redirect('business_list')
  
+@login_required
+@user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
+def delete_business(request, business_id):
+    try:
+        business = Business.objects.get(id=business_id)
+        business.delete()
+        messages.success(request, f"Business '{business.title}' has been deleted successfully.")
+    except Business.DoesNotExist:
+        messages.error(request, "The requested business does not exist.")
+    except Exception as e:
+        logger.error(f"Error deleting business {business_id}: {str(e)}", exc_info=True)
+        messages.error(request, "An error occurred while deleting the business.")
+    return redirect('business_list')
+
 
 @csrf_exempt
 def generate_description(request):
@@ -1647,15 +1716,10 @@ class UploadScrapingResultsView(View):
         if not results_file.name.endswith('.json'):
             messages.error(request, 'Invalid file type. Please upload a JSON file.')
             return redirect('upload_scraping_results')
-        from pathlib import Path
-        # Usar Path para manejar las rutas de manera segura
-        results_dir = Path(settings.MEDIA_ROOT) / 'scraping_results' / str(task.id)
-        results_dir.mkdir(parents=True, exist_ok=True)
-        file_path = results_dir / results_file.name
 
         try:
-            with file_path.open('r') as f:
-                data = json.load(f)
+            # Read JSON data from the uploaded file directly
+            data = json.load(results_file)
 
             if 'local_results' in data:
                 for business_data in data['local_results']:
@@ -1663,7 +1727,11 @@ class UploadScrapingResultsView(View):
             else:
                 raise ValueError("Invalid JSON structure")
 
-            task.file.save(results_file.name, File(file_path.open('rb')))
+            # Reset the file pointer to the beginning before saving
+            results_file.seek(0)
+
+            # Save the uploaded file to the task's file field
+            task.file.save(results_file.name, ContentFile(results_file.read()))
             task.save()
 
             messages.success(request, 'File uploaded and processed successfully.')
@@ -1673,9 +1741,11 @@ class UploadScrapingResultsView(View):
             messages.error(request, 'Invalid JSON file. Please upload a valid JSON file.')
         except Exception as e:
             messages.error(request, f'An error occurred: {str(e)}')
+            # Optionally log the exception for debugging
+            traceback.print_exc()
 
         return redirect('upload_scraping_results')
-
+    
 def task_status(request, task_id):
     task = ScrapingTask.objects.get(id=task_id)
     return render(request, 'automation/task_status.html', {'task': task})

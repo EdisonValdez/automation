@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Completed</title>
+</head>
+<body>
+    <h1>Task Completed: {{ task_name }}</h1>
+    <p>Hello,</p>
+    <p>We are pleased to inform you that the task "<strong>{{ task_name }}</strong>" (ID: {{ task_id }}) has been successfully completed on {{ completed_at|date:"F j, Y, g:i a" }}.</p>
+    <p>You can review the details by logging into your <a href="{{ dashboard_url }}">dashboard</a>.</p>
+    <p>Thank you,<br>Local Secrets Team</p>
+</body>
+</html>

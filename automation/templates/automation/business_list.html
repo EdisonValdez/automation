@@ -28,7 +28,7 @@
                            
                             <thead>
                                 <tr class="top">
-                                    <th>ID</th>
+                                   
                                     <th>Business Name</th>
                                     <th>Category</th> 
                                     <th>Address</th>
@@ -38,7 +38,7 @@
                                     <th>Action</th>
                                 </tr>
                                 <tr> 
-                                    <th><input type="text" placeholder="Search ID" /></th>
+                             
                                     <th><input type="text" placeholder="Search Business Name" /></th>
                                     <th><input type="text" placeholder="Search Category" /></th>
                                     <th><input type="text" placeholder="Search Address" /></th>
@@ -52,17 +52,17 @@
                             <tbody>
                                 {% for business in businesses %}
                                 <tr class="{% if forloop.counter0|divisibleby:2 %}even{% else %}odd{% endif %}">
-                                    <td><a href="{% url 'business_detail' business.id %}">{{ business.id }}</a></td>
-                                    <td><a href="{% url 'business_detail' business.id %}">{{ business.title }}</a></td>
+                       
+                                    <td><a href="{% url 'business_detail' business.id %}">({{ business.id }}) - {{ business.title }}</a></td>
                                     <td>{{ business.category_name }}</td>
-                                    <td>{{ business.address }}</td>
+                                    <td>{{ business.address|truncatechars:20 }}</td>
                                     <td>{{ business.destination }} </td>
                                     <td>{{ business.city }} </td>
                                     <td>
                                         <p class="{% if business.get_status_display == 'Discarded' %} color-9 {% elif business.get_status_display == 'Pending' %} color-1 {% elif business.get_status_display == 'Completed' %} color-3 {% else %} color-4 {% endif %}">
                                         {{ business.get_status_display }}
                                         </p>
-                                    </td>
+                                    </td> 
                                     <td>
                                         <div class="dropdown">
                                             <a href="#" class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">

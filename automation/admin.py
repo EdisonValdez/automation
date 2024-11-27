@@ -51,6 +51,16 @@ class ReviewInline(admin.TabularInline):
     model = Review
     extra = 0
 
+@admin.action(description='Move businesses with invalid descriptions to PENDING')
+def move_to_pending(modeladmin, request, queryset):
+    updated_count = queryset.filter(
+        status__in=['REVIEWED', 'IN_PRODUCTION'],
+        description__in=[None, '', 'None']
+    ).update(status='PENDING')
+    modeladmin.message_user(request, f"{updated_count} businesses moved to PENDING")
+ 
+    
+
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
     list_display = ('project_title', 'level', 'main_category', 'status', 'country', 'destination', 'city', 'task', 'scraped_at')
@@ -58,6 +68,7 @@ class BusinessAdmin(admin.ModelAdmin):
     search_fields = ('project_title', 'main_category__title', 'subcategory__title')
     readonly_fields = ('scraped_at',)
     inlines = [CategoryInline, OpeningHoursInline, AdditionalInfoInline, ImageInline, ReviewInline]
+    actions = [move_to_pending]
 
     # Assuming 'project_title' is the actual field name you want to display
     def get_title(self, obj):

@@ -46,10 +46,9 @@
                         <table class="table table-vcenter table-bordered dataTable" id="task-profile">
 
                             <thead>
-                                <tr class="top">
-                                    <th>ID</th>
+                                <tr class="top">                            
                                     <th>Project Title</th>
-                                    <th>Counts</th>
+                                    <th># of businesses</th>
                                     <th>Level</th>
                                     <th>Category</th>
                                     <th>Subcategory</th>
@@ -59,8 +58,7 @@
                                     <th>Status</th>
                                     <th>Translation Status</th>
                                 </tr>
-                                <tr> 
-                                    <th><input type="text" placeholder="Search ID" /></th>
+                                <tr>  
                                     <th><input type="text" placeholder="Search Project Title" /></th>
                                     <th><input type="text" placeholder="Search Counts" /></th>
                                     <th><input type="text" placeholder="Search Level" /></th>
@@ -74,12 +72,10 @@
                                    
                                 </tr>
                             </thead>
-
                             <tbody>
                                 {% for task in tasks %}
-                                <tr>
-                                    <td><a href="{% url 'task_detail' task.id %}">{{ task.id }}</a></td>
-                                    <td><a href="{% url 'task_detail' task.id %}">{{ task.project_title|truncatechars:30}}</a></td>
+                                <tr> 
+                                    <td><a href="{% url 'task_detail' task.id %}">({{ task.id }}) - {{ task.project_title|truncatechars:30}}</a></td>
                                     <td> {{ task.businesses.count }} </td>
                                     <td>{{ task.level }}</td> 
                                     <td>{{ task.main_category }}</td>

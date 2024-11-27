@@ -218,7 +218,8 @@ class ScrapingTask(models.Model):
 class ActiveBusinessManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_deleted=False)
-    
+
+
 class Business(models.Model):
     STATUS_CHOICES = [
         ('DISCARDED', 'Discarded'),
@@ -226,13 +227,25 @@ class Business(models.Model):
         ('REVIEWED', 'Reviewed'),
         ('IN_PRODUCTION', 'In Production'),
     ]
+    SITE_TYPES_CHOICES = [
+        ('PLACE', 'Place'),
+        ('EVENT', 'Event'),
+    ]
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    site_types = models.CharField(max_length=20, choices=SITE_TYPES_CHOICES, default='PLACE')  # New field
+
+    # Other existing fields
     task = models.ForeignKey(ScrapingTask, on_delete=models.CASCADE, related_name='businesses')
     project_id = models.UUIDField(editable=False)
     project_title = models.CharField(max_length=255)
     level = models.CharField(max_length=255, null=True, blank=True)
+    translated_level = models.CharField(max_length=255, null=True, blank=True)  # Inline translation for level
     main_category = models.CharField(max_length=500, null=True, blank=True)
+    translated_main_category = models.CharField(max_length=500, null=True, blank=True)  # Translation for main category
     tailored_category = models.CharField(max_length=500, blank=True, null=True)
+    translated_tailored_category = models.CharField(max_length=500, blank=True, null=True)  # Translation for tailored category
+
     search_string = models.CharField(max_length=255)
     rank = models.IntegerField(default=0)
     search_page_url = models.URLField(max_length=500, blank=True, null=True)
@@ -240,7 +253,10 @@ class Business(models.Model):
     
     # Business-specific fields
     title = models.CharField(max_length=255)
+    translated_title = models.CharField(max_length=255, blank=True, null=True)  # Translation for title
     description = models.TextField(blank=True, null=True)
+    translated_description = models.TextField(blank=True, null=True)  # Translation for description
+
     price = models.CharField(max_length=50, blank=True, null=True)
     category_name = models.CharField(max_length=100, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True, null=True)
@@ -293,7 +309,6 @@ class Business(models.Model):
     def delete(self, *args, **kwargs):
         self.is_deleted = True
         self.save()
-        # Soft delete related images
         self.images.update(is_deleted=True)
     
     def __str__(self):

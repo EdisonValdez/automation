@@ -23,36 +23,24 @@
                         <button type="button" class="btn btn-link" onclick="toggleEdit('title')">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
-                    </h5>
-    
-                    <!-- Status -->
-                    <p>
-                        <strong>Status:
-                            <button type="button" class="btn btn-link" onclick="toggleEdit('status')">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                        </strong>
-                        <span id="status-display">{{ business.get_status_display }}</span>
-                        <select name="status" id="status-edit" class="form-control" style="display:none;">
-                            {% for status_code, status_name in status_choices %}
-                                {% if status_code != 'IN_PRODUCTION' %}
-                                    <!-- Show all statuses except 'IN_PRODUCTION' -->
+                    </h5>    
+                    <!-- Status --> 
+                        <p>
+                            <strong>Status:
+                                <button type="button" class="btn btn-link" onclick="toggleEdit('status')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                            </strong>
+                            <span id="status-display">{{ business.get_status_display }}</span>
+                            
+                            <select name="status" id="status-edit" class="form-control">
+                                {% for status_code, status_name in status_choices %}
                                     <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
                                         {{ status_name }}
                                     </option>
-                                {% elif is_admin %}
-                                    <!-- If user is admin, show 'IN_PRODUCTION' -->
-                                    <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
-                                        {{ status_name }}
-                                    </option>
-                                {% elif business.status == status_code %}
-                                    <!-- If the business is already 'IN_PRODUCTION', show it but disable selection -->
-                                    <option value="{{ status_code }}" selected disabled>{{ status_name }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </p>
-    
+                                {% endfor %}
+                            </select>
+                        </p>    
                     <!-- City -->
                     <p>
                         <strong>City:
@@ -529,60 +517,38 @@
 
  <!--change-business-status-->
  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const statusDisplay = document.getElementById('business-status-display');
-        const statusOptions = document.querySelectorAll('.status-option');
-        const businessId = '{{ business.id }}';
-    
-        statusOptions.forEach(option => {
-            option.addEventListener('click', function() {
-                const newStatus = this.getAttribute('data-status');
-                const newStatusText = this.textContent.trim();
-    
-                fetch(`/change-business-status/${businessId}/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: `status=${newStatus}`
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        statusDisplay.textContent = newStatusText + ' ';
-                        const icon = document.createElement('i');
-                        icon.className = 'bx bx-caret-down';
-                        statusDisplay.appendChild(icon);
-                        toastr.success(`Business status updated to ${data.new_status}`);
-                    } else {
-                        toastr.error('Error updating business status');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    toastr.error('An error occurred while updating the status');
-                });
-            });
+document.addEventListener('DOMContentLoaded', function () {
+    const statusDisplay = document.getElementById('business-status-display');
+    const statusOptions = document.querySelectorAll('.status-option');
+    const businessId = '{{ business.id }}';
+
+    statusOptions.forEach(option => {
+        option.addEventListener('click', function () {
+            const newStatus = this.getAttribute('data-status');
+            const newStatusText = this.textContent.trim();
+            updateStatus(businessId, newStatus, statusDisplay, successCallback);
         });
-    
-        // Function to get CSRF token from cookies
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+    });
+
+    // Function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
-    });
+        return cookieValue;
+    }
+});
+
 </script>
+
  <!--change-business-status-->
  
 <!--Edit-business-->          
@@ -636,8 +602,7 @@
         }
     }
 }
-
-
+ 
     function editOperatingHours() {
         isOperatingHoursEditMode = !isOperatingHoursEditMode;
         localStorage.setItem('isOperatingHoursEditMode', isOperatingHoursEditMode);
@@ -814,8 +779,52 @@
     }
 });
 </script>
-
 <!--Edit-business-->
+
+<!-- Update Status separately-->
+ <script>
+function updateStatus(businessId, newStatus, statusDisplay) {
+    // Fetch current description dynamically
+    const businessDescription = document.querySelector('textarea[name="description"]').value.trim();
+
+    // Validate status update
+    if (['REVIEWED', 'IN_PRODUCTION'].includes(newStatus) && (!businessDescription || businessDescription === "None")) {
+        toastr.error(`Cannot move to ${newStatus}: Description is missing.`);
+        return; // Stop execution
+    }
+
+    // Proceed with status update
+    fetch(`/change-business-status/${businessId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: `status=${newStatus}`,
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Update status display
+                statusDisplay.textContent = `${data.new_status} `;
+                const icon = document.createElement('i');
+                icon.className = 'bx bx-caret-down';
+                statusDisplay.appendChild(icon);
+
+                toastr.success(`Status updated to ${data.new_status}`);
+                if (successCallback) successCallback();
+            } else {
+                toastr.error(data.message || 'Error updating business status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error('An error occurred while updating the status.');
+        });
+}
+
+</script>
+
 <script>
     $(document).ready(function() {
         // Initialize Select2 on elements with class 'select2'
@@ -827,5 +836,81 @@
     });
   </script>
   
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const statusDropdown = document.getElementById('status-edit');
+        const statusDisplay = document.getElementById('status-display');
+        const businessId = '{{ business.id }}';
+    
+        // Listen for changes on the dropdown
+        statusDropdown.addEventListener('change', function () {
+            const newStatus = this.value;
+    
+            // Fetch the current description dynamically
+            const businessDescription = document.querySelector('textarea[name="description"]').value.trim();
+    
+            // Validate description before proceeding
+            if (
+                (newStatus === 'IN_PRODUCTION' || newStatus === 'REVIEWED') &&
+                (!businessDescription || businessDescription === 'None')
+            ) {
+                toastr.error('Description is mandatory for moving to IN_PRODUCTION or REVIEWED.');
+                this.value = '{{ business.status }}'; // Revert the dropdown to the current status
+                return; // Stop further execution
+            }
+    
+            // Proceed with the AJAX request
+            updateBusinessStatus(businessId, newStatus);
+        });
+    
+        // Function to update the business status via AJAX
+        function updateBusinessStatus(businessId, newStatus) {
+            fetch(`/change-business-status/${businessId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: `status=${newStatus}`,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Update the status display
+                        statusDisplay.textContent = data.new_status + ' ';
+                        const icon = document.createElement('i');
+                        icon.className = 'bx bx-caret-down';
+                        statusDisplay.appendChild(icon);
+                        toastr.success(`Business status updated to ${data.new_status}`);
+                    } else {
+                        toastr.error(data.message || 'Error updating business status');
+                        statusDropdown.value = '{{ business.status }}'; // Revert to previous status
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('An error occurred while updating the status');
+                    statusDropdown.value = '{{ business.status }}'; // Revert to previous status
+                });
+        }
+    
+        // Helper function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+    </script>
+    
 {% endblock %}
 

@@ -64,8 +64,8 @@
     <div class="error-container">
         <h1>Oops! Something went wrong.</h1>
         <p>We're sorry, but the page you're looking for cannot be found.</p>
-        <p>Please check the URL, or <a href="{% url 'upload_file' %}">go back to the homepage</a>.</p>
-        <a href="{% url 'upload_file' %}" class="home-btn">Return Home</a>
+        <p>Please check the URL, or {%if user.is_admin %}<a href="{% url 'dashboard' %}"> {% else %} <a href="{% url 'ambassador_dashboard' %}"> {% endif %}</a> go back to the dashboard</a>.</p>
+        <a href="{% url 'dashboard' %}"  class="home-btn"> {% else %} <a  class="home-btn" href="{% url 'ambassador_dashboard' %}"> {% endif %}Return Home</a>
     </div>
 </body>
 </html>

@@ -66,6 +66,7 @@ from django.utils.text import slugify
 
 
 SERPAPI_KEY = settings.SERPAPI_KEY  
+DEFAULT_IMAGES = settings.DEFAULT_IMAGES
 OPENAI_API_KEY = settings.TRANSLATION_OPENAI_API_KEY
 openai.api_key = OPENAI_API_KEY   
 
@@ -407,8 +408,8 @@ def download_images(business, local_result):
             logger.error(f"API Error fetching photos for business '{business.title}': {photos_results['error']}")
             return image_paths
 
-        # Limit photos to a maximum of 10 images
-        photos = photos_results.get('photos', [])[:10]
+        # Limit photos to a maximum of DEFAULT_IMAGES images
+        photos = photos_results.get('photos', [])[:DEFAULT_IMAGES]
         if not photos:
             logger.info(f"No photos found for business {business.id} in fetched results")
             return image_paths

@@ -23,6 +23,7 @@ urlpatterns = [
 
     path('task/<int:id>/', views.TaskDetailView.as_view(), name='task_detail'),
     #path('business/<int:business_id>/', views.BusinessDetailView.as_view(), name='business_detail'),
+    path('business-details/<int:business_id>/', views.business_details, name='business_details'),    
     path('business/<int:business_id>/', views.business_detail, name='business_detail'),
     path('update-image-status/', views.update_image_status, name="update_image_status"),
     path('generate-description', views.generate_description, name="generate_description"),
@@ -67,7 +68,7 @@ urlpatterns = [
     path('password-change-done/', views.CustomPasswordChangeDoneView.as_view(), name='password_change_done'),
     path('businesses/<int:business_id>/delete/', views.delete_business, name='delete_business'),
     path('businesses/<int:business_id>/edit/', views.edit_business, name='edit_business'),
-
+    
     path('destinations/', views.destination_management, name='destination_management'),
     path('destinations-create/', views.create_destination, name='create_destination'),
     path('destinations/<int:destination_id>/edit/', views.edit_destination, name='edit_destination'),
