@@ -782,7 +782,13 @@ def save_business(task, local_result, query, form_data=None):
 
         for api_field, model_field in field_mapping.items():
             if local_result.get(api_field) is not None:
-                business_data[model_field] = local_result[api_field]
+
+                # if address exist populate street
+                if address := local_result.get("address"):
+                    business_data["street"] = str(address).split(",", maxsplit=1)[0]
+                else:
+                    business_data[model_field] = local_result[api_field]
+
         logger.info(f"Business data to be saved: {business_data}")
 
         # Handle GPS coordinates

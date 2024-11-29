@@ -373,6 +373,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+const userId = "{{ user.id }}"
+
 function updateBusinessStatus(businessId, newStatus, oldStatus) {
     fetch(`/update-business-status/${businessId}/`, {
         method: 'POST',
@@ -381,7 +383,8 @@ function updateBusinessStatus(businessId, newStatus, oldStatus) {
             'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({
-            status: newStatus
+            status: newStatus,
+            userId: userId
         })
     })
     .then(response => response.json())

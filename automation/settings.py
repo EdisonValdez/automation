@@ -9,15 +9,17 @@ load_dotenv(dotenv_path='./.env')
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Environment Variables
-#DEBUG = os.getenv('DEBUG', 'False').lower() == 'false' - With this one the deployment failed!
-#DEBUG = os.getenv('DEBUG', 'True').lower() == 'true' - NO It is showing the debug page
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  
- 
-DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower() == 'true'  #original in pro set true
-USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'  # Set to 'True' in production when using S3
+# DEBUG = os.getenv('DEBUG', 'False').lower() == 'false' - With this one the deployment failed!
+# DEBUG = os.getenv('DEBUG', 'True').lower() == 'true' - NO It is showing the debug page
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower(
+) == 'true'  # original in pro set true
+# Set to 'True' in production when using S3
+USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 ALLOWED_HOSTS = ["*"]
- 
+
 # Installed Apps
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -65,23 +67,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'automation.wsgi.application'
 
 
-
 # Configuración de la base de datos
 if DEVELOPMENT_MODE:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'automation-18102024'),
-            'USER': os.getenv('DB_USER', 'postgres'),
-            'PASSWORD': os.getenv('DB_PASSWORD', 'Thesecret1'),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'NAME': os.getenv('DB_NAME', 'automationdevdb'),
+            'USER':  os.getenv('DB_USER', 'localsecretsfe'),
+            'PASSWORD': os.getenv('DB_PASSWORD', '12345678A'),
+            'HOST': os.getenv('DB_HOST', '192.168.149.56'),
             'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
 else:
     DATABASES = {
-        'default': dj_database_url.parse(os.getenv('DATABASE_URL'), conn_max_age=600, ssl_require=True)
-    }
+        'default': dj_database_url.parse(
+            os.getenv('DATABASE_URL'),
+            conn_max_age=600, ssl_require=True)}
 
 # Static and Media file settings
 STATIC_URL = '/static/'
@@ -95,16 +97,19 @@ if USE_S3:
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
     AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-    AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', 'https://nyc3.digitaloceanspaces.com')
+    AWS_S3_ENDPOINT_URL = os.getenv(
+        'AWS_S3_ENDPOINT_URL', 'https://nyc3.digitaloceanspaces.com')
     AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'nyc3')
     AWS_S3_SIGNATURE_VERSION = 's3v4'
 
     # Correctly handle S3 custom domain
-    AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', f"{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT_URL.replace('https://', '')}")
+    AWS_S3_CUSTOM_DOMAIN = os.getenv(
+        'AWS_S3_CUSTOM_DOMAIN',
+        f"{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_ENDPOINT_URL.replace('https://', '')}")
 
     AWS_DEFAULT_ACL = 'public-read'
     AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-    
+
     MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
 else:
     # Local file storage for development
@@ -170,10 +175,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.mailersend.net')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'communications@localsecrets.travel')
+EMAIL_HOST_USER = os.getenv(
+    'EMAIL_HOST_USER', 'communications@localsecrets.travel')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'Lex7Mi70bZkyhuUU')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'communications@localsecrets.travel')
-TOKEN="mlsn.8180f5205222863e3187181245657328c6b7c29b64bb398549fb8725e2112aed"
+DEFAULT_FROM_EMAIL = os.getenv(
+    'DEFAULT_FROM_EMAIL', 'communications@localsecrets.travel')
+TOKEN = "mlsn.8180f5205222863e3187181245657328c6b7c29b64bb398549fb8725e2112aed"
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 FILE_UPLOAD_PERMISSIONS = 0o644
@@ -195,7 +202,7 @@ CACHES = {
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
- 
+
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -239,13 +246,14 @@ TRANSLATION_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
 GENAI_OPENAI_API_KEY = os.getenv('GENAI_OPENAI_API_KEY')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 SERPAPI_KEY = os.getenv('SERPAPI_KEY')
- 
+
 DEFAULT_IMAGES = 3
- 
+
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME')
 AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
 
- 
+
+LOCAL_SECRET_BASE_URL = "http://127.0.0.1:8030"
