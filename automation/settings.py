@@ -256,5 +256,5 @@ AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME')
 AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
 
 
-LOCAL_SECRET_BASE_URL = "http://127.0.0.1:8004"
-SIGATURE_SECRET = "9HZZoQp6j4WqaFHiQAOPadvbnfrwqiourvb"
+LOCAL_SECRET_BASE_URL =  os.environ.get('LOCAL_SECRET_BASE_URL', "http://127.0.0.1:8004")
+SIGATURE_SECRET = os.environ.get('SIGATURE_SECRET', "9HZZoQp6j4WqaFHiQAOPadvbnfrwqiourvb")
