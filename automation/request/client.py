@@ -4,6 +4,7 @@ import hmac
 import json
 import time
 import requests
+from typing import Tuple
 from automation import settings
 from automation.request.exception import InvalidRequest
 
@@ -16,7 +17,7 @@ class ResourceAccessSignature:
     __namespace = "localsecret"
 
     def __init__(self):
-        self.__secret_key = settings.SECRET_KEY
+        self.__secret_key = settings.SIGATURE_SECRET
 
     def generate_signature(self, topic: str):
         """
@@ -81,29 +82,32 @@ class RequestClient:
                 return data
         return data
 
-    def request(self, namespace: str, **kwargs):
+    def request(self, topic: str, business_data:dict)-> Tuple[bool, str]:
         """
-        Make a POST request to the specified namespace and topic with the given parameters.
+        Make a POST request to the specified with the given parameters.
         """
-        # rs = ResourceAccessSignature()
-        # timestamp, signature = rs.generate_signature(topic)
 
-        url = f"{settings.LOCAL_SECRET_BASE_URL}/api/custom-request/{namespace}"
+        # Generate and validate access signature for the request
+        rs = ResourceAccessSignature()
+        timestamp, signature = rs.generate_signature(topic)
+
+        url = f"{settings.LOCAL_SECRET_BASE_URL}/api/custom-request/{topic}"
         header = {
             "Content-Type": "application/json",
-            # "X-Signature": signature,
-            # "X-Timestamp": str(timestamp)
+            "X-Signature": signature,
+            "X-Timestamp": str(timestamp)
         }
-        result = requests.post(
-            url, data=json.dumps(kwargs),
+    
+        response = requests.post(
+            url, data=business_data,
             headers=header, verify=False, timeout=10)
-        if result.status_code == 200:
-            return self._decode_response(result.text)
-        else:
-            raise InvalidRequest(
-                "Unable to fetch data",
-                {
-                    "error_code": 9302,
-                    "message": str(result.text),
-                },
-            )
+        
+        try:
+            response.raise_for_status()
+            response_data = response.json()
+            
+            if response_data.get("hasError") is True:
+                raise ValueError(response_data.get("message"))     
+        
+        except requests.exceptions.HTTPError as e:
+            raise 
