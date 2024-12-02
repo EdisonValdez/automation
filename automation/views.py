@@ -793,7 +793,6 @@ def update_business_status(request, business_id):
                     'message': f'Cannot move to {new_status}: Description is missing. Status remains {business.status}.'
                 }, status=400)
 
-        print("inside api---------------")
 
         # Validate and save the new status
         if new_status in dict(Business.STATUS_CHOICES):
