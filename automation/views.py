@@ -44,6 +44,7 @@ from .serpapi_integration import fetch_google_events
 from .models import Event  
 from automation.request.client import RequestClient
 from automation import constants as const
+from automation.helper import datetime_serializer
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
@@ -799,31 +800,30 @@ def update_business_status(request, business_id):
             old_status = business.status
             business.status = new_status
             business.save()
-
+            
+            # Move buisness record to application
             if new_status == 'IN_PRODUCTION':
-                def datetime_serializer(obj):
-                    """Recursively convert datetime objects to ISO format"""
-
-                    if isinstance(obj, datetime):
-                        return obj.isoformat()
-                    raise TypeError(f"Type {type(obj)} not serializable")
-
                 business_data = model_to_dict(business)
 
                 # Fetch country details
                 country = Country.objects.filter(
                     name__iexact=business_data["country"]).last()
-
                 country_data = model_to_dict(country)
                 
                 # Fetch user details
                 user = CustomUser.objects.filter(id=int(user_id)).first()
                 user_data = model_to_dict(user)
 
+                # Fetch image details
+                image_urls = list(
+                    Image.objects.filter(business=business_id).all().values_list('image_url', flat=True)
+                )
+
                 result_data = {
                     **business_data,
                     'country': country_data,
-                    'user': user_data
+                    'user': user_data,
+                    'images_urls': image_urls
                 }
 
                 # Convert business data to JSON
