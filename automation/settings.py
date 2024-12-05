@@ -72,11 +72,11 @@ if DEVELOPMENT_MODE:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'automationdevdb'),
-            'USER':  os.getenv('DB_USER', 'localsecretsfe'),
-            'PASSWORD': os.getenv('DB_PASSWORD', '12345678A'),
-            'HOST': os.getenv('DB_HOST', '192.168.149.56'),
-            'PORT': os.getenv('DB_PORT', '5432'),
+            'NAME': os.getenv('DB_NAME'),
+            'USER':  os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),
+            'PORT': os.getenv('DB_PORT'),
         }
     }
 else:
@@ -256,5 +256,5 @@ AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME')
 AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
 
 
-LOCAL_SECRET_BASE_URL =  os.environ.get('LOCAL_SECRET_BASE_URL', "http://127.0.0.1:8004")
-SIGATURE_SECRET = os.environ.get('SIGATURE_SECRET', "9HZZoQp6j4WqaFHiQAOPadvbnfrwqiourvb")
+LOCAL_SECRET_BASE_URL =  os.environ.get('LOCAL_SECRET_BASE_URL')
+SIGATURE_SECRET = os.environ.get('SIGATURE_SECRET')

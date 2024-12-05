@@ -100,7 +100,7 @@ class RequestClient:
     
         response = requests.post(
             url, data=business_data,
-            headers=header, verify=False, timeout=10)
+            headers=header, verify=False, timeout=20)
         
         try:
             response.raise_for_status()
