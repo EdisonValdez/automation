@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'storages',
 ]
 
+CSRF_TRUSTED_ORIGINS = ["https://localsecrets.zoondia.org"]
+
 # Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
