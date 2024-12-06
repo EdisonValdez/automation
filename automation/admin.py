@@ -71,7 +71,7 @@ class BusinessAdmin(admin.ModelAdmin):
 
     list_filter = ('status', 'main_category', 'level', 'country', 'city', 'task')
     search_fields = ('project_title', 'main_category__title', 'subcategory__title')
-    readonly_fields = ('scraped_at',)
+    readonly_fields = ('scraped_at', 'level_title', 'level_type')
     inlines = [CategoryInline, OpeningHoursInline, AdditionalInfoInline, ImageInline, ReviewInline]
     actions = [move_to_pending]
 
