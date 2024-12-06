@@ -259,12 +259,23 @@ class BusinessForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
-
+    level_title = forms.CharField(
+        label="Level Title",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'})
+    )
+    level_type = forms.CharField(
+        label="Level Type",
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'})
+    )
     class Meta:
         model = Business
         fields = [
             'status', 
             'title', 
+            'level_title', 
+            'level_type', 
             'city', 
             'price', 
             'phone',
@@ -297,6 +308,10 @@ class BusinessForm(forms.ModelForm):
         self.fields['tailored_category'].choices = [(cat.title, cat.title) for cat in subcategories]
         if self.instance and self.instance.tailored_category:
             self.fields['tailored_category'].initial = [cat.strip() for cat in self.instance.tailored_category.split(',')]
+
+        if self.instance and self.instance.task:
+            self.fields['level_title'].initial = self.instance.task.level.title if self.instance.task.level else ""
+            self.fields['level_type'].initial = self.instance.task.level.site_types if self.instance.task.level else ""
 
     def clean_main_category(self):
         data = self.cleaned_data.get('main_category', [])

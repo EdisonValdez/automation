@@ -9,12 +9,14 @@ load_dotenv(dotenv_path='./.env')
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Environment Variables
-#DEBUG = os.getenv('DEBUG', 'False').lower() == 'false' - With this one the deployment failed!
-#DEBUG = os.getenv('DEBUG', 'True').lower() == 'true' - NO It is showing the debug page
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  
-#DEBUG = False 
-DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower() == 'true'  #original in pro set true
-USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'  # Set to 'True' in production when using S3
+# DEBUG = os.getenv('DEBUG', 'False').lower() == 'false' - With this one the deployment failed!
+# DEBUG = os.getenv('DEBUG', 'True').lower() == 'true' - NO It is showing the debug page
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+
+DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower(
+) == 'true'  # original in pro set true
+# Set to 'True' in production when using S3
+USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 ALLOWED_HOSTS = ["*"]
 
@@ -71,12 +73,13 @@ WSGI_APPLICATION = 'automation.wsgi.application'
 if DEVELOPMENT_MODE:
     DATABASES = {
         'default': {
+
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER':  os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),
-            'PORT': os.getenv('DB_PORT'),
+            'NAME': os.getenv('DB_NAME', 'automation-18102024'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'Thesecret1'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
 else:
@@ -184,7 +187,7 @@ TOKEN = "mlsn.8180f5205222863e3187181245657328c6b7c29b64bb398549fb8725e2112aed"
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 FILE_UPLOAD_PERMISSIONS = 0o644
-REQUEST_TIMEOUT = 120 
+REQUEST_TIMEOUT = 120  # in seconds
 
 # Database Options
 DATABASE_OPTIONS = {
@@ -269,6 +272,5 @@ CELERYD_TASK_SOFT_TIME_LIMIT = 3500
 
 CELERY_BROKER_URL = os.environ.get('REDIS_URL')
 
-
-LOCAL_SECRET_BASE_URL =  os.environ.get('LOCAL_SECRET_BASE_URL')
+LOCAL_SECRET_BASE_URL = os.environ.get('LOCAL_SECRET_BASE_URL')
 SIGATURE_SECRET = os.environ.get('SIGATURE_SECRET')

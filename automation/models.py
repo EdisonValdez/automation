@@ -13,7 +13,10 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
-
+SITE_TYPES_CHOICES = [
+    ('PLACE', 'Place'),
+    ('EVENT', 'Event'),
+]
 
 class UserManager(BaseUserManager):
     def create_user(self, mobile, password=None, **extra_fields):
@@ -124,9 +127,23 @@ class UserRole(models.Model):
  
 class Level(models.Model):
     title = models.CharField(max_length=100)
+    site_types = models.CharField(
+        max_length=20,
+        choices=SITE_TYPES_CHOICES,
+        default='PLACE'
+    )
 
     def __str__(self):
-        return self.title
+        return f"{self.title} - {self.site_types}"
+
+    def get_categories(self):
+        """Return all categories associated with this level."""
+        return Category.objects.filter(level=self)
+
+    class Meta:
+        verbose_name = "Level"
+        verbose_name_plural = "Levels"
+
 
 class Category(models.Model):
     title = models.CharField(max_length=100)
@@ -184,6 +201,12 @@ class ScrapingTask(models.Model):
 
     objects = ActiveTaskManager()
     all_objects = models.Manager()
+
+    def get_level_name(self):
+        return self.level.title if self.level else "No Level"
+    
+    def get_level_type(self):
+        return self.level.site_types if self.level else "No Type"
 
     def delete(self, *args, **kwargs):
         self.is_deleted = True
@@ -304,6 +327,17 @@ class Business(models.Model):
 
     objects = ActiveBusinessManager()
     all_objects = models.Manager()
+
+    @property
+    def level_title(self):
+        """Retrieve the title of the associated Level."""
+        return self.task.level.title if self.task and self.task.level else None
+
+    @property
+    def level_type(self):
+        """Retrieve the type of the associated Level."""
+        return self.task.level.site_types if self.task and self.task.level else None
+        
 
     def delete(self, *args, **kwargs):
         self.is_deleted = True

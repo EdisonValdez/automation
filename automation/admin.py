@@ -10,7 +10,10 @@ from django import forms
 from .models import CustomUser, Feedback, UserRole, Destination, Business, BusinessCategory, OpeningHours, AdditionalInfo, Image, Review, ScrapingTask, Category, Level
 
 logger = logging.getLogger(__name__)
-
+SITE_TYPES_CHOICES = [
+    ('PLACE', 'Place'),
+    ('EVENT', 'Event'),
+]
 class CsvImportForm(forms.Form):
     csv_upload = forms.FileField()
 
@@ -63,29 +66,53 @@ def move_to_pending(modeladmin, request, queryset):
 
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
-    list_display = ('project_title', 'level', 'main_category', 'status', 'country', 'city', 'task', 'scraped_at')
+    list_display = ('project_title', 'level', 'level_title', 'level_type', 'main_category', 'status', 'country', 'city', 'task', 'scraped_at')
+    readonly_fields = ('scraped_at', 'level_title', 'level_type')
+
     list_filter = ('status', 'main_category', 'level', 'country', 'city', 'task')
     search_fields = ('project_title', 'main_category__title', 'subcategory__title')
     readonly_fields = ('scraped_at',)
     inlines = [CategoryInline, OpeningHoursInline, AdditionalInfoInline, ImageInline, ReviewInline]
     actions = [move_to_pending]
 
-    # Assuming 'project_title' is the actual field name you want to display
-    def get_title(self, obj):
-        return obj.project_title
-    get_title.short_description = 'Title'
+    def level_title(self, obj):
+        if obj.task and obj.task.level:
+            print(f"Level: {obj.task.level.title}")  
+            return obj.task.level.title
+        print("No Level found")  
+        return "No Level"
 
-    # Method to get category name
+    def level_type(self, obj):
+        """Fetch the level type from the task's level."""
+        return obj.level_type if hasattr(obj, 'level_type') else "No Type"
+
+    level_title.short_description = "Level Title"
+    level_type.short_description = "Level Type"    
+
     def get_category_name(self, obj):
         return obj.main_category.title if obj.main_category else None
     get_category_name.short_description = 'Category Name'
+
+    def get_queryset(self, request):
+        """Optimize queries by preloading task and level relationships."""
+        qs = super().get_queryset(request)
+        return qs.select_related('task__level') 
  
 @admin.register(ScrapingTask)
 class ScrapingTaskAdmin(admin.ModelAdmin):
-    list_display = ('project_title', 'level', 'main_category', 'subcategory', 'status', 'created_at', 'completed_at')
+    list_display = ('project_title', 'level', 'level_name', 'level_type', 'main_category', 'subcategory', 'status', 'created_at', 'completed_at')
     list_filter = ('main_category', 'tailored_category')
     search_fields = ('project_title', 'main_category', 'tailored_category')
     readonly_fields = ('created_at', 'completed_at', 'status')
+
+    def level_name(self, obj):
+        return obj.level.title if obj.level else "No Level"
+
+    def level_type(self, obj):
+        return obj.level.site_types if obj.level else "No Type"
+
+    level_name.short_description = "Level Name"
+    level_type.short_description = "Level Type"
 
 class BaseCsvImportAdmin(admin.ModelAdmin):
     change_list_template = "admin/change_list_with_import.html"
@@ -228,17 +255,40 @@ class CategoryAdmin(BaseCsvImportAdmin):
 
 @admin.register(Level)
 class LevelAdmin(BaseCsvImportAdmin):
-    list_display = ('title',)
+    list_display = ('title', 'site_types')
     search_fields = ('title',)
+    list_filter = ('site_types',)
 
     def process_row(self, row):
-        if 'ID' not in row or 'Title' not in row:
-            raise KeyError("Missing required fields in CSV")
+        # Validate required fields
+        required_fields = ['ID', 'Title']
+        for field in required_fields:
+            if field not in row:
+                raise KeyError(f"Missing required field '{field}' in CSV")
 
+        # Validate ID is an integer
+        try:
+            row_id = int(row['ID'])
+        except ValueError:
+            raise ValueError(f"Invalid ID '{row['ID']}': Must be an integer")
+
+        # Validate site_types if provided
+        site_types = row.get('Site Types', 'PLACE')  # Default to 'PLACE'
+        if site_types not in dict(SITE_TYPES_CHOICES).keys():
+            raise ValueError(f"Invalid site_types '{site_types}': Must be one of {dict(SITE_TYPES_CHOICES).keys()}")
+
+        # Create or update Level
         level, created = Level.objects.update_or_create(
-            id=row['ID'],
-            defaults={'title': row['Title']}
+            id=row_id,
+            defaults={
+                'title': row['Title'],
+                'site_types': site_types,
+            }
         )
+
+        # Log the operation
+        action = "Created" if created else "Updated"
+        print(f"{action} Level: {level.title} (ID: {level.id})")
 
         return created
 
