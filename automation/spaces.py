@@ -8,10 +8,10 @@ ACCESS_KEY = os.getenv('ACCESS_KEY')
 SECRET_KEY = os.getenv('SECRET_KEY') """
 
 # Configuration variables
-SPACE_NAME = 'businesses'  # Replace with your Space name
-REGION = 'nyc3'  # For example, 'nyc3'
-ACCESS_KEY = 'DO00E6VE8N2FAMUTRGPG'  # Replace with your Access Key
-SECRET_KEY = '634mXJypzlK+JlCsS8N7R2JccVZRwrRnj6J6+dYI4bE'  # Replace with your Secret Key
+SPACE_NAME = 'businesses'  
+REGION = 'nyc3'  
+ACCESS_KEY = 'DO00E6VE8N2FAMUTRGPG'  
+SECRET_KEY = '634mXJypzlK+JlCsS8N7R2JccVZRwrRnj6J6+dYI4bE'  
 
 # Initialize session and client
 session = boto3.session.Session()

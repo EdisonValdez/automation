@@ -64,7 +64,7 @@ class Destination(models.Model):
         blank=True,
         related_name='ambassador_destinations'
     )
-
+ 
     class Meta:
         verbose_name = _('Destination')
         verbose_name_plural = _('Destinations')
@@ -218,8 +218,7 @@ class ScrapingTask(models.Model):
 class ActiveBusinessManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_deleted=False)
-
-
+ 
 class Business(models.Model):
     STATUS_CHOICES = [
         ('DISCARDED', 'Discarded'),
@@ -274,8 +273,6 @@ class Business(models.Model):
     form_destination_id = models.IntegerField(null=True, blank=True)
     form_destination_name = models.CharField(max_length=255, null=True, blank=True)
 
-    destination = models.ForeignKey(Destination, on_delete=models.SET_NULL, null=True, blank=True)
-
     # Other fields
     country_code = models.CharField(max_length=2, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -292,7 +289,7 @@ class Business(models.Model):
     thumbnail = models.URLField(max_length=500, blank=True, null=True)
     types = models.TextField(blank=True, null=True)
     operating_hours = JSONField(null=True, blank=True)
-    service_options = JSONField(null=True, blank=True)
+    service_options = JSONField(null=True, blank=True)    
 
     # Translated fields
     title_esp = models.CharField(max_length=255, blank=True, null=True)
@@ -301,6 +298,8 @@ class Business(models.Model):
     description_esp = models.TextField(blank=True, null=True)
     description_eng = models.TextField(blank=True, null=True)
     description_fr = models.TextField(blank=True, null=True)
+
+    #comments = models.TextField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
 
     objects = ActiveBusinessManager()
@@ -352,7 +351,7 @@ class Image(models.Model):
     local_path = models.CharField(max_length=255, null=True, blank=True)
     order = models.IntegerField(default=0, db_index=True)  # Ensure fast ordering
     thumbnail = models.ImageField(upload_to='thumbnails/', blank=True, null=True)
-    is_approved = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=True)
     is_deleted = models.BooleanField(default=False)
 
     objects = ActiveImageManager()
@@ -446,3 +445,24 @@ class Event(models.Model):
         ordering = ['title']   
         verbose_name = "Event"
         verbose_name_plural = "Events"
+
+class Feedback(models.Model):
+    STATUS_CHOICES = [
+        ('INITIAL', 'Initial'),
+        ('IN_PROGRESS', 'In Progress'),
+        ('DONE', 'Done'),
+    ]
+
+    business = models.ForeignKey('Business', on_delete=models.CASCADE, related_name='feedbacks')
+    content = models.TextField(blank=True, null=True, verbose_name="Feedback Content")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='INITIAL',
+        verbose_name="Feedback Status"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Feedback for {self.business.title} - {self.get_status_display()}"

@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
 from django import forms
-from .models import CustomUser, UserRole, Destination, Business, BusinessCategory, OpeningHours, AdditionalInfo, Image, Review, ScrapingTask, Category, Level
+from .models import CustomUser, Feedback, UserRole, Destination, Business, BusinessCategory, OpeningHours, AdditionalInfo, Image, Review, ScrapingTask, Category, Level
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +63,8 @@ def move_to_pending(modeladmin, request, queryset):
 
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
-    list_display = ('project_title', 'level', 'main_category', 'status', 'country', 'destination', 'city', 'task', 'scraped_at')
-    list_filter = ('status', 'main_category', 'level', 'country', 'destination', 'city', 'task')
+    list_display = ('project_title', 'level', 'main_category', 'status', 'country', 'city', 'task', 'scraped_at')
+    list_filter = ('status', 'main_category', 'level', 'country', 'city', 'task')
     search_fields = ('project_title', 'main_category__title', 'subcategory__title')
     readonly_fields = ('scraped_at',)
     inlines = [CategoryInline, OpeningHoursInline, AdditionalInfoInline, ImageInline, ReviewInline]
@@ -241,6 +241,13 @@ class LevelAdmin(BaseCsvImportAdmin):
         )
 
         return created
+
+
+@admin.register(Feedback)
+class FeedbackAdmin(admin.ModelAdmin):
+    list_display = ('business', 'status', 'created_at', 'updated_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('business__title', 'content')
 
  
 admin.site.register(OpeningHours)

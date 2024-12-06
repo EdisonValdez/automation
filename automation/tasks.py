@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
+import random
 import shutil
 import uuid
 from celery import shared_task
@@ -63,7 +64,9 @@ import backoff
 import time
 from requests.exceptions import RequestException
 from django.utils.text import slugify
-
+import csv
+import pandas as pd
+from django.contrib import messages
 
 SERPAPI_KEY = settings.SERPAPI_KEY  
 DEFAULT_IMAGES = settings.DEFAULT_IMAGES
@@ -80,17 +83,47 @@ doctran = Doctran(openai_api_key=OPENAI_API_KEY)
 def read_queries(file_path):
     logger.info(f"Reading queries from file: {file_path}")
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            queries = []
-            for line in file:
-                parts = line.strip().split('|')
-                if len(parts) == 2:
-                    query, coords = parts
+        queries = []
+        file_extension = os.path.splitext(file_path)[1].lower()
+
+        if file_extension in ['.txt']:
+            # Process text file
+            with open(file_path, 'r', encoding='utf-8') as file:
+                for line in file:
+                    parts = line.strip().split('|')
+                    if len(parts) == 2:
+                        query, coords = parts
+                        queries.append({'query': query.strip(), 'll': coords.strip()})
+                    elif len(parts) == 1:
+                        queries.append({'query': parts[0].strip(), 'll': None})
+        elif file_extension in ['.csv']:
+            # Process CSV file
+            with open(file_path, 'r', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                for row in reader:
+                    if len(row) == 2:
+                        query, coords = row
+                        queries.append({'query': query.strip(), 'll': coords.strip()})
+                    elif len(row) == 1:
+                        queries.append({'query': row[0].strip(), 'll': None})
+        elif file_extension in ['.xls', '.xlsx']:
+            # Process Excel file
+            df = pd.read_excel(file_path, header=None)
+            for index, row in df.iterrows():
+                if len(row) >= 2 and not pd.isna(row[1]):
+                    query = str(row[0])
+                    coords = str(row[1])
                     queries.append({'query': query.strip(), 'll': coords.strip()})
-                elif len(parts) == 1:
-                    queries.append({'query': parts[0].strip(), 'll': None})
+                elif len(row) >= 1:
+                    query = str(row[0])
+                    queries.append({'query': query.strip(), 'll': None})
+        else:
+            logger.error(f"Unsupported file type: {file_extension}")
+            return []
+
         logger.info(f"Successfully read {len(queries)} queries from file")
         return queries
+
     except Exception as e:
         logger.error(f"Error reading queries from file {file_path}: {str(e)}", exc_info=True)
         return []
@@ -98,6 +131,7 @@ def read_queries(file_path):
 def process_query(query_data):
     query = query_data['query']
     ll = query_data.get('ll')
+    start = query_data.get('start', 0)
 
     params = {
         "api_key": settings.SERPAPI_KEY,
@@ -111,6 +145,8 @@ def process_query(query_data):
 
     if ll:
         params["ll"] = ll
+    if start:
+        params["start"] = start
 
     try:
         results = fetch_search_results(params)
@@ -127,7 +163,6 @@ def process_query(query_data):
     except Exception as e:
         logger.error(f"Unexpected error while fetching results for query '{query}': {str(e)}", exc_info=True)
         return None
- 
  
 def rate_limiter(max_calls, period):
     def decorator(func):
@@ -168,60 +203,23 @@ def read_queries_from_content(file_content):
         logger.error(f"Error reading queries from content: {str(e)}", exc_info=True)
         return []
 
-def process_next_page(task_id, query, next_page_token):
-    """
-    Process the next page of results for a given query.
-    """
-    logger.info(f"Processing next page for task {task_id}, query: {query}")
-    task = ScrapingTask.objects.get(id=task_id)
-
-    try:
-        params = {
-            "api_key": SERPAPI_KEY,
-            "engine": "google_maps",
-            "type": "search",
-            "q": query,
-            "ll": f"@{task.latitude},{task.longitude},{task.zoom}z",
-            "hl": "en",
-            "start": next_page_token  # Use the next_page_token for pagination
-        }
-
-        search = GoogleSearch(params)
-        results = search.get_dict()
-
-        if "error" in results:
-            logger.error(f"API Error for query '{query}' (next page): {results['error']}")
-            return
-
-        local_results = results.get("local_results", [])
-
-        for local_result in local_results:
-            try:
-                business = save_business(task, local_result, query)
-                logger.info(f"Saved business from next page: {business.title}")
-            except Exception as e:
-                logger.error(f"Error saving business from next page for query '{query}': {str(e)}", exc_info=True)
-
-        # Check if there's another page
-        next_token = get_next_page_token(results)
-        if next_token:
-            # Schedule the next page processing
-            process_next_page(args=[task_id, query, next_token], countdown=2)
-        else:
-            logger.info(f"Finished processing all pages for query '{query}' in task {task_id}")
-
-    except Exception as e:
-        logger.error(f"Error processing next page for task {task_id}, query '{query}': {str(e)}", exc_info=True)
-
+ 
 @backoff.on_exception(backoff.expo, RequestException, max_tries=5)
 @rate_limiter(max_calls=10, period=60)  
 def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
+
+def random_delay(min_delay=2, max_delay=5):
+    delay = random.uniform(min_delay, max_delay)
+    time.sleep(delay)
+
+def get_next_page_token(results):
+    return results.get('serpapi_pagination', {}).get('next_page_token')
  
 
-
-def process_scraping_task(task_id, form_data=None):
+@shared_task(bind=True)
+def process_scraping_task(self, task_id, form_data=None):
     log_file_path = get_log_file_path(task_id)
     file_handler = logging.FileHandler(log_file_path)
     logger.addHandler(file_handler)
@@ -234,12 +232,13 @@ def process_scraping_task(task_id, form_data=None):
 
         queries = []
 
-        if task.file:  # If a file is uploaded, read the queries from it
+        # Read queries from file or form data
+        if task.file:
             logger.info("Using uploaded file for queries.")
             file_content = default_storage.open(task.file.name).read().decode('utf-8')
             queries = read_queries_from_content(file_content)
             logger.info(f"Total queries to process from file: {len(queries)}")
-        elif form_data:  # If no file is uploaded, use form data to build a query
+        elif form_data:
             logger.info("No file uploaded, using form data to create queries.")
             country_name = form_data.get('country_name', '')
             destination_name = form_data.get('destination_name', '')
@@ -250,7 +249,7 @@ def process_scraping_task(task_id, form_data=None):
 
             # Construct a query based on the form data
             query = f"{country_name}, {destination_name}, {main_category} {subcategory} {description}".strip()
-            if query:  # Only add the query if it's not empty
+            if query:
                 queries.append({'query': query})
 
             logger.info(f"Form-based query: {query}")
@@ -265,11 +264,16 @@ def process_scraping_task(task_id, form_data=None):
         for index, query_data in enumerate(queries, start=1):
             query = query_data['query']
             page_num = 1
-            start_offset = 0
+            next_page_token = None  # Initialize for pagination
 
-            while start_offset < 100:
+            while True:
                 logger.info(f"Processing query {index}/{len(queries)}: {query} (Page {page_num})")
-                query_data['start'] = start_offset
+
+                # Set 'start' parameter based on 'next_page_token'
+                if next_page_token:
+                    query_data['start'] = next_page_token
+                else:
+                    query_data.pop('start', None)  # Remove 'start' if not needed
 
                 results = process_query(query_data)
 
@@ -282,8 +286,6 @@ def process_scraping_task(task_id, form_data=None):
                     break
 
                 logger.info(f"Processing {len(local_results)} local results for query '{query}' (Page {page_num})")
-
-                # Move the logging of local_results here after it has been assigned
                 logger.info(f"Local result data: {local_results}")
 
                 save_results(task, results, query)
@@ -307,10 +309,15 @@ def process_scraping_task(task_id, form_data=None):
                 total_results += len(local_results)
                 logger.info(f"Processed {len(local_results)} results on page {page_num} for query '{query}'")
 
-                # Increment start_offset for the next page
-                start_offset += 20
-                page_num += 1
-                time.sleep(2)  # Sleep between page requests to avoid overwhelming the API
+                # Check for 'next_page_token' for pagination
+                next_page_token = get_next_page_token(results)
+                if next_page_token:
+                    logger.info(f"Next page token found: {next_page_token}")
+                    page_num += 1
+                    random_delay(min_delay=2, max_delay=20)
+                else:
+                    logger.info(f"No next page token found for query '{query}'")
+                    break  # No more pages to process
 
             logger.info(f"Finished processing query: {query}")
 
@@ -325,18 +332,12 @@ def process_scraping_task(task_id, form_data=None):
         logger.error(f"Scraping task with id {task_id} not found")
     except Exception as e:
         logger.error(f"Error in scraping task {task_id}: {str(e)}", exc_info=True)
-        if 'task' in locals():
-            task.status = 'FAILED'
-            task.save()
+        task.status = 'FAILED'
+        task.save()
     finally:
         logger.removeHandler(file_handler)
         file_handler.close()
 
-
-
-
-def get_next_page_token(results):
-    return results.get('serpapi_pagination', {}).get('next_page_token')
 
 def update_image_url(business, local_path, new_path):
     try:
@@ -477,7 +478,7 @@ def download_images(business, local_result):
                 except Exception as e:
                     logger.error(f"Error downloading image {i} for business {business.id}: {str(e)}", exc_info=True)
 
-            time.sleep(1)  # To avoid overloading the server
+            random_delay(min_delay=2, max_delay=20)  
 
         # Set the first image as the main image if it exists
         first_image = Image.objects.filter(business=business).order_by('order').first()
@@ -490,7 +491,6 @@ def download_images(business, local_result):
         logger.error(f"Error in download_images for business {business.id}: {str(e)}", exc_info=True)
 
     return image_paths
-
 
 def save_results(task, results, query):
     try:
@@ -511,152 +511,88 @@ def save_results(task, results, query):
 
 #####################DESCRIPTION TRANSLATE##################################
  
-async def translate_text(text, language="spanish"):
+def translate_text(text, language="spanish"):
     if text and text.strip():
-        # Usamos 'en-GB' para el inglés británico
         language_code = "en-GB" if language == "eng" else language
-        
-        document = doctran.parse(content=text)
-        translated_doc = await document.translate(language=language_code).execute()
-        return translated_doc.transformed_content
+        try:
+            document = doctran.parse(content=text)
+            translated_doc = document.translate(language=language_code).execute()
+            return translated_doc.transformed_content
+        except Exception as e:
+            logger.error(f"Translation error: {str(e)}", exc_info=True)
+            return None
     return text
 
 
-def translate_or_fetch_and_translate(business_id, languages=["spanish", "eng"]):
-    """
-    Checks for an existing business description. If not present, fetches it from the API,
-    then translates the description into the specified languages.
-    """
-    try:
-        business = Business.objects.get(id=business_id)
-        
-        # Step 1: Check if description is already available
-        if not business.description:
-            logger.info(f"Description missing for business {business.title}. Fetching from local places API.")
-            
-            # Fetch description synchronously using data_cid
-            place_details = fetch_place_details(
-                data_id=business.data_cid,
-                query=business.title,   # or any specific term associated with the business type
-                query_location=f"{business.city}, {business.country}"
-            )
-
-            if place_details:
-                # Step 2: Save the fetched description to the business model
-                business.description = place_details.get('description', '')
-                business.save()
-                logger.info(f"Fetched and saved description for business {business.title}")
-
-        # Step 3: Now translate the description
-        if business.description:
-            logger.info(f"Translating description for business {business.title} into {', '.join(languages)}")
-            enhance_and_translate_description(business, languages=languages)
-        else:
-            logger.warning(f"No description available to translate for business {business.title}")
-
-    except Business.DoesNotExist:
-        logger.error(f"Business with id {business_id} does not exist")
-    except Exception as e:
-        logger.error(f"Error in translate_or_fetch_and_translate for business {business_id}: {str(e)}", exc_info=True)
-
-# Fetch function for place details, simplified for reference
-def fetch_place_details(data_id, query, query_location):
-    """
-    Fetches detailed place information from Google Places API using SERP API's  endpoint.
-    """
-    params = {
-        "engine": "google_local",
-        "q": query,
-        "location": query_location,
-        "api_key": settings.SERPAPI_KEY
-    }
-    
-    try:
-        search = GoogleSearch(params)
-        results = search.get_dict()
-        
-        place_results = results.get("place_results", {})
-        
-        if not place_results:
-            logger.warning(f"No place results found for data_id: {data_id}")
-            return None
-        
-        return place_results
-
-    except Exception as e:
-        logger.error(f"Error fetching place details for data_id {data_id}: {str(e)}", exc_info=True)
-        return None
-
-
-
-#####################DESCRIPTION TRANSLATE##################################
-
-
-
-async def translate_business_info_async(business, languages=["spanish", "eng"]):
-    logger.info(f"Starting translation for business {business.id}")
-
-    additional_info = await get_additional_info(business)
-    for info in additional_info:
-        for lang in languages:
-            try:
-                if lang == "spanish":
-                    info.key_es = await translate_text(info.key, language="spanish")
-                    info.value_es = await translate_text(info.value, language="spanish")
-                elif lang == "eng":
-                    # Nuevamente, usamos 'eng' pero se traduce a inglés británico
-                    info.key_eng = await translate_text(info.key, language="eng")
-                    info.value_eng = await translate_text(info.value, language="eng")
-                await save_info(info)
-                logger.info(f"Translated additional info {info.key} to {lang} for business {business.id}")
-            except Exception as e:
-                logger.error(f"Error translating additional info {info.key} to {lang} for business {business.id}: {str(e)}")
-
-    logger.info(f"Completed translation for business {business.id} for all languages")
-
 def enhance_and_translate_description(business, languages=["spanish", "eng"]):
+    """
+    Enhances the business description and translates it into specified languages.
+    """
     original_description = business.description or ""
-    prompt = (f"Create an appealing, not verbose, and simple reading 250-character description "
-              f"for the following business:\n\nName: {business.title}\nCategory: {business.category_name}\n"
-              f"and location:{business.address}\n"
-              f"Original Description: {original_description}\n\nNew Description:")
+    if not original_description.strip():
+        logger.info(f"No base description available for business {business.id}. Enhancement and translation skipped.")
+        return False
+    
+    prompt = (
+        f"Create an appealing, concise, and easy-to-read 800-character description"
+        f"for the following business:\n\nName: {business.title}\n"
+        f"Category: {business.category_name}\n"
+        f"Location: {business.address}\n"
+        f"Original Description: {original_description}\n\nNew Description:"
+    )
 
     try:
-        # Mejora de la descripción
         document = doctran.parse(content=prompt)
+        logger.info(f"Document: {document}")
         enhanced_doc = document.summarize(token_limit=300).execute()
         enhanced_description = enhanced_doc.transformed_content
+        logger.info(f"Enhanced description: {enhanced_description}")
 
-        # Guardamos la descripción mejorada
         business.description = enhanced_description
 
-        # Traducción a los idiomas especificados
         for lang in languages:
-            translated_doc = doctran.parse(content=enhanced_description).translate(language="en-GB" if lang == "eng" else lang).execute()
+            language_code = "en-GB" if lang == "eng" else lang
+            translated_doc = doctran.parse(content=enhanced_description).translate(language=language_code).execute()
             translated_description = translated_doc.transformed_content
             if lang == "spanish":
                 business.description_esp = translated_description
             elif lang == "eng":
                 business.description_eng = translated_description
-        
+
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
+        return True
+    
     except Exception as e:
         logger.error(f"Error enhancing and translating description for business {business.id}: {str(e)}")
+        return False
 
-def translate_business_info_sync(business, languages=["spanish", "eng"]):
-    asyncio.run(translate_business_info_async(business, languages=languages))
+def translate_business_info(business, languages=["spanish", "eng"]):
+    logger.info(f"Starting translation for business {business.id}")
 
-def translate_business(business_id, languages=["spanish", "eng"]):
-    logger.info(f"Starting translation for business {business_id}")
     try:
-        business = Business.objects.get(id=business_id)
-        translate_business_info_sync(business, languages=languages)
-        logger.info(f"Translation completed for business {business_id} into {', '.join(languages)}")
-    except Business.DoesNotExist:
-        logger.error(f"Business with id {business_id} not found")
+        for lang in languages:
+            language_code = "en-GB" if lang == "eng" else lang
+
+            if business.title:
+                translated_title = translate_text(business.title, language=language_code)
+                if lang == "spanish":
+                    business.title_esp = translated_title
+                elif lang == "eng":
+                    business.title_eng = translated_title
+
+            if business.description:
+                translated_description = translate_text(business.description, language=language_code)
+                if lang == "spanish":
+                    business.description_esp = translated_description
+                elif lang == "eng":
+                    business.description_eng = translated_description
+
+        business.save()
+        logger.info(f"Completed translation for business {business.id} into {', '.join(languages)}")
     except Exception as e:
-        logger.error(f"Error translating business {business_id}: {str(e)}", exc_info=True)
+        logger.error(f"Error translating business {business.id}: {str(e)}", exc_info=True)
+
 
 def enhance_translate_and_summarize_business(business_id, languages=["spanish", "eng"]):
     logger.info(f"Starting enhancement, translation, and summarisation for business {business_id}")
@@ -665,22 +601,31 @@ def enhance_translate_and_summarize_business(business_id, languages=["spanish", 
         business = Business.objects.get(id=business_id)
     except Business.DoesNotExist:
         logger.error(f"Business with id {business_id} does not exist")
-        return
+        return False
+    except Exception as e:
+        logger.error(f"Error retrieving business {business_id}: {str(e)}", exc_info=True)
+        return False
 
     try:
-        # Mejora y traducción de la descripción
+        # Enhance and translate the description
         enhance_and_translate_description(business, languages=languages)
     except Exception as e:
-        logger.error(f"Error enhancing and translating description for business {business_id}: {str(e)}")
+        logger.error(f"Error enhancing and translating description for business {business_id}: {str(e)}", exc_info=True)
+        return False
 
     try:
-        # Traducción de la información del negocio
-        asyncio.run(translate_business_info_async(business, languages=languages))
+        # Translate business information
+        translate_business_info(business, languages=languages)
     except Exception as e:
-        logger.error(f"Error processing business {business_id}: {str(e)}")
+        logger.error(f"Error processing business {business_id}: {str(e)}", exc_info=True)
+        return False
 
     logger.info(f"Completed enhancement, translation, and summarisation for business {business_id}")
+    return True
 
+
+#####################DESCRIPTION TRANSLATE##################################
+ 
 
 def fill_missing_address_components(business_data, task, query, form_data=None):
     """
@@ -735,8 +680,6 @@ def fill_missing_address_components(business_data, task, query, form_data=None):
     if not business_data['country']:
         business_data['country'] = 'Unknown'
         logger.error("Failed to fill country; set to 'Unknown'")
-
- 
  
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):
@@ -1051,7 +994,7 @@ def update_all_business_details():
     businesses = Business.objects.all()
     for business in businesses:
         update_business_details(business.id)
-        time.sleep(1)  # Add a small delay to avoid overwhelming the API
+        random_delay(min_delay=2, max_delay=20) 
  
 def process_business_reviews(business_id):
     """
@@ -1117,7 +1060,7 @@ def process_all_business_reviews():
     businesses = Business.objects.all()
     for business in businesses:
         process_business_reviews(business.id)
-        time.sleep(1)  # Add a small delay to avoid overwhelming the API
+        random_delay(min_delay=2, max_delay=20)  
  
 def update_business_rankings(task_id):
     """

@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 #DEBUG = os.getenv('DEBUG', 'False').lower() == 'false' - With this one the deployment failed!
 #DEBUG = os.getenv('DEBUG', 'True').lower() == 'true' - NO It is showing the debug page
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'  
- 
+#DEBUG = False 
 DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower() == 'true'  #original in pro set true
 USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'  # Set to 'True' in production when using S3
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
@@ -161,7 +161,7 @@ LOGGING = {
             'handlers': ['console', 'file'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': True,
-        },
+        } 
     },
 }
 
@@ -177,7 +177,7 @@ TOKEN="mlsn.8180f5205222863e3187181245657328c6b7c29b64bb398549fb8725e2112aed"
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 FILE_UPLOAD_PERMISSIONS = 0o644
-REQUEST_TIMEOUT = 120  # in seconds
+REQUEST_TIMEOUT = 120 
 
 # Database Options
 DATABASE_OPTIONS = {
@@ -247,5 +247,20 @@ AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME')
 AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
-
  
+
+# Celery settings
+CELERY_BROKER_URL = 'redis://localhost:6379/0'   
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'  # Optional: Store task results
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE  
+CELERY_ENABLE_UTC = True
+CELERYD_TASK_TIME_LIMIT = 3600 
+CELERYD_TASK_SOFT_TIME_LIMIT = 3500
+
+CELERY_BROKER_URL = os.environ.get('REDIS_URL')
+
+LOCAL_SECRET_BASE_URL = os.environ.get('LOCAL_SECRET_BASE_URL')
+SIGATURE_SECRET = os.environ.get('SIGATURE_SECRET')

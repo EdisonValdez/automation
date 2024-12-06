@@ -2,7 +2,7 @@
 import logging
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from .models import Country, CustomUser, Business, Destination, ScrapingTask, UserRole, Category, Level
+from .models import Country, CustomUser, Business, Destination, Feedback, ScrapingTask, UserRole, Category, Level
 from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
@@ -94,8 +94,7 @@ class CustomUserChangeForm(UserChangeForm):
             UserRole.objects.update_or_create(user=user, defaults={'role': role})
             user.destinations.set(destinations)
         return user
-
-
+ 
 class CountryForm(forms.ModelForm):
     class Meta:
         model = Country
@@ -255,8 +254,6 @@ class BusinessForm(forms.ModelForm):
         required=False,
         widget=forms.SelectMultiple(attrs={'class': 'form-control select2'})
     )
-    
-    # Retain your categories field if necessary
     categories = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -308,3 +305,15 @@ class BusinessForm(forms.ModelForm):
     def clean_tailored_category(self):
         data = self.cleaned_data.get('tailored_category', [])
         return ', '.join(data)
+
+FeedbackFormSet = forms.inlineformset_factory(
+    Business,
+    Feedback,
+    fields=['content', 'status'],
+    extra=1,
+    can_delete=True,
+    widgets={
+        'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        'status': forms.Select(attrs={'class': 'form-control'}),
+    }
+)

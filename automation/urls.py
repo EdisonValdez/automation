@@ -77,6 +77,7 @@ urlpatterns = [
     path('destination/<int:destination_id>/', views.get_destination, name='get_destination'),
     path('edit-destination/', views.edit_destination, name='edit_destination'),
 
+    path('feedback/<int:business_id>/', views.submit_feedback, name='submit_feedback'),
 
     path('tasks/<int:task_id>/translate/', views.TranslateBusinessesView.as_view(), name='translate_businesses'),
 
@@ -84,6 +85,8 @@ urlpatterns = [
     path('ambassador-businesses/', views.ambassador_businesses, name='ambassador_businesses'),
     path('ambassadors/<int:ambassador_id>/', views.ambassador_profile, name='ambassador_profile'),
     path('upload-scraping-results/', views.UploadScrapingResultsView.as_view(), name='upload_scraping_results'),
+
+    path('enhance_translate_business/<int:business_id>/', views.enhance_translate_business, name='enhance_translate_business'),
 
 
     #path('api/categories/', views.get_categories, name='get_categories'),

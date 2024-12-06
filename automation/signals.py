@@ -70,7 +70,7 @@ def update_task_status(sender, instance, **kwargs):
                     subject='Task Completed: Local Secrets',
                     message=plain_message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=['evaldez@localsecrets.travel', 'azottu@localsecrets.travel'],  # Add recipient(s)
+                    recipient_list=['evaldez@localsecrets.travel', 'jvasquez@localsecrets.travel', 'azottu@localsecrets.travel'],  # Add recipient(s)
                     fail_silently=False,
                     html_message=html_message,  
                 )

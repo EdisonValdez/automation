@@ -17,9 +17,11 @@
         <div class="box card-box">
             <div class="icon-box bg-color-6 d-block">
                 <div class="content text-center color-0">
+                    <a href=" {% url 'task_list' %}"> 
                     <h5 class="title-box fs-17 font-w500">
                         <i class="fas fa-tasks color-0"></i> Total Projects
                     </h5>
+                    </a>
                     <div class="themesflat-counter fs-14 font-wb">
                         <span class="number" data-from="0" data-to="{{ total_projects }}" data-speed="2500" data-inviewport="yes">{{ tasks.count }} +</span>
                     </div>
@@ -36,23 +38,29 @@
                     </div>
                 </div>
             </div>
-        
+            
             <div class="icon-box bg-color-8 d-block">
+               
                 <div class="content text-center color-0">
+                    <a href=" {% url 'business_list' %}"> 
                     <h5 class="title-box fs-17 font-w500">
                         <i class="fas fa-building color-0"></i> Total Businesses
                     </h5>
+                    </a>
                     <div class="themesflat-counter fs-14 font-wb">
                         <span class="number" data-from="0" data-to="{{ total_businesses }}" data-speed="2500" data-inviewport="yes">{{ total_businesses }}</span>
                     </div>
                 </div>
+       
             </div>
         
             <div class="icon-box bg-color-1 d-block">
                 <div class="content text-center color-0">
+                    <a href=" {% url 'destination_management' %}"> 
                     <h5 class="title-box fs-17 font-w500">
                          Total Destinations
                     </h5>
+                    </a>
                     <div class="themesflat-counter fs-14 font-wb">
                         <span class="number" data-from="0" data-to="" data-speed="2500" data-inviewport="yes">{{ total_destinations }} +</span>
                     </div>

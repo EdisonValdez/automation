@@ -28,12 +28,12 @@ from django.utils.decorators import method_decorator
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.views.decorators.csrf import csrf_exempt
-from django.template.loader import render_to_string
+from django.template.loader import render_to_string 
 from .tasks import *
 from .serializers import BusinessSerializer
 from .permissions import IsAdminOrAmbassadorForDestination
-from .models import CustomUser, Destination, Level, ScrapingTask, Image, Business,  UserRole, Country
-from .forms import DestinationForm, UserProfileForm, CustomUserCreationForm, CustomUserChangeForm, ScrapingTaskForm, BusinessForm
+from .models import CustomUser, Destination, Feedback, Level, ScrapingTask, Image, Business,  UserRole, Country
+from .forms import FeedbackFormSet, DestinationForm, UserProfileForm, CustomUserCreationForm, CustomUserChangeForm, ScrapingTaskForm, BusinessForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
 from django.views.decorators.http import require_GET
@@ -734,33 +734,56 @@ def business_details(request, business_id):
         logger.error(f"Business with ID {business_id} not found.")
         return JsonResponse({'status': 'error', 'message': f'Business with ID {business_id} not found.'}, status=404)
 
+########CHANGE STATUS#############################
 
 @require_POST
 def change_business_status(request, business_id):
-    business = get_object_or_404(Business, id=business_id)
-    new_status = request.POST.get('status', '').strip()
- 
-    if new_status in ['IN_PRODUCTION', 'REVIEWED'] and (not business.description or business.description.strip() == ''):
-        return JsonResponse({
-            'status': 'error',
-            'message': f'Description is mandatory for moving to {new_status}.'
-        }, status=400)
-     
-    if new_status in dict(Business.STATUS_CHOICES):
-        old_status = business.status
-        business.status = new_status
-        business.save()
+    try:
+        business = get_object_or_404(Business, id=business_id)
+        new_status = request.POST.get('status', '').strip()
+    
+        if new_status in ['IN_PRODUCTION', 'REVIEWED'] and (not business.description or business.description.strip() == ''):
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Description is mandatory for moving to {new_status}.'
+            }, status=400)
+        
+        if new_status == 'IN_PRODUCTION':
+            missing_descriptions = []
+            if not business.description or not business.description.strip():
+                missing_descriptions.append('Original description')
+            if not business.description_eng or not business.description_eng.strip():
+                missing_descriptions.append('English description')
+            if not business.description_esp or not business.description_esp.strip():
+                missing_descriptions.append('Spanish description')
+            if missing_descriptions:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f"Cannot move to IN_PRODUCTION: {', '.join(missing_descriptions)} is missing."
+                }, status=400)
+        
+        if new_status in dict(Business.STATUS_CHOICES):
+            old_status = business.status
+            business.status = new_status
+            business.save()
 
-        logger.info(f"Business ID {business_id}: Status changed to {new_status}")
+            logger.info(f"Business ID {business_id}: Status changed to {new_status}")
+            old_status_count = Business.objects.filter(status=old_status).count()
+            new_status_count = Business.objects.filter(status=new_status).count()
 
-        return JsonResponse({
-            'status': 'success',
-            'new_status': new_status,
-            'old_status': old_status,
-        })
-
-    logger.error(f"Business ID {business_id}: Invalid status {new_status}")
-    return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
+            return JsonResponse({
+                'status': 'success',
+                'new_status': new_status,
+                'old_status': old_status,
+                'old_status_count': old_status_count,
+                'new_status_count': new_status_count
+            })
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
  
 @require_POST
@@ -814,6 +837,37 @@ def update_business_status(request, business_id):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+########CHANGE STATUS#############################
+ 
+@csrf_exempt
+def submit_feedback(request, business_id):
+    if request.method == 'POST':
+        logger.info(f"Received feedback for business ID: {business_id}")
+        business = get_object_or_404(Business, id=business_id)
+        try:
+            feedback_data = json.loads(request.body)
+            logger.info(f"Feedback data received: {feedback_data}")
+            content = feedback_data.get('content', '').strip()
+            status = feedback_data.get('status', 'initial')
+
+            if not content:
+                logger.error("Feedback comment is missing.")
+                return JsonResponse({'success': False, 'message': 'Comment is required.'}, status=400)
+            user_name = request.user.get_full_name() or request.user.username
+            Feedback.objects.create(
+                business=business,
+                content=f"{content}\n\nSubmitted by: {user_name}",
+                status=status
+            )
+            logger.info("Feedback successfully saved.")
+            return JsonResponse({'success': True})
+        except Exception as e:
+            logger.error(f"Error while submitting feedback: {e}")
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    else:
+        logger.warning("Invalid request method for feedback.")
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
+
 
 @login_required
 def business_list(request):
@@ -844,7 +898,7 @@ def business_detail(request, business_id):
     business = get_object_or_404(Business, id=business_id)
     task_businesses = list(business.task.businesses.order_by('id'))
     current_index = task_businesses.index(business)
-
+    feedback_formset = FeedbackFormSet(instance=business)
     # Determine previous and next businesses
     prev_business = task_businesses[current_index - 1] if current_index > 0 else None
     next_business = task_businesses[current_index + 1] if current_index < len(task_businesses) - 1 else None
@@ -870,18 +924,18 @@ def business_detail(request, business_id):
                 'errors': {'description': 'Description cannot be blank or None'}
             })
 
-        # Handle main_category selections
         main_category_titles = post_data.getlist('main_category')
         post_data['main_category'] = ', '.join(main_category_titles)
-
-        # Handle tailored_category selections
         tailored_category_titles = post_data.getlist('tailored_category')
         post_data['tailored_category'] = ', '.join(tailored_category_titles)
 
         # Initialize the form with updated post_data
         form = BusinessForm(post_data, instance=business)
+        feedback_formset = FeedbackFormSet(post_data, instance=business)
+
         if form.is_valid():
             form.save()
+            feedback_formset.save()
             messages.success(request, "Saved!")
             return redirect('business_detail', business_id=business.id)
         else:
@@ -899,6 +953,7 @@ def business_detail(request, business_id):
         'is_admin': is_admin,
         'main_categories': main_categories,
         'subcategories': subcategories,
+        'feedback_formset': feedback_formset
     }
 
     return render(request, 'automation/business_detail.html', context)
@@ -1007,7 +1062,7 @@ def delete_business(request, business_id):
         messages.error(request, "An error occurred while deleting the business.")
     return redirect('business_list')
 
-
+# /***********enhance_translate_business_view********** generate_description *****/
 @csrf_exempt
 def generate_description(request):
     if request.method == 'POST':
@@ -1050,6 +1105,38 @@ def generate_description(request):
             return JsonResponse({'success': False, 'error': 'Failed to generate description'})
     else:
         return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@csrf_exempt
+def enhance_translate_business(request, business_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            languages = data.get('languages', ['spanish', 'eng'])
+            success = enhance_translate_and_summarize_business(business_id, languages=languages)
+            if not success:
+                return JsonResponse({'success': False, 'message': 'Enhancement and translation failed or skipped.'})
+     
+            business = Business.objects.get(id=business_id)
+            return JsonResponse({
+                'success': True,
+                'description': business.description,
+                'description_eng': business.description_eng,
+                'business_esp': business.description_esp
+            })
+        except Exception as e:
+            logger.error(f"Error in enhance_translate_business_view: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            })
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+
+# /***********enhance_translate_business_view********** generate_description *****/#
+
+
  
 @csrf_exempt
 def update_business_hours(request):
@@ -1219,9 +1306,7 @@ def get_destination(request, destination_id):
         'country': destination.country
     }
     return JsonResponse(data)
-
-
-
+ 
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def get_destinations_tasks(request):
