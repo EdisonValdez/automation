@@ -12,6 +12,14 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+# Environments 
+env/ 
+venv/ 
+ENV/ 
+myenv/
+env.bak/ 
+venv.bak/ 
+
 # Ignore virtual environment directories
 scrapin-env/
 .env/

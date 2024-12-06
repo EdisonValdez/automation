@@ -13,6 +13,7 @@ from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.db.models import Prefetch
 from django.db.models import Count
+from django.forms.models import model_to_dict
 from rest_framework import viewsets
 from django.contrib import messages 
 from django.contrib.auth.forms import UserCreationForm
@@ -41,6 +42,9 @@ from django.http import HttpResponse
 from django.db.models import Q
 from .serpapi_integration import fetch_google_events   
 from .models import Event  
+from automation.request.client import RequestClient
+from automation import constants as const
+from automation.helper import datetime_serializer
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
@@ -785,7 +789,7 @@ def change_business_status(request, business_id):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
- 
+
 @require_POST
 @csrf_exempt
 def update_business_status(request, business_id):
@@ -793,6 +797,7 @@ def update_business_status(request, business_id):
         business = get_object_or_404(Business, id=business_id)
         data = json.loads(request.body)
         new_status = data.get('status', '').strip()
+        user_id = data.get('userId')
 
         # Validate description
         if not business.description or business.description.strip() in ['', 'None']:
@@ -812,15 +817,56 @@ def update_business_status(request, business_id):
                     'message': f'Cannot move to {new_status}: Description is missing. Status remains {business.status}.'
                 }, status=400)
 
+
         # Validate and save the new status
         if new_status in dict(Business.STATUS_CHOICES):
             old_status = business.status
             business.status = new_status
             business.save()
+            
+            # Move buisness record to application
+            if new_status == 'IN_PRODUCTION':
+                business_data = model_to_dict(business)
+
+                # Fetch country details
+                country = Country.objects.filter(
+                    name__iexact=business_data["country"]).last()
+                country_data = model_to_dict(country)
+                
+                # Fetch user details
+                user = CustomUser.objects.filter(id=int(user_id)).first()
+                user_data = model_to_dict(user)
+
+                # Fetch image details
+                image_urls = list(
+                    Image.objects.filter(business=business_id).all().values_list('image_url', flat=True)
+                )
+
+                result_data = {
+                    **business_data,
+                    'country': country_data,
+                    'user': user_data,
+                    'images_urls': image_urls
+                }
+
+                # Convert business data to JSON
+                app_data = json.dumps(
+                    result_data, default=datetime_serializer)
+                
+                # Make API request to move to app
+                try:
+                    RequestClient().request('move-to-app', app_data)
+                except Exception as e:
+                    return JsonResponse({
+                            'status': 'move-to-app-error', 
+                            'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(e)}"
+                        },status=400)
 
             # Update counts
-            old_status_count = Business.objects.filter(status=old_status).count()
-            new_status_count = Business.objects.filter(status=new_status).count()
+            old_status_count = Business.objects.filter(
+                status=old_status).count()
+            new_status_count = Business.objects.filter(
+                status=new_status).count()
 
             return JsonResponse({
                 'status': 'success',
@@ -830,9 +876,13 @@ def update_business_status(request, business_id):
                 'new_status_count': new_status_count
             })
         else:
-            return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
+            return JsonResponse(
+                {'status': 'error', 'message': 'Invalid status'},
+                status=400)
     except json.JSONDecodeError:
-        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        return JsonResponse(
+            {'status': 'error', 'message': 'Invalid JSON'},
+            status=400)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
