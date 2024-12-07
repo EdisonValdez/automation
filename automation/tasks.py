@@ -534,7 +534,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         return False
     
     prompt = (
-        f"Create an appealing, concise, and easy-to-read 800-character description"
+        f"Create an appealing, concise, and easy-to-read 200 words description"
         f"for the following business:\n\nName: {business.title}\n"
         f"Category: {business.category_name}\n"
         f"Location: {business.address}\n"

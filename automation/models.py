@@ -202,7 +202,7 @@ class ScrapingTask(models.Model):
     objects = ActiveTaskManager()
     all_objects = models.Manager()
 
-    def get_level_name(self):
+    def get_level_title(self):
         return self.level.title if self.level else "No Level"
     
     def get_level_type(self):
