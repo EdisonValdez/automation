@@ -173,7 +173,7 @@ class TaskDetailView(View):
             task_queryset = ScrapingTask.objects.filter(id=id)
         elif user.roles.filter(role='AMBASSADOR').exists():
             ambassador_destinations = user.destinations.all()
-            task_queryset = ScrapingTask.objects.filter(id=id, businesses__destination__in=ambassador_destinations)
+            task_queryset = ScrapingTask.objects.filter(id=id, businesses__form_destination_id__in=ambassador_destinations)
         else:
             return render(request, 'automation/error.html', {'error': 'You do not have permission to access this task.'}, status=403)
 
@@ -302,7 +302,6 @@ def ambassador_view(request):
     destination = request.user.destination
     businesses = Business.objects.filter(city=destination)
     return render(request, 'automation/ambassador_template.html', {'businesses': businesses})
- 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.roles.filter(role='AMBASSADOR').exists()), name='dispatch')
 class AmbassadorDashboardView(View):
@@ -310,11 +309,12 @@ class AmbassadorDashboardView(View):
         ambassador = request.user
         
         # Get destinations associated with the ambassador
-        ambassador_destinations = ambassador.destinations.all()
+        ambassador_destinations = ambassador.destinations.all()  # Assuming this is a valid ManyToMany relationship
 
-        # Filter tasks related to the ambassador's destinations
-        task_ids = Business.objects.filter(destination__in=ambassador_destinations).values_list('task__id', flat=True)
-        
+        # Use `form_destination_id` or `form_destination_name` based on data structure
+        destination_ids = [dest.id for dest in ambassador_destinations]  # Get destination IDs
+        task_ids = Business.objects.filter(form_destination_id__in=destination_ids).values_list('task__id', flat=True)
+
         # Get tasks based on the filtered task_ids
         tasks = ScrapingTask.objects.filter(id__in=task_ids).order_by('-created_at')
         
@@ -324,7 +324,7 @@ class AmbassadorDashboardView(View):
         page_obj = paginator.get_page(page_number)
 
         # Get businesses related to ambassador's destinations
-        businesses = Business.objects.filter(destination__in=ambassador_destinations).order_by('-scraped_at')[:10]
+        businesses = Business.objects.filter(form_destination_id__in=destination_ids).order_by('-scraped_at')[:10]
 
         context = {
             'page_obj': page_obj,
@@ -334,7 +334,9 @@ class AmbassadorDashboardView(View):
         }
 
         return render(request, 'automation/ambassador_dashboard.html', context)
- 
+
+###Not using this one
+# it will be removed in the furure    
 @login_required
 def ambassador_businesses(request):
     # Check if the user is an ambassador or an admin
@@ -343,13 +345,13 @@ def ambassador_businesses(request):
 
     # Get the ambassador's destinations and cities
     ambassador_destinations = request.user.destinations.all()
-    ambassador_cities = request.user.cities.all()
+ 
 
     # Filter businesses based on ambassador's destinations and cities
-    businesses = Business.objects.filter(Q(destination__in=ambassador_destinations) | Q(city__in=ambassador_cities))
+    businesses = Business.objects.filter(Q(form_destination_id__in=ambassador_destinations)  )
 
     # Collecting city names and the number of reviews for charting
-    x_values = [business.city.name for business in businesses]
+   
     y_values = [business.reviews_count for business in businesses]
 
     # Set colors for the chart (limiting the number of colors to the number of businesses)
@@ -358,7 +360,7 @@ def ambassador_businesses(request):
     # Render the template and pass the relevant data
     return render(request, 'automation/ambassador_business.html', {
         'businesses': businesses,
-        'x_values': x_values,
+      
         'y_values': y_values,
         'colors': colors
     })
@@ -514,7 +516,7 @@ class DashboardView(View):
 
         return {
             'businesses': Business.objects.filter(
-                Q(destination__in=ambassador_destinations) | Q(city__in=ambassador_city_names)
+                Q(form_destination_id__in=ambassador_destinations) | Q(city__in=ambassador_city_names)
             ),
             'ambassador_destinations': ambassador_destinations,
         }
@@ -618,19 +620,20 @@ def create_user(request):
 @user_passes_test(is_admin)
 def edit_user(request, user_id):
     logger.info(f"Accessing edit_user view for user_id: {user_id}")
-    user = get_object_or_404(CustomUser, id=user_id)
+    edited_user = get_object_or_404(CustomUser, id=user_id)  # Renamed variable
     if request.method == 'POST':
-        form = CustomUserChangeForm(request.POST, instance=user)
+        form = CustomUserChangeForm(request.POST, instance=edited_user)
         if form.is_valid():
             form.save()
-            logger.info(f"User {user.username} has been updated successfully")
-            messages.success(request, f"User {user.username} has been updated successfully.")
+            logger.info(f"User {edited_user.username} has been updated successfully")
+            messages.success(request, f"User {edited_user.username} has been updated successfully.")
             return redirect('user_management')
         else:
             logger.warning(f"Form validation failed: {form.errors}")
     else:
-        form = CustomUserChangeForm(instance=user)
-    return render(request, 'automation/edit_user.html', {'form': form, 'user': user})
+        form = CustomUserChangeForm(instance=edited_user)
+    return render(request, 'automation/edit_user.html', {'form': form, 'edited_user': edited_user})
+
 
 @user_passes_test(is_admin)
 def delete_user(request, user_id):
@@ -928,7 +931,7 @@ def business_list(request):
         ambassador_city_names = ambassador_destinations.values_list('name', flat=True)
 
         businesses = Business.objects.filter(
-            Q(destination__in=ambassador_destinations) | Q(city__in=ambassador_city_names)
+            Q(form_destination_id__in=ambassador_destinations) | Q(city__in=ambassador_city_names)
         )
     else:
         businesses = Business.objects.none()
@@ -1582,7 +1585,7 @@ def load_more_businesses(request):
         'html': html,
         'has_more': businesses.count() > end
     })
-
+#Not using this one, it will be reomved in the future
 def get_ambassador_businesses(user):
     if not user.is_authenticated:
         return Business.objects.none()
@@ -1595,9 +1598,9 @@ def get_ambassador_businesses(user):
         return Business.objects.none()
 
     return Business.objects.filter(
-        Q(destination__in=ambassador_destinations) | Q(city__in=ambassador_city_names)
+        Q(form_destination_id__in=ambassador_destinations) | Q(city__in=ambassador_city_names)
     ).select_related('destination')
- 
+#Not using this one!!!
 def ambassador_businesses_view(request):
     if not request.user.is_ambassador:
         return HttpResponseForbidden("You don't have permission to access this page.")

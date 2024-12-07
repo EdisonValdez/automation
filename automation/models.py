@@ -296,6 +296,8 @@ class Business(models.Model):
     form_destination_id = models.IntegerField(null=True, blank=True)
     form_destination_name = models.CharField(max_length=255, null=True, blank=True)
 
+    #destination = models.ForeignKey(Destination, on_delete=models.SET_NULL, null=True, blank=True)
+
     # Other fields
     country_code = models.CharField(max_length=2, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True, null=True)

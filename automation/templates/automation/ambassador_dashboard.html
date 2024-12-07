@@ -31,38 +31,61 @@
                                             </div>
                                         </div>
                                         <div class="box-footer">
-                                            <div class="d-flex align-items-center">
+                                            <div class="d-flex align-items-center justify-content-between py-2 px-3 bg-light rounded border">
                                                 <!-- Task Status -->
-                                                <div class="d-flex mb-3 mb-md-0">
-                                                    <div class="task-btn 
+                                                <div class="task-status d-flex align-items-center">
+                                                    <span 
+                                                        class="badge 
                                                         {% if task.status == 'IN_PROGRESS' %}
-                                                            bg-success-1 text-success-1
+                                                            bg-success text-white
                                                         {% elif task.status == 'PENDING' %}
-                                                            bg-warning text-warning
+                                                            bg-warning text-dark
                                                         {% elif task.status == 'FAILED' %}
-                                                            bg-danger text-danger
+                                                            bg-danger text-white
                                                         {% elif task.status == 'COMPLETED' %}
-                                                            bg-success-1 text-success-1 
-                                                        {% endif %} fs-14" data-bs-toggle="tooltip" title="Task Status">
-                                                        <!-- Display "Pending Task" instead of the actual status -->
-                                                        Pending Task
-                                                    </div>
+                                                            bg-success text-white
+                                                        {% else %}
+                                                            bg-secondary text-white
+                                                        {% endif %} fs-14 px-3 py-2 rounded-pill" 
+                                                        data-bs-toggle="tooltip" 
+                                                        title="Task Status">
+                                                        {{ task.status|default:"Pending Task" }}
+                                                    </span>
                                                 </div>
+                                            
                                                 <!-- Actions -->
-                                                <div class="ms-auto mt-3 mt-sm-0">
-                                                    <div class="d-flex">
-                                                        <a class="btn btn-outline-light text-muted pd-0 fs-34" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                                        </a>
-                                                        <ul class="dropdown-menu" role="menu">
-                                                            <li><a href="{% url 'task_detail' task.id %}"><i class="far fa-eye"></i> View</a></li>
+                                                <div class="actions ms-auto">
+                                                    <div class="dropdown">
+                                                        <button 
+                                                            class="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center" 
+                                                            data-bs-toggle="dropdown" 
+                                                            aria-haspopup="true" 
+                                                            aria-expanded="false" 
+                                                            title="More Actions">
+                                                            <i class="bx bx-dots-vertical-rounded fs-20"></i>
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end">
+                                                            <li>
+                                                                <a class="dropdown-item text-dark" href="{% url 'task_detail' task.id %}">
+                                                                    <i class="far fa-eye me-2"></i> View
+                                                                </a>
+                                                            </li>
                                                         </ul>
                                                     </div>
                                                 </div>
                                             </div>
+                                            
                                         </div>
                                     </div>
                                 </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
                             {% endif %}
                         {% empty %}
                         <div class="col-12">
