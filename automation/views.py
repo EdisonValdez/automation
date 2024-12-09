@@ -124,7 +124,7 @@ class UploadFileView(View):
                 'country_name': task.country_name,
                 'destination_id': task.destination.id if task.destination else None,
                 'destination_name': task.destination_name,
-                'level': task.level.id if task.level else None,
+                'level': task.level.title if task.level else None,
                 'main_category': task.main_category.title if task.main_category else '',
                 'subcategory': task.subcategory.title if task.subcategory else '',
             }
