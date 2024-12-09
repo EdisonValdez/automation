@@ -842,7 +842,9 @@ def update_business_status(request, business_id):
 
                 # Fetch image details
                 image_urls = list(
-                    Image.objects.filter(business=business_id).all().values_list('image_url', flat=True)
+                    Image.objects.filter(
+                        business=business_id, is_approved=True
+                    ).all().values_list('image_url', flat=True)
                 )
 
                 result_data = {
@@ -852,7 +854,7 @@ def update_business_status(request, business_id):
                     'images_urls': image_urls
                 }
 
-                # Convert business data to JSON
+                # Convert business data to JSON 
                 app_data = json.dumps(
                     result_data, default=datetime_serializer)
                 
