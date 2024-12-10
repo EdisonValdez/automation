@@ -801,6 +801,7 @@ def update_business_status(request, business_id):
         data = json.loads(request.body)
         new_status = data.get('status', '').strip()
         user_id = data.get('userId')
+        sub_category_id = 0
 
         # Validate description
         if not business.description or business.description.strip() in ['', 'None']:
@@ -850,8 +851,17 @@ def update_business_status(request, business_id):
                 # Set local secret level, category, subcategory ids
                 task_obj = business.task
                 business_data["level_id"] = task_obj.level.ls_id
-                business_data["category_id"] = task_obj.main_category.ls_id
-                business_data["sub_category_id"] = task_obj.subcategory.ls_id if task_obj.subcategory else None
+                
+                category_obj = Category.objects.filter(title=business.main_category).last()
+                business_data["category_id"] = category_obj.ls_id
+                
+                if business.tailored_category and (
+                    sub_category_obj := Category.objects.filter(
+                        title=business.tailored_category, parent=category_obj
+                    ).last()
+                ):  
+                    sub_category_id = sub_category_obj.ls_id
+                business_data["sub_category_id"] = sub_category_id
 
                 result_data = {
                     **business_data,
