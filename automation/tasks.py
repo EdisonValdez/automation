@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import datetime
 import random
 import shutil
+import sys
 import uuid
 from celery import shared_task
 from django.urls import reverse
@@ -67,7 +68,12 @@ from django.utils.text import slugify
 import csv
 import pandas as pd
 from django.contrib import messages
-
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter('%(message)s'))
+handler.setLevel(logging.INFO)
+handler.stream.reconfigure(encoding='utf-8')
+logger.addHandler(handler)
 SERPAPI_KEY = settings.SERPAPI_KEY  
 DEFAULT_IMAGES = settings.DEFAULT_IMAGES
 OPENAI_API_KEY = settings.TRANSLATION_OPENAI_API_KEY
@@ -79,6 +85,8 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 doctran = Doctran(openai_api_key=OPENAI_API_KEY)
+
+
  
 def read_queries(file_path):
     logger.info(f"Reading queries from file: {file_path}")
@@ -210,7 +218,7 @@ def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
 
-def random_delay(min_delay=2, max_delay=5):
+def random_delay(min_delay=2, max_delay=20):
     delay = random.uniform(min_delay, max_delay)
     time.sleep(delay)
 
@@ -478,7 +486,7 @@ def download_images(business, local_result):
                 except Exception as e:
                     logger.error(f"Error downloading image {i} for business {business.id}: {str(e)}", exc_info=True)
 
-            random_delay(min_delay=2, max_delay=20)  
+            time.sleep(1)  # To avoid overloading the server
 
         # Set the first image as the main image if it exists
         first_image = Image.objects.filter(business=business).order_by('order').first()
@@ -508,6 +516,7 @@ def save_results(task, results, query):
     except Exception as e:
         logger.error(f"Error saving results for query '{query}': {str(e)}", exc_info=True)
 
+ 
 
 #####################DESCRIPTION TRANSLATE##################################
  
@@ -534,11 +543,16 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         return False
     
     prompt = (
-        f"Create an appealing, concise, and easy-to-read 200 words description"
-        f"for the following business:\n\nName: {business.title}\n"
-        f"Category: {business.category_name}\n"
-        f"Location: {business.address}\n"
-        f"Original Description: {original_description}\n\nNew Description:"
+        f"Write a 220 words description\n"
+        f"About: '{business.title}' that is a: '{business.category_name}' "
+        f"in '{business.country}', '{business.city}'\n"
+        f"Tone: Formal\n"
+        f"The description should be SEO optimized.\n"
+        f"Make sure the words '{business.title}' or its synonyms appear in the first paragraph.\n"
+        f"Make sure the word '{business.title}' appears at least twice along the description and evenly distributed.\n"
+        f"Make sure that no section of the text is longer than 300 characters.\n"
+        f"80% of the sentences should be shorter than 20 words.\n"
+        f"Avoid the words: 'vibrant', 'in the heart of', 'in summary'."
     )
 
     try:
@@ -627,6 +641,7 @@ def enhance_translate_and_summarize_business(business_id, languages=["spanish", 
 #####################DESCRIPTION TRANSLATE##################################
  
 
+
 def fill_missing_address_components(business_data, task, query, form_data=None):
     """
     Fills in any missing address components using existing data from the same task or by extracting from the query.
@@ -680,6 +695,8 @@ def fill_missing_address_components(business_data, task, query, form_data=None):
     if not business_data['country']:
         business_data['country'] = 'Unknown'
         logger.error("Failed to fill country; set to 'Unknown'")
+
+ 
  
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):
@@ -725,13 +742,7 @@ def save_business(task, local_result, query, form_data=None):
 
         for api_field, model_field in field_mapping.items():
             if local_result.get(api_field) is not None:
-
-                # if address exist populate street
-                if address := local_result.get("address"):
-                    business_data["street"] = str(address).split(",", maxsplit=1)[0]
-                else:
-                    business_data[model_field] = local_result[api_field]
-
+                business_data[model_field] = local_result[api_field]
         logger.info(f"Business data to be saved: {business_data}")
 
         # Handle GPS coordinates
@@ -806,6 +817,7 @@ def save_business(task, local_result, query, form_data=None):
         logger.error(f"Error saving business data for task {task.id}: {str(e)}", exc_info=True)
         raise  # Re-raise the exception to trigger transaction rollback if necessary
 
+    
 @sync_to_async
 def get_categories(business):
     return list(business.categories.all())

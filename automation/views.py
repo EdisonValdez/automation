@@ -64,16 +64,15 @@ def welcome_view(request):
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
 
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
-
+ 
     def get(self, request):
         logger.info("Accessing UploadFileView GET")
-        
-        form = ScrapingTaskForm()
 
-        # Fetch tasks with pagination
+        form = ScrapingTaskForm()
         tasks = ScrapingTask.objects.all().order_by('-created_at')
         paginator = Paginator(tasks, 15)
         page_number = request.GET.get('page')
@@ -87,19 +86,16 @@ class UploadFileView(View):
 
         return render(request, 'automation/upload.html', context)
 
-
     @transaction.atomic
     def post(self, request):
         logger.info("Received file upload POST request")
         form = ScrapingTaskForm(request.POST, request.FILES)
 
         if form.is_valid():
-            # Generate the project_title dynamically
             project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
             if form.cleaned_data['subcategory']:
                 project_title += f" - {form.cleaned_data['subcategory'].title}"
 
-            # Set the project_title in the form
             form.initial['project_title'] = project_title
 
             task = ScrapingTask(
@@ -118,7 +114,6 @@ class UploadFileView(View):
             )
             task.save()
 
-            # Extract form data to pass to the scraping task
             form_data = {
                 'country_id': task.country.id if task.country else None,
                 'country_name': task.country_name,
@@ -129,12 +124,7 @@ class UploadFileView(View):
                 'subcategory': task.subcategory.title if task.subcategory else '',
             }
             try:
-                # asynchronous task processing Celery, use delay()
-                # process_scraping_task.delay(task.id, form_data=form_data)
-                
-                # For synchronous processing
                 process_scraping_task(task_id=task.id, form_data=form_data)
-                
                 logger.info(f"Scraping task {task.id} created and queued, project ID: {task.project_id}")
                 return JsonResponse({
                     'status': 'success',
@@ -152,9 +142,9 @@ class UploadFileView(View):
             return JsonResponse({
                 'status': 'error',
                 'message': "There was an error with your submission. Please check the form.",
-                'errors': form.errors  # Return form errors to the frontend
+                'errors': form.errors
             })
-
+        
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
@@ -1149,7 +1139,8 @@ def generate_description(request):
              sub_category=''
 
             # Build the prompt in the chat format
-            system_prompt = "You are a helpful assistant that writes formal business descriptions."
+            system_prompt = "You are a helpful assistant that writes formal business descriptions. You must ALWAYS generate no less from the requested number of words."
+
             user_prompt = (
                 f"Write a 220 words description\n"
                 f"About: '{title}' that is a : '{category}' and '{sub_category}', in '{country}', '{city}'\n"
@@ -1170,7 +1161,7 @@ def generate_description(request):
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                max_tokens=600,
+                max_tokens=900,
                 n=1,
                 stop=None,
                 temperature=0.3,
@@ -1709,6 +1700,7 @@ def parse_address(address):
             break
     
     return parsed
+ 
  
 @transaction.atomic
 def save_business_from_json(task, business_data, query, form_data=None):

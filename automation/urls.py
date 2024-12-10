@@ -118,3 +118,8 @@ handler404 = 'automation.views.custom_404_view'
 if settings.DEBUG:
     print(settings.DEBUG)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
+
+

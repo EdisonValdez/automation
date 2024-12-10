@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
 from django import forms
-from .models import CustomUser, Feedback, UserRole, Destination, Business, BusinessCategory, OpeningHours, AdditionalInfo, Image, Review, ScrapingTask, Category, Level
+from .models import Country, CustomUser, Feedback, UserRole, Destination, Business, BusinessCategory, OpeningHours, AdditionalInfo, Image, Review, ScrapingTask, Category, Level
 
 logger = logging.getLogger(__name__)
 SITE_TYPES_CHOICES = [
@@ -29,10 +29,16 @@ class CustomUserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'mobile')
     inlines = [UserRoleInline]
 
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'code', 'phone_code')
+    search_fields = ('id', 'name__name')  
+
+
 @admin.register(Destination)
 class DestinationAdmin(admin.ModelAdmin):
     list_display = ('name', 'country')
-    search_fields = ('name', 'country')
+    search_fields = ('name', 'country__name')  
 
 class CategoryInline(admin.TabularInline):
     model = BusinessCategory

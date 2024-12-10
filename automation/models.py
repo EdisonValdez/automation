@@ -135,7 +135,7 @@ class Level(models.Model):
     ls_id = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.title} - {self.site_types}"
+        return f"{self.title}"
 
     def get_categories(self):
         """Return all categories associated with this level."""
@@ -291,14 +291,13 @@ class Business(models.Model):
     postal_code = models.CharField(max_length=20, blank=True)
     country = models.CharField(max_length=100, blank=True)   
 
-    # New fields linking to the form submission
-    # New Fields for Form-Submitted Data
+    # Form-Submitted Data
     form_country_id = models.IntegerField(null=True, blank=True)
     form_country_name = models.CharField(max_length=255, null=True, blank=True)
     form_destination_id = models.IntegerField(null=True, blank=True)
     form_destination_name = models.CharField(max_length=255, null=True, blank=True)
 
-    #destination = models.ForeignKey(Destination, on_delete=models.SET_NULL, null=True, blank=True)
+    destination = models.ForeignKey(Destination, on_delete=models.SET_NULL, null=True, blank=True)
 
     # Other fields
     country_code = models.CharField(max_length=2, blank=True, null=True)
