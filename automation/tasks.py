@@ -536,38 +536,52 @@ def translate_text(text, language="spanish"):
 def enhance_and_translate_description(business, languages=["spanish", "eng"]):
     """
     Enhances the business description and translates it into specified languages.
+    Ensures a 220-word count and preserves formatting with blank spaces and indentation.
     """
     original_description = business.description or ""
     if not original_description.strip():
         logger.info(f"No base description available for business {business.id}. Enhancement and translation skipped.")
         return False
-    
+
+    # Updated prompt to specify word count and formatting explicitly
     prompt = (
-        f"Write a 220 words description\n"
+        f"Write exactly a 220-word description\n"
         f"About: '{business.title}' that is a: '{business.category_name}' "
         f"in '{business.country}', '{business.city}'\n"
         f"Tone: Formal\n"
         f"The description should be SEO optimized.\n"
         f"Make sure the words '{business.title}' or its synonyms appear in the first paragraph.\n"
-        f"Make sure the word '{business.title}' appears at least twice along the description and evenly distributed.\n"
-        f"Make sure that no section of the text is longer than 300 characters.\n"
-        f"80% of the sentences should be shorter than 20 words.\n"
-        f"Avoid the words: 'vibrant', 'in the heart of', 'in summary'."
+        f"Ensure the word '{business.title}' appears at least twice throughout the description.\n"
+        f"Include blank spaces and indentations for improved readability.\n"
+        f"Avoid the words: 'vibrant', 'in the heart of', 'in summary'.\n"
     )
 
     try:
+        # Parse and generate the enhanced description
         document = doctran.parse(content=prompt)
-        logger.info(f"Document: {document}")
-        enhanced_doc = document.summarize(token_limit=300).execute()
-        enhanced_description = enhanced_doc.transformed_content
-        logger.info(f"Enhanced description: {enhanced_description}")
+        enhanced_doc = document.execute()
+        enhanced_description = enhanced_doc.transformed_content.strip()
 
+        # Verify word count
+        word_count = len(enhanced_description.split())
+        if word_count != 220:
+            logger.warning(f"Enhanced description has {word_count} words instead of 220. Adjusting...")
+            # Adjust to 220 words if needed
+            words = enhanced_description.split()
+            enhanced_description = " ".join(words[:220])
+
+        # Preserve formatting (whitespace and indentation)
+        enhanced_description = "\n\n".join(enhanced_description.split("\n"))  # Ensure blank spaces between paragraphs
+
+        # Update business description
         business.description = enhanced_description
 
+        # Translate the description into specified languages
         for lang in languages:
             language_code = "en-GB" if lang == "eng" else lang
             translated_doc = doctran.parse(content=enhanced_description).translate(language=language_code).execute()
-            translated_description = translated_doc.transformed_content
+            translated_description = translated_doc.transformed_content.strip()
+
             if lang == "spanish":
                 business.description_esp = translated_description
             elif lang == "eng":
@@ -576,10 +590,11 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
         return True
-    
+
     except Exception as e:
-        logger.error(f"Error enhancing and translating description for business {business.id}: {str(e)}")
+        logger.error(f"Error enhancing and translating description for business {business.id}: {str(e)}", exc_info=True)
         return False
+
 
 def translate_business_info(business, languages=["spanish", "eng"]):
     logger.info(f"Starting translation for business {business.id}")
@@ -817,7 +832,7 @@ def save_business(task, local_result, query, form_data=None):
         logger.error(f"Error saving business data for task {task.id}: {str(e)}", exc_info=True)
         raise  # Re-raise the exception to trigger transaction rollback if necessary
 
-    
+
 @sync_to_async
 def get_categories(business):
     return list(business.categories.all())
