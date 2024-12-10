@@ -797,7 +797,7 @@ def change_business_status(request, business_id):
 @csrf_exempt
 def update_business_status(request, business_id):
     try:
-        business = get_object_or_404(Business, id=business_id)
+        business = get_object_or_404(Business.objects.select_related('task'), id=business_id)
         data = json.loads(request.body)
         new_status = data.get('status', '').strip()
         user_id = data.get('userId')
@@ -846,6 +846,12 @@ def update_business_status(request, business_id):
                         business=business_id, is_approved=True
                     ).all().values_list('image_url', flat=True)
                 )
+                
+                # Set local secret level, category, subcategory ids
+                task_obj = business.task
+                business_data["level_id"] = task_obj.level.ls_id
+                business_data["category_id"] = task_obj.main_category.ls_id
+                business_data["sub_category_id"] = task_obj.subcategory.ls_id if task_obj.subcategory else None
 
                 result_data = {
                     **business_data,

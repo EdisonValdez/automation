@@ -132,6 +132,7 @@ class Level(models.Model):
         choices=SITE_TYPES_CHOICES,
         default='PLACE'
     )
+    ls_id = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.title} - {self.site_types}"
@@ -150,7 +151,8 @@ class Category(models.Model):
     value = models.CharField(max_length=50, unique=True)
     level = models.ForeignKey(Level, on_delete=models.CASCADE)  # Link to Level
     parent = models.ForeignKey('self', null=True, blank=True, related_name='subcategories', on_delete=models.CASCADE)  
-
+    ls_id = models.IntegerField(default=0)
+    
     def __str__(self):
         return self.title
 
