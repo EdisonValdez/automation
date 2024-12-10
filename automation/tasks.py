@@ -532,7 +532,6 @@ def translate_text(text, language="spanish"):
             return None
     return text
 
-
 def enhance_and_translate_description(business, languages=["spanish", "eng"]):
     """
     Enhances the business description and translates it into specified languages.
@@ -543,57 +542,78 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         logger.info(f"No base description available for business {business.id}. Enhancement and translation skipped.")
         return False
 
-    # Updated prompt to specify word count and formatting explicitly
+    # Adjusted prompt to specify the word count requirement
     prompt = (
-        f"Write exactly a 220-word description\n"
+        f"Write a detailed description of exactly 220 words.\n"
         f"About: '{business.title}' that is a: '{business.category_name}' "
-        f"in '{business.country}', '{business.city}'\n"
+        f"located in '{business.city}, {business.country}'.\n"
         f"Tone: Formal\n"
-        f"The description should be SEO optimized.\n"
+        f"The description should be SEO optimized and focus on the business's key features.\n"
         f"Make sure the words '{business.title}' or its synonyms appear in the first paragraph.\n"
-        f"Ensure the word '{business.title}' appears at least twice throughout the description.\n"
-        f"Include blank spaces and indentations for improved readability.\n"
-        f"Avoid the words: 'vibrant', 'in the heart of', 'in summary'.\n"
+        f"The word '{business.title}' must appear at least twice throughout the description.\n"
+        f"Keep sentences concise, with 80% of them shorter than 20 words.\n"
+        f"Separate paragraphs with blank lines for better readability.\n"
+        f"End the description with a compelling call to action.\n"
+        f"Do not use the phrases 'vibrant', 'in the heart of', or 'in summary'."
     )
 
     try:
-        # Parse and generate the enhanced description
+        # Generate enhanced description
         document = doctran.parse(content=prompt)
-        enhanced_doc = document.execute()
-        enhanced_description = enhanced_doc.transformed_content.strip()
+        enhanced_description = document.summarize(token_limit=300).transformed_content.strip()
 
-        # Verify word count
+        # Validate word count
         word_count = len(enhanced_description.split())
-        if word_count != 220:
-            logger.warning(f"Enhanced description has {word_count} words instead of 220. Adjusting...")
-            # Adjust to 220 words if needed
-            words = enhanced_description.split()
-            enhanced_description = " ".join(words[:220])
+        if word_count < 220:
+            logger.warning(f"Enhanced description has only {word_count} words. Expanding content...")
+            additional_content = generate_additional_sentences(business, 220 - word_count)
+            enhanced_description += "\n\n" + additional_content
 
-        # Preserve formatting (whitespace and indentation)
-        enhanced_description = "\n\n".join(enhanced_description.split("\n"))  # Ensure blank spaces between paragraphs
+        # Preserve formatting
+        enhanced_description = "\n\n".join(enhanced_description.split("\n"))
 
-        # Update business description
+        # Assign enhanced description to the business
         business.description = enhanced_description
 
-        # Translate the description into specified languages
+        # Translate into specified languages
         for lang in languages:
             language_code = "en-GB" if lang == "eng" else lang
-            translated_doc = doctran.parse(content=enhanced_description).translate(language=language_code).execute()
-            translated_description = translated_doc.transformed_content.strip()
+            translated_doc = doctran.parse(content=enhanced_description).translate(language=language_code).transformed_content.strip()
 
             if lang == "spanish":
-                business.description_esp = translated_description
+                business.description_esp = translated_doc
             elif lang == "eng":
-                business.description_eng = translated_description
+                business.description_eng = translated_doc
 
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
         return True
 
+    except AttributeError as e:
+        logger.error(f"Error: {e}. Check `doctran` library methods or replace `execute` with the correct method.")
+        return False
+
     except Exception as e:
         logger.error(f"Error enhancing and translating description for business {business.id}: {str(e)}", exc_info=True)
         return False
+
+
+def generate_additional_sentences(business, word_deficit):
+    """
+    Generates additional sentences to meet the required word count.
+    """
+    try:
+        prompt = (
+            f"Generate additional content of about {word_deficit} words to describe:\n"
+            f"'{business.title}', a '{business.category_name}' located in '{business.city}, {business.country}'.\n"
+            f"Focus on its unique features, offerings, and appeal to customers."
+        )
+        document = doctran.parse(content=prompt)
+        additional_sentences = document.summarize(token_limit=word_deficit * 2).transformed_content.strip()
+        return additional_sentences
+    except Exception as e:
+        logger.error(f"Error generating additional sentences: {str(e)}", exc_info=True)
+        return ""
 
 
 def translate_business_info(business, languages=["spanish", "eng"]):
