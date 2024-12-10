@@ -1138,15 +1138,15 @@ def generate_description(request):
             # Build the prompt in the chat format
             system_prompt = "You are a helpful assistant that writes formal business descriptions."
             user_prompt = (
-                f"Write a 220 words description
-                About: '{title}' that is a : '{category}, in '{city}'
-                Tone: Formal
-                The description should be SEO optimized.
-                Make sure the words '{title}' or its synonyms appear in the first paragraph
-                Make sure the word '{title}' appears at least twice along the description and evenly distributed.
-                Make sure that no section of the text is longer than 300 characters.
-                80% of the sentences should be shorter than 20 words.
-                Avoid the word: 'vibrant, 'in the heart of', 'in summary'."
+                f"Write a 220 words description\n"
+                f"About: '{title}' that is a : '{category}', in '{country}', '{city}'\n"
+                f"Tone: Formal\n"
+                f"The description should be SEO optimized.\n"
+                f"Make sure the words '{title}' or its synonyms appear in the first paragraph.\n"
+                f"Make sure the word '{title}' appears at least twice along the description and evenly distributed.\n"
+                f"Make sure that no section of the text is longer than 300 characters.\n"
+                f"80% of the sentences should be shorter than 20 words.\n"
+                f"Avoid the words: 'vibrant', 'in the heart of', 'in summary'."
             )
 
             openai.api_key = settings.OPENAI_API_KEY
@@ -1160,7 +1160,7 @@ def generate_description(request):
                 max_tokens=600,
                 n=1,
                 stop=None,
-                temperature=0.7,
+                temperature=0.3,
             )
 
             description = response['choices'][0]['message']['content'].strip()
