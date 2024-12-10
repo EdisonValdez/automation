@@ -1134,12 +1134,15 @@ def generate_description(request):
             city = data.get('city')
             country = data.get('country')
             category = data.get('category')
+            sub_category = data.get('sub_category')
+            if sub_category != None:
+             sub_category=''
 
             # Build the prompt in the chat format
             system_prompt = "You are a helpful assistant that writes formal business descriptions."
             user_prompt = (
                 f"Write a 220 words description\n"
-                f"About: '{title}' that is a : '{category}', in '{country}', '{city}'\n"
+                f"About: '{title}' that is a : '{category}' and '{sub_category}', in '{country}', '{city}'\n"
                 f"Tone: Formal\n"
                 f"The description should be SEO optimized.\n"
                 f"Make sure the words '{title}' or its synonyms appear in the first paragraph.\n"

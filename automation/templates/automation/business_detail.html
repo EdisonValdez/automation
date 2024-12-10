@@ -166,9 +166,7 @@
                                 {% if business.level_title %}
                                 <span id="level_title-display">{{ business.level_title }}</span>
                                 <input type="text" name="level_title" id="level_title-edit" class="form-control ms-2" value="{{ business.level_title }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('level_title')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
+                                
                                 {% else %}
                                 <span class="text-muted">N/A</span>
                                 {% endif %}
