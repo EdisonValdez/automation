@@ -486,7 +486,7 @@ def download_images(business, local_result):
                 except Exception as e:
                     logger.error(f"Error downloading image {i} for business {business.id}: {str(e)}", exc_info=True)
 
-            time.sleep(1)  # To avoid overloading the server
+            time.sleep(2)  
 
         # Set the first image as the main image if it exists
         first_image = Image.objects.filter(business=business).order_by('order').first()
@@ -532,70 +532,120 @@ def translate_text(text, language="spanish"):
             return None
     return text
 
+import openai
+
 def enhance_and_translate_description(business, languages=["spanish", "eng"]):
     """
     Enhances the business description and translates it into specified languages.
-    Ensures a 220-word count and preserves formatting with blank spaces and indentation.
+    Ensures a minimum of 220 words and proper formatting with blank spaces and line breaks.
     """
     original_description = business.description or ""
     if not original_description.strip():
         logger.info(f"No base description available for business {business.id}. Enhancement and translation skipped.")
         return False
 
-    # Adjusted prompt to specify the word count requirement
     prompt = (
-        f"Write a detailed description of exactly 220 words.\n"
-        f"About: '{business.title}' that is a: '{business.category_name}' "
-        f"located in '{business.city}, {business.country}'.\n"
+        f"Write a detailed description of at least 220 words.\n"
+        f"About: '{business.title}', a '{business.category_name}' located in '{business.city}, {business.country}'.\n"
         f"Tone: Formal\n"
-        f"The description should be SEO optimized and focus on the business's key features.\n"
-        f"Make sure the words '{business.title}' or its synonyms appear in the first paragraph.\n"
-        f"The word '{business.title}' must appear at least twice throughout the description.\n"
-        f"Keep sentences concise, with 80% of them shorter than 20 words.\n"
+        f"The description should be SEO optimized, highlighting the business's key features and appeal.\n"
+        f"Ensure that '{business.title}' or its synonyms appear in the first paragraph.\n"
+        f"Use '{business.title}' at least twice throughout the description.\n"
+        f"Keep sentences concise, with 80% shorter than 20 words.\n"
         f"Separate paragraphs with blank lines for better readability.\n"
-        f"End the description with a compelling call to action.\n"
         f"Do not use the phrases 'vibrant', 'in the heart of', or 'in summary'."
     )
 
     try:
-        # Generate enhanced description
-        document = doctran.parse(content=prompt)
-        enhanced_description = document.summarize(token_limit=300).transformed_content.strip()
+        # Generate enhanced description using OpenAI's newer models
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert SEO content writer."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+        )
+        enhanced_description = response['choices'][0]['message']['content'].strip()
 
-        # Validate word count
+        # Validate word count and expand if necessary
         word_count = len(enhanced_description.split())
         if word_count < 220:
             logger.warning(f"Enhanced description has only {word_count} words. Expanding content...")
-            additional_content = generate_additional_sentences(business, 220 - word_count)
+            additional_content = generate_additional_sentences_openai(business, 220 - word_count)
             enhanced_description += "\n\n" + additional_content
-
-        # Preserve formatting
-        enhanced_description = "\n\n".join(enhanced_description.split("\n"))
 
         # Assign enhanced description to the business
         business.description = enhanced_description
 
-        # Translate into specified languages
+        # Translate the enhanced description
         for lang in languages:
-            language_code = "en-GB" if lang == "eng" else lang
-            translated_doc = doctran.parse(content=enhanced_description).translate(language=language_code).transformed_content.strip()
+            language_code = "en-GB" if lang == "eng" else "es"  # Using ISO language codes
+            translated_description = translate_text_openai(enhanced_description, language_code)
 
             if lang == "spanish":
-                business.description_esp = translated_doc
+                business.description_esp = translated_description
             elif lang == "eng":
-                business.description_eng = translated_doc
+                business.description_eng = translated_description
 
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
         return True
 
-    except AttributeError as e:
-        logger.error(f"Error: {e}. Check `doctran` library methods or replace `execute` with the correct method.")
+    except openai.error.OpenAIError as e:
+        logger.error(f"OpenAI API error: {str(e)}")
         return False
-
     except Exception as e:
         logger.error(f"Error enhancing and translating description for business {business.id}: {str(e)}", exc_info=True)
         return False
+
+
+def generate_additional_sentences_openai(business, word_deficit):
+    """
+    Generates additional content using OpenAI to meet the required word count.
+    """
+    prompt = (
+        f"Write additional content of about {word_deficit} words to describe:\n"
+        f"'{business.title}', a '{business.category_name}' located in '{business.city}, {business.country}'.\n"
+        f"Focus on its unique features, offerings, and appeal to customers.\n"
+    )
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert content writer."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except openai.error.OpenAIError as e:
+        logger.error(f"Error generating additional sentences: {str(e)}", exc_info=True)
+        return ""
+
+
+def translate_text_openai(text, target_language):
+    """
+    Translates the given text into the specified language using OpenAI's newer models.
+    """
+    prompt = (
+        f"Translate the following text into {target_language}:\n\n"
+        f"{text}\n\n"
+        f"Preserve the structure, formatting, and tone of the original text."
+    )
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert translator."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+        )
+        return response['choices'][0]['message']['content'].strip()
+    except openai.error.OpenAIError as e:
+        logger.error(f"Error translating text: {str(e)}", exc_info=True)
+        return ""
 
 
 def generate_additional_sentences(business, word_deficit):
