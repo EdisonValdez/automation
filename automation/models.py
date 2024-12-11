@@ -36,7 +36,7 @@ class Country(models.Model):
     name = models.CharField(max_length=500, verbose_name=_('Name'))
     code = models.CharField(max_length=3, verbose_name=_('ISO Code'))
     phone_code = models.CharField(max_length=10, default=34, verbose_name=_('Phone code'))
-
+    ls_id = models.IntegerField(default=0)
     class Meta:
         verbose_name = _('Country')
         verbose_name_plural = _('Countries')
@@ -67,7 +67,7 @@ class Destination(models.Model):
         blank=True,
         related_name='ambassador_destinations'
     )
- 
+    ls_id = models.IntegerField(default=0) 
     class Meta:
         verbose_name = _('Destination')
         verbose_name_plural = _('Destinations')
@@ -76,9 +76,7 @@ class Destination(models.Model):
         return f"{self.name}, {self.country.name}"
 
     def get_ambassador_count(self):
-        # Use get_user_model to ensure it works with the custom user model
         User = get_user_model()
-        # Assuming 'ambassador' is a role or attribute on the user model
         return User.objects.filter(destinations=self, roles__role='AMBASSADOR').count()
  
 class CustomUser(AbstractUser):
@@ -351,11 +349,16 @@ class Business(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        if self.operating_hours:
+            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            self.operating_hours = {day: self.operating_hours.get(day, None) for day in ordered_days}
+
         if not self.id:
             logger.info(f"Creating new Business: {self.title}")
         else:
             logger.info(f"Updating Business {self.id}: {self.title}")
         super().save(*args, **kwargs)
+
 
     class Meta:
         verbose_name_plural = "Businesses"
@@ -503,3 +506,4 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback for {self.business.title} - {self.get_status_display()}"
+ 

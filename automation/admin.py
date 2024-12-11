@@ -31,14 +31,14 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 @admin.register(Country)
 class CountryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'code', 'phone_code')
-    search_fields = ('id', 'name__name')  
+    list_display = ('id', 'ls_id', 'name', 'code', 'phone_code')
+    search_fields = ('id', 'ls_id', 'name__name')  
 
 
 @admin.register(Destination)
 class DestinationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'country')
-    search_fields = ('name', 'country__name')  
+    list_display = ('name', 'ls_id',  'country')
+    search_fields = ('name', 'ls_id',  'country__name')  
 
 class CategoryInline(admin.TabularInline):
     model = BusinessCategory
