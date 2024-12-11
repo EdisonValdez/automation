@@ -886,14 +886,18 @@ def update_business_status(request, business_id):
                 'new_status_count': new_status_count
             })
         else:
+            logger.error("Invalid status")
             return JsonResponse(
                 {'status': 'error', 'message': 'Invalid status'},
                 status=400)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.error(f"Json decode error: {str(e)}")
         return JsonResponse(
             {'status': 'error', 'message': 'Invalid JSON'},
             status=400)
     except Exception as e:
+        logger.error("Update business status exception: ")
+        logger.error(str(e))
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
