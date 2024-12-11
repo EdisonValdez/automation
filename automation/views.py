@@ -898,6 +898,10 @@ def update_business_status(request, business_id):
     except Exception as e:
         logger.error("Update business status exception: ")
         logger.error(str(e))
+        if (tb := traceback.extract_tb(e.__traceback__)):
+            last_traceback = tb[-1]
+            debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
+            logger.error("Traceback Error: %s", debugger)
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
