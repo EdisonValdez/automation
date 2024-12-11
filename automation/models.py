@@ -36,6 +36,7 @@ class Country(models.Model):
     name = models.CharField(max_length=500, verbose_name=_('Name'))
     code = models.CharField(max_length=3, verbose_name=_('ISO Code'))
     phone_code = models.CharField(max_length=10, default=34, verbose_name=_('Phone code'))
+    ls_id = models.IntegerField(default=0, db_comment="Reference of Local secret's Country model.")
 
     class Meta:
         verbose_name = _('Country')
@@ -67,6 +68,7 @@ class Destination(models.Model):
         blank=True,
         related_name='ambassador_destinations'
     )
+    ls_id = models.IntegerField(default=0, db_comment="Reference of Local secret's City model.")
  
     class Meta:
         verbose_name = _('Destination')
@@ -132,7 +134,7 @@ class Level(models.Model):
         choices=SITE_TYPES_CHOICES,
         default='PLACE'
     )
-    ls_id = models.IntegerField(default=0)
+    ls_id = models.IntegerField(default=0, db_comment="Reference of Local secret's Level model.")
 
     def __str__(self):
         return f"{self.title}"
@@ -151,8 +153,8 @@ class Category(models.Model):
     value = models.CharField(max_length=50, unique=True)
     level = models.ForeignKey(Level, on_delete=models.CASCADE)  # Link to Level
     parent = models.ForeignKey('self', null=True, blank=True, related_name='subcategories', on_delete=models.CASCADE)  
-    ls_id = models.IntegerField(default=0)
-    
+    ls_id = models.IntegerField(default=0, db_comment="Reference of Local secret's Category / Sub category model.")
+
     def __str__(self):
         return self.title
 
