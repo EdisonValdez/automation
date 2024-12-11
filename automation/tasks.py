@@ -531,7 +531,7 @@ def translate_text(text, language="spanish"):
             logger.error(f"Translation error: {str(e)}", exc_info=True)
             return None
     return text
-
+ 
 import openai
 
 def enhance_and_translate_description(business, languages=["spanish", "eng"]):
@@ -575,19 +575,42 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
             additional_content = generate_additional_sentences_openai(business, 220 - word_count)
             enhanced_description += "\n\n" + additional_content
 
-        # Assign enhanced description to the business
+        # Keep the original US English description
         business.description = enhanced_description
 
-        # Translate the enhanced description
+        # Translate the enhanced description into specified languages
         for lang in languages:
-            language_code = "en-GB" if lang == "eng" else "es"  # Using ISO language codes
-            translated_description = translate_text_openai(enhanced_description, language_code)
+            if lang == "spanish":
+                language_code = "es"
+                prompt_translation = (
+                    f"Translate the following text into Spanish:\n\n"
+                    f"{enhanced_description}\n\n"
+                    f"Preserve the structure, formatting, and tone of the original text."
+                )
+            elif lang == "eng":
+                language_code = "en-GB"
+                prompt_translation = (
+                    f"Localize the following text to British English:\n\n"
+                    f"{enhanced_description}\n\n"
+                    f"Use British English spellings, idioms, and formatting conventions."
+                )
+
+            response_translation = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "You are an expert translator."},
+                    {"role": "user", "content": prompt_translation}
+                ],
+                temperature=0.7,
+            )
+            translated_description = response_translation['choices'][0]['message']['content'].strip()
 
             if lang == "spanish":
                 business.description_esp = translated_description
             elif lang == "eng":
                 business.description_eng = translated_description
 
+        # Save the business with all translations
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
         return True
