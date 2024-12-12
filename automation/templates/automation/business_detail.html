@@ -224,9 +224,9 @@
                             <label class="form-label">
                                 <i class="fas fa-hashtag me-2"></i> Tags</label>
                             <div class="card-body d-flex align-items-center">
-                                <span id="category_name-display">{{ business.category_name|default:"N/A" }}</span>
-                                <input type="text" name="category_name" id="category_name-edit" class="form-control ms-2" value="{{ business.category_name }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('category_name')">
+                                <span id="tailored_category-display">{{ business.tailored_category|default:"N/A" }}</span>
+                                <input type="text" name="tailored_category" id="tailored_category-edit" class="form-control ms-2" value="{{ business.tailored_category }}" style="display:none;">
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('tailored_category')">
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>
                             </div>
@@ -277,27 +277,66 @@
             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
                 <div class="box left-dot">
                     <div class="box-body">
-                        <!-- Service Options -->
+                        <!-- Service Options Button -->
                         <div class="row gy-3">
                             <div class="col-md-12">
                                 <label class="form-label">
                                     <i class="fas fa-concierge-bell me-2"></i> Service Options
                                 </label>
                                 {% if business.service_options %}
-                                <div id="service-options-display">
-                                    <ul class="card-body list-unstyled">
-                                        {% for option, value in business.service_options.items %}
-                                        <li>{{ option|title }}: {{ value|yesno:"Yes,No" }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#serviceOptionsModal">
+                                        <i class="fas fa-eye me-1"></i> View Service Options
+                                    </button>
                                 {% else %}
-                                <br>
-                                <p>No service options available.</p>
+                                    <br>
+                                    <p>No service options available.</p>
                                 {% endif %}
                             </div>
                         </div>
-            
+
+                        <!-- Service Options Modal -->
+                        {% if business.service_options %}
+                        <div class="modal fade" id="serviceOptionsModal" tabindex="-1" aria-labelledby="serviceOptionsModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="serviceOptionsModalLabel">
+                                            <i class="fas fa-concierge-bell me-2"></i> Service Options for {{ business.title }}
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            {% for category in business.service_options %}
+                                                {% for category_name, options in category.items %}
+                                                    <div class="col-md-3 mb-4">
+                                                        <div class="service-category">
+                                                            <h6 class="text-primary">
+                                                                <i class="fas fa-info-circle me-2"></i>
+                                                                {{ category_name|title }}
+                                                            </h6>
+                                                            <ul class="list-unstyled ms-4">
+                                                                {% for option in options %}
+                                                                    <li class="mb-1">
+                                                                        <i class="fas fa-check text-success me-2"></i>
+                                                                        {{ option }}
+                                                                    </li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <!-- Operating Hours -->
                         <div class="row gy-3">
                             <div class="col-md-12">
@@ -834,7 +873,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.addEventListener('DOMContentLoaded', function() {
         // Restore toggled edit states on page load
-        const fields = ['title', 'website', 'status', 'city', 'price', 'phone', 'address', 'level_title', 'description', 'description-eng', 'description-esp', 'categories', 'main_category', 'types', 'operating_hours', 'tailored_category'];
+        const fields = ['title', 'website', 'status', 'city', 'price', 'phone', 'address', 'postal_code', 'level_title', 'description', 'description-eng', 'description-esp', 'categories', 'main_category', 'types', 'operating_hours', 'tailored_category'];
         fields.forEach(field => {
             if (localStorage.getItem(`${field}-edit`) === 'true') {
                 toggleEdit(field);
@@ -962,7 +1001,6 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(response => response.json())
             .then(result => {
-                // Close the loading modal
                 Swal.close();
 
                 if (result.success) {
@@ -978,9 +1016,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             })
             .catch(error => {
-                // Close the loading modal
                 Swal.close();
-
                 console.error('Error:', error);
                 toastr.error('An error occurred while generating the description.');
             });

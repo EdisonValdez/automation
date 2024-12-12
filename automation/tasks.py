@@ -774,70 +774,87 @@ def enhance_translate_and_summarize_business(business_id, languages=["spanish", 
 
 
 #####################DESCRIPTION TRANSLATE##################################
- 
 
+def extract_address_components(address_string):
+    """
+    Extract address components from a full address string.
+    Example: "Carrer del Call, 17, Ciutat Vella, 08002 Barcelona, Spain"
+    """
+    components = {
+        'street_address': '',
+        'postal_code': ''
+    }
+    
+    if not address_string:
+        return components
+
+    try:
+        # First, try to find the postal code (5 digits)
+        postal_code_match = re.search(r'\b\d{5}\b', address_string)
+        
+        if postal_code_match:
+            components['postal_code'] = postal_code_match.group(0)
+            # Split address by comma and take parts before the postal code
+            parts = [part.strip() for part in address_string.split(',')]
+            
+            # Find which part contains the postal code
+            postal_code_part_index = None
+            for i, part in enumerate(parts):
+                if components['postal_code'] in part:
+                    postal_code_part_index = i
+                    break
+            
+            if postal_code_part_index is not None:
+                # Take all parts before the postal code for the street address
+                components['street_address'] = ', '.join(parts[:postal_code_part_index]).strip()
+            else:
+                components['street_address'] = parts[0]
+        else:
+            # If no postal code found, take first part as street
+            parts = [part.strip() for part in address_string.split(',')]
+            components['street_address'] = parts[0]
+            
+        logger.info(f"Parsed address components from: {address_string}")
+        logger.info(f"Street: {components['street_address']}")
+        logger.info(f"Postal Code: {components['postal_code']}")
+        
+    except Exception as e:
+        logger.error(f"Error parsing address: {str(e)}")
+        parts = address_string.split(',')
+        components['street_address'] = parts[0] if parts else address_string
+    
+    return components
 
 def fill_missing_address_components(business_data, task, query, form_data=None):
     """
-    Fills in any missing address components using existing data from the same task or by extracting from the query.
-    Prioritizes form data if provided.
+    Fills the missing address components, prioritizing form data if provided.
     """
-    # Use form data if available
+    logger.info("Filling missing address components...")
+ 
     if form_data:
         business_data['country'] = form_data.get('country', business_data.get('country', ''))
-        business_data['city'] = form_data.get('destination', business_data.get('city', ''))  # Ensure this is intended
+        business_data['city'] = form_data.get('destination', business_data.get('city', ''))
         business_data['level'] = form_data.get('level', business_data.get('level', ''))
         business_data['main_category'] = form_data.get('main_category', business_data.get('main_category', ''))
         business_data['tailored_category'] = form_data.get('subcategory', business_data.get('tailored_category', ''))
-
-    task_businesses = Business.objects.filter(task=task)
-    address_components = defaultdict(set)
-    for b in task_businesses:
-        if b.country:
-            address_components['country'].add(b.country)
-        if b.state:
-            address_components['state'].add(b.state)
-        if b.city:
-            address_components['city'].add(b.city)
-
+ 
     if not business_data.get('country'):
-        if address_components['country']:
-            business_data['country'] = next(iter(address_components['country']))
-            logger.debug(f"Filled missing country with existing data: {business_data['country']}")
-    
-    if not business_data.get('state'):
-        if address_components['state']:
-            business_data['state'] = next(iter(address_components['state']))
-            logger.debug(f"Filled missing state with existing data: {business_data['state']}")
+        business_data['country'] = query.split(',')[-1].strip()
     
     if not business_data.get('city'):
-        if address_components['city']:
-            business_data['city'] = next(iter(address_components['city']))
-            logger.debug(f"Filled missing city with existing data: {business_data['city']}")
+        business_data['city'] = query.split(',')[0].strip()
 
-    # If we still don't have a country, state, or city, use parts of the query as a last resort
-    if not business_data['country']:
-        business_data['country'] = query.split(',')[-1].strip()
-        logger.warning(f"Filled missing country by splitting query: {business_data['country']}")
-    if not business_data['state']:
-        business_data['state'] = query.split(',')[-2].strip() if len(query.split(',')) > 1 else ''
-        logger.warning(f"Filled missing state by splitting query: {business_data['state']}")
-    if not business_data['city']:
-        business_data['city'] = query.split(',')[0].strip()  # Corrected line
-        logger.warning(f"Filled missing city by splitting query: {business_data['city']}")
+    logger.info(f"Final address components:")
+    logger.info(f"Street: {business_data.get('address', '')}")
+    logger.info(f"Postal Code: {business_data.get('postal_code', '')}")
+    logger.info(f"City: {business_data.get('city', '')}")
+    logger.info(f"Country: {business_data.get('country', '')}")
 
-    # Ensure we have at least a country
-    if not business_data['country']:
-        business_data['country'] = 'Unknown'
-        logger.error("Failed to fill country; set to 'Unknown'")
 
- 
- 
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):
     logger.info(f"Saving business data for task {task.id}")
-    try:
- 
+    try: 
         business_data = {
             'task': task,
             'project_id': task.project_id,
@@ -858,6 +875,21 @@ def save_business(task, local_result, query, form_data=None):
         }
 
         logger.info(f"Local result data: {local_result}") 
+        if 'address' in local_result:
+            full_address = local_result['address']
+            business_data['address'] = full_address  
+ 
+            address_components = extract_address_components(full_address)
+ 
+            # Set street and postal_code
+            business_data['street'] = address_components['street_address']
+            business_data['postal_code'] = address_components['postal_code']
+            
+            logger.info(f"Extracted address components:")
+            logger.info(f"Full Address: {full_address}")
+            logger.info(f"Street: {business_data['street']}")
+            logger.info(f"Postal Code: {business_data['postal_code']}")
+
         field_mapping = {
             'position': 'rank',
             'title': 'title',
@@ -867,8 +899,10 @@ def save_business(task, local_result, query, form_data=None):
             'rating': 'rating',
             'reviews': 'reviews_count',
             'price': 'price',
-            'type': 'tailored_category',
+            'types': 'type',
             'address': 'address',
+            'postal_code': 'postal_code',
+            'city': 'city',
             'phone': 'phone',
             'website': 'website',
             'description': 'description',
@@ -879,21 +913,81 @@ def save_business(task, local_result, query, form_data=None):
             if local_result.get(api_field) is not None:
                 business_data[model_field] = local_result[api_field]
         logger.info(f"Business data to be saved: {business_data}")
-
-        # Handle GPS coordinates
+ 
         if 'gps_coordinates' in local_result:
             business_data['latitude'] = local_result['gps_coordinates'].get('latitude')
             business_data['longitude'] = local_result['gps_coordinates'].get('longitude')
 
-        # Handle types and operating hours
-        if 'types' in local_result:
+        if 'type' in local_result: 
+            business_data['types'] = ', '.join(local_result['type'])
+        elif 'types' in local_result: 
             business_data['types'] = ', '.join(local_result['types'])
-        if 'operating_hours' in local_result:
-            business_data['operating_hours'] = local_result['operating_hours']
-        if 'service_options' in local_result:
-            business_data['service_options'] = local_result['service_options']
+        
+        ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
-        # Call the updated fill_missing_address_components function
+        if 'hours' in local_result:
+            hours_data = local_result['hours']
+            formatted_hours = {day: None for day in ordered_days}  # Initialize with None values
+
+            if isinstance(hours_data, dict):
+                # If hours_data is already a dictionary
+                for day in ordered_days:
+                    formatted_hours[day] = hours_data.get(day, None)
+            
+            elif isinstance(hours_data, list):
+                # If hours_data is a list of schedules
+                for schedule_item in hours_data:
+                    if isinstance(schedule_item, dict):
+                        # Update formatted_hours with any found schedules
+                        formatted_hours.update(schedule_item)
+
+            business_data['operating_hours'] = formatted_hours
+            logger.info(f"Formatted hours data: {formatted_hours}")
+
+
+        elif 'operating_hours' in local_result:
+            hours_data = local_result['operating_hours']
+            formatted_hours = {}
+            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            
+            if isinstance(hours_data, dict):
+                formatted_hours = {
+                    day: hours_data.get(day, None) 
+                    for day in ordered_days
+                }
+            elif isinstance(hours_data, list):
+                for day in ordered_days:
+                    day_schedule = next(
+                        (schedule for schedule in hours_data 
+                        if isinstance(schedule, str) and day in schedule.lower()),
+                        None
+                    )
+                    formatted_hours[day] = day_schedule
+            
+            business_data['operating_hours'] = formatted_hours
+            
+        if 'extensions' in local_result:
+            extensions = local_result['extensions']
+            if isinstance(extensions, list):
+                cleaned_extensions = []
+                for category_dict in extensions:
+                    if isinstance(category_dict, dict):
+                        for category, values in category_dict.items():
+                            if values:  
+                                cleaned_extensions.append({category: values})
+                business_data['service_options'] = cleaned_extensions
+                logger.info(f"Processed extensions data: {cleaned_extensions}")
+        elif 'service_options' in local_result:
+            service_opts = local_result['service_options']
+            if isinstance(service_opts, dict):
+                formatted_options = [{
+                    'general': [
+                        f"{key}: {'Yes' if value else 'No'}"
+                        for key, value in service_opts.items()
+                    ]
+                }]
+                business_data['service_options'] = formatted_options
+ 
         fill_missing_address_components(business_data, task, query, form_data=form_data)
 
         if 'place_id' not in business_data:
@@ -904,13 +998,11 @@ def save_business(task, local_result, query, form_data=None):
             place_id=business_data['place_id'],
             defaults=business_data
         )
-
         if created:
             logger.info(f"New business created: {business.title} (ID: {business.id})")
         else:
             logger.info(f"Existing business updated: {business.title} (ID: {business.id})")
-
-        # Save categories from business_data['categories'] (assumed to be category IDs)
+ 
         categories = local_result.get('categories', [])
         for category_id in categories:
             try:
@@ -919,7 +1011,6 @@ def save_business(task, local_result, query, form_data=None):
             except Category.DoesNotExist:
                 logger.warning(f"Category ID {category_id} does not exist.")
 
-        # Save additional info
         additional_info = [
             AdditionalInfo(
                 business=business,
@@ -930,16 +1021,16 @@ def save_business(task, local_result, query, form_data=None):
         ]
         AdditionalInfo.objects.bulk_create(additional_info, ignore_conflicts=True)
         logger.info(f"Additional data saved for business {business.id}")
-
-        # Handle service options
+ 
         service_options = local_result.get('serviceOptions', {})
         if service_options:
             business.service_options = service_options
             business.save()
 
         logger.info(f"All business data processed and saved for business {business.id}")
-
-        # Handle image downloading separately to prevent transaction rollback
+        logger.info(f"Address components saved - Street: {business.street}, "
+            f"Postal Code: {business.postal_code}, City: {business.city}")
+ 
         try:
             image_paths = download_images(business, local_result)
             logger.info(f"Downloaded {len(image_paths)} images for business {business.id}")
@@ -951,6 +1042,42 @@ def save_business(task, local_result, query, form_data=None):
     except Exception as e:
         logger.error(f"Error saving business data for task {task.id}: {str(e)}", exc_info=True)
         raise  # Re-raise the exception to trigger transaction rollback if necessary
+
+def generate_full_address(business_data):
+    """
+    Generates a full address string from individual components.
+    """
+    address_components = [
+        business_data.get('address'),
+        business_data.get('city'),
+        f"{business_data.get('state', '')} {business_data.get('postal_code', '')}".strip(),
+        business_data.get('country')
+    ]
+    return ", ".join(filter(None, address_components))  
+
+def format_operating_hours(hours_data):
+    """
+    Format operating hours data into a consistent structure
+    """
+    ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    formatted_hours = {day: None for day in ordered_days}
+
+    if not hours_data:
+        return formatted_hours
+
+    if isinstance(hours_data, dict):
+        # Handle dictionary format
+        for day in ordered_days:
+            formatted_hours[day] = hours_data.get(day)
+    
+    elif isinstance(hours_data, list):
+        # Handle list format
+        for item in hours_data:
+            if isinstance(item, dict):
+                # Update with any found schedules
+                formatted_hours.update(item)
+
+    return formatted_hours
 
 
 @sync_to_async
@@ -1112,8 +1239,7 @@ def update_business_details(business_id):
         if "error" in results:
             logger.error(f"API Error for business {business_id}: {results['error']}")
             return
-
-        # Update business details
+ 
         business.phone = results.get('phone', business.phone)
         business.address = results.get('address', business.address)
         business.website = results.get('website', business.website)

@@ -800,8 +800,7 @@ def update_business_status(request, business_id):
         data = json.loads(request.body)
         new_status = data.get('status', '').strip()
         user_id = data.get('userId')
-
-        # Validate description
+ 
         if not business.description or business.description.strip() in ['', 'None']:
             # Automatically set to PENDING if in a higher status
             if business.status in ['REVIEWED', 'IN_PRODUCTION']:
@@ -944,8 +943,7 @@ def submit_feedback(request, business_id):
     else:
         logger.warning("Invalid request method for feedback.")
         return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
-
-
+ 
 @login_required
 def business_list(request):
     if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
@@ -968,8 +966,7 @@ def business_list(request):
         'businesses': page_obj.object_list,
         'page_obj': page_obj,
     })
-
-
+ 
 @login_required
 def business_detail(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -1059,9 +1056,7 @@ def update_business(request, business_id):
                 'success': False,
                 'errors': {'description': 'Description cannot be blank or None'}
             })
-
-
-        # Handle 'service_options' JSON
+ 
         service_options_str = post_data.get('service_options', '').strip()
         logger.debug("Service Options String from POST: %s", service_options_str)
 
@@ -1074,7 +1069,6 @@ def update_business(request, business_id):
         except json.JSONDecodeError:
             return JsonResponse({'success': False, 'errors': {'service_options': 'Invalid JSON format'}})
 
-        # Handle 'operating_hours' JSON
         operating_hours_str = post_data.get('operating_hours', '').strip()
         logger.debug("Operating Hours String from POST: %s", operating_hours_str)
 
@@ -1226,25 +1220,72 @@ def enhance_translate_business(request, business_id):
 @csrf_exempt
 def update_business_hours(request):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        business_id = data.get('business_id')
-        hours = data.get('hours')
-
-        # Ensure 'hours' is a dictionary (key-value pairs for each day)
-        if not isinstance(hours, dict):
-            return JsonResponse({'status': 'error', 'message': 'Invalid hours format.'})
-
         try:
-            business = Business.objects.get(id=business_id)
-            business.operating_hours = hours
+            data = json.loads(request.body)
+            business_id = data.get('business_id')
+            hours = data.get('hours')
+
+            logger.debug(f"Received hours data: {hours}")
+
+            if not hours:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'No hours data provided.'
+                })
+
+            try:
+                business = Business.objects.get(id=business_id)
+            except Business.DoesNotExist:
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Business not found.'
+                })
+
+            # Format the hours data
+            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            formatted_hours = {day: None for day in ordered_days}
+
+            if isinstance(hours, list):
+                # Handle list of dictionaries format
+                for day_dict in hours:
+                    if isinstance(day_dict, dict):
+                        for day, schedule in day_dict.items():
+                            day = day.lower()
+                            if day in ordered_days:
+                                formatted_hours[day] = schedule
+            elif isinstance(hours, dict):
+                # Handle direct dictionary format
+                for day in ordered_days:
+                    formatted_hours[day] = hours.get(day)
+
+            logger.debug(f"Formatted hours: {formatted_hours}")
+
+            # Update business hours
+            business.operating_hours = formatted_hours
             business.save()
-            return JsonResponse({'status': 'success'})
-        except Business.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Business not found.'})
+
+            return JsonResponse({
+                'status': 'success',
+                'hours': formatted_hours
+            })
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error', 
+                'message': 'Invalid JSON format.'
+            })
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            logger.error(f"Error updating business hours: {str(e)}")
+            return JsonResponse({
+                'status': 'error', 
+                'message': f'An error occurred: {str(e)}'
+            })
     else:
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+        return JsonResponse({
+            'status': 'error', 
+            'message': 'Invalid request method.'
+        })
+
   
 @require_POST
 @csrf_exempt  

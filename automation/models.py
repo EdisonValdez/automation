@@ -353,13 +353,33 @@ class Business(models.Model):
     def save(self, *args, **kwargs):
         if self.operating_hours:
             ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-            self.operating_hours = {day: self.operating_hours.get(day, None) for day in ordered_days}
+            
+            if isinstance(self.operating_hours, list):
+                # Handle list format
+                formatted_hours = {}
+                for day in ordered_days:
+                    day_schedule = next(
+                        (schedule for schedule in self.operating_hours 
+                        if isinstance(schedule, str) and day in schedule.lower()),
+                        None
+                    )
+                    formatted_hours[day] = day_schedule
+                self.operating_hours = formatted_hours
+                
+            elif isinstance(self.operating_hours, dict):
+                # Handle dictionary format
+                self.operating_hours = {
+                    day: self.operating_hours.get(day, None) 
+                    for day in ordered_days
+                }
 
         if not self.id:
             logger.info(f"Creating new Business: {self.title}")
         else:
             logger.info(f"Updating Business {self.id}: {self.title}")
+        
         super().save(*args, **kwargs)
+
 
 
     class Meta:
