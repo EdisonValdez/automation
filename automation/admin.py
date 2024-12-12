@@ -236,8 +236,8 @@ class BaseCsvImportAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(BaseCsvImportAdmin):
-    list_display = ('title', 'level', 'value')  
-    search_fields = ('title', 'value')
+    list_display = ('title', 'ls_id', 'level', 'value')  
+    search_fields = ('title', 'ls_id', 'value')
  
     inlines = [CategoryInline]
     
@@ -261,7 +261,7 @@ class CategoryAdmin(BaseCsvImportAdmin):
 
 @admin.register(Level)
 class LevelAdmin(BaseCsvImportAdmin):
-    list_display = ('title', 'site_types')
+    list_display = ('title', 'ls_id', 'site_types')
     search_fields = ('title',)
     list_filter = ('site_types',)
 
