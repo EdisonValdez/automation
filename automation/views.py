@@ -800,7 +800,6 @@ def update_business_status(request, business_id):
         data = json.loads(request.body)
         new_status = data.get('status', '').strip()
         user_id = data.get('userId')
-        sub_category_id = 0
 
         # Validate description
         if not business.description or business.description.strip() in ['', 'None']:
@@ -831,11 +830,6 @@ def update_business_status(request, business_id):
             if new_status == 'IN_PRODUCTION':
                 business_data = model_to_dict(business)
 
-                # Fetch country details
-                country = Country.objects.filter(
-                    name__iexact=business_data["country"]).last()
-                country_data = model_to_dict(country)
-                
                 # Fetch user details
                 user = CustomUser.objects.filter(id=int(user_id)).first()
                 user_data = model_to_dict(user)
@@ -847,20 +841,25 @@ def update_business_status(request, business_id):
                     ).all().values_list('image_url', flat=True)
                 )
                 
-                # Set local secret level, category, subcategory ids
+                # Set local secret's level, category, subcategory, country , city ids
                 task_obj = business.task
                 business_data["level_id"] = task_obj.level.ls_id
-                
-                category_obj = Category.objects.filter(title=business.main_category).last()
+        
+                category_obj = get_object_or_404(Category, title=business.main_category)
                 business_data["category_id"] = category_obj.ls_id
                 
                 if business.tailored_category and (
-                    sub_category_obj := Category.objects.filter(
-                        title=business.tailored_category, parent=category_obj
-                    ).last()
-                ):  
-                    sub_category_id = sub_category_obj.ls_id
-                business_data["sub_category_id"] = sub_category_id
+                    sub_category_obj := get_object_or_404(
+                        Category, title=business.tailored_category, parent=category_obj
+                    )
+                ):  business_data["sub_category_id"] = sub_category_obj.ls_id
+
+                business_data["city_id"] = get_object_or_404(
+                    Destination, name__iexact=business.city).ls_id
+                
+                country_obj = get_object_or_404(Country, name__iexact=business.country)
+                country_data = model_to_dict(country_obj)
+                business_data["country_id"] = country_obj.ls_id
 
                 result_data = {
                     **business_data,
@@ -896,14 +895,22 @@ def update_business_status(request, business_id):
                 'new_status_count': new_status_count
             })
         else:
+            logger.error("Invalid status")
             return JsonResponse(
                 {'status': 'error', 'message': 'Invalid status'},
                 status=400)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.error(f"Json decode error: {str(e)}")
         return JsonResponse(
             {'status': 'error', 'message': 'Invalid JSON'},
             status=400)
     except Exception as e:
+        logger.error("Update business status exception: ")
+        logger.error(str(e))
+        if (tb := traceback.extract_tb(e.__traceback__)):
+            last_traceback = tb[-1]
+            debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
+            logger.error("Traceback Error: %s", debugger)
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
