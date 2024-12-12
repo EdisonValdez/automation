@@ -160,20 +160,17 @@ def process_query(query_data):
         logger.warning(f"Missing data_id or coordinates for query '{query}', skipping...")
         return None
 
-    try:
-        # Extract latitude and longitude
-        lat, lng = ll.split(',')
-        
-        # Construct the data parameter according to documentation
+    try: 
+        lat, lng = ll.split(',') 
         data_param = f"!4m5!3m4!1s{data_id}!8m2!3d{lat}!4d{lng}"
         
         params = {
             "api_key": settings.SERPAPI_KEY,
             "engine": "google_maps",
             "type": "place",
-            "google_domain": "google.es",
-            "data": data_param,  # Using properly formatted data parameter
-            "hl": "es",
+            "google_domain": "google.com",
+            "data": data_param,  
+            "hl": "en",
             "no_cache": "true"
         }
 
@@ -840,7 +837,7 @@ def fill_missing_address_components(business_data, task, query, form_data=None):
 def save_business(task, local_result, query, form_data=None):
     logger.info(f"Saving business data for task {task.id}")
     try:
-        # Initialize business_data with scraped data
+ 
         business_data = {
             'task': task,
             'project_id': task.project_id,
@@ -852,7 +849,7 @@ def save_business(task, local_result, query, form_data=None):
             'level': form_data.get('level', task.level),
             'country': form_data.get('country_name', ''),
             'city': form_data.get('destination_name', ''),
-            'state': '',  # Initialize state key
+            'state': '',   
             'form_country_id': form_data.get('country_id'),
             'form_country_name': form_data.get('country_name', ''),
             'form_destination_id': form_data.get('destination_id'),
