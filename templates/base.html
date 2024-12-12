@@ -3,44 +3,44 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        Local Secrets - Project Management Admin Dashboard  
-    </title>
-    <link rel="shortcut icon" href="{% static '/images/favicon.png' %}" type="image/png">
-    <!-- GOOGLE FONT -->
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
-    <!-- BOXICONS -->
-    <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
-    <link rel="stylesheet" href="{% static 'css/icons.min.css' %}">
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+Local Secrets - Project Management Admin Dashboard  
+</title>
+<link rel="shortcut icon" href="{% static '/images/favicon.png' %}" type="image/png">
+<!-- GOOGLE FONT -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+<!-- BOXICONS -->
+<link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="{% static 'css/icons.min.css' %}">
 
-    <link rel="stylesheet" href="{% static 'libs/date-picker/datepicker.css' %}">
-    <!-- APP CSS -->
- 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    
-    <link rel="stylesheet" href="{% static 'css/grid.css' %}">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
- 
-    <!-- Add SweetAlert2 -->
+<link rel="stylesheet" href="{% static 'libs/date-picker/datepicker.css' %}">
+<!-- APP CSS -->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<link rel="stylesheet" href="{% static 'css/grid.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+
+<!-- Add SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
- <!-- jQuery (required for DataTables) -->
- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
- <script src="https://kit.fontawesome.com/e8b7cdfcf9.js" crossorigin="anonymous"></script>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
-    <script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+<!-- jQuery (required for DataTables) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://kit.fontawesome.com/e8b7cdfcf9.js" crossorigin="anonymous"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" /> <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" /> <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
- <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
 
  <style> 
  .sidebar-menu>li>a {
@@ -166,10 +166,10 @@
                                 <a href="{% url 'dashboard' %}">Project Dashboard</a>
                             </li>
                             <li>
-                                <a href="{% url 'task_list' %}">Task List</a>
+                                <a href="{% url 'task_list' %}">Project List</a>
                             </li>
                             <li>
-                                <a href="{% url 'upload_file' %}">New Project</a>
+                                <a href="{% url 'upload_file' %}">Upload New Project</a>
                             </li>
                         {% elif user.is_ambassador %}
                             <li>
@@ -196,58 +196,20 @@
                                 View All Businesses
                             </a>
                         </li>
-                        {%   if user.is_admin %}
-                        <li>
-                            <a href="{% url 'destination_management' %}">
-                                View All Destinations
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'create_destination' %}">
-                                Create Destinations
-                            </a>
-                        </li>
-         
-
-                        {% endif %}
+                 
                     </ul>
                 </li>
             
                 {%   if user.is_admin %}
-                <li class="sidebar-submenu">
-                    <a href="#" class="sidebar-menu-dropdown">
-                        <i class='bx bxs-user-account'></i>
-                        <span>User Management</span>
-                        <div class="dropdown-icon"><i class='bx bx-chevron-down'></i></div>
-                    </a>
-                    <ul class="sidebar-menu sidebar-menu-dropdown-content">
-                        <li>
-                            <a href="{% url 'user_management' %}">
-                                Manage Users
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'create_user' %}">
-                                Add New User
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+     
 
                 <li class="sidebar-submenu">
-                    <a href="#" class="sidebar-menu-dropdown">
+                    <a  href="{% url 'search_events' %}" class="sidebar-menu-dropdown">
                         <i class='bx bxs-bolt'></i>
                         <span>Events</span>
-                        <div class="dropdown-icon"><i class='bx bx-chevron-down'></i></div>
+                        <div class="dropdown-icon"></div>
                     </a>
-                    <ul class="sidebar-menu sidebar-menu-dropdown-content">
-                        <li>
-                            <a href="{% url 'search_events' %}">
-                                Search Events
-                            </a>
-                        </li>
-           
-                    </ul>
+ 
                 </li>
 
             
@@ -258,20 +220,8 @@
                     </a>
                 </li>
                 {% endif %}
-            
-                <li>
-                    <a href="{% url 'user_profile' %}">
-                        <i class='bx bxs-user-circle'></i>
-                        <span>My Profile</span>
-                    </a>
-                </li>
-            
-                <li>
-                    <a href="{% url 'password_change' %}">
-                        <i class='bx bxs-lock-alt'></i>
-                        <span>Change Password</span>
-                    </a>
-                </li>
+             
+          
             
                 <li>
                     <a href="{% url 'logout' %}">
@@ -386,6 +336,13 @@
                             <i class="bx bx-wrench font-size-16 align-middle me-1"></i> 
                             <span>Settings</span>
                         </a>
+
+                        <a class="dropdown-item d-block" href="{% url 'password_change' %}">
+                            <span class="badge bg-success float-end"></span>
+                            <i class="bx bx-dialpad font-size-16 align-middle me-1"></i> 
+                            <span>Change Password</span>
+                        </a>
+ 
                 
                         <div class="dropdown-divider"></div>
                 

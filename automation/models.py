@@ -76,7 +76,9 @@ class Destination(models.Model):
         return f"{self.name}, {self.country.name}"
 
     def get_ambassador_count(self):
+        # Use get_user_model to ensure it works with the custom user model
         User = get_user_model()
+        # Assuming 'ambassador' is a role or attribute on the user model
         return User.objects.filter(destinations=self, roles__role='AMBASSADOR').count()
  
 class CustomUser(AbstractUser):
@@ -506,4 +508,4 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback for {self.business.title} - {self.get_status_display()}"
- 
+

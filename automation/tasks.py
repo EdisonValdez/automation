@@ -2,12 +2,12 @@ from collections import defaultdict
 from datetime import datetime
 import random
 import shutil
-import sys
 import uuid
 from celery import shared_task
 from django.urls import reverse
 from django.utils import timezone
 from ratelimit import RateLimitException
+import urllib
 from automation.consumers import get_log_file_path
 from .models import BusinessImage, Country, Destination, Review, ScrapingTask, Business, Category, OpeningHours, AdditionalInfo, Image
 from django.conf import settings 
@@ -68,12 +68,7 @@ from django.utils.text import slugify
 import csv
 import pandas as pd
 from django.contrib import messages
-logger = logging.getLogger(__name__)
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter('%(message)s'))
-handler.setLevel(logging.INFO)
-handler.stream.reconfigure(encoding='utf-8')
-logger.addHandler(handler)
+
 SERPAPI_KEY = settings.SERPAPI_KEY  
 DEFAULT_IMAGES = settings.DEFAULT_IMAGES
 OPENAI_API_KEY = settings.TRANSLATION_OPENAI_API_KEY
@@ -86,92 +81,123 @@ logger = logging.getLogger(__name__)
 
 doctran = Doctran(openai_api_key=OPENAI_API_KEY)
 
-
- 
 def read_queries(file_path):
+    """
+    Modified to handle Google Maps URLs and extract business names
+    """
     logger.info(f"Reading queries from file: {file_path}")
     try:
         queries = []
         file_extension = os.path.splitext(file_path)[1].lower()
 
         if file_extension in ['.txt']:
-            # Process text file
             with open(file_path, 'r', encoding='utf-8') as file:
                 for line in file:
-                    parts = line.strip().split('|')
-                    if len(parts) == 2:
-                        query, coords = parts
-                        queries.append({'query': query.strip(), 'll': coords.strip()})
-                    elif len(parts) == 1:
-                        queries.append({'query': parts[0].strip(), 'll': None})
-        elif file_extension in ['.csv']:
-            # Process CSV file
-            with open(file_path, 'r', encoding='utf-8') as csvfile:
-                reader = csv.reader(csvfile)
-                for row in reader:
-                    if len(row) == 2:
-                        query, coords = row
-                        queries.append({'query': query.strip(), 'll': coords.strip()})
-                    elif len(row) == 1:
-                        queries.append({'query': row[0].strip(), 'll': None})
-        elif file_extension in ['.xls', '.xlsx']:
-            # Process Excel file
-            df = pd.read_excel(file_path, header=None)
-            for index, row in df.iterrows():
-                if len(row) >= 2 and not pd.isna(row[1]):
-                    query = str(row[0])
-                    coords = str(row[1])
-                    queries.append({'query': query.strip(), 'll': coords.strip()})
-                elif len(row) >= 1:
-                    query = str(row[0])
-                    queries.append({'query': query.strip(), 'll': None})
-        else:
-            logger.error(f"Unsupported file type: {file_extension}")
-            return []
+                    # New parsing logic for Google Maps URLs
+                    if 'google.com/maps/place' in line or 'google.es/maps/place' in line:
+                        # Extract business name from URL
+                        business_name = extract_business_name(line)
+                        # Extract coordinates if available
+                        coords = extract_coordinates(line)
+                        
+                        if business_name:
+                            query_data = {'query': business_name, 'll': coords}
+                            queries.append(query_data)
+                    else:
+                        # Original parsing logic for non-URL content
+                        parts = line.strip().split('|')
+                        if len(parts) == 2:
+                            query, coords = parts
+                            queries.append({'query': query.strip(), 'll': coords.strip()})
+                        elif len(parts) == 1:
+                            queries.append({'query': parts[0].strip(), 'll': None})
 
-        logger.info(f"Successfully read {len(queries)} queries from file")
         return queries
 
     except Exception as e:
         logger.error(f"Error reading queries from file {file_path}: {str(e)}", exc_info=True)
         return []
 
-def process_query(query_data):
-    query = query_data['query']
-    ll = query_data.get('ll')
-    start = query_data.get('start', 0)
-
-    params = {
-        "api_key": settings.SERPAPI_KEY,
-        "engine": "google_maps",
-        "type": "search",
-        "google_domain": "google.com",
-        "q": query,
-        "hl": "en",
-        "no_cache": "true",
-    }
-
-    if ll:
-        params["ll"] = ll
-    if start:
-        params["start"] = start
-
+def extract_business_name(url):
+    """
+    Extract business name from Google Maps URL
+    """
     try:
-        results = fetch_search_results(params)
-
-        if 'error' in results:
-            logger.error(f"API error for query '{query}': {results['error']}")
-            return None
-
-        return results
-    
-    except (RequestException, RateLimitException) as e:
-        logger.error(f"Error fetching results for query '{query}': {str(e)}")
+        # Match pattern: /place/BusinessName/
+        match = re.search(r'/place/([^/]+)/', url)
+        if match:
+            # Clean and decode the business name
+            business_name = match.group(1)
+            business_name = business_name.replace('+', ' ')
+            business_name = urllib.parse.unquote(business_name)
+            return business_name
         return None
     except Exception as e:
-        logger.error(f"Unexpected error while fetching results for query '{query}': {str(e)}", exc_info=True)
+        logger.error(f"Error extracting business name: {str(e)}")
         return None
- 
+
+def extract_coordinates(url):
+    """
+    Extract coordinates from Google Maps URL
+    """
+    try:
+        # Match pattern: @latitude,longitude,
+        match = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', url)
+        if match:
+            lat, lng = match.groups()
+            return f"{lat},{lng}"
+        return None
+    except Exception as e:
+        logger.error(f"Error extracting coordinates: {str(e)}")
+        return None
+
+def process_query(query_data):
+    query = query_data['query']
+    data_id = query_data.get('data_id')
+    ll = query_data.get('ll')
+    
+    if not data_id or not ll:
+        logger.warning(f"Missing data_id or coordinates for query '{query}', skipping...")
+        return None
+
+    try:
+        # Extract latitude and longitude
+        lat, lng = ll.split(',')
+        
+        # Construct the data parameter according to documentation
+        data_param = f"!4m5!3m4!1s{data_id}!8m2!3d{lat}!4d{lng}"
+        
+        params = {
+            "api_key": settings.SERPAPI_KEY,
+            "engine": "google_maps",
+            "type": "place",
+            "google_domain": "google.es",
+            "data": data_param,  # Using properly formatted data parameter
+            "hl": "es",
+            "no_cache": "true"
+        }
+
+        logger.info(f"Searching for exact place with params: {params}")
+
+        results = fetch_search_results(params)
+        
+        if results and 'error' not in results:
+            if 'place_results' in results:
+                return {'local_results': [results['place_results']]}
+            else:
+                logger.warning(f"No exact match found for data_id: {data_id}")
+                return None
+        else:
+            error_msg = results.get('error') if results else 'No results'
+            logger.error(f"API error or no results for query '{query}': {error_msg}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Error processing query '{query}': {str(e)}")
+        return None
+
+
+
 def rate_limiter(max_calls, period):
     def decorator(func):
         last_reset = [time.time()]
@@ -193,39 +219,59 @@ def rate_limiter(max_calls, period):
         return wrapper
 
     return decorator
- 
+
 def read_queries_from_content(file_content):
     logger.info("Reading queries from file content")
     try:
         queries = []
+        
         for line in file_content.strip().splitlines():
-            parts = line.strip().split('|')
-            if len(parts) == 2:
-                query, coords = parts
-                queries.append({'query': query.strip(), 'll': coords.strip()})
-            elif len(parts) == 1:
-                queries.append({'query': parts[0].strip(), 'll': None})
+            line = line.strip()
+            
+            if 'google.es/maps/place/' in line or 'google.com/maps/place/' in line:
+                name_match = re.search(r'/place/([^/]+)/', line)
+                if name_match:
+                    business_name = name_match.group(1)
+                    business_name = urllib.parse.unquote(business_name)
+                    business_name = business_name.replace('+', ' ')
+
+                data_id_match = re.search(r'!1s(0x[0-9a-fA-F]+:0x[0-9a-fA-F]+)', line)
+
+                coords_match = re.search(r'!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)', line)
+                
+                if data_id_match and coords_match:
+                    data_id = data_id_match.group(1)
+                    lat, lng = coords_match.groups()
+                    coords = f"{lat},{lng}"
+                    
+                    queries.append({
+                        'query': business_name,
+                        'data_id': data_id,
+                        'll': coords,
+                        'original_url': line
+                    })
+                    logger.info(f"Extracted business: {business_name} with data_id: {data_id} and coordinates: {coords}")
+            
         logger.info(f"Successfully read {len(queries)} queries")
         return queries
+        
     except Exception as e:
         logger.error(f"Error reading queries from content: {str(e)}", exc_info=True)
         return []
 
- 
 @backoff.on_exception(backoff.expo, RequestException, max_tries=5)
 @rate_limiter(max_calls=10, period=60)  
 def fetch_search_results(params):
     search = GoogleSearch(params)
     return search.get_dict()
 
-def random_delay(min_delay=2, max_delay=20):
+def random_delay(min_delay=2, max_delay=5):
     delay = random.uniform(min_delay, max_delay)
     time.sleep(delay)
 
 def get_next_page_token(results):
     return results.get('serpapi_pagination', {}).get('next_page_token')
  
-
 @shared_task(bind=True)
 def process_scraping_task(self, task_id, form_data=None):
     log_file_path = get_log_file_path(task_id)
@@ -240,7 +286,6 @@ def process_scraping_task(self, task_id, form_data=None):
 
         queries = []
 
-        # Read queries from file or form data
         if task.file:
             logger.info("Using uploaded file for queries.")
             file_content = default_storage.open(task.file.name).read().decode('utf-8')
@@ -255,7 +300,6 @@ def process_scraping_task(self, task_id, form_data=None):
             subcategory = form_data.get('subcategory', '')
             description = form_data.get('description', '')
 
-            # Construct a query based on the form data
             query = f"{country_name}, {destination_name}, {main_category} {subcategory} {description}".strip()
             if query:
                 queries.append({'query': query})
@@ -267,26 +311,23 @@ def process_scraping_task(self, task_id, form_data=None):
             return
 
         total_results = 0
-
-        # Process each query
         for index, query_data in enumerate(queries, start=1):
             query = query_data['query']
             page_num = 1
-            next_page_token = None  # Initialize for pagination
+            next_page_token = None  
 
             while True:
                 logger.info(f"Processing query {index}/{len(queries)}: {query} (Page {page_num})")
 
-                # Set 'start' parameter based on 'next_page_token'
                 if next_page_token:
                     query_data['start'] = next_page_token
                 else:
-                    query_data.pop('start', None)  # Remove 'start' if not needed
+                    query_data.pop('start', None) 
 
                 results = process_query(query_data)
 
                 if results is None:
-                    break  # If there's an error, skip to the next query
+                    break 
 
                 local_results = results.get('local_results', [])
                 if not local_results:
@@ -317,7 +358,6 @@ def process_scraping_task(self, task_id, form_data=None):
                 total_results += len(local_results)
                 logger.info(f"Processed {len(local_results)} results on page {page_num} for query '{query}'")
 
-                # Check for 'next_page_token' for pagination
                 next_page_token = get_next_page_token(results)
                 if next_page_token:
                     logger.info(f"Next page token found: {next_page_token}")
@@ -325,7 +365,7 @@ def process_scraping_task(self, task_id, form_data=None):
                     random_delay(min_delay=2, max_delay=20)
                 else:
                     logger.info(f"No next page token found for query '{query}'")
-                    break  # No more pages to process
+                    break 
 
             logger.info(f"Finished processing query: {query}")
 
@@ -345,8 +385,7 @@ def process_scraping_task(self, task_id, form_data=None):
     finally:
         logger.removeHandler(file_handler)
         file_handler.close()
-
-
+ 
 def update_image_url(business, local_path, new_path):
     try:
         images = Image.objects.filter(business=business, local_path=local_path)
@@ -370,14 +409,14 @@ def crop_image_to_aspect_ratio(img, aspect_ratio):
     img_aspect_ratio = img_width / img_height
 
     if img_aspect_ratio > aspect_ratio:
-        # Image is wider than desired aspect ratio
+
         new_width = int(img_height * aspect_ratio)
         left = (img_width - new_width) / 2
         top = 0
         right = left + new_width
         bottom = img_height
     else:
-        # Image is taller than desired aspect ratio
+
         new_height = int(img_width / aspect_ratio)
         left = 0
         top = (img_height - new_height) / 2
@@ -403,7 +442,7 @@ def download_images(business, local_result):
 
     image_paths = []
     try:
-        # Fetch image results from the API
+
         photos_search = GoogleSearch({
             "api_key": settings.SERPAPI_KEY,
             "engine": "google_maps_photos",
@@ -486,7 +525,7 @@ def download_images(business, local_result):
                 except Exception as e:
                     logger.error(f"Error downloading image {i} for business {business.id}: {str(e)}", exc_info=True)
 
-            time.sleep(2)  
+            random_delay(min_delay=2, max_delay=20)  
 
         # Set the first image as the main image if it exists
         first_image = Image.objects.filter(business=business).order_by('order').first()
@@ -505,10 +544,8 @@ def save_results(task, results, query):
         file_name = f"{query.replace(' ', '_')}.json"
         file_path = f'scraping_results/{task.id}/{file_name}'
 
-        # Convert results to JSON string
         json_content = json.dumps(results)
 
-        # Save JSON content to DigitalOcean Spaces
         default_storage.save(file_path, ContentFile(json_content))
 
         logger.info(f"Saved results for query '{query}' to {file_path}")
@@ -516,7 +553,6 @@ def save_results(task, results, query):
     except Exception as e:
         logger.error(f"Error saving results for query '{query}': {str(e)}", exc_info=True)
 
- 
 
 #####################DESCRIPTION TRANSLATE##################################
  
@@ -532,8 +568,6 @@ def translate_text(text, language="spanish"):
             return None
     return text
  
-import openai
-
 def enhance_and_translate_description(business, languages=["spanish", "eng"]):
     """
     Enhances the business description and translates it into specified languages.
@@ -557,7 +591,6 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
     )
 
     try:
-        # Generate enhanced description using OpenAI's newer models
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
@@ -568,17 +601,14 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         )
         enhanced_description = response['choices'][0]['message']['content'].strip()
 
-        # Validate word count and expand if necessary
         word_count = len(enhanced_description.split())
         if word_count < 220:
             logger.warning(f"Enhanced description has only {word_count} words. Expanding content...")
             additional_content = generate_additional_sentences_openai(business, 220 - word_count)
             enhanced_description += "\n\n" + additional_content
 
-        # Keep the original US English description
         business.description = enhanced_description
 
-        # Translate the enhanced description into specified languages
         for lang in languages:
             if lang == "spanish":
                 language_code = "es"
@@ -601,7 +631,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                     {"role": "system", "content": "You are an expert translator."},
                     {"role": "user", "content": prompt_translation}
                 ],
-                temperature=0.7,
+                temperature=0.3,
             )
             translated_description = response_translation['choices'][0]['message']['content'].strip()
 

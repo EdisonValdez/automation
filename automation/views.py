@@ -64,15 +64,16 @@ def welcome_view(request):
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
 
-
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
- 
+
     def get(self, request):
         logger.info("Accessing UploadFileView GET")
-
+        
         form = ScrapingTaskForm()
+
+        # Fetch tasks with pagination
         tasks = ScrapingTask.objects.all().order_by('-created_at')
         paginator = Paginator(tasks, 15)
         page_number = request.GET.get('page')
@@ -86,16 +87,19 @@ class UploadFileView(View):
 
         return render(request, 'automation/upload.html', context)
 
+
     @transaction.atomic
     def post(self, request):
         logger.info("Received file upload POST request")
         form = ScrapingTaskForm(request.POST, request.FILES)
 
         if form.is_valid():
+            # Generate the project_title dynamically
             project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
             if form.cleaned_data['subcategory']:
                 project_title += f" - {form.cleaned_data['subcategory'].title}"
 
+            # Set the project_title in the form
             form.initial['project_title'] = project_title
 
             task = ScrapingTask(
@@ -114,17 +118,23 @@ class UploadFileView(View):
             )
             task.save()
 
+            # Extract form data to pass to the scraping task
             form_data = {
                 'country_id': task.country.id if task.country else None,
                 'country_name': task.country_name,
                 'destination_id': task.destination.id if task.destination else None,
                 'destination_name': task.destination_name,
-                'level': task.level.title if task.level else None,
+                'level': task.level.ls_id if task.level else None,
                 'main_category': task.main_category.title if task.main_category else '',
                 'subcategory': task.subcategory.title if task.subcategory else '',
             }
             try:
+                # asynchronous task processing Celery, use delay()
+                # process_scraping_task.delay(task.id, form_data=form_data)
+                
+                # For synchronous processing
                 process_scraping_task(task_id=task.id, form_data=form_data)
+                
                 logger.info(f"Scraping task {task.id} created and queued, project ID: {task.project_id}")
                 return JsonResponse({
                     'status': 'success',
@@ -142,9 +152,9 @@ class UploadFileView(View):
             return JsonResponse({
                 'status': 'error',
                 'message': "There was an error with your submission. Please check the form.",
-                'errors': form.errors
+                'errors': form.errors  # Return form errors to the frontend
             })
-        
+
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
@@ -200,21 +210,24 @@ class TaskDetailView(View):
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class TranslateBusinessesView(View):
-    
     def get(self, request, task_id):
         task = get_object_or_404(ScrapingTask, id=task_id)
         return render(request, 'automation/task_detail.html', {'task': task})
 
     def post(self, request, task_id):
         logger.info(f"Received request to translate businesses for task {task_id}")
-        
+
         task = get_object_or_404(ScrapingTask, id=task_id)
-        
+
         # Check if the translation status allows proceeding
-        if task.translation_status == 'TRANSLATED':
-            return JsonResponse({'status': 'error', 'message': 'Task already translated.'}, status=400)
-        elif task.translation_status == 'PENDING_TRANSLATION':
-            return JsonResponse({'status': 'error', 'message': 'Translation already in progress.'}, status=400)
+        if task.translation_status in ['TRANSLATED', 'PENDING_TRANSLATION']:
+            message = (
+                'Task already translated.'
+                if task.translation_status == 'TRANSLATED'
+                else 'Translation already in progress.'
+            )
+            logger.warning(f"Task {task_id}: {message}")
+            return JsonResponse({'status': 'error', 'message': message}, status=400)
 
         # Mark translation as in progress
         task.translation_status = 'PENDING_TRANSLATION'
@@ -223,26 +236,6 @@ class TranslateBusinessesView(View):
         try:
             # Exclude businesses with status 'DISCARDED'
             businesses = task.businesses.exclude(status='DISCARDED')
-           
-            # Process translation for each business
-            for business in businesses:
-                logger.info(f"Translating and enhancing business: {business.title}")
-                enhance_and_translate_description(business)
-                translate_business_info_sync(business)
-                business.save()
-
-            # Check if all businesses are translated
-            if not task.businesses.filter(status='DISCARDED').exists():
-                # If no 'DISCARDED' businesses left, mark task as translated
-                task.translation_status = 'TRANSLATED'
-                task.status = 'TRANSLATED'  # Update main task status if needed
-                task.save(update_fields=['translation_status', 'status'])
-                logger.info(f"Task {task_id} marked as 'TRANSLATED'")
-            else:
-                # If there are 'DISCARDED' businesses, update translation status accordingly
-                task.translation_status = 'PARTIALLY_TRANSLATED'
-                task.save(update_fields=['translation_status'])
-                logger.info(f"Task {task_id} marked as 'PARTIALLY_TRANSLATED' due to discarded businesses")
 
             if not businesses.exists():
                 logger.info(f"No businesses to translate for task {task_id}")
@@ -250,15 +243,36 @@ class TranslateBusinessesView(View):
                 task.save(update_fields=['translation_status'])
                 return JsonResponse({'status': 'success', 'message': 'No businesses to translate.'})
 
+            # Process translation for each business
+            for business in businesses:
+                logger.info(f"Translating and enhancing business: {business.title}")
+                try:
+                    enhance_and_translate_description(business)
+                    translate_business_info_sync(business)
+                    business.save()
+                except Exception as e:
+                    logger.error(f"Error translating business {business.id}: {str(e)}", exc_info=True)
+
+            # Update task status
+            discarded_exists = task.businesses.filter(status='DISCARDED').exists()
+            if not discarded_exists:
+                task.translation_status = 'TRANSLATED'
+                task.status = 'TRANSLATED'
+                logger.info(f"Task {task_id} marked as 'TRANSLATED'")
+            else:
+                task.translation_status = 'PARTIALLY_TRANSLATED'
+                logger.info(f"Task {task_id} marked as 'PARTIALLY_TRANSLATED' due to discarded businesses")
+            task.save(update_fields=['translation_status', 'status'])
+
             return JsonResponse({'status': 'success', 'message': 'Businesses translated and enhanced successfully.'})
-        
+
         except Exception as e:
-            logger.error(f"Error translating businesses for task {task_id}: {e}", exc_info=True)
-            # Set the translation status to failed if an error occurs
+            logger.error(f"Error translating businesses for task {task_id}: {str(e)}", exc_info=True)
             task.translation_status = 'TRANSLATION_FAILED'
             task.save(update_fields=['translation_status'])
             return JsonResponse({'status': 'error', 'message': 'Translation failed.'}, status=500)
- 
+
+
 @login_required
 def task_detail(request, task_id):
     task = get_object_or_404(ScrapingTask, id=task_id)
@@ -292,28 +306,23 @@ def ambassador_view(request):
     destination = request.user.destination
     businesses = Business.objects.filter(city=destination)
     return render(request, 'automation/ambassador_template.html', {'businesses': businesses})
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.roles.filter(role='AMBASSADOR').exists()), name='dispatch')
 class AmbassadorDashboardView(View):
     def get(self, request):
-        ambassador = request.user
-        
-        # Get destinations associated with the ambassador
-        ambassador_destinations = ambassador.destinations.all()  # Assuming this is a valid ManyToMany relationship
-
-        # Use `form_destination_id` or `form_destination_name` based on data structure
-        destination_ids = [dest.id for dest in ambassador_destinations]  # Get destination IDs
+        ambassador = request.user 
+        ambassador_destinations = ambassador.destinations.all()   
+ 
+        destination_ids = [dest.id for dest in ambassador_destinations]  
         task_ids = Business.objects.filter(form_destination_id__in=destination_ids).values_list('task__id', flat=True)
-
-        # Get tasks based on the filtered task_ids
+ 
         tasks = ScrapingTask.objects.filter(id__in=task_ids).order_by('-created_at')
-        
-        # Pagination logic
+         
         paginator = Paginator(tasks, 5)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-
-        # Get businesses related to ambassador's destinations
+ 
         businesses = Business.objects.filter(form_destination_id__in=destination_ids).order_by('-scraped_at')[:10]
 
         context = {
@@ -1206,8 +1215,6 @@ def enhance_translate_business(request, business_id):
 
 
 # /***********enhance_translate_business_view********** generate_description *****/#
-
-
  
 @csrf_exempt
 def update_business_hours(request):

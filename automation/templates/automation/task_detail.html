@@ -1,174 +1,8 @@
 {% extends "base.html" %}
 {% load business_filters %}
-
 {% block title %}{{ task.project_title }}{% endblock %}
-
 {% block content %}
-<style>
- 
-.business-title {
-    font-size: 1em; /* Adjust as needed */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin: 0;
-}
-
-.business-link {
-    display: block;
-    color: inherit;
-    text-decoration: none;
-    padding: 5px 0;
-    width: 100%;
-}
-
-.business-link:hover {
-    color: #007bff; /* Or your desired hover color */
-    text-decoration: underline;
-} 
-
- 
-small {
-font-size: 10px;
-}
-
-#taskDetailsContainer {
-transition: all 0.3s ease-in-out;
-}
-
-.kanban-cont {
-display: flex;
-overflow-x: auto;
-padding-bottom: 10px;
-gap: 10px; /* Space between columns */
-}
-
-.kanban-list {
-flex: 1 1 30%; /* Allow columns to shrink and grow */
-min-width: 250px; /* Minimum width per column */
-max-width: 100%; /* Ensure it doesn't exceed the container */
-background-color: #f4f5f7;
-border-radius: 5px;
-margin: 5px;
-}
-
-.kanban-box {
-background-color: white;
-border-radius: 5px;
-padding: 10px;
-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-display: flex;
-flex-direction: column;
-cursor: move;
-}
-
-.image-container {
-position: relative;
-overflow: hidden;
-width: 100%;
-height: auto;
-}
-
-.thumbnail-image {
-width: 100%;
-height: auto;
-max-height: 200px; /* Adjust max-height for mobile */
-object-fit: cover;
-}
-
-.image-overlay {
-position: absolute;
-bottom: 0;
-left: 0;
-right: 0;
-background-color: rgba(0, 0, 0, 0.7);
-overflow: hidden;
-width: 100%;
-height: 0;
-transition: 0.5s ease;
-}
-
-.image-container:hover .image-overlay {
-height: 100%;
-}
-
-.overlay-title {
-color: white;
-font-size: 16px;
-position: absolute;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-text-align: center;
-width: 90%;
-}
-
-.business-stats {
-display: flex;
-justify-content: space-between;
-margin-top: 10px;
-font-size: 10px;
-}
-
-.kanban-header {
-margin-bottom: 10px;
-padding: 10px;
-background-color: #e4e6e9;
-border-radius: 5px;
-}
-
-.kanban-wrap {
-max-height: 800px;
-overflow-y: auto;
-}
-
-/* Load more button */
-.load-more {
-width: 100%;
-margin-top: 10px;
-}
-
-/* Adjustments for mobile screens */
-@media (max-width: 768px) {
-.kanban-list {
-    flex-basis: 100%; /* Full width per column on small screens */
-    min-width: 100%; /* Full width per column on small screens */
-    margin-right: 0;
-}
-
-.kanban-header, .kanban-box {
-    padding: 8px;
-}
-
-.overlay-title {
-    font-size: 14px; /* Smaller font for overlay title on small devices */
-}
-}
-
-@media (max-width: 576px) {
-.kanban-cont {
-    padding: 0;
-    gap: 5px;
-}
-
-.kanban-box {
-    padding: 5px;
-}
-
-.thumbnail-image {
-    max-height: 150px; /* Reduce image height for very small screens */
-}
-
-.business-stats {
-    font-size: 8px;
-}
-
-.overlay-title {
-    font-size: 12px;
-}
-}
-</style>
-    
+<style> .business-title {font-size: 1em;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin: 0;}.business-link {display: block;color: inherit;text-decoration: none;padding: 5px 0;width: 100%;}.business-link:hover {color: #007bff;text-decoration: underline;}small {font-size: 10px;}#taskDetailsContainer {transition: all 0.3s ease-in-out;}.kanban-cont {display: flex;overflow-x: auto;padding-bottom: 10px;gap: 10px;}.kanban-list {flex: 1 1 30%;min-width: 250px;max-width: 100%;background-color: #f4f5f7;border-radius: 5px;margin: 5px;}.kanban-box {background-color: white;border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);display: flex;flex-direction: column;cursor: move;}.image-container {position: relative;overflow: hidden;width: 100%;height: auto;}.thumbnail-image {width: 100%;height: auto;max-height: 200px;object-fit: cover;}.image-overlay {position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: 0.5s ease;}.image-container:hover .image-overlay {height: 100%;}.overlay-title {color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%;}.business-stats {display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px;}.kanban-header {margin-bottom: 10px;padding: 10px;background-color: #e4e6e9;border-radius: 5px;}.kanban-wrap {max-height: 800px;overflow-y: auto;}.load-more {width: 100%;margin-top: 10px;}@media (max-width: 768px) {.kanban-list {flex-basis: 100%;min-width: 100%;margin-right: 0;}.kanban-header, .kanban-box {padding: 8px;}.overlay-title {font-size: 14px;}}@media (max-width: 576px) {.kanban-cont {padding: 0;gap: 5px;}.kanban-box {padding: 5px;}.thumbnail-image {max-height: 150px;}.business-stats {font-size: 8px;}.overlay-title {font-size: 12px;}}</style>
 <div id="loading-spinner" style="display: none;">
     <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
@@ -176,52 +10,8 @@ margin-top: 10px;
 </div>
 
 <div class="main-content">
- {% if user.is_admin %}
-<div class="row">
-<div class="col-12">
-    <button id="toggleTaskDetails" class="btn btn-primary mb-3">Toggle Task Details</button>
-    <div  id="taskDetailsContainer" class="box card-box">    
-        <div class="icon-box {% if task.status == 'PENDING' %}bg-color-1{% elif task.status == 'IN_PROGRESS' %}bg-color-2{% elif task.status == 'COMPLETED' %}bg-color-3{% elif task.status == 'FAILED' %}bg-color-13{% endif %}">
-            <div class="icon {% if task.status == 'PENDING' %}bg-icon-1{% elif task.status == 'IN_PROGRESS' %}bg-icon-2{% elif task.status == 'COMPLETED' %}bg-icon-3{% elif task.status == 'FAILED' %}bg-white{% endif %}">
-                <i class="{% if task.status == 'PENDING' %}bx bxs-bell bx-tada{% elif task.status == 'IN_PROGRESS' %}bx bxs-hourglass{% elif task.status == 'COMPLETED' %}bx bxs-check-circle{% elif task.status == 'FAILED' %}bx bxs-error{% endif %}"></i>
-            </div>
-            <div class="content">
-                <h5 class="title-box" style="    float: left;
-                margin-top: -35px;
-                margin-left: 60px;">{{ task.get_status_display }}</h5>
-    
-                <h2>{{ task.project_title }}</h2>
-                <p><strong>Task ID:</strong> {{ task.id }}</p>
-                <p><strong>Project ID:</strong> {{ task.project_id }}</p>
-                <p><strong>Main Category:</strong> {{ task.get_main_category_display }}</p>
-                {% if task.tailored_category %}
-                    <p><strong>Tailored Category:</strong> {{ task.tailored_category }}</p>
-                {% endif %}
-                {% if task.description %}
-                    <p><strong>Description:</strong> {{ task.description }}</p>
-                {% endif %}
-                    
-                <p><strong>Created at:</strong> {{ task.created_at }}</p>
-                <p><strong>Completed at:</strong> {{ task.completed_at|default:"Not completed yet" }}</p>
-                
-            </div>
-        </div>
-
-        <div class="icon-box bg-color-4">
-            <a class="create d-flex" href="{% url 'upload_file' %}" data-toggle="modal" data-target="#add_project">
-                <div class="icon bg-white">
-                    <i class="bx bx-plus"></i>
-                </div>
-                <div class="content d-flex align-items-center">
-                    <h5 class="color-white">Create New Project</h5>
-                </div>
-            </a>
-        </div>
-    </div>
-</div>
-</div>
- {% endif %}
-<h3 class="mt-4 mb-4">Businesses Board</h3>
+ 
+<h3 class="mb-4">Businesses Board</h3>
 <p class="fs-18 font-w400 font-main mt-27 mb-29">Upon review, please ensure that each element is placed in its corresponding column. Note that the 'Move To APP' column is designated for ADMIN users only.</p>
 <div class="col-12">
     <div class="row">
@@ -295,40 +85,37 @@ margin-top: 10px;
                                 </div>-->
     
                                 <!-- Title Box -->
-                                <div class="title-box">
-                                    <h6 class="business-title text-truncate">
-                                        <a href="{% url 'business_detail' business.id %}" class="business-link" title="{{ business.title }}">
-                                            {{ business.title|truncatechars:20 }}
-                                        </a>
-                                    </h6>
-                                    
-                                    
-                                </div>
+                            <div class="title-box">
+                                <h6 class="business-title text-truncate">
+                                    <a href="{% url 'business_detail' business.id %}" class="business-link" title="{{ business.title }}">
+                                        {{ business.title|truncatechars:20 }}
+                                    </a>
+                                </h6>   
+                            </div>
     
-                                <div class="content-box">
-                                    <small class="">
-                                        <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" class="" target="_blank">
-                                            <i class="bx bx-pin font-size-16 align-middle me-1"></i>{{ business.address|truncatechars:50 }}
-                                        </a>
-                                    </small>
-                                    <span class="badge badge-success">{{ business.category_name }}</span>            
-                                        <div class="business-stats">
-                                            <span class="rank">Rank: {{ business.rank|default:"N/A" }}</span>
-                                            <span class="total-score">Total Score: {{ business.reviews_count|default:"N/A" }}</span>
-                                            <span class="total-score">Avg: {{ business.rating|default:"N/A" }}</span>
-                                        </div>
-                                        </div>
-                                        </div>
+                            <div class="content-box">
+                                <small class="">
+                                    <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" class="" target="_blank">
+                                        <i class="bx bx-pin font-size-16 align-middle me-1"></i>{{ business.address|truncatechars:50 }}
+                                    </a>
+                                </small>                                     
+                                    <div class="business-stats">
+                                        <span class="rank">Rank: {{ business.rank|default:"N/A" }}</span>
+                                        <span class="total-score">Total Score: {{ business.reviews_count|default:"N/A" }}</span>
+                                        <span class="total-score">Avg: {{ business.rating|default:"N/A" }}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         {% endif %}
                         {% endfor %}
                         </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                        </div>
-                        </div>
-                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
     
       
 </div>
@@ -350,6 +137,7 @@ margin-top: 10px;
     </button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var containers = document.querySelectorAll('.kanban-wrap');
@@ -459,8 +247,7 @@ function getCookie(name) {
     return cookieValue;
 }
 </script>
-
-
+ 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var kanbanLists = document.querySelectorAll('.kanban-wrap');
@@ -519,6 +306,7 @@ function getCookie(name) {
     }
 });
 </script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const toggleButton = document.getElementById('toggleTaskDetails');
@@ -548,6 +336,7 @@ function getCookie(name) {
         });
     });
 </script>
+
 <script>
     $(document).ready(function() {
         // Existing functionalities...
@@ -577,6 +366,7 @@ function getCookie(name) {
         });
     });
 </script>
+
 <script>
     $(document).ready(function() {
         $('.load-more').click(function() {
@@ -611,230 +401,222 @@ function getCookie(name) {
     });
 </script>
 <script>
-    $(document).ready(function() {
-        // Existing load-more functionality...
-    
-        // Scroll to top functionality
-        $(window).scroll(function() {
-            if ($(this).scrollTop() > 100) {
-                $('#scroll-to-top').fadeIn();
-            } else {
-                $('#scroll-to-top').fadeOut();
-            }
-        });
-    
-        $('#scroll-to-top').click(function() {
-            $('html, body').animate({scrollTop : 0}, 800);
-            return false;
-        });
-    
-        // Smooth scrolling for kanban lists
-        $('.kanban-wrap').scroll(function() {
-            if ($(this).scrollTop() > 100) {
-                $(this).find('.scroll-to-top').fadeIn();
-            } else {
-                $(this).find('.scroll-to-top').fadeOut();
-            }
-        });
-    
-        $('.scroll-to-top').click(function() {
-            $(this).closest('.kanban-wrap').animate({scrollTop : 0}, 800);
-            return false;
-        });
-    });
-</script>
-<script>
-    $(document).ready(function() {
-        // Existing functionalities...
-    
-        // Search functionality
-        $('#business-search').on('input', function() {
-            var searchTerm = $(this).val().toLowerCase();
-            $('.panel').each(function() {
-                var businessTitle = $(this).find('.overlay-title').text().toLowerCase();
-                var businessAddress = $(this).find('.content-box p').text().toLowerCase();
-                if (businessTitle.includes(searchTerm) || businessAddress.includes(searchTerm)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-    });
-</script>
- 
+$(document).ready(function() {
+    // Existing load-more functionality...
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const translatingButtons = document.querySelectorAll('.start-translating-btn');
-        
-        translatingButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                if (this.classList.contains('disabled')) {
-                    return;
-                }
-                
-                this.classList.add('disabled');
-                this.textContent = 'Translating and Enhancing...';
-                
-                const taskId = this.getAttribute('data-task-id');
-                
-                fetch(`/tasks/${taskId}/translate/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        this.textContent = 'Translation and Enhancement Complete';
-                    } else {
-                        this.textContent = 'Error Translating and Enhancing';
-                        this.classList.remove('disabled');
-                    }
-                    console.log(data.message);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    this.textContent = 'Error Translating and Enhancing';
-                    this.classList.remove('disabled');
-                });
-            });
-        });
-    
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-    });
-    </script>
-<script>
-    $(document).ready(function() {
-    // Función para filtrar negocios por rango de calificación
-    function filterBusinessesByRating(minRating, maxRating) {
-        $('.panel').each(function() {
-            var avgRating = parseFloat($(this).find('.total-score').last().text().split(':')[1]) || 0;
-            if (avgRating >= minRating && avgRating <= maxRating) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
-    }
-
-    // Evento para el cambio en el selector de rango de calificación
-    $('#rating-range').change(function() {
-        var range = $(this).val();
-        if (range) {
-            var [maxRating, minRating] = range.split('-').map(Number);
-            filterBusinessesByRating(minRating, maxRating);
+    // Scroll to top functionality
+    $(window).scroll(function() {
+        if ($(this).scrollTop() > 100) {
+            $('#scroll-to-top').fadeIn();
         } else {
-            $('.panel').show(); // Mostrar todos si no hay rango seleccionado
+            $('#scroll-to-top').fadeOut();
         }
     });
 
-    // Código existente para ordenar...
-    $('#business-sort').change(function() {
-        var sortBy = $(this).val();
-        $('.kanban-wrap').each(function() {
-            var $wrap = $(this);
-            var $businesses = $wrap.find('.panel').get();
-            $businesses.sort(function(a, b) {
-                var aValue, bValue;
-                if (sortBy === 'rank') {
-                    aValue = parseInt($(a).find('.rank').text().split(':')[1]) || 0;
-                    bValue = parseInt($(b).find('.rank').text().split(':')[1]) || 0;
-                } else if (sortBy === 'reviews') {
-                    aValue = parseInt($(a).find('.total-score').first().text().split(':')[1]) || 0;
-                    bValue = parseInt($(b).find('.total-score').first().text().split(':')[1]) || 0;
-                } else if (sortBy === 'rating') {
-                    aValue = parseFloat($(a).find('.total-score').last().text().split(':')[1]) || 0;
-                    bValue = parseFloat($(b).find('.total-score').last().text().split(':')[1]) || 0;
-                }
-                return bValue - aValue; // Ordenar en orden descendente
-            });
-            $.each($businesses, function(idx, item) { $wrap.append(item); });
-        });
+    $('#scroll-to-top').click(function() {
+        $('html, body').animate({scrollTop : 0}, 800);
+        return false;
     });
 
-    // Código existente para búsqueda...
-    $('#business-search').on('input', function() {
-        var searchTerm = $(this).val().toLowerCase();
-        $('.panel').each(function() {
-            var businessTitle = $(this).find('.overlay-title').text().toLowerCase();
-            var businessAddress = $(this).find('.content-box p').text().toLowerCase();
-            if (businessTitle.includes(searchTerm) || businessAddress.includes(searchTerm)) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
+    // Smooth scrolling for kanban lists
+    $('.kanban-wrap').scroll(function() {
+        if ($(this).scrollTop() > 100) {
+            $(this).find('.scroll-to-top').fadeIn();
+        } else {
+            $(this).find('.scroll-to-top').fadeOut();
+        }
     });
 
-    // Función para aplicar todos los filtros
-    function applyAllFilters() {
-        var searchTerm = $('#business-search').val().toLowerCase();
-        var ratingRange = $('#rating-range').val();
-        var [maxRating, minRating] = ratingRange ? ratingRange.split('-').map(Number) : [5, 0];
+    $('.scroll-to-top').click(function() {
+        $(this).closest('.kanban-wrap').animate({scrollTop : 0}, 800);
+        return false;
+    });
+});
+</script>
 
-        $('.panel').each(function() {
-            var businessTitle = $(this).find('.overlay-title').text().toLowerCase();
-            var businessAddress = $(this).find('.content-box p').text().toLowerCase();
-            var avgRating = parseFloat($(this).find('.total-score').last().text().split(':')[1]) || 0;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const translatingButtons = document.querySelectorAll('.start-translating-btn');
 
-            var matchesSearch = businessTitle.includes(searchTerm) || businessAddress.includes(searchTerm);
-            var matchesRating = avgRating >= minRating && avgRating <= maxRating;
-
-            if (matchesSearch && matchesRating) {
-                $(this).show();
-            } else {
-                $(this).hide();
+translatingButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        if (this.classList.contains('disabled')) {
+            return;
+        }
+        
+        this.classList.add('disabled');
+        this.textContent = 'Translating and Enhancing...';
+        
+        const taskId = this.getAttribute('data-task-id');
+        
+        fetch(`/tasks/${taskId}/translate/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken')
             }
-        });
-    }
-
-    // Aplicar todos los filtros cuando cambie cualquier criterio
-    $('#business-search, #rating-range').on('input change', applyAllFilters);
-
-    // Aplicar ordenamiento después de los filtros
-    $('#business-sort').change(function() {
-        var sortBy = $(this).val();
-        $('.kanban-wrap').each(function() {
-            var $wrap = $(this);
-            var $businesses = $wrap.find('.panel:visible').get();
-            $businesses.sort(function(a, b) {
-                var aValue, bValue;
-                if (sortBy === 'rank') {
-                    aValue = parseInt($(a).find('.rank').text().split(':')[1]) || 0;
-                    bValue = parseInt($(b).find('.rank').text().split(':')[1]) || 0;
-                } else if (sortBy === 'reviews') {
-                    aValue = parseInt($(a).find('.total-score').first().text().split(':')[1]) || 0;
-                    bValue = parseInt($(b).find('.total-score').first().text().split(':')[1]) || 0;
-                } else if (sortBy === 'rating') {
-                    aValue = parseFloat($(a).find('.total-score').last().text().split(':')[1]) || 0;
-                    bValue = parseFloat($(b).find('.total-score').last().text().split(':')[1]) || 0;
-                }
-                return bValue - aValue; // Ordenar en orden descendente
-            });
-            $.each($businesses, function(idx, item) { $wrap.append(item); });
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                this.textContent = 'Translation and Enhancement Complete';
+            } else {
+                this.textContent = 'Error Translating and Enhancing';
+                this.classList.remove('disabled');
+            }
+            console.log(data.message);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            this.textContent = 'Error Translating and Enhancing';
+            this.classList.remove('disabled');
         });
     });
 });
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+});
+</script>
 
-</script>   
+<script>
+    $(document).ready(function() {
+    // Improved search function with debouncing
+    let searchTimeout;
+    
+    function searchBusinesses(searchTerm) {
+        searchTerm = searchTerm.toLowerCase().trim();
+        console.log('Searching for:', searchTerm); // Debugging
+
+        $('.panel').each(function() {
+            const $panel = $(this);
+            const businessTitle = $panel.find('.overlay-title').text().toLowerCase();
+            const businessAddress = $panel.find('.content-box p').text().toLowerCase();
+            
+            // Debug log
+            console.log('Business:', businessTitle);
+            console.log('Address:', businessAddress);
+
+            // More comprehensive search
+            const matchesSearch = 
+                businessTitle.includes(searchTerm) || 
+                businessAddress.includes(searchTerm) ||
+                $panel.text().toLowerCase().includes(searchTerm);
+
+            $panel.toggle(matchesSearch);
+        });
+
+        // Log number of visible results
+        console.log('Visible results:', $('.panel:visible').length);
+    }
+
+    // Enhanced filter function
+    function applyAllFilters() {
+        const searchTerm = $('#business-search').val().toLowerCase().trim();
+        const ratingRange = $('#rating-range').val();
+        const [maxRating, minRating] = ratingRange ? ratingRange.split('-').map(Number) : [5, 0];
+
+        $('.panel').each(function() {
+            const $panel = $(this);
+            const businessTitle = $panel.find('.overlay-title').text().toLowerCase();
+            const businessAddress = $panel.find('.content-box p').text().toLowerCase();
+            const avgRating = parseFloat($panel.find('.total-score').last().text().split(':')[1]) || 0;
+
+            // More comprehensive matching
+            const matchesSearch = searchTerm === '' || 
+                businessTitle.includes(searchTerm) || 
+                businessAddress.includes(searchTerm) ||
+                $panel.text().toLowerCase().includes(searchTerm);
+            
+            const matchesRating = avgRating >= minRating && avgRating <= maxRating;
+
+            $panel.toggle(matchesSearch && matchesRating);
+        });
+
+        // Log filtered results
+        console.log('Filtered results:', $('.panel:visible').length);
+    }
+
+    // Debounced search input handler
+    $('#business-search').on('input', function() {
+        clearTimeout(searchTimeout);
+        const searchTerm = $(this).val();
+        
+        // Show loading indicator if needed
+        // $('.loading-indicator').show();
+
+        searchTimeout = setTimeout(() => {
+            applyAllFilters();
+            // $('.loading-indicator').hide();
+        }, 300); // 300ms delay
+    });
+
+    // Rating range filter
+    $('#rating-range').change(function() {
+        applyAllFilters();
+    });
+
+    // Enhanced sorting function
+    $('#business-sort').change(function() {
+        const sortBy = $(this).val();
+        
+        $('.kanban-wrap').each(function() {
+            const $wrap = $(this);
+            const $businesses = $wrap.find('.panel:visible').get();
+
+            $businesses.sort(function(a, b) {
+                let aValue, bValue;
+                const $a = $(a);
+                const $b = $(b);
+
+                switch(sortBy) {
+                    case 'rank':
+                        aValue = parseInt($a.find('.rank').text().split(':')[1]) || 0;
+                        bValue = parseInt($b.find('.rank').text().split(':')[1]) || 0;
+                        break;
+                    case 'reviews':
+                        aValue = parseInt($a.find('.total-score').first().text().split(':')[1]) || 0;
+                        bValue = parseInt($b.find('.total-score').first().text().split(':')[1]) || 0;
+                        break;
+                    case 'rating':
+                        aValue = parseFloat($a.find('.total-score').last().text().split(':')[1]) || 0;
+                        bValue = parseFloat($b.find('.total-score').last().text().split(':')[1]) || 0;
+                        break;
+                }
+                return bValue - aValue;
+            });
+
+            $wrap.append($businesses);
+        });
+    });
+
+    // Add these helper functions for debugging
+    function logPanelStructure() {
+        console.log('Panel Structure:');
+        $('.panel').first().each(function() {
+            console.log('Overlay Title:', $(this).find('.overlay-title').text());
+            console.log('Content Box Text:', $(this).find('.content-box p').text());
+            console.log('Total Score:', $(this).find('.total-score').text());
+        });
+    }
+
+    // Call this on page load
+    logPanelStructure();
+});
+
+</script>
 {% endblock %}

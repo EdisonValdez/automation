@@ -341,21 +341,28 @@
                                     'X-CSRFToken': getCookie('csrftoken')
                                 }
                             })
-                            .then(response => response.json())
+                            .then(response => {
+                                if (response.ok) {
+                                    return response.json();
+                                } else {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                            })
                             .then(data => {
                                 if (data.status === 'success') {
                                     this.textContent = 'Translation and Enhancement Complete';
+                                    Swal.fire('Success!', data.message, 'success');
                                 } else {
                                     this.textContent = 'Error Translating and Enhancing';
-                                    this.classList.remove('disabled');
+                                    Swal.fire('Error!', data.message, 'error');
                                 }
-                                console.log(data.message);
                             })
                             .catch(error => {
                                 console.error('Error:', error);
                                 this.textContent = 'Error Translating and Enhancing';
-                                this.classList.remove('disabled');
+                                Swal.fire('Error!', 'An unexpected error occurred.', 'error');
                             });
+
                         });
                     });
                 

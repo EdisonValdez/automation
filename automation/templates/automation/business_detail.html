@@ -65,7 +65,7 @@
                                 <span id="status-display" style="display: none;">{{ business.get_status_display }}</span><br>
                                 <select name="status" id="status-edit" class="form-control ms-2">
                                     {% for status_code, status_name in status_choices %}
-                                        {% if status_code != "IN_PRODUCTION" or user.is_admin %}
+                                        {% if status_code != "IN_PRODUCTION" %}
                                             <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
                                                 {{ status_name }}
                                             </option>
