@@ -4,6 +4,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import Country, CustomUser, Business, Destination, Feedback, ScrapingTask, UserRole, Category, Level
 from django.contrib.auth import get_user_model
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -321,6 +322,53 @@ class BusinessForm(forms.ModelForm):
     def clean_tailored_category(self):
         data = self.cleaned_data.get('tailored_category', [])
         return ', '.join(data)
+
+
+    def clean_operating_hours(self):
+        """
+        Custom cleaning method for operating_hours to skip time validation
+        """
+        hours = self.cleaned_data.get('operating_hours')
+        if not hours:
+            return hours
+
+        try:
+            if isinstance(hours, str):
+                hours = json.loads(hours)
+
+            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            formatted_hours = {}
+
+            if isinstance(hours, dict):
+                for day in ordered_days:
+                    time_str = hours.get(day)
+                    if time_str and isinstance(time_str, str):
+                        # Simply ensure en dash usage without time validation
+                        formatted_hours[day] = time_str.replace('-', '–').replace('—', '–')
+                    else:
+                        formatted_hours[day] = None
+            
+            return formatted_hours
+
+        except json.JSONDecodeError:
+            raise forms.ValidationError("Invalid JSON format for operating hours")
+        except Exception as e:
+            logger.error(f"Error cleaning operating hours: {str(e)}")
+            raise forms.ValidationError("Error processing operating hours")
+
+    class Meta:
+        model = Business
+        fields = [
+            'status', 'title', 'level_title', 'level_type', 'city',
+            'price', 'phone', 'website', 'main_category',
+            'tailored_category', 'categories', 'description',
+            'description_esp', 'description_eng', 'operating_hours',
+            'category_name', 'service_options'
+        ]
+        widgets = {
+            'service_options': forms.HiddenInput(),
+            'operating_hours': forms.HiddenInput(),
+        }
 
 FeedbackFormSet = forms.inlineformset_factory(
     Business,

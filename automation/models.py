@@ -351,133 +351,33 @@ class Business(models.Model):
     def __str__(self):
         return self.title
 
-    def save(self, skip_time_validation=False, *args, **kwargs):
-        """
-        Save method with improved hours handling and validation
-        Handles various dash types and time separators
-        """
-        ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-        
+    def save(self, *args, **kwargs):
         if self.operating_hours:
             try:
                 # Convert string to dict if needed
                 if isinstance(self.operating_hours, str):
-                    try:
-                        self.operating_hours = json.loads(self.operating_hours)
-                    except json.JSONDecodeError:
-                        logger.error(f"Invalid JSON string for operating hours: {self.operating_hours}")
-                        self.operating_hours = {day: None for day in ordered_days}
+                    self.operating_hours = json.loads(self.operating_hours)
 
-                # Handle list format
-                if isinstance(self.operating_hours, list):
-                    formatted_hours = {day: None for day in ordered_days}
-                    for item in self.operating_hours:
-                        if isinstance(item, dict):
-                            for day, hours in item.items():
-                                day = day.lower()
-                                if day in ordered_days:
-                                    formatted_hours[day] = self.normalize_time_format(hours) if hours else None
-                    self.operating_hours = formatted_hours
+                ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+                formatted_hours = {}
 
-                # Handle dictionary format
-                elif isinstance(self.operating_hours, dict):
-                    formatted_hours = {}
-                    for day in ordered_days:
-                        hours = self.operating_hours.get(day)
-                        if hours and isinstance(hours, str):
-                            formatted_hours[day] = self.normalize_time_format(hours)
-                        else:
-                            formatted_hours[day] = None
-                    self.operating_hours = formatted_hours
+                # Simplify to just ensure proper dash usage
+                for day in ordered_days:
+                    hours = self.operating_hours.get(day)
+                    if hours and isinstance(hours, str):
+                        # Simply replace any dash with en dash
+                        formatted_hours[day] = hours.replace('-', '–').replace('—', '–')
+                    else:
+                        formatted_hours[day] = None
+
+                self.operating_hours = formatted_hours
 
             except Exception as e:
                 logger.error(f"Error formatting operating hours: {str(e)}")
                 self.operating_hours = {day: None for day in ordered_days}
 
-        if not self.id:
-            logger.info(f"Creating new Business: {self.title}")
-        else:
-            logger.info(f"Updating Business {self.id}: {self.title}")
-        
         super().save(*args, **kwargs)
-
-    def normalize_time_format(self, time_str):
-        """
-        Normalizes time format to use proper en dash
-        Handles various input formats and separators
-        """
-        if not time_str or time_str.lower() == 'closed':
-            return 'Closed'
-
-        try:
-            # Handle multiple time ranges
-            if ',' in time_str:
-                ranges = [range.strip() for range in time_str.split(',')]
-                normalized_ranges = [self.normalize_single_time_range(r) for r in ranges]
-                return ', '.join(filter(None, normalized_ranges))
-            else:
-                return self.normalize_single_time_range(time_str)
-
-        except Exception as e:
-            logger.error(f"Error normalizing time format '{time_str}': {str(e)}")
-            return time_str
-
-    def normalize_single_time_range(self, time_range):
-        """
-        Normalizes a single time range to use proper en dash
-        """
-        if not time_range:
-            return None
-
-        # List of possible time separators
-        separators = ['-', '–', '—', 'to', '~']
         
-        # Find which separator is used
-        used_separator = None
-        for sep in separators:
-            if sep in time_range:
-                used_separator = sep
-                break
-
-        if used_separator:
-            parts = time_range.split(used_separator)
-            if len(parts) == 2:
-                start_time = parts[0].strip()
-                end_time = parts[1].strip()
-                # Use en dash (–) as the standard separator
-                return f"{start_time}–{end_time}"
-
-        return time_range
-
-
-    def format_time_span(self, time_span):
-        """
-        Helper method to format time spans consistently
-        Handles various input formats and normalizes them
-        """
-        if not time_span:
-            return None
-
-        try:
-            if time_span.lower().strip() in ['closed', 'none', 'null']:
-                return 'Closed'
-
-            time_span = time_span.replace('–', '-').replace('—', '-')
-
-            if ',' in time_span:
-                spans = [span.strip() for span in time_span.split(',')]
-                return ', '.join(span for span in spans if span)
-
-            if '-' in time_span:
-                start, end = map(str.strip, time_span.split('-'))
-                return f"{start} - {end}"
-
-            return time_span.strip()
-
-        except Exception as e:
-            logger.error(f"Error formatting time span '{time_span}': {str(e)}")
-            return None
- 
     class Meta:
         verbose_name_plural = "Businesses"
 

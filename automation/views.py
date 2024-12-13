@@ -1216,7 +1216,7 @@ def enhance_translate_business(request, business_id):
 
 
 # /***********enhance_translate_business_view********** generate_description *****/#
- 
+
 @csrf_exempt
 def update_business_hours(request):
     if request.method == 'POST':
@@ -1224,62 +1224,30 @@ def update_business_hours(request):
             data = json.loads(request.body)
             business_id = data.get('business_id')
             hours = data.get('hours')
-            logger.debug(f"Received hours data: {hours}")
 
-            if not hours:
-                return JsonResponse({
-                    'status': 'error', 
-                    'message': 'No hours data provided.'
-                })
+            business = get_object_or_404(Business, id=business_id)
+            
+            if hours:
+                # Simple formatting to ensure en dash usage
+                formatted_hours = {}
+                for day, time_range in hours.items():
+                    if time_range and isinstance(time_range, str):
+                        formatted_hours[day] = time_range.replace('-', '–').replace('—', '–')
+                    else:
+                        formatted_hours[day] = None
 
-            try:
-                business = Business.objects.get(id=business_id)
-            except Business.DoesNotExist:
-                return JsonResponse({
-                    'status': 'error', 
-                    'message': 'Business not found.'
-                })
+                business.operating_hours = formatted_hours
+                business.save()
 
-            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-            formatted_hours = {day: None for day in ordered_days}
+            return JsonResponse({'status': 'success', 'hours': business.operating_hours})
 
-            if isinstance(hours, list):
-                for day_dict in hours:
-                    if isinstance(day_dict, dict):
-                        for day, schedule in day_dict.items():
-                            day = day.lower()
-                            if day in ordered_days:
-                                formatted_hours[day] = schedule
-            elif isinstance(hours, dict):
-                for day in ordered_days:
-                    formatted_hours[day] = hours.get(day)
-
-            logger.debug(f"Formatted hours: {formatted_hours}")
- 
-            business.operating_hours = formatted_hours
-            business.save(skip_time_validation=True)
-            return JsonResponse({
-                'status': 'success',
-                'hours': formatted_hours
-            })
-        except json.JSONDecodeError:
-            return JsonResponse({
-                'status': 'error', 
-                'message': 'Invalid JSON format.'
-            })
         except Exception as e:
             logger.error(f"Error updating business hours: {str(e)}")
-            return JsonResponse({
-                'status': 'error', 
-                'message': f'An error occurred: {str(e)}'
-            })
-    else:
-        return JsonResponse({
-            'status': 'error', 
-            'message': 'Invalid request method.'
-        })
+            return JsonResponse({'status': 'error', 'message': str(e)})
 
-  
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+
+
 @require_POST
 @csrf_exempt  
 def update_image_status(request):
