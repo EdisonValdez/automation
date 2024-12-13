@@ -350,12 +350,20 @@ class Business(models.Model):
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs):
-        if self.operating_hours:
+    def save(self, skip_time_validation=False, *args, **kwargs):
+        if self.operating_hours and not skip_time_validation:
             ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            formatted_hours = {}
+
+            for day in ordered_days:
+                hours = self.operating_hours.get(day)
+                if hours:
+                    formatted_hours[day] = hours
+                else:
+                    formatted_hours[day] = None                    
+            self.operating_hours = formatted_hours
             
             if isinstance(self.operating_hours, list):
-                # Handle list format
                 formatted_hours = {}
                 for day in ordered_days:
                     day_schedule = next(
@@ -367,7 +375,6 @@ class Business(models.Model):
                 self.operating_hours = formatted_hours
                 
             elif isinstance(self.operating_hours, dict):
-                # Handle dictionary format
                 self.operating_hours = {
                     day: self.operating_hours.get(day, None) 
                     for day in ordered_days

@@ -1224,7 +1224,6 @@ def update_business_hours(request):
             data = json.loads(request.body)
             business_id = data.get('business_id')
             hours = data.get('hours')
-
             logger.debug(f"Received hours data: {hours}")
 
             if not hours:
@@ -1241,12 +1240,10 @@ def update_business_hours(request):
                     'message': 'Business not found.'
                 })
 
-            # Format the hours data
             ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
             formatted_hours = {day: None for day in ordered_days}
 
             if isinstance(hours, list):
-                # Handle list of dictionaries format
                 for day_dict in hours:
                     if isinstance(day_dict, dict):
                         for day, schedule in day_dict.items():
@@ -1254,21 +1251,17 @@ def update_business_hours(request):
                             if day in ordered_days:
                                 formatted_hours[day] = schedule
             elif isinstance(hours, dict):
-                # Handle direct dictionary format
                 for day in ordered_days:
                     formatted_hours[day] = hours.get(day)
 
             logger.debug(f"Formatted hours: {formatted_hours}")
-
-            # Update business hours
+ 
             business.operating_hours = formatted_hours
-            business.save()
-
+            business.save(skip_time_validation=True)
             return JsonResponse({
                 'status': 'success',
                 'hours': formatted_hours
             })
-
         except json.JSONDecodeError:
             return JsonResponse({
                 'status': 'error', 

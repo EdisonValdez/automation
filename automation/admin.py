@@ -72,11 +72,11 @@ def move_to_pending(modeladmin, request, queryset):
 
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
-    list_display = ('project_title', 'level', 'level_title', 'level_type', 'main_category', 'status', 'country', 'city', 'task', 'scraped_at')
+    list_display = ('project_title', 'level', 'level_title', 'level_type', 'address', 'street', 'postal_code', 'main_category', 'status', 'country', 'city', 'task', 'scraped_at')
     readonly_fields = ('scraped_at', 'level_title', 'level_type')
 
-    list_filter = ('status', 'main_category', 'level', 'country', 'city', 'task')
-    search_fields = ('project_title', 'main_category__title', 'subcategory__title')
+    list_filter = ('status', 'main_category', 'level', 'country', 'city', 'address', 'street', 'postal_code',  'task')
+    search_fields = ('project_title', 'main_category__title', 'subcategory__title', 'street__title', 'address__title')
     readonly_fields = ('scraped_at', 'level_title', 'level_type')
     inlines = [CategoryInline, OpeningHoursInline, AdditionalInfoInline, ImageInline, ReviewInline]
     actions = [move_to_pending]
