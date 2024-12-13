@@ -857,34 +857,6 @@ def fill_missing_address_components(business_data, task, query, form_data=None):
     logger.info(f"City: {business_data.get('city', '')}")
     logger.info(f"Country: {business_data.get('country', '')}")
  
-
-def clean_time_string(time_str):
-    """
-    Clean and validate time string. Handles overnight hours.
-    """
-    if not time_str:
-        return None
-
-    # Normalize spaces and dashes
-    cleaned = time_str.replace('\u202f', ' ').replace('\u2009', ' ').replace('  ', ' ')
-    cleaned = cleaned.replace('-', '–')
-
-    # Split start and end times
-    try:
-        start_str, end_str = cleaned.split('–')
-        start_time = datetime.strptime(start_str.strip(), "%H:%M").time()
-        end_time = datetime.strptime(end_str.strip(), "%H:%M").time()
-
-        # Check for overnight hours
-        if end_time <= start_time:
-            return {"start": start_time.strftime("%H:%M"), "end": end_time.strftime("%H:%M"), "overnight": True}
-        else:
-            return {"start": start_time.strftime("%H:%M"), "end": end_time.strftime("%H:%M"), "overnight": False}
-
-    except ValueError:
-        logger.error(f"Invalid time string format: {time_str}")
-        return None
-
  
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):
@@ -958,40 +930,49 @@ def save_business(task, local_result, query, form_data=None):
         elif 'types' in local_result: 
             business_data['types'] = ', '.join(local_result['types'])
  
+       
         ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+
         if 'hours' in local_result:
             hours_data = local_result['hours']
-            formatted_hours = {day: None for day in ordered_days}
+            formatted_hours = {day: None for day in ordered_days}  # Initialize with None values
 
             if isinstance(hours_data, dict):
-                for day, time_str in hours_data.items():
-                    formatted_hours[day] = clean_time_string(time_str)
+                # If hours_data is already a dictionary
+                for day in ordered_days:
+                    formatted_hours[day] = hours_data.get(day, None)
             
             elif isinstance(hours_data, list):
+                # If hours_data is a list of schedules
                 for schedule_item in hours_data:
                     if isinstance(schedule_item, dict):
-                        for day, time_str in schedule_item.items():
-                            formatted_hours[day] = clean_time_string(time_str)
+                        # Update formatted_hours with any found schedules
+                        formatted_hours.update(schedule_item)
 
             business_data['operating_hours'] = formatted_hours
-            logger.info(f"Hours data with adjusted times: {formatted_hours}")
+            logger.info(f"Formatted hours data: {formatted_hours}")
+
 
         elif 'operating_hours' in local_result:
             hours_data = local_result['operating_hours']
-            formatted_hours = {day: None for day in ordered_days}
-
-            if isinstance(hours_data, dict):
-                for day, time_str in hours_data.items():
-                    formatted_hours[day] = clean_time_string(time_str)
+            formatted_hours = {}
+            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
             
+            if isinstance(hours_data, dict):
+                formatted_hours = {
+                    day: hours_data.get(day, None) 
+                    for day in ordered_days
+                }
             elif isinstance(hours_data, list):
-                for schedule_item in hours_data:
-                    if isinstance(schedule_item, dict):
-                        for day, time_str in schedule_item.items():
-                            formatted_hours[day] = clean_time_string(time_str)
-
+                for day in ordered_days:
+                    day_schedule = next(
+                        (schedule for schedule in hours_data 
+                        if isinstance(schedule, str) and day in schedule.lower()),
+                        None
+                    )
+                    formatted_hours[day] = day_schedule
+            
             business_data['operating_hours'] = formatted_hours
-            logger.info(f"Operating hours with adjusted times: {formatted_hours}")
 
         if 'extensions' in local_result:
             extensions = local_result['extensions']

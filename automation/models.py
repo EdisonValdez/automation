@@ -353,25 +353,26 @@ class Business(models.Model):
 
     def save(self, *args, **kwargs):
         if self.operating_hours:
-            try:
-                # Convert string to dict if needed
-                if isinstance(self.operating_hours, str):
-                    self.operating_hours = json.loads(self.operating_hours)
-
-                ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            
+            if isinstance(self.operating_hours, list):
+                # Handle list format
                 formatted_hours = {}
                 for day in ordered_days:
-                    hours = self.operating_hours.get(day)
-                    if hours is not None: 
-                        formatted_hours[day] = hours
-                    else:
-                        formatted_hours[day] = None
-
+                    day_schedule = next(
+                        (schedule for schedule in self.operating_hours 
+                        if isinstance(schedule, str) and day in schedule.lower()),
+                        None
+                    )
+                    formatted_hours[day] = day_schedule
                 self.operating_hours = formatted_hours
-
-            except Exception as e:
-                logger.error(f"Error with operating hours: {str(e)}")
-                self.operating_hours = {day: None for day in ordered_days}
+                
+            elif isinstance(self.operating_hours, dict):
+                # Handle dictionary format
+                self.operating_hours = {
+                    day: self.operating_hours.get(day, None) 
+                    for day in ordered_days
+                }
 
         if not self.id:
             logger.info(f"Creating new Business: {self.title}")
@@ -379,7 +380,7 @@ class Business(models.Model):
             logger.info(f"Updating Business {self.id}: {self.title}")
         
         super().save(*args, **kwargs)
- 
+
     class Meta:
         verbose_name_plural = "Businesses"
 
