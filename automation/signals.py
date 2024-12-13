@@ -91,3 +91,7 @@ def enforce_description_validation(sender, instance, **kwargs):
         logger.info(f"Instance status is: {instance.status}")
         instance.status = 'PENDING'
         logger.info(f"Instance status now is: {instance.status}")
+    elif instance.status in ['REVIEWD', 'IN_PRODUCTION'] and instance.description_esp in [None, '', 'None']:
+        logger.info(f"Instance status is: {instance.status}")
+        instance.status = 'PENDING'
+        logger.info(f"Instance status now is: {instance.status}")
