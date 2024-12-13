@@ -1227,25 +1227,29 @@ def update_business_hours(request):
 
             business = get_object_or_404(Business, id=business_id)
             
+            # Store hours exactly as received
             if hours:
-                # Simple formatting to ensure en dash usage
-                formatted_hours = {}
-                for day, time_range in hours.items():
-                    if time_range and isinstance(time_range, str):
-                        formatted_hours[day] = time_range.replace('-', '–').replace('—', '–')
-                    else:
-                        formatted_hours[day] = None
-
-                business.operating_hours = formatted_hours
+                business.operating_hours = hours
                 business.save()
 
-            return JsonResponse({'status': 'success', 'hours': business.operating_hours})
+                logger.info(f"Stored hours without validation: {hours}")
+
+            return JsonResponse({
+                'status': 'success',
+                'hours': business.operating_hours
+            })
 
         except Exception as e:
-            logger.error(f"Error updating business hours: {str(e)}")
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            logger.error(f"Error updating hours: {str(e)}")
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            })
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+    return JsonResponse({
+        'status': 'error',
+        'message': 'Invalid request method'
+    })
 
 
 @require_POST

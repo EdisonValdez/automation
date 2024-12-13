@@ -323,10 +323,9 @@ class BusinessForm(forms.ModelForm):
         data = self.cleaned_data.get('tailored_category', [])
         return ', '.join(data)
 
-
     def clean_operating_hours(self):
         """
-        Custom cleaning method for operating_hours to skip time validation
+        Pass through the operating hours without any validation or formatting
         """
         hours = self.cleaned_data.get('operating_hours')
         if not hours:
@@ -335,26 +334,14 @@ class BusinessForm(forms.ModelForm):
         try:
             if isinstance(hours, str):
                 hours = json.loads(hours)
-
-            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-            formatted_hours = {}
-
-            if isinstance(hours, dict):
-                for day in ordered_days:
-                    time_str = hours.get(day)
-                    if time_str and isinstance(time_str, str):
-                        # Simply ensure en dash usage without time validation
-                        formatted_hours[day] = time_str.replace('-', '–').replace('—', '–')
-                    else:
-                        formatted_hours[day] = None
-            
-            return formatted_hours
+             
+            return hours
 
         except json.JSONDecodeError:
-            raise forms.ValidationError("Invalid JSON format for operating hours")
+            return hours
         except Exception as e:
-            logger.error(f"Error cleaning operating hours: {str(e)}")
-            raise forms.ValidationError("Error processing operating hours")
+            logger.error(f"Error in operating hours: {str(e)}")
+            return hours
 
     class Meta:
         model = Business

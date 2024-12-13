@@ -929,7 +929,7 @@ def save_business(task, local_result, query, form_data=None):
             business_data['types'] = ', '.join(local_result['type'])
         elif 'types' in local_result: 
             business_data['types'] = ', '.join(local_result['types'])
-        
+ 
         ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
         if 'hours' in local_result:
@@ -937,42 +937,36 @@ def save_business(task, local_result, query, form_data=None):
             formatted_hours = {day: None for day in ordered_days}  # Initialize with None values
 
             if isinstance(hours_data, dict):
-                # If hours_data is already a dictionary
-                for day in ordered_days:
-                    formatted_hours[day] = hours_data.get(day, None)
+                # If hours_data is already a dictionary, keep it as is
+                formatted_hours.update(hours_data)
             
             elif isinstance(hours_data, list):
-                # If hours_data is a list of schedules
+                # If hours_data is a list of schedule dictionaries, merge them
                 for schedule_item in hours_data:
                     if isinstance(schedule_item, dict):
-                        # Update formatted_hours with any found schedules
                         formatted_hours.update(schedule_item)
 
             business_data['operating_hours'] = formatted_hours
-            logger.info(f"Formatted hours data: {formatted_hours}")
-
+            logger.info(f"Hours data stored as-is: {formatted_hours}")
 
         elif 'operating_hours' in local_result:
             hours_data = local_result['operating_hours']
-            formatted_hours = {}
-            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-            
+            formatted_hours = {day: None for day in ordered_days}
+
             if isinstance(hours_data, dict):
-                formatted_hours = {
-                    day: hours_data.get(day, None) 
-                    for day in ordered_days
-                }
+                # If it's a dictionary, keep it as is
+                formatted_hours.update(hours_data)
+            
             elif isinstance(hours_data, list):
-                for day in ordered_days:
-                    day_schedule = next(
-                        (schedule for schedule in hours_data 
-                        if isinstance(schedule, str) and day in schedule.lower()),
-                        None
-                    )
-                    formatted_hours[day] = day_schedule
-            
+                # If it's a list of dictionaries, merge them
+                for schedule_item in hours_data:
+                    if isinstance(schedule_item, dict):
+                        formatted_hours.update(schedule_item)
+
             business_data['operating_hours'] = formatted_hours
-            
+            logger.info(f"Operating hours stored as-is: {formatted_hours}")
+
+
         if 'extensions' in local_result:
             extensions = local_result['extensions']
             if isinstance(extensions, list):

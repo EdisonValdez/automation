@@ -359,25 +359,30 @@ class Business(models.Model):
                     self.operating_hours = json.loads(self.operating_hours)
 
                 ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+                
+                # Store the hours exactly as they are, only ensure dictionary format
                 formatted_hours = {}
-
-                # Simplify to just ensure proper dash usage
                 for day in ordered_days:
                     hours = self.operating_hours.get(day)
-                    if hours and isinstance(hours, str):
-                        # Simply replace any dash with en dash
-                        formatted_hours[day] = hours.replace('-', '–').replace('—', '–')
+                    if hours is not None:
+                        # Store exactly as is, no formatting
+                        formatted_hours[day] = hours
                     else:
                         formatted_hours[day] = None
 
                 self.operating_hours = formatted_hours
 
             except Exception as e:
-                logger.error(f"Error formatting operating hours: {str(e)}")
+                logger.error(f"Error with operating hours: {str(e)}")
                 self.operating_hours = {day: None for day in ordered_days}
 
-        super().save(*args, **kwargs)
+        if not self.id:
+            logger.info(f"Creating new Business: {self.title}")
+        else:
+            logger.info(f"Updating Business {self.id}: {self.title}")
         
+        super().save(*args, **kwargs)
+ 
     class Meta:
         verbose_name_plural = "Businesses"
 
