@@ -1,4 +1,5 @@
 # models.py
+import json
 from django.utils import timezone
 import os
 from django.contrib.auth.models import  AbstractUser, BaseUserManager
@@ -351,34 +352,70 @@ class Business(models.Model):
         return self.title
 
     def save(self, skip_time_validation=False, *args, **kwargs):
-        if self.operating_hours and not skip_time_validation:
-            ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-            formatted_hours = {}
+        """
+        Save method with improved hours handling and validation
+        skip_time_validation: If True, stores hours without any formatting or validation
+        """
+        ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+        
+        if self.operating_hours:
+            try: 
+                if skip_time_validation:
+                    if isinstance(self.operating_hours, dict):
+                        self.operating_hours = {
+                            day: self.operating_hours.get(day, None)
+                            for day in ordered_days
+                        }
+                    logger.info(f"Skipping time validation, storing hours as-is: {self.operating_hours}")
+                    
+                else: 
+                    if isinstance(self.operating_hours, str):
+                        try:
+                            self.operating_hours = json.loads(self.operating_hours)
+                        except json.JSONDecodeError:
+                            logger.error(f"Invalid JSON string for operating hours: {self.operating_hours}")
+                            self.operating_hours = {day: None for day in ordered_days}
 
-            for day in ordered_days:
-                hours = self.operating_hours.get(day)
-                if hours:
-                    formatted_hours[day] = hours
-                else:
-                    formatted_hours[day] = None                    
-            self.operating_hours = formatted_hours
-            
-            if isinstance(self.operating_hours, list):
-                formatted_hours = {}
-                for day in ordered_days:
-                    day_schedule = next(
-                        (schedule for schedule in self.operating_hours 
-                        if isinstance(schedule, str) and day in schedule.lower()),
-                        None
-                    )
-                    formatted_hours[day] = day_schedule
-                self.operating_hours = formatted_hours
-                
-            elif isinstance(self.operating_hours, dict):
-                self.operating_hours = {
-                    day: self.operating_hours.get(day, None) 
-                    for day in ordered_days
-                }
+                    if isinstance(self.operating_hours, list):
+                        formatted_hours = {day: None for day in ordered_days}
+                        
+                        for item in self.operating_hours:
+                            if isinstance(item, dict):
+                                for day, hours in item.items():
+                                    day = day.lower()
+                                    if day in ordered_days:
+                                        formatted_hours[day] = self.format_time_span(hours) if hours else None
+                            elif isinstance(item, str):
+                                day_parts = item.split(':', 1)
+                                if len(day_parts) == 2:
+                                    day = day_parts[0].lower().strip()
+                                    if day in ordered_days:
+                                        formatted_hours[day] = self.format_time_span(day_parts[1].strip())
+                        
+                        self.operating_hours = formatted_hours
+
+                    elif isinstance(self.operating_hours, dict):
+                        formatted_hours = {}
+                        
+                        for day in ordered_days:
+                            hours = self.operating_hours.get(day)
+                            if hours:
+                                formatted_hours[day] = self.format_time_span(hours)
+                            else:
+                                formatted_hours[day] = None
+                        
+                        self.operating_hours = formatted_hours
+
+                    self.operating_hours = {
+                        day: self.operating_hours.get(day, None)
+                        for day in ordered_days
+                    }
+
+                    logger.info(f"Formatted operating hours: {self.operating_hours}")
+
+            except Exception as e:
+                logger.error(f"Error formatting operating hours: {str(e)}")
+                self.operating_hours = {day: None for day in ordered_days}
 
         if not self.id:
             logger.info(f"Creating new Business: {self.title}")
@@ -387,8 +424,34 @@ class Business(models.Model):
         
         super().save(*args, **kwargs)
 
+    def format_time_span(self, time_span):
+        """
+        Helper method to format time spans consistently
+        Handles various input formats and normalizes them
+        """
+        if not time_span:
+            return None
 
+        try:
+            if time_span.lower().strip() in ['closed', 'none', 'null']:
+                return 'Closed'
 
+            time_span = time_span.replace('–', '-').replace('—', '-')
+
+            if ',' in time_span:
+                spans = [span.strip() for span in time_span.split(',')]
+                return ', '.join(span for span in spans if span)
+
+            if '-' in time_span:
+                start, end = map(str.strip, time_span.split('-'))
+                return f"{start} - {end}"
+
+            return time_span.strip()
+
+        except Exception as e:
+            logger.error(f"Error formatting time span '{time_span}': {str(e)}")
+            return None
+ 
     class Meta:
         verbose_name_plural = "Businesses"
 
