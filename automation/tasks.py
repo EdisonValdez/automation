@@ -857,6 +857,20 @@ def fill_missing_address_components(business_data, task, query, form_data=None):
     logger.info(f"City: {business_data.get('city', '')}")
     logger.info(f"Country: {business_data.get('country', '')}")
 
+def clean_time_string(time_str):
+    """
+    Clean time string by removing special Unicode characters and standardizing format
+    """
+    if not time_str:
+        return None
+    
+    # Remove Unicode spaces and standardize regular spaces
+    cleaned = time_str.replace('\u202f', ' ').replace('\u2009', ' ').replace('  ', ' ')
+    
+    # Ensure consistent dash usage (en dash)
+    cleaned = cleaned.replace('-', '–')
+    
+    return cleaned
 
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):
@@ -934,39 +948,39 @@ def save_business(task, local_result, query, form_data=None):
 
         if 'hours' in local_result:
             hours_data = local_result['hours']
-            formatted_hours = {day: None for day in ordered_days}  # Initialize with None values
+            formatted_hours = {day: None for day in ordered_days}
 
             if isinstance(hours_data, dict):
-                # If hours_data is already a dictionary, keep it as is
-                formatted_hours.update(hours_data)
+                # Clean each time string
+                for day, time_str in hours_data.items():
+                    formatted_hours[day] = clean_time_string(time_str)
             
             elif isinstance(hours_data, list):
-                # If hours_data is a list of schedule dictionaries, merge them
                 for schedule_item in hours_data:
                     if isinstance(schedule_item, dict):
-                        formatted_hours.update(schedule_item)
+                        for day, time_str in schedule_item.items():
+                            formatted_hours[day] = clean_time_string(time_str)
 
             business_data['operating_hours'] = formatted_hours
-            logger.info(f"Hours data stored as-is: {formatted_hours}")
+            logger.info(f"Cleaned hours data: {formatted_hours}")
 
         elif 'operating_hours' in local_result:
             hours_data = local_result['operating_hours']
             formatted_hours = {day: None for day in ordered_days}
 
             if isinstance(hours_data, dict):
-                # If it's a dictionary, keep it as is
-                formatted_hours.update(hours_data)
+                for day, time_str in hours_data.items():
+                    formatted_hours[day] = clean_time_string(time_str)
             
             elif isinstance(hours_data, list):
-                # If it's a list of dictionaries, merge them
                 for schedule_item in hours_data:
                     if isinstance(schedule_item, dict):
-                        formatted_hours.update(schedule_item)
+                        for day, time_str in schedule_item.items():
+                            formatted_hours[day] = clean_time_string(time_str)
 
             business_data['operating_hours'] = formatted_hours
-            logger.info(f"Operating hours stored as-is: {formatted_hours}")
-
-
+            logger.info(f"Cleaned operating hours: {formatted_hours}")
+            
         if 'extensions' in local_result:
             extensions = local_result['extensions']
             if isinstance(extensions, list):
