@@ -294,7 +294,7 @@ class BusinessForm(forms.ModelForm):
         ]
         widgets = {
             'service_options': forms.HiddenInput(),
-            'operating_hours': forms.HiddenInput(),
+ 
         }
 
     def __init__(self, *args, **kwargs):

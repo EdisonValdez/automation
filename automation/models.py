@@ -13,8 +13,6 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
-from automation.tasks import clean_time_string
-
 logger = logging.getLogger(__name__)
 SITE_TYPES_CHOICES = [
     ('PLACE', 'Place'),
@@ -356,31 +354,31 @@ class Business(models.Model):
     def save(self, *args, **kwargs):
         if self.operating_hours:
             try:
+                # Convert string to dict if needed
                 if isinstance(self.operating_hours, str):
                     self.operating_hours = json.loads(self.operating_hours)
 
                 ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-                validated_hours = {}
-
+                formatted_hours = {}
                 for day in ordered_days:
                     hours = self.operating_hours.get(day)
-                    if hours:
-                        cleaned_time = clean_time_string(hours)
-                        if cleaned_time:
-                            validated_hours[day] = cleaned_time
-                        else:
-                            validated_hours[day] = None
+                    if hours is not None: 
+                        formatted_hours[day] = hours
                     else:
-                        validated_hours[day] = None
+                        formatted_hours[day] = None
 
-                self.operating_hours = validated_hours
+                self.operating_hours = formatted_hours
 
             except Exception as e:
-                logger.error(f"Error processing operating hours: {str(e)}")
+                logger.error(f"Error with operating hours: {str(e)}")
                 self.operating_hours = {day: None for day in ordered_days}
 
+        if not self.id:
+            logger.info(f"Creating new Business: {self.title}")
+        else:
+            logger.info(f"Updating Business {self.id}: {self.title}")
+        
         super().save(*args, **kwargs)
-
  
     class Meta:
         verbose_name_plural = "Businesses"
