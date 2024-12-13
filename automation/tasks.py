@@ -859,19 +859,21 @@ def fill_missing_address_components(business_data, task, query, form_data=None):
 
 def clean_time_string(time_str):
     """
-    Clean time string by removing special Unicode characters and standardizing format
+    Clean time string and add cross_midnight indicator for times that span across midnight
     """
     if not time_str:
         return None
     
-    # Remove Unicode spaces and standardize regular spaces
+    # Remove Unicode spaces and standardize
     cleaned = time_str.replace('\u202f', ' ').replace('\u2009', ' ').replace('  ', ' ')
     
-    # Ensure consistent dash usage (en dash)
-    cleaned = cleaned.replace('-', '–')
+    # Check if this is a cross-midnight time range
+    if ('PM' in cleaned and 'AM' in cleaned):
+        # Add a marker for cross-midnight times
+        cleaned = f"{cleaned} [CROSS_MIDNIGHT]"
     
     return cleaned
-
+ 
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):
     logger.info(f"Saving business data for task {task.id}")
@@ -951,7 +953,6 @@ def save_business(task, local_result, query, form_data=None):
             formatted_hours = {day: None for day in ordered_days}
 
             if isinstance(hours_data, dict):
-                # Clean each time string
                 for day, time_str in hours_data.items():
                     formatted_hours[day] = clean_time_string(time_str)
             
@@ -961,8 +962,12 @@ def save_business(task, local_result, query, form_data=None):
                         for day, time_str in schedule_item.items():
                             formatted_hours[day] = clean_time_string(time_str)
 
-            business_data['operating_hours'] = formatted_hours
-            logger.info(f"Cleaned hours data: {formatted_hours}")
+            # Add metadata about cross-midnight times
+            business_data['operating_hours'] = {
+                'hours': formatted_hours,
+                'has_cross_midnight': any('[CROSS_MIDNIGHT]' in str(time) for time in formatted_hours.values())
+            }
+            logger.info(f"Hours data with cross-midnight indication: {business_data['operating_hours']}")
 
         elif 'operating_hours' in local_result:
             hours_data = local_result['operating_hours']
@@ -978,9 +983,13 @@ def save_business(task, local_result, query, form_data=None):
                         for day, time_str in schedule_item.items():
                             formatted_hours[day] = clean_time_string(time_str)
 
-            business_data['operating_hours'] = formatted_hours
-            logger.info(f"Cleaned operating hours: {formatted_hours}")
-            
+            # Add metadata about cross-midnight times
+            business_data['operating_hours'] = {
+                'hours': formatted_hours,
+                'has_cross_midnight': any('[CROSS_MIDNIGHT]' in str(time) for time in formatted_hours.values())
+            }
+            logger.info(f"Operating hours with cross-midnight indication: {business_data['operating_hours']}")
+        
         if 'extensions' in local_result:
             extensions = local_result['extensions']
             if isinstance(extensions, list):
