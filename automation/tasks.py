@@ -856,27 +856,35 @@ def fill_missing_address_components(business_data, task, query, form_data=None):
     logger.info(f"Postal Code: {business_data.get('postal_code', '')}")
     logger.info(f"City: {business_data.get('city', '')}")
     logger.info(f"Country: {business_data.get('country', '')}")
+ 
 
 def clean_time_string(time_str):
     """
-    Clean time string and handle cross-midnight times by adding +24h to end time
+    Clean and validate time string. Handles overnight hours.
     """
     if not time_str:
         return None
-    
-    # Remove Unicode spaces and standardize
+
+    # Normalize spaces and dashes
     cleaned = time_str.replace('\u202f', ' ').replace('\u2009', ' ').replace('  ', ' ')
-    
-    # Check if this is a cross-midnight time range
-    if ('PM' in cleaned and 'AM' in cleaned):
-        start_time, end_time = cleaned.split('–')
-        # Adjust end time to show it's next day
-        end_time = end_time.strip()
-        if 'AM' in end_time:
-            end_time = f"(+24h) {end_time}"
-        cleaned = f"{start_time.strip()}–{end_time}"
-    
-    return cleaned
+    cleaned = cleaned.replace('-', '–')
+
+    # Split start and end times
+    try:
+        start_str, end_str = cleaned.split('–')
+        start_time = datetime.strptime(start_str.strip(), "%H:%M").time()
+        end_time = datetime.strptime(end_str.strip(), "%H:%M").time()
+
+        # Check for overnight hours
+        if end_time <= start_time:
+            return {"start": start_time.strftime("%H:%M"), "end": end_time.strftime("%H:%M"), "overnight": True}
+        else:
+            return {"start": start_time.strftime("%H:%M"), "end": end_time.strftime("%H:%M"), "overnight": False}
+
+    except ValueError:
+        logger.error(f"Invalid time string format: {time_str}")
+        return None
+
  
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):
