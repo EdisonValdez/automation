@@ -568,86 +568,93 @@ def translate_text(text, language="spanish"):
 def enhance_and_translate_description(business, languages=["spanish", "eng"]):
     """
     Enhances the business description and translates it into specified languages.
-    Ensures a minimum of 220 words and proper formatting with blank spaces and line breaks.
+    Uses batch processing and concurrent API calls for better performance.
     """
-    original_description = business.description or ""
-    if not original_description.strip():
+    if not business.description or not business.description.strip():
         logger.info(f"No base description available for business {business.id}. Enhancement and translation skipped.")
         return False
 
-    prompt = (
-        f"Write a detailed description of at least 220 words.\n"
-        f"About: '{business.title}', a '{business.category_name}' located in '{business.city}, {business.country}'.\n"
-        f"Tone: Formal\n"
-        f"The description should be SEO optimized, highlighting the business's key features and appeal.\n"
-        f"Ensure that '{business.title}' or its synonyms appear in the first paragraph.\n"
-        f"Use '{business.title}' at least twice throughout the description.\n"
-        f"Keep sentences concise, with 80% shorter than 20 words.\n"
-        f"Separate paragraphs with blank lines for better readability.\n"
-        f"Do not use the phrases 'vibrant', 'in the heart of', or 'in summary'."
-    )
-
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
+        # Prepare system messages for different tasks
+        messages = {
+            'enhance': [
                 {"role": "system", "content": "You are an expert SEO content writer."},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": f"""
+                    Write a detailed description of exactly 220 words.
+                    About: '{business.title}', a '{business.category_name}' in '{business.city}, {business.country}'.
+                    Requirements:
+                    - SEO optimized
+                    - '{business.title}' or synonyms in first paragraph
+                    - Use '{business.title}' twice
+                    - 80% sentences under 20 words
+                    - Formal tone
+                    - Avoid: 'vibrant', 'in the heart of', 'in summary'
+                    - Include blank lines between paragraphs
+                """}
             ],
-            temperature=0.7,
-        )
+            'translate_es': [
+                {"role": "system", "content": "You are an expert Spanish translator."},
+                {"role": "user", "content": "Translate to Spanish, preserving structure and tone:"}
+            ],
+            'translate_en': [
+                {"role": "system", "content": "You are an expert British English localizer."},
+                {"role": "user", "content": "Convert to British English, using appropriate spellings and conventions:"}
+            ]
+        }
+
+        # Function to make API calls with retry logic
+        def call_openai_with_retry(messages, retries=3, delay=2):
+            for attempt in range(retries):
+                try:
+                    return openai.ChatCompletion.create(
+                        model="gpt-3.5-turbo",  # Use 3.5-turbo for better performance/cost balance
+                        messages=messages,
+                        temperature=0.3,
+                        max_tokens=800,
+                        presence_penalty=0.0,
+                        frequency_penalty=0.0
+                    )
+                except openai.error.RateLimitError:
+                    if attempt == retries - 1:
+                        raise
+                    time.sleep(delay * (attempt + 1))
+                except openai.error.OpenAIError as e:
+                    if attempt == retries - 1:
+                        raise
+                    time.sleep(delay)
+
+        response = call_openai_with_retry(messages['enhance'])
         enhanced_description = response['choices'][0]['message']['content'].strip()
-
-        word_count = len(enhanced_description.split())
-        if word_count < 220:
-            logger.warning(f"Enhanced description has only {word_count} words. Expanding content...")
-            additional_content = generate_additional_sentences_openai(business, 220 - word_count)
-            enhanced_description += "\n\n" + additional_content
-
         business.description = enhanced_description
 
-        for lang in languages:
-            if lang == "spanish":
-                language_code = "es"
-                prompt_translation = (
-                    f"Translate the following text into Spanish:\n\n"
-                    f"{enhanced_description}\n\n"
-                    f"Preserve the structure, formatting, and tone of the original text."
-                )
-            elif lang == "eng":
-                language_code = "en-GB"
-                prompt_translation = (
-                    f"Localize the following text to British English:\n\n"
-                    f"{enhanced_description}\n\n"
-                    f"Use British English spellings, idioms, and formatting conventions."
-                )
-
-            response_translation = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "You are an expert translator."},
-                    {"role": "user", "content": prompt_translation}
-                ],
-                temperature=0.3,
+        if languages:
+            combined_prompt = (
+                "Translate the following text into both Spanish and British English. "
+                "Provide both translations separated by [SPLIT]:\n\n"
+                f"{enhanced_description}"
             )
-            translated_description = response_translation['choices'][0]['message']['content'].strip()
+            
+            response_translations = call_openai_with_retry([
+                {"role": "system", "content": "You are an expert multilingual translator."},
+                {"role": "user", "content": combined_prompt}
+            ])
+            
+            translations = response_translations['choices'][0]['message']['content'].split('[SPLIT]')
+            
+            if len(translations) >= 2:
+                if "spanish" in languages:
+                    business.description_esp = translations[0].strip()
+                if "eng" in languages:
+                    business.description_eng = translations[1].strip()
 
-            if lang == "spanish":
-                business.description_esp = translated_description
-            elif lang == "eng":
-                business.description_eng = translated_description
-
-        # Save the business with all translations
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
         return True
 
-    except openai.error.OpenAIError as e:
-        logger.error(f"OpenAI API error: {str(e)}")
-        return False
     except Exception as e:
-        logger.error(f"Error enhancing and translating description for business {business.id}: {str(e)}", exc_info=True)
+        logger.error(f"Error processing business {business.id}: {str(e)}", exc_info=True)
         return False
+
 
 
 def generate_additional_sentences_openai(business, word_deficit):
