@@ -792,101 +792,103 @@ def change_business_status(request, business_id):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+##consolidated function update+change
+
 @require_POST
 @csrf_exempt
 def update_business_status(request, business_id):
     try:
         # Fetch the business object
         business = get_object_or_404(Business, id=business_id)
-
-        # Parse JSON data from request body
         data = json.loads(request.body)
-
-        # Get new status and user_id from data
         new_status = data.get('status', '').strip()
         user_id = data.get('userId')
 
-        # Initialize list to track missing fields
-        missing_fields = []
+        # Comprehensive description validation
+        missing_descriptions = []
+        if not business.description or not business.description.strip():
+            missing_descriptions.append('Original description')
+        if not business.description_eng or not business.description_eng.strip():
+            missing_descriptions.append('English description')
+        if not business.description_esp or not business.description_esp.strip():
+            missing_descriptions.append('Spanish description')
 
-        # Validate description fields
-        if not business.description or business.description.strip().lower() in ['', 'none']:
-            missing_fields.append('description')
-        if not business.description_esp or business.description_esp.strip().lower() in ['', 'none']:
-            missing_fields.append('description_esp')
-
-        # If any required description fields are missing
-        if missing_fields:
-            # Automatically set to PENDING if in a higher status
+        # Status validation logic
+        if missing_descriptions:
             if business.status in ['REVIEWED', 'IN_PRODUCTION']:
                 business.status = 'PENDING'
                 business.save()
                 return JsonResponse({
                     'status': 'error',
-                    'message': f"Business {', '.join(missing_fields)} is missing. Status moved to PENDING instead of {new_status}."
+                    'message': f"Business descriptions missing: {', '.join(missing_descriptions)}. Status moved to PENDING."
                 }, status=400)
-            
-            # Prevent moving to REVIEWED or IN_PRODUCTION if descriptions are missing
+
             if new_status in ['REVIEWED', 'IN_PRODUCTION']:
                 return JsonResponse({
                     'status': 'error',
-                    'message': f"Cannot move to {new_status}: {', '.join(missing_fields).capitalize()} {'are' if len(missing_fields) > 1 else 'is'} missing. Status remains {business.status}."
+                    'message': f"Cannot move to {new_status}: {', '.join(missing_descriptions)} is missing."
                 }, status=400)
 
-        # Proceed if descriptions are present
-        # Validate and save the new status
         if new_status in dict(Business.STATUS_CHOICES):
             old_status = business.status
             business.status = new_status
             business.save()
 
-            # If the new status is IN_PRODUCTION, perform additional actions
             if new_status == 'IN_PRODUCTION':
-                def datetime_serializer(obj):
-                    """Recursively convert datetime objects to ISO format"""
-                    if isinstance(obj, datetime):
-                        return obj.isoformat()
-                    raise TypeError(f"Type {type(obj)} not serializable")
-
-                # Convert business data to dictionary
                 business_data = model_to_dict(business)
-
-                # Fetch country details
-                country = Country.objects.filter(
-                    name__iexact=business_data.get("country", "")
-                ).last()
-                country_data = model_to_dict(country) if country else {}
-
-                # Fetch user details
-                user = CustomUser.objects.filter(id=int(user_id)).first()
-                user_data = model_to_dict(user)
-
-                # Fetch image details
-                image_urls = list(
-                    Image.objects.filter(
-                        business=business_id, is_approved=True
-                    ).all().values_list('image_url', flat=True)
-                )
                 
-                # Set local secret's level, category, subcategory, country , city ids
+                # Format operating hours
+                try:
+                    if business_data.get('operating_hours'):
+                        logger.info(f"Original operating hours: {business_data['operating_hours']}")
+                        formatted_hours = format_operating_hours(business_data['operating_hours'])
+                        business_data['operating_hours'] = formatted_hours
+                        logger.info(f"Formatted operating hours: {formatted_hours}")
+                except Exception as e:
+                    logger.error(f"Error formatting operating hours: {str(e)}")
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f"Error formatting operating hours: {str(e)}"
+                    }, status=400)
+
+                # Continue with existing functionality...
                 task_obj = business.task
                 business_data["level_id"] = task_obj.level.ls_id
-        
+
+                # Category handling
                 category_obj = get_object_or_404(Category, title=business.main_category)
                 business_data["category_id"] = category_obj.ls_id
-                
+
+                # Subcategory handling
                 if business.tailored_category and (
                     sub_category_obj := get_object_or_404(
-                        Category, title=business.tailored_category, parent=category_obj
+                        Category,
+                        title=business.tailored_category,
+                        parent=category_obj
                     )
-                ):  business_data["sub_category_id"] = sub_category_obj.ls_id
+                ):
+                    business_data["sub_category_id"] = sub_category_obj.ls_id
 
+                # City and Country handling
                 business_data["city_id"] = get_object_or_404(
-                    Destination, name__iexact=business.city).ls_id
-                
+                    Destination,
+                    name__iexact=business.city
+                ).ls_id
+
                 country_obj = get_object_or_404(Country, name__iexact=business.country)
                 country_data = model_to_dict(country_obj)
                 business_data["country_id"] = country_obj.ls_id
+
+                # User and images
+                user = CustomUser.objects.filter(id=int(user_id)).first()
+                user_data = model_to_dict(user)
+
+                image_urls = list(
+                    Image.objects.filter(
+                        business=business_id,
+                        is_approved=True
+                    ).values_list('image_url', flat=True)
+                )
 
                 result_data = {
                     **business_data,
@@ -895,24 +897,20 @@ def update_business_status(request, business_id):
                     'images_urls': image_urls
                 }
 
-                # Convert business data to JSON 
-                app_data = json.dumps(
-                    result_data, default=datetime_serializer)
-                
-                # Make API request to move to app
+                app_data = json.dumps(result_data, default=datetime_serializer)
+                logger.info(f"Preparing to move business {business_id} to app with data: {app_data}")
+
                 try:
                     RequestClient().request('move-to-app', app_data)
                 except Exception as e:
+                    logger.error(f"Failed to move business {business_id} to app: {str(e)}")
                     return JsonResponse({
-                            'status': 'move-to-app-error', 
-                            'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(e)}"
-                        },status=400)
+                        'status': 'move-to-app-error',
+                        'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(e)}"
+                    }, status=400)
 
-            # Update counts
-            old_status_count = Business.objects.filter(
-                status=old_status).count()
-            new_status_count = Business.objects.filter(
-                status=new_status).count()
+            old_status_count = Business.objects.filter(status=old_status).count()
+            new_status_count = Business.objects.filter(status=new_status).count()
 
             return JsonResponse({
                 'status': 'success',
@@ -921,23 +919,26 @@ def update_business_status(request, business_id):
                 'old_status_count': old_status_count,
                 'new_status_count': new_status_count
             })
+
         else:
-            logger.error("Invalid status")
+            logger.error(f"Invalid status attempted: {new_status}")
             return JsonResponse(
                 {'status': 'error', 'message': 'Invalid status'},
-                status=400)
+                status=400
+            )
+
     except json.JSONDecodeError as e:
-        logger.error(f"Json decode error: {str(e)}")
+        logger.error(f"JSON decode error: {str(e)}")
         return JsonResponse(
             {'status': 'error', 'message': 'Invalid JSON'},
-            status=400)
+            status=400
+        )
     except Exception as e:
-        logger.error("Update business status exception: ")
-        logger.error(str(e))
+        logger.error(f"Update business status exception for business {business_id}: {str(e)}")
         if (tb := traceback.extract_tb(e.__traceback__)):
             last_traceback = tb[-1]
             debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
-            logger.error("Traceback Error: %s", debugger)
+            logger.error(f"Traceback Error: {debugger}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 ########CHANGE STATUS#############################

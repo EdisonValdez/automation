@@ -1063,31 +1063,161 @@ def generate_full_address(business_data):
     ]
     return ", ".join(filter(None, address_components))  
 
-def format_operating_hours(hours_data):
-    """
-    Format operating hours data into a consistent structure
-    """
-    ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    formatted_hours = {day: None for day in ordered_days}
 
-    if not hours_data:
-        return formatted_hours
+def format_operating_hours(operating_hours):
+    """
+    Handles multiple operating hours formats and converts them to the required format with en dash
+    """
+    if not operating_hours:
+        return None
 
-    if isinstance(hours_data, dict):
+    def parse_time(time_str):
+        """Parse a single time component"""
+        if not time_str:
+            return None, None, None
+            
+        time_str = time_str.replace('\u202f', ' ').strip()
+        parts = time_str.split(' ')
+        
+        if len(parts) == 2:
+            time_part, period = parts
+        else:
+            time_part = parts[0]
+            period = None
+            
+        if ':' in time_part:
+            try:
+                hour, minute = map(int, time_part.split(':'))
+            except ValueError:
+                return None, None, None
+        else:
+            try:
+                hour = int(time_part)
+                minute = 0
+            except ValueError:
+                return None, None, None
+            
+        return hour, minute, period
+
+    def format_single_range(time_range):
+        """Format a single time range with proper en dash"""
+        if not time_range or time_range.lower() in ['closed', 'none'] or time_range is None:
+            return 'Closed'
+            
+        try:
+            # Handle multiple ranges
+            if ',' in str(time_range):
+                ranges = [r.strip() for r in str(time_range).split(',')]
+                return ', '.join(format_single_range(r) for r in ranges)
+            
+            # Standardize format
+            time_range = str(time_range).replace('–', ' to ').replace('-', ' to ').replace('\u202f', ' ')
+            
+            # Split into start and end times
+            if ' to ' in time_range:
+                start_raw, end_raw = [t.strip() for t in time_range.split(' to ')]
+            else:
+                parts = time_range.split(' ')
+                split_index = None
+                for i, part in enumerate(parts):
+                    if 'PM' in part or 'AM' in part:
+                        split_index = i + 1
+                        break
+                
+                if split_index is None or split_index >= len(parts):
+                    return 'No hours specified'
+                    
+                start_raw = ' '.join(parts[:split_index])
+                end_raw = ' '.join(parts[split_index:])
+            
+            # Parse times
+            start_hour, start_minute, start_period = parse_time(start_raw)
+            end_hour, end_minute, end_period = parse_time(end_raw)
+            
+            # Handle invalid times
+            if None in [start_hour, end_hour]:
+                return 'No hours specified'
+            
+            # Handle period inheritance and conversion
+            if not start_period and end_period:
+                start_period = end_period
+            if not end_period and start_period:
+                end_period = start_period
+            if not start_period and not end_period:
+                start_period = end_period = 'PM'
+            
+            # Convert to 24-hour format for comparison
+            def to_24hour(hour, minute, period):
+                if period.upper() == 'PM' and hour != 12:
+                    hour += 12
+                elif period.upper() == 'AM' and hour == 12:
+                    hour = 0
+                return hour, minute
+            
+            start_hour, start_minute = to_24hour(start_hour, start_minute, start_period)
+            end_hour, end_minute = to_24hour(end_hour, end_minute, end_period)
+            
+            # Handle midnight case (12 AM)
+            if end_hour == 0 and end_minute == 0:
+                end_hour = 23
+                end_minute = 59
+            
+            # Convert back to 12-hour format
+            def to_12hour(hour, minute):
+                period = 'AM'
+                if hour >= 12:
+                    period = 'PM'
+                    if hour > 12:
+                        hour -= 12
+                elif hour == 0:
+                    hour = 12
+                return f"{hour:02d}:{minute:02d} {period}"
+            
+            formatted_start = to_12hour(start_hour, start_minute)
+            formatted_end = to_12hour(end_hour, end_minute)
+            
+            return f"{formatted_start} – {formatted_end}"
+            
+        except Exception as e:
+            logger.error(f"Error formatting single range '{time_range}': {str(e)}")
+            return 'No hours specified'
+
+    try:
+        formatted_hours = {}
+        
         # Handle dictionary format
-        for day in ordered_days:
-            formatted_hours[day] = hours_data.get(day)
-    
-    elif isinstance(hours_data, list):
-        # Handle list format
-        for item in hours_data:
-            if isinstance(item, dict):
-                # Update with any found schedules
-                formatted_hours.update(item)
+        if isinstance(operating_hours, dict):
+            for day, hours in operating_hours.items():
+                # Handle None, 'None', empty strings, and 'closed'
+                if hours is None or str(hours).strip().lower() in ['none', '', 'closed']:
+                    formatted_hours[day] = 'Closed'
+                    continue
+                
+                try:
+                    if isinstance(hours, str):
+                        if ',' in hours:
+                            ranges = [r.strip() for r in hours.split(',')]
+                            formatted_ranges = []
+                            for r in ranges:
+                                formatted_range = format_single_range(r)
+                                if formatted_range != 'No hours specified':
+                                    formatted_ranges.append(formatted_range)
+                            formatted_hours[day] = ', '.join(formatted_ranges) if formatted_ranges else 'Closed'
+                        else:
+                            formatted_range = format_single_range(hours.strip())
+                            formatted_hours[day] = formatted_range if formatted_range != 'No hours specified' else 'Closed'
+                except Exception as e:
+                    logger.error(f"Error formatting hours for {day}: {str(e)}")
+                    formatted_hours[day] = 'Closed'
+        
+        logger.info(f"Successfully formatted operating hours: {formatted_hours}")
+        return formatted_hours
+        
+    except Exception as e:
+        logger.error(f"Error in format_operating_hours: {str(e)}")
+        return dict((day, 'Closed') for day in operating_hours.keys())
 
-    return formatted_hours
-
-
+ 
 @sync_to_async
 def get_categories(business):
     return list(business.categories.all())

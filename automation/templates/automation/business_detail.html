@@ -63,12 +63,21 @@
                             <i class="fas fa-info-circle me-2"></i> Status</label>
                             <div class="card-body d-flex align-items-center">
                                 <span id="status-display" style="display: none;">{{ business.get_status_display }}</span><br>
-                                <select name="status" id="status-edit" class="form-control ms-2">
+                                <select name="status" id="status-edit" class="form-control" style="display:none;">
                                     {% for status_code, status_name in status_choices %}
-                                        {% if status_code != "IN_PRODUCTION" %}
+                                        {% if status_code != 'IN_PRODUCTION' %}
+                                            <!-- Show all statuses except 'IN_PRODUCTION' -->
                                             <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
                                                 {{ status_name }}
                                             </option>
+                                        {% elif is_admin %}
+                                            <!-- If user is admin, show 'IN_PRODUCTION' -->
+                                            <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
+                                                {{ status_name }}
+                                            </option>
+                                        {% elif business.status == status_code %}
+                                            <!-- If the business is already 'IN_PRODUCTION', show it but disable selection -->
+                                            <option value="{{ status_code }}" selected disabled>{{ status_name }}</option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
@@ -144,7 +153,7 @@
                          <!-- Address -->
                          <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label">
-                                <i class="fas fa-road me-2"></i> Address</label>
+                                <i class="fas fa-road me-2"></i> Full Address</label>
                             <div class="card-body d-flex align-items-center">
                                 {% if business.address %}
                                 <span id="address-display">{{ business.address }}</span>
@@ -495,136 +504,159 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   
-<!--UPDATE BUSINESS STATUS with change-business-status-->
+<!--UPDATE BUSINESS STATUS with change-business-status Now merged update_business_status-->
  <!-- JavaScript code for changing business status -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const businessId = '{{ business.id }}';
-    const statusDisplay = document.getElementById('status-display');
-
-    // For status options (e.g., buttons or links)
-    const statusOptions = document.querySelectorAll('.status-option');
-
-    statusOptions.forEach(option => {
-        option.addEventListener('click', function () {
-            const newStatus = this.getAttribute('data-status');
-            updateStatus(businessId, newStatus, statusDisplay);
+ <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const businessId = '{{ business.id }}';
+        const statusDisplay = document.getElementById('status-display');
+    
+        // For status options (e.g., buttons or links)
+        const statusOptions = document.querySelectorAll('.status-option');
+    
+        statusOptions.forEach(option => {
+            option.addEventListener('click', function () {
+                const newStatus = this.getAttribute('data-status');
+                updateStatus(businessId, newStatus, statusDisplay);
+            });
         });
-    });
-
-    // For status dropdown (if used)
-    const statusDropdown = document.getElementById('status-edit');
-    if (statusDropdown) {
-        statusDropdown.addEventListener('change', function () {
-            const newStatus = this.value;
-            updateStatus(businessId, newStatus, statusDisplay, statusDropdown);
-        });
-    }
-
-    // Helper function to get CSRF token from cookies
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                // Does this cookie string begin with the name we want?
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+    
+        // For status dropdown (if used)
+        const statusDropdown = document.getElementById('status-edit');
+        if (statusDropdown) {
+            statusDropdown.addEventListener('change', function () {
+                const newStatus = this.value;
+                updateStatus(businessId, newStatus, statusDisplay, statusDropdown);
+            });
+        }
+    
+        // Helper function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
-
-    // Helper function to check if a description is empty or "None"
-    function isDescriptionEmpty(description) {
-        return !description || description.trim() === '' || description.trim().toLowerCase() === 'none';
-    }
-
-    // Function to update the business status
-    function updateStatus(businessId, newStatus, statusDisplay, statusDropdown = null) {
-    // Fetch current descriptions dynamically
-    const originalDescription = document.querySelector('textarea[name="description"]').value;
-    const englishDescription = document.querySelector('textarea[name="description_eng"]').value;
-    const spanishDescription = document.querySelector('textarea[name="description_esp"]').value;
-
-    let missingDescriptions = [];
-
-    // Validate status update
-    if (['REVIEWED', 'IN_PRODUCTION'].includes(newStatus)) {
-        if (isDescriptionEmpty(originalDescription)) {
-            missingDescriptions.push('Original description');
+    
+        // Helper function to check if a description is empty or "None"
+        function isDescriptionEmpty(description) {
+            return !description || description.trim() === '' || description.trim().toLowerCase() === 'none';
         }
-    }
-
-    if (newStatus === 'IN_PRODUCTION') {
-        if (isDescriptionEmpty(englishDescription)) {
-            missingDescriptions.push('English description');
-        }
-        if (isDescriptionEmpty(spanishDescription)) {
-            missingDescriptions.push('Spanish description');
-        }
-    }
-
-    if (missingDescriptions.length > 0) {
-        toastr.error(`Cannot move to ${newStatus}: ${missingDescriptions.join(', ')} is missing.`);
-        // Revert the dropdown to previous status if applicable
-        if (statusDropdown) {
-            statusDropdown.value = '{{ business.status }}';
-        }
-        return; // Stop execution
-    }
-
-    // Properly encode data using URLSearchParams
-    const params = new URLSearchParams();
-    params.append('status', newStatus);
-
-    // Proceed with status update
-    fetch(`/change-business-status/${businessId}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
-        body: `status=${encodeURIComponent(newStatus)}`,
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+    
+        // Function to update the business status
+        function updateStatus(businessId, newStatus, statusDisplay, statusDropdown = null) {
+            // Fetch current descriptions dynamically
+            const originalDescription = document.querySelector('textarea[name="description"]')?.value;
+            const englishDescription = document.querySelector('textarea[name="description_eng"]')?.value;
+            const spanishDescription = document.querySelector('textarea[name="description_esp"]')?.value;
+    
+            let missingDescriptions = [];
+    
+            // Enhanced validation logic matching the backend
+            if (['REVIEWED', 'IN_PRODUCTION'].includes(newStatus)) {
+                if (isDescriptionEmpty(originalDescription)) {
+                    missingDescriptions.push('Original description');
+                }
+                if (isDescriptionEmpty(englishDescription)) {
+                    missingDescriptions.push('English description');
+                }
+                if (isDescriptionEmpty(spanishDescription)) {
+                    missingDescriptions.push('Spanish description');
+                }
             }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                // Update status display
-                statusDisplay.textContent = `${data.new_status} `;
-                const icon = document.createElement('i');
-                icon.className = 'bx bx-caret-down';
-                statusDisplay.appendChild(icon);
-
-                toastr.success(`Status updated to ${data.new_status}`);
-            } else {
-                toastr.error(data.message || 'Error updating business status');
-                // Revert the dropdown to previous status if applicable
+    
+            if (missingDescriptions.length > 0) {
+                toastr.error(`Cannot move to ${newStatus}: ${missingDescriptions.join(', ')} is missing.`);
                 if (statusDropdown) {
                     statusDropdown.value = '{{ business.status }}';
                 }
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            toastr.error(`An error occurred while updating the status: ${error.message}`);
-            // Revert the dropdown to previous status if applicable
-            if (statusDropdown) {
-                statusDropdown.value = '{{ business.status }}';
-            }
-        });
-}
+    
+            // Prepare request data as JSON
+            const requestData = {
+                status: newStatus,
+                userId: '{{ request.user.id }}' // Ensure this is available in your template
+            };
+    
+            // Make the API request
+            fetch(`/update-business-status/${businessId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.message || `HTTP error! Status: ${response.status}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update status display
+                    statusDisplay.textContent = `${data.new_status} `;
+                    const icon = document.createElement('i');
+                    icon.className = 'bx bx-caret-down';
+                    statusDisplay.appendChild(icon);
+    
+                    // Update status counts if they exist
+                    const oldStatusCount = document.querySelector(`[data-status-count="${data.old_status}"]`);
+                    const newStatusCount = document.querySelector(`[data-status-count="${data.new_status}"]`);
+                    
+                    if (oldStatusCount) {
+                        oldStatusCount.textContent = data.old_status_count;
+                    }
+                    if (newStatusCount) {
+                        newStatusCount.textContent = data.new_status_count;
+                    }
+    
+                    toastr.success(`Status updated to ${data.new_status}`);
+                } else if (data.status === 'move-to-app-error') {
+                    toastr.error(`Error moving to production: ${data.message}`);
+                    if (statusDropdown) {
+                        statusDropdown.value = '{{ business.status }}';
+                    }
+                } else {
+                    toastr.error(data.message || 'Error updating business status');
+                    if (statusDropdown) {
+                        statusDropdown.value = '{{ business.status }}';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                let errorMessage = error.message;
+                
+                // Handle specific error cases
+                if (errorMessage.includes('time data')) {
+                    errorMessage = 'Error processing business hours format. Please contact support.';
+                } else if (errorMessage.includes('HTTPS request')) {
+                    errorMessage = 'Secure connection error. Please try again or contact support.';
+                }
+                
+                toastr.error(errorMessage || 'An error occurred while updating the status');
+                if (statusDropdown) {
+                    statusDropdown.value = '{{ business.status }}';
+                }
+            });
 
-});
-</script>
+        }
+    });
+    </script>  
+
 <!-- End of JavaScript code for changing business status -->
 <!--UPDATE BUSINESS STATUS-->
  
