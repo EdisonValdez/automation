@@ -528,3 +528,66 @@ class Feedback(models.Model):
     def __str__(self):
         return f"Feedback for {self.business.title} - {self.get_status_display()}"
 
+class PopularTimes(models.Model):
+    DAYS_OF_WEEK = [
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    ]
+
+    business = models.ForeignKey('Business', on_delete=models.CASCADE, related_name='popular_times')
+    day = models.CharField(max_length=10, choices=DAYS_OF_WEEK)
+    
+    # Live data
+    live_busyness_info = models.CharField(max_length=50, blank=True, null=True)  # "A little busy"
+    time_spent = models.CharField(max_length=100, blank=True, null=True)  # "People typically spend 1.5 hours here"
+
+    class Meta:
+        unique_together = ['business', 'day']
+        indexes = [
+            models.Index(fields=['business', 'day']),
+        ]
+
+class HourlyBusyness(models.Model):
+    HOUR_CHOICES = [
+        ('6 AM', '6 AM'),
+        ('7 AM', '7 AM'),
+        ('8 AM', '8 AM'),
+        ('9 AM', '9 AM'),
+        ('10 AM', '10 AM'),
+        ('11 AM', '11 AM'),
+        ('12 PM', '12 PM'),
+        ('1 PM', '1 PM'),
+        ('2 PM', '2 PM'),
+        ('3 PM', '3 PM'),
+        ('4 PM', '4 PM'),
+        ('5 PM', '5 PM'),
+        ('6 PM', '6 PM'),
+        ('7 PM', '7 PM'),
+        ('8 PM', '8 PM'),
+        ('9 PM', '9 PM'),
+        ('10 PM', '10 PM'),
+        ('11 PM', '11 PM'),
+    ]
+
+    popular_times = models.ForeignKey(PopularTimes, on_delete=models.CASCADE, related_name='hourly_data')
+    time = models.CharField(max_length=5, choices=HOUR_CHOICES)
+    busyness_score = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        default=0
+    )
+    info = models.CharField(max_length=100, blank=True, null=True)  # "Usually not too busy"
+
+    class Meta:
+        unique_together = ['popular_times', 'time']
+        indexes = [
+            models.Index(fields=['popular_times', 'time']),
+        ]
+        ordering = ['time']
+
+    def __str__(self):
+        return f"{self.popular_times.business.title} - {self.popular_times.day} - {self.time}"

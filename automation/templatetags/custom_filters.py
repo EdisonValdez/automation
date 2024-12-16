@@ -28,3 +28,15 @@ def split_by_comma(value):
     if isinstance(value, str):  
         return value.split(',')
     return value  
+
+ 
+@register.filter
+def divided_by(value, arg):
+    """
+    Divides the value by the argument and returns the appropriate Bootstrap column class
+    """
+    try:
+        result = int(12 / int(arg))
+        return result
+    except (ValueError, ZeroDivisionError):
+        return 4  

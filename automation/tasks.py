@@ -2,14 +2,16 @@ from collections import defaultdict
 from datetime import datetime
 import random
 import shutil
+import string
+from typing import Optional
 import uuid
 from celery import shared_task
 from django.urls import reverse
 from django.utils import timezone
 from ratelimit import RateLimitException
 import urllib
-from automation.consumers import get_log_file_path
-from .models import BusinessImage, Country, Destination, Review, ScrapingTask, Business, Category, OpeningHours, AdditionalInfo, Image
+from automation.consumers import get_log_file_path 
+from .models import BusinessImage, Country, Destination, HourlyBusyness, PopularTimes, Review, ScrapingTask, Business, Category, OpeningHours, AdditionalInfo, Image
 from django.conf import settings 
 from serpapi import GoogleSearch
 import json
@@ -192,9 +194,7 @@ def process_query(query_data):
     except Exception as e:
         logger.error(f"Error processing query '{query}': {str(e)}")
         return None
-
-
-
+ 
 def rate_limiter(max_calls, period):
     def decorator(func):
         last_reset = [time.time()]
@@ -283,6 +283,11 @@ def process_scraping_task(self, task_id, form_data=None):
 
         queries = []
 
+        if form_data:
+            image_count = form_data.get('image_count', 3)
+            logger.info(f"Using image count from form data: {image_count}")
+        
+
         if task.file:
             logger.info("Using uploaded file for queries.")
             file_content = default_storage.open(task.file.name).read().decode('utf-8')
@@ -296,6 +301,7 @@ def process_scraping_task(self, task_id, form_data=None):
             main_category = form_data.get('main_category', '')
             subcategory = form_data.get('subcategory', '')
             description = form_data.get('description', '')
+            image_count = form_data.get('image_count', 3)
 
             query = f"{country_name}, {destination_name}, {main_category} {subcategory} {description}".strip()
             if query:
@@ -344,7 +350,7 @@ def process_scraping_task(self, task_id, form_data=None):
 
                             if business:
                                 logger.info(f"Downloading images for business {business.id}")
-                                download_images(business, local_result)
+                                download_images(business, local_result, image_count=image_count)
                             else:
                                 logger.warning(f"Business '{local_result.get('title', 'Unknown')}' skipped due to missing country information.")
 
@@ -431,12 +437,19 @@ def get_s3_client():
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
     )
  
-def download_images(business, local_result):
+def download_images(business, local_result, image_count=3):
     photos_link = local_result.get('photos_link')
     if not photos_link:
         logger.info(f"No photos link found for business {business.id}")
         return []
 
+    try:
+        image_count = int(image_count)
+        logger.info(f"Processing download with image count: {image_count}")
+    except (TypeError, ValueError):
+        image_count = 3
+        logger.warning(f"Invalid image count provided, using default: {image_count}")
+    
     image_paths = []
     try:
 
@@ -453,8 +466,11 @@ def download_images(business, local_result):
             logger.error(f"API Error fetching photos for business '{business.title}': {photos_results['error']}")
             return image_paths
 
-        # Limit photos to a maximum of DEFAULT_IMAGES images
-        photos = photos_results.get('photos', [])[:DEFAULT_IMAGES]
+        all_photos = photos_results.get('photos', [])
+        photos = all_photos[:image_count]
+        
+        logger.info(f"Found {len(all_photos)} total photos, downloading {len(photos)} as per image_count: {image_count}")
+ 
         if not photos:
             logger.info(f"No photos found for business {business.id} in fetched results")
             return image_paths
@@ -782,22 +798,70 @@ def enhance_translate_and_summarize_business(business_id, languages=["spanish", 
 
 #####################DESCRIPTION TRANSLATE##################################
 
-def extract_address_components(address_string):
+def get_postal_code_pattern(country: str) -> Optional[str]:
+        patterns = {
+        'spain': r'\b\d{5}\b',
+        'portugal': r'\b\d{4}(?:-\d{3})?\b',
+        'france': r'\b\d{5}\b',
+        'germany': r'\b\d{5}\b',
+        'italy': r'\b\d{5}\b',
+        'uk': r'\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b', 
+        'united kingdom': r'\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b', 
+        'ireland': r'\b[A-Z]\d{2} ?[A-Z\d]{4}\b',
+
+        'usa': r'\b\d{5}(?:-\d{4})?\b',
+        'united states of america': r'\b\d{5}(?:-\d{4})?\b',
+        'us': r'\b\d{5}(?:-\d{4})?\b',
+        'canada': r'\b[A-Z]\d[A-Z] ?\d[A-Z]\d\b', 
+
+        'australia': r'\b\d{4}\b',
+        'new zealand': r'\b\d{4}\b',
+        'japan': r'\b\d{3}-?\d{4}\b',
+        'china': r'\b\d{6}\b',
+        'india': r'\b\d{6}\b',
+        'singapore': r'\b\d{6}\b',
+
+        'default': r'\b\d{5}\b'
+    }
+        return patterns.get(country.lower(), patterns['default'])
+
+
+def extract_address_components(address_string: string, country: str = None):
     """
-    Extract address components from a full address string.
-    Example: "Carrer del Call, 17, Ciutat Vella, 08002 Barcelona, Spain"
+    Extract address components from a full address string with country-specific postal code formats.
+    
+    Args:
+        address_string: Full address string
+        country: Country name to determine postal code format (optional)
+    
+    Returns:
+        Dictionary with street_address and postal_code
+    
+    Example: 
+        "Carrer del Call, 17, Ciutat Vella, 08002 Barcelona, Spain"
+        "Rua Augusta 12, 1100-053 Lisboa, Portugal"
     """
     components = {
         'street_address': '',
-        'postal_code': ''
+        'postal_code': '',
+        'country': country
     }
     
     if not address_string:
         return components
 
     try:
-        # First, try to find the postal code (5 digits)
-        postal_code_match = re.search(r'\b\d{5}\b', address_string)
+        address_string = address_string.strip()
+
+        if not country:
+            country_match = re.search(r',\s*([^,]+)$', address_string)
+            if country_match:
+                country = country_match.group(1).strip()
+                components['country'] = country
+        
+        postal_pattern = get_postal_code_pattern(country) if country else get_postal_code_pattern('default')
+
+        postal_code_match = re.search(postal_pattern, address_string)
         
         if postal_code_match:
             components['postal_code'] = postal_code_match.group(0)
@@ -822,6 +886,7 @@ def extract_address_components(address_string):
             components['street_address'] = parts[0]
             
         logger.info(f"Parsed address components from: {address_string}")
+        logger.info(f"Country detected: {components['country']}")
         logger.info(f"Street: {components['street_address']}")
         logger.info(f"Postal Code: {components['postal_code']}")
         
@@ -1001,11 +1066,16 @@ def save_business(task, local_result, query, form_data=None):
         if 'place_id' not in business_data:
             logger.warning(f"Skipping business entry for task {task.id} due to missing 'place_id'")
             return None   
-    
+
+        popular_times_data = local_result.get('popular_times')  
+        if popular_times_data:
+            save_popular_times(business, popular_times_data)
+              
         business, created = Business.objects.update_or_create(
             place_id=business_data['place_id'],
             defaults=business_data
         )
+
         if created:
             logger.info(f"New business created: {business.title} (ID: {business.id})")
         else:
@@ -1522,3 +1592,32 @@ def update_all_task_rankings():
     tasks = ScrapingTask.objects.all()
     for task in tasks:
         update_business_rankings(task.id)
+
+
+###Busyness####
+
+def save_popular_times(business, popular_times_data):
+    if not popular_times_data or 'graph_results' not in popular_times_data:
+        return
+
+    graph_results = popular_times_data['graph_results']
+    live_hash = popular_times_data.get('live_hash', {})
+
+    for day, hours_data in graph_results.items():
+        popular_times, created = PopularTimes.objects.get_or_create(
+            business=business,
+            day=day,
+            defaults={
+                'live_busyness_info': live_hash.get('info'),
+                'time_spent': live_hash.get('time_spent')
+            }
+        )
+        for hour_data in hours_data:
+            HourlyBusyness.objects.update_or_create(
+                popular_times=popular_times,
+                time=hour_data['time'],
+                defaults={
+                    'busyness_score': hour_data.get('busyness_score', 0),
+                    'info': hour_data.get('info', '')
+                }
+            )

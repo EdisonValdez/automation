@@ -4,7 +4,51 @@
 {% load custom_filters %}
 {% block title %}{{ business.title }}{% endblock %}
 {% block content %}
-<style>.description-content {white-space: pre-wrap;font-family: inherit; line-height: 1.6;}.card-body{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto;padding:.25rem}.box-list li{display:flex;color:var(--text-color);margin-bottom:18px;font-size:14px;font-weight:400;align-items:center}span{font-style:bold}.checkbox-container{display:flex;align-items:center;gap:10px}.approve-checkbox{width:40px;height:40px;cursor:pointer;accent-color:#3C21F7;border:2px solid #666;border-radius:4px;outline:none;transition:all 0.3s ease}.approve-checkbox:hover{transform:scale(1.1);border-color:#4CAF50}.approve-checkbox:focus{box-shadow:0 0 0 3px rgb(76 175 80 / .3)}.checkbox-container strong{font-size:16px;color:#333;user-select:none}.image-card{padding:15px;border:1px solid #ddd;border-radius:8px;margin-bottom:15px}.translation{max-height:250px;overflow-y:auto}.form-label{text-transform:uppercase;font-weight:900;color:#060606;border-radius:calc(.25rem - 1px) calc(.25rem - 1px) 0 0;background-color:#fff;background-clip:border-box;border:1px solid rgb(0 0 0 / .125);width:100%;padding:.75rem 1.25rem;background-color:rgb(0 0 0 / .03);border-bottom:1px solid rgb(0 0 0 / .125)}.business-title{font-weight:900}.bd-callout-info{border-left-color:#5bc0de}.bd-callout{padding:1.25rem;margin-top:1.25rem;margin-bottom:1.25rem;border:1px solid #e9ecef;border-left-width:.25rem;border-radius:.25rem}.image-management-container{display:flex;justify-content:center;padding:10px}.image-container{width:100%;padding:15px;min-height:300px}.images-wrapper{display:flex;flex-wrap:wrap;gap:30px}.image-card{position:relative;display:flex;flex-direction:column;align-items:center;width:250px;min-height:200px;padding:7px;border:1px solid #ccc;border-radius:8px;background-color:#fff;cursor:grab}.thumbnail{width:100%;height:auto;object-fit:cover;border-radius:5px}.checkbox-container{margin-top:5px}.draggable.dragging{opacity:.5}.delete-image-btn{margin-top:10px;padding:5px 10px;background-color:#dc3545;border:none;color:#fff;border-radius:5px;cursor:pointer}small{font-size:10px}#taskDetailsContainer{transition:all 0.3s ease-in-out}.kanban-list.wide{min-width:32.5%;width:32.5%}.kanban-list.narrow{min-width:24.5%;width:24.5%}.edit{z-index:1;width:30px;height:30px;position:absolute;right:10px;top:10px;background:rgb(246 248 253 / .7);border-radius:4px;display:flex;justify-content:center;align-items:center;transition:.3s}.thumbnail-container{width:100%;height:150px;max-height:350px;overflow:hidden;margin-bottom:10px}.thumbnail-image{width:100%;height:150px;max-height:350px;object-fit:cover}.thumbnail-placeholder{width:100%;height:150px;max-height:350px;background-color:#f0f0f0;display:flex;justify-content:center;align-items:center;color:#888;font-size:14px}.kanban-box{display:flex;flex-direction:column;cursor:move}.content-box{flex-grow:1;display:flex;flex-direction:column}.image-container{position:relative;overflow:hidden}.thumbnail-image{width:100%;height:150px;max-height:350px;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:16px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%}.business-stats{display:flex;justify-content:space-between;margin-top:10px;font-size:10px}.rank,.total-score{background-color:#f0f0f0;padding:3px 6px;border-radius:3px}.kanban-cont{display:flex;overflow-x:auto;padding-bottom:20px}.kanban-list{min-width:25%;width:25%;margin-right:10px;background-color:#f4f5f7;border-radius:5px}.kanban-wrap{max-height:1200px;overflow-y:auto}.kanban-header{margin-bottom:10px;padding:10px;background-color:#e4e6e9;border-radius:5px}.panel{margin-bottom:10px}.kanban-box{background-color:#fff;border-radius:5px;padding:10px;box-shadow:0 1px 3px rgb(0 0 0 / .12),0 1px 2px rgb(0 0 0 / .24)}.load-more{width:100%;margin-top:10px}.image-container{position:relative;width:100%;padding-top:5%}.thumbnail-image{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:20px;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);-ms-transform:translate(-50%,-50%);transform:translate(-50%,-50%);text-align:center}.business-title:hover::after{content:"";display:inline-block;background-image:url('');width:150px;height:150px;position:absolute;left:100%;top:-10px;background-size:cover;background-position:center;box-shadow:0 4px 8px rgb(0 0 0 / .1)}</style>
+<style>.image-card {
+    position: relative;
+    cursor: grab;
+    margin-bottom: 15px;
+}
+
+.image-card:active {
+    cursor: grabbing;
+}
+
+.small-thumbnail {
+    max-width: 100%;
+    height: auto;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.small-thumbnail:hover {
+    transform: scale(1.3); /* Slight zoom effect on hover */
+    z-index: 9;
+}
+
+.hover-image-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    display: none;
+    background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.image-card:hover .hover-image-overlay {
+    display: block;
+}
+
+.full-image {
+    max-width: 100%;
+    max-height: 100%;
+    border: 2px solid #fff;
+}
+
+.description-content {white-space: pre-wrap;font-family: inherit; line-height: 1.6;}.card-body{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto;padding:.25rem}.box-list li{display:flex;color:var(--text-color);margin-bottom:18px;font-size:14px;font-weight:400;align-items:center}span{font-style:bold}.checkbox-container{display:flex;align-items:center;gap:10px}.approve-checkbox{width:30px;height:30px;cursor:pointer;accent-color:#3C21F7;border:2px solid #666;border-radius:4px;outline:none;transition:all 0.3s ease}.approve-checkbox:hover{transform:scale(1.1);border-color:#4CAF50}.approve-checkbox:focus{box-shadow:0 0 0 3px rgb(76 175 80 / .3)}.checkbox-container strong{font-size:16px;color:#333;user-select:none}.image-card{padding:15px;border:1px solid #ddd;border-radius:8px;margin-bottom:15px}.translation{max-height:250px;overflow-y:auto}.form-label{text-transform:uppercase;font-weight:900;color:#060606;border-radius:calc(.25rem - 1px) calc(.25rem - 1px) 0 0;background-color:#fff;background-clip:border-box;border:1px solid rgb(0 0 0 / .125);width:100%;padding:.75rem 1.25rem;background-color:rgb(0 0 0 / .03);border-bottom:1px solid rgb(0 0 0 / .125)}.business-title{font-weight:900}.bd-callout-info{border-left-color:#5bc0de}.bd-callout{padding:1.25rem;margin-top:1.25rem;margin-bottom:1.25rem;border:1px solid #e9ecef;border-left-width:.25rem;border-radius:.25rem}.image-management-container{display:flex;justify-content:center;padding:10px}.image-container{width:100%;padding:15px;min-height:300px}.images-wrapper{display:flex;flex-wrap:wrap;gap:10px}.image-card{position:relative;display:flex;flex-direction:column;align-items:center;width:250px;min-height:200px;padding:7px;border:1px solid #ccc;border-radius:8px;background-color:#fff;cursor:grab}.thumbnail{width:100%;height:auto;object-fit:cover;border-radius:5px}.checkbox-container{margin-top:5px}.draggable.dragging{opacity:.5}.delete-image-btn{margin-top:10px;padding:5px 10px;background-color:#dc3545;border:none;color:#fff;border-radius:5px;cursor:pointer}small{font-size:10px}#taskDetailsContainer{transition:all 0.3s ease-in-out}.kanban-list.wide{min-width:32.5%;width:32.5%}.kanban-list.narrow{min-width:24.5%;width:24.5%}.edit{z-index:1;width:30px;height:30px;position:absolute;right:10px;top:10px;background:rgb(246 248 253 / .7);border-radius:4px;display:flex;justify-content:center;align-items:center;transition:.3s}.thumbnail-container{width:100%;height:150px;max-height:350px;overflow:hidden;margin-bottom:10px}.thumbnail-image{width:100%;height:150px;max-height:350px;object-fit:cover}.thumbnail-placeholder{width:100%;height:150px;max-height:350px;background-color:#f0f0f0;display:flex;justify-content:center;align-items:center;color:#888;font-size:14px}.kanban-box{display:flex;flex-direction:column;cursor:move}.content-box{flex-grow:1;display:flex;flex-direction:column}.image-container{position:relative;overflow:hidden}.thumbnail-image{width:100%;height:150px;max-height:350px;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:16px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%}.business-stats{display:flex;justify-content:space-between;margin-top:10px;font-size:10px}.rank,.total-score{background-color:#f0f0f0;padding:3px 6px;border-radius:3px}.kanban-cont{display:flex;overflow-x:auto;padding-bottom:20px}.kanban-list{min-width:25%;width:25%;margin-right:10px;background-color:#f4f5f7;border-radius:5px}.kanban-wrap{max-height:1200px;overflow-y:auto}.kanban-header{margin-bottom:10px;padding:10px;background-color:#e4e6e9;border-radius:5px}.panel{margin-bottom:10px}.kanban-box{background-color:#fff;border-radius:5px;padding:10px;box-shadow:0 1px 3px rgb(0 0 0 / .12),0 1px 2px rgb(0 0 0 / .24)}.load-more{width:100%;margin-top:10px}.image-container{position:relative;width:100%;padding-top:5%}.thumbnail-image{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:20px;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);-ms-transform:translate(-50%,-50%);transform:translate(-50%,-50%);text-align:center}.business-title:hover::after{content:"";display:inline-block;background-image:url('');width:150px;height:150px;position:absolute;left:100%;top:-10px;background-size:cover;background-position:center;box-shadow:0 4px 8px rgb(0 0 0 / .1)}</style>
 <!--Main content--> 
 <div class="main-container">
 <!--box left-dot-->
@@ -266,6 +310,7 @@
                                 </button>
                             </div>
                         </div>
+
                     </div>
                     
                 </div>
@@ -360,7 +405,8 @@
                         </div>
                     </div>
                 </div>
-            </div>            
+            </div>  
+           
         </div>
              
         <div class="row">            
@@ -454,6 +500,120 @@
                 {% endif %}
             </div>
         </div>  
+
+        <div class="row mt-25">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>        
+        
+            <!-- Image Management Container -->
+            <div class="col-12">
+                <div class="images-wrapper d-flex flex-row flex-wrap gap-3" id="image-list">
+                    {% with image_count=business.images.count %}
+                        {% for image in business.images.all %}
+                        <div class="image-card draggable"
+                             style="flex: 0 0 calc({% if image_count == 3 %}33.33%{% elif image_count == 4 %}25%{% elif image_count == 5 %}20%{% else %}16.66%{% endif %} - 1rem);"
+                             data-id="{{ image.id }}"
+                             data-approved="{{ image.is_approved }}"
+                             draggable="true">
+                            <div class="card p-2 position-relative">
+                                <!-- Approve Checkbox -->
+                                <div class="checkbox-container mb-2 py-2">
+                                    <label class="title" style="display:contents; font-weight:500">
+                                        <input type="checkbox"
+                                               class="approve-checkbox"
+                                               data-id="{{ image.id }}"
+                                               {% if image.is_approved %}checked{% endif %}>
+                                        Approve
+                                    </label>
+                                </div>
+        
+                                <!-- Thumbnail -->
+                                <img class="img-thumbnail small-thumbnail"
+                                     src="{% if image.local_path %}{{ MEDIA_URL }}{{ image.local_path }}{% else %}{{ image.image_url }}{% endif %}"
+                                     alt="Image">
+        
+                                <!-- Hover Full Image -->
+                                <div class="hover-image-overlay d-none">
+                                    <img class="img-fluid full-image"
+                                         src="{% if image.local_path %}{{ MEDIA_URL }}{{ image.local_path }}{% else %}{{ image.image_url }}{% endif %}"
+                                         alt="Full Image">
+                                </div>
+        
+                                <!-- Delete Button -->
+                                <button class="btn btn-danger btn-sm mt-2 delete-image-btn"
+                                        data-id="{{ image.id }}">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+        
+        <style>
+        .images-wrapper {
+            width: 100%;
+            margin: 0 -0.5rem;
+        }
+        
+        .image-card {
+            padding: 0 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .small-thumbnail {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 3/2;
+            object-fit: cover;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .image-card {
+                flex: 0 0 calc(33.33% - 1rem) !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .image-card {
+                flex: 0 0 calc(50% - 1rem) !important;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .image-card {
+                flex: 0 0 calc(100% - 1rem) !important;
+            }
+        }
+        
+        .card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .hover-image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .hover-image-overlay.show {
+            display: flex;
+        }
+        </style>
+        
+
     </form>   
 </div> 
 <!--box left-dot-->      
@@ -467,36 +627,6 @@
 </div>
 <!-- Loading Modal -->
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- Image Management Container -->
-<div class="box image-management-container">
-    <div class="box left-dot">
-        <div class="box-body">
-            <div class="image-container single-container">
-                <h3 class="mb-30">Images</h3>
-                <div class="images-wrapper" id="image-list">
-                    {% for image in business.images.all %}
-                    <div class="image-card draggable" data-id="{{ image.id }}" data-approved="{{ image.is_approved }}" draggable="true">
-                        <div class="checkbox-container mb-25" style="cursor: pointer;">
-                            <strong>Approve</strong>
-                            <input type="checkbox" class="approve-checkbox" data-id="{{ image.id }}" {% if image.is_approved %}checked{% endif %}>
-                        </div>
-
-                        <img class="thumbnail"
-                            src="{% if image.local_path %}{{ MEDIA_URL }}{{ image.local_path }}{% else %}{{ image.image_url }}{% endif %}"
-                            alt="Image"> 
-                        <!-- Add Delete Button -->
-                        <button class="btn btn-danger delete-image-btn" data-id="{{ image.id }}">Delete</button>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div> 
-<!--box image-management-container-->
 
 </div>
 <!--Main content--> 
@@ -815,32 +945,50 @@
             return cookieValue;
         }
     });
+
+
 </script>
 <!-- JavaScript for Handling Image Operations, edit -->
  
-<!--Edit-business-->          
-<script>
-    // Helper function for CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie) {
-            const cookies = document.cookie.split(';');
-            cookies.forEach(cookie => {
-                const trimmed = cookie.trim();
-                if (trimmed.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
-                    return;
-                }
-            });
-        }
-        return cookieValue;
+<!--Edit-business-->   
+<script> 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie) {
+        const cookies = document.cookie.split(';');
+        cookies.forEach(cookie => {
+            const trimmed = cookie.trim();
+            if (trimmed.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+                return;
+            }
+        });
     }
+    return cookieValue;
+}
 
-    // Initialize the isOperatingHoursEditMode variable
-    let isOperatingHoursEditMode = false;
+// Initialize the isOperatingHoursEditMode variable
+let isOperatingHoursEditMode = false;
 
-    // Function to toggle edit mode for a field
-    function toggleEdit(field) {
+// Function to get ordered weekdays
+function getOrderedWeekdays(operatingHours) {
+    const weekdayOrder = [
+        'monday', 'tuesday', 'wednesday', 'thursday',
+        'friday', 'saturday', 'sunday'
+    ];
+    
+    const orderedHours = {};
+    weekdayOrder.forEach(day => {
+        if (operatingHours.hasOwnProperty(day)) {
+            orderedHours[day] = operatingHours[day];
+        }
+    });
+    
+    return orderedHours;
+}
+
+// Function to toggle edit mode for a field
+function toggleEdit(field) {
     const displayElement = document.getElementById(`${field}-display`);
     const editElement = $(`#${field}-edit`);
 
@@ -869,90 +1017,137 @@
         }
     }
 }
- 
-    function editOperatingHours() {
-        isOperatingHoursEditMode = !isOperatingHoursEditMode;
-        localStorage.setItem('isOperatingHoursEditMode', isOperatingHoursEditMode);
 
+// Function to render operating hours in order
+function renderOperatingHours(operatingHours) {
+    const container = document.querySelector('.box-list');
+    if (!container) return;
+
+    // Clear existing content
+    container.innerHTML = '';
+    
+    // Get ordered weekdays
+    const orderedHours = getOrderedWeekdays(operatingHours);
+    
+    // Create HTML for each day
+    Object.entries(orderedHours).forEach(([day, hours]) => {
+        const li = document.createElement('li');
+        li.className = 'd-flex align-items-center';
+        
+        const formattedDay = day.charAt(0).toUpperCase() + day.slice(1);
+        
+        li.innerHTML = `
+            <div id="${day}_display" class="flex-grow-1">
+                <strong>${formattedDay}:</strong> ${hours}
+            </div>
+            <input type="text" 
+                   name="operating_hours[${day}]" 
+                   id="${day}_edit" 
+                   class="form-control ms-2" 
+                   value="${hours}" 
+                   style="display:none;">
+        `;
+        
+        container.appendChild(li);
+    });
+}
+
+function editOperatingHours() {
+    isOperatingHoursEditMode = !isOperatingHoursEditMode;
+    localStorage.setItem('isOperatingHoursEditMode', isOperatingHoursEditMode);
+
+    const operatingHours = {};
+    document.querySelectorAll('#business-form .box-list li').forEach(li => {
+        const input = li.querySelector('input');
+        const day = input.name.replace('operating_hours[', '').replace(']', '');
+        operatingHours[day] = input.value;
+    });
+
+    // Re-render with ordered weekdays
+    renderOperatingHours(operatingHours);
+
+    // Apply edit mode to newly rendered elements
+    document.querySelectorAll('#business-form .box-list li').forEach(li => {
+        const day = li.querySelector('input').name.replace('operating_hours[', '').replace(']', '');
+        const displayElem = document.getElementById(`${day}_display`);
+        const inputElem = document.getElementById(`${day}_edit`);
+
+        if (isOperatingHoursEditMode) {
+            displayElem.style.display = 'none';
+            inputElem.style.display = 'block';
+        } else {
+            displayElem.textContent = `${day.charAt(0).toUpperCase() + day.slice(1)}: ${inputElem.value}`;
+            displayElem.style.display = 'block';
+            inputElem.style.display = 'none';
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', function () {
+    // Restore toggled edit states on page load
+    const fields = [
+        'title', 'website', 'status', 'city', 'price', 'phone', 'address',
+        'postal_code', 'level_title', 'description', 'description-eng', 
+        'description-esp', 'categories', 'main_category', 'types', 
+        'operating_hours', 'tailored_category'
+    ];
+    fields.forEach(field => {
+        if (localStorage.getItem(`${field}-edit`) === 'true') {
+            toggleEdit(field);
+        }
+    });
+
+    // Restore operating hours edit state
+    isOperatingHoursEditMode = localStorage.getItem('isOperatingHoursEditMode') === 'true';
+
+    // Initial render of operating hours, ensuring weekday order
+    const initialOperatingHours = {{ business.operating_hours|safe }};
+    renderOperatingHours(initialOperatingHours);
+
+    if (isOperatingHoursEditMode) {
         document.querySelectorAll('#business-form .box-list li').forEach(li => {
-            const day = li.querySelector('input').name.replace('operating_hours[', '').replace(']', '');
-            const displayElem = document.getElementById(`${day}_display`);
-            const inputElem = document.getElementById(`${day}_edit`);
-
-            if (isOperatingHoursEditMode) {
-                displayElem.style.display = 'none';
-                inputElem.style.display = 'block';
-            } else {
-                displayElem.textContent = inputElem.value;  
-                displayElem.style.display = 'block';
-                inputElem.style.display = 'none';
-            }
+            const input = li.querySelector('input');
+            const display = li.querySelector('[id$="_display"]');
+            input.style.display = 'block';
+            display.style.display = 'none';
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Restore toggled edit states on page load
-        const fields = ['title', 'website', 'status', 'city', 'price', 'phone', 'address', 'postal_code', 'level_title', 'description', 'description-eng', 'description-esp', 'categories', 'main_category', 'types', 'operating_hours', 'tailored_category'];
-        fields.forEach(field => {
-            if (localStorage.getItem(`${field}-edit`) === 'true') {
-                toggleEdit(field);
-            }
+    // Add event listener for the form submission
+    const businessForm = document.getElementById('business-form');
+    businessForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        // Collect operating hours
+        const operatingHours = {};
+        document.querySelectorAll('#business-form .box-list input').forEach(input => {
+            const day = input.name.replace('operating_hours[', '').replace(']', '');
+            operatingHours[day] = input.value;
         });
 
-        // Restore operating hours edit state
-        isOperatingHoursEditMode = localStorage.getItem('isOperatingHoursEditMode') === 'true';
+        // Add operating hours to formData as a JSON string
+        formData.set('operating_hours', JSON.stringify(operatingHours));
 
-        document.querySelectorAll('#business-form .box-list li').forEach(li => {
-            const day = li.querySelector('input').name.replace('operating_hours[', '').replace(']', '');
-            const displayElem = document.getElementById(`${day}_display`);
-            const inputElem = document.getElementById(`${day}_edit`);
-
-            if (isOperatingHoursEditMode) {
-                displayElem.style.display = 'none';
-                inputElem.style.display = 'block';
-            } else {
-                displayElem.style.display = 'block';
-                inputElem.style.display = 'none';
-            }
+        // Collect categories
+        const categories = [];
+        document.querySelectorAll('input[name="categories"]:checked').forEach(input => {
+            categories.push(input.value);
+        });
+        formData.delete('categories'); // Remove existing categories entries
+        categories.forEach(id => {
+            formData.append('categories', id);
         });
 
-        // Add event listener for the form submission
-        const businessForm = document.getElementById('business-form');
-        businessForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const formData = new FormData(this);
-
-            // Collect operating hours
-            const operatingHours = {};
-            document.querySelectorAll('#business-form .box-list input').forEach(input => {
-                const day = input.name.replace('operating_hours[', '').replace(']', '');
-                operatingHours[day] = input.value;
-            });
-
-            // Add operating hours to formData as a JSON string
-            formData.set('operating_hours', JSON.stringify(operatingHours));
-
-            // Collect categories
-            const categories = [];
-            document.querySelectorAll('input[name="categories"]:checked').forEach(input => {
-                categories.push(input.value);
-            });
-            formData.delete('categories'); // Remove existing categories entries
-            categories.forEach(id => {
-                formData.append('categories', id);
-            });
-
-            // Collect other fields as necessary
-
-            fetch(this.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
+        // Submit form via AJAX
+        fetch(this.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -966,23 +1161,12 @@
                 console.error('Error:', error);
                 toastr.error('An error occurred while updating the business.');
             });
-        });
+    });
 
-        // Function to show the loading modal
-        function showLoadingModal() {
-            document.getElementById('loading-modal').style.display = 'block';
-        }
-
-        // Function to hide the loading modal
-        function hideLoadingModal() {
-            document.getElementById('loading-modal').style.display = 'none';
-        }
-
-
-     // Add event listener for the Generate Description button
-     const generateDescriptionBtn = document.getElementById('generate-description-btn');
+    // Add event listener for the Generate Description button
+    const generateDescriptionBtn = document.getElementById('generate-description-btn');
     if (generateDescriptionBtn) {
-        generateDescriptionBtn.addEventListener('click', function() {
+        generateDescriptionBtn.addEventListener('click', function () {
             // Show loading modal using SweetAlert2
             Swal.fire({
                 title: 'Generating Description',
@@ -1018,31 +1202,33 @@
                 },
                 body: JSON.stringify(data),
             })
-            .then(response => response.json())
-            .then(result => {
-                Swal.close();
+                .then(response => response.json())
+                .then(result => {
+                    Swal.close();
 
-                if (result.success) {
-                    const descriptionEdit = document.getElementById('description-edit');
-                    descriptionEdit.value = result.description;
-                    descriptionEdit.style.display = 'block';
-                    const descriptionDisplay = document.getElementById('description-display');
-                    descriptionDisplay.style.display = 'none';
-                    generateDescriptionBtn.style.display = 'none';
-                    toastr.success('Description generated successfully!');
-                } else {
-                    toastr.error('Error generating description: ' + result.error);
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                console.error('Error:', error);
-                toastr.error('An error occurred while generating the description.');
-            });
+                    if (result.success) {
+                        const descriptionEdit = document.getElementById('description-edit');
+                        descriptionEdit.value = result.description;
+                        descriptionEdit.style.display = 'block';
+                        const descriptionDisplay = document.getElementById('description-display');
+                        descriptionDisplay.style.display = 'none';
+                        generateDescriptionBtn.style.display = 'none';
+                        toastr.success('Description generated successfully!');
+                    } else {
+                        toastr.error('Error generating description: ' + result.error);
+                    }
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('Error:', error);
+                    toastr.error('An error occurred while generating the description.');
+                });
         });
     }
-});
-</script>
+});  
+
+
+</script> 
 <!--Edit-business-->
  
 <!--select2-->
@@ -1223,4 +1409,5 @@ $(document).ready(function() {
 </script>
 
 {% endblock %}
+
 

@@ -4,6 +4,22 @@
 
 {% block content %}
 <style>
+    .image-count-selection {
+    margin-top: 10px;
+}
+
+.form-check-inline {
+    margin-right: 20px;
+}
+
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
 .sidebar-expand.active .sidebar {
     transition: transform 0.3s ease-in-out;
     max-width: 100%;
@@ -54,7 +70,8 @@
         display: none;
     }
 </style>
-
+ 
+    
 <div class="main-content project">
     <div class="me-auto">
         <h4 class="card-title mb-25 fs-22">Start a Project</h4>
@@ -78,13 +95,7 @@
                     <form id="upload-form" method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
-                            <div class="col-md-4 col-sm-12 mb-24">
-                                <div class="form-group">
-                                    <label for="{{ form.project_title.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary disabled" aria-disabled="disabled" disabled>Project Title</label>
-                                    {{ form.project_title }}
-                                </div>
-                            </div>
-                            
+
                             <!-- Country Dropdown -->
                             <div class="col-md-4 col-sm-12 mb-24">
                                 <div class="form-group">
@@ -104,15 +115,17 @@
                                     </select>
                                 </div>
                             </div>
-                        </div>
-                    
-                        <div class="row">
+
                             <div class="col-md-4 col-sm-12 mb-24">
                                 <div class="form-group">
                                     <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
                                     {{ form.level }}
                                 </div>
                             </div>
+                        </div>
+                    
+                        <div class="row">
+                           
                     
                             <!-- Main Category Dropdown -->
                             <div class="col-md-4 col-sm-12 mb-24">
@@ -136,9 +149,50 @@
                                     </select>
                                 </div>
                             </div>
+                            
+                        <div class="col-md-4 col-sm-12 mb-24">
+                            <div class="form-group">
+                                <label for="images_count" class="form-label mt-1 fs-18 font-w500 color-primary">Images to download:</label>
+
+                                <div class="custom-controls-stacked d-lg-flex align-items-center"> 
+                                    <label class="custom-control custom-radio me-4 px-3">
+                                        <input type="radio" 
+                                            class="custom-control-input" 
+                                            name="image_count" 
+                                            value="3"
+                                            {% if default_image_count == 3 %}checked{% endif %}>
+                                        <span class="custom-control-label">3</span>
+                                    </label>
+                                    <label class="custom-control custom-radio me-4 px-3">
+                                        <input type="radio" 
+                                            class="custom-control-input" 
+                                            name="image_count" 
+                                            value="4"
+                                            {% if default_image_count == 4 or not default_image_count %}checked{% endif %}>
+                                        <span class="custom-control-label">4</span>
+                                    </label>
+                                    <label class="custom-control custom-radio me-4 px-3">
+                                        <input type="radio" 
+                                            class="custom-control-input" 
+                                            name="image_count" 
+                                            value="5"
+                                            {% if default_image_count == 5 %}checked{% endif %}>
+                                        <span class="custom-control-label">5</span>
+                                    </label>
+                                    <label class="custom-control custom-radio me-4 px-3">
+                                        <input type="radio" 
+                                            class="custom-control-input" 
+                                            name="image_count" 
+                                            value="6"
+                                            {% if default_image_count == 6 %}checked{% endif %}>
+                                        <span class="custom-control-label">6</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                         </div>
                     
-                        <!-- Toggleable Description Field -->
+                        <!-- Toggleable Description Field
                         <div class="form-group mb-24">
                             <label class="form-label mt-1 fs-18 font-w500 color-primary">
                                 <a href="#" id="toggle-description" class="text-primary">+ Add Description (optional)</a>
@@ -147,39 +201,34 @@
                                 <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description</label>
                                 {{ form.description }}
                             </div>
-                        </div>
+                        </div> -->
                         
+                    <!-- images Count Selection --> 
                     
-                         <!-- Toggle button to show/hide the file input -->
+ 
                         <div class="row mb-3">
-                            <div class="col">
-                                <button type="button" id="toggle-file-upload" class="btn btn-secondary">Show File Upload</button>
-                            </div>
-                        </div>
-
-                        <!-- File upload section, hidden by default -->
-                        <div class="row d-none" id="file-upload-section">
-                            <div class="col-xl-4 col-lg-4 col-md-4 col-sm-12">
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                                 <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
                                 <div class="input-group file-browser">
                                     {{ form.file }}
                                 </div>
                                 <div class="form-text">{{ form.file.help_text }}</div>
                             </div>
-                        </div>
+                        </div>  
 
+           
                                             
                         <div class="row">
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                                <label class="form-label mt-1 fs-18 font-w500 color-primary">Get Businesses</label>
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12"> 
                                 <div class="input-group file-browser">
-                                    <button type="submit" class="btn btn-primary">Start process</button>
+                                    <button type="submit" class="btn btn-primary">Start Businesses Acquisition <i class="fas fa-rocket"></i></button>
                                 </div>
                             </div>
+                        
                         </div>
                     </form>
                     
-                    <!-- JavaScript to toggle the description field -->
+                    <!-- JavaScript to toggle the description field 
                     <script>
                         document.getElementById("toggle-description").addEventListener("click", function(event) {
                             event.preventDefault();
@@ -192,8 +241,24 @@
                                 this.textContent = "+ Add Description (optional)";
                             }
                         });
-                    </script>
+                    </script>-->
 
+                        
+                    <!-- JavaScript to toggle the images field -->
+                    <script>
+                        document.getElementById("toggle-images").addEventListener("click", function(event) {
+                            event.preventDefault();
+                            var imagesContainer = document.getElementById("images-container");
+                            if (imagesContainer.style.display === "none") {
+                                imagesContainer.style.display = "block";
+                                this.textContent = "- Hide images";
+                            } else {
+                                imagesContainer.style.display = "none";
+                                this.textContent = "+ Add images (optional)";
+                            }
+                        });
+                    </script>
+                    <!-- JavaScript to toggle the images field -->
                         <script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 const toggleFileUploadButton = document.getElementById('toggle-file-upload');

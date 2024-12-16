@@ -33,7 +33,7 @@ from django.template.loader import render_to_string
 from .tasks import *
 from .serializers import BusinessSerializer
 from .permissions import IsAdminOrAmbassadorForDestination
-from .models import CustomUser, Destination, Feedback, Level, ScrapingTask, Image, Business,  UserRole, Country
+from .models import CustomUser, Destination, Feedback, HourlyBusyness, Level, PopularTimes, ScrapingTask, Image, Business,  UserRole, Country
 from .forms import FeedbackFormSet, DestinationForm, UserProfileForm, CustomUserCreationForm, CustomUserChangeForm, ScrapingTaskForm, BusinessForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
@@ -82,7 +82,8 @@ class UploadFileView(View):
         context = {
             'form': form,
             'page_obj': page_obj,
-            'tasks': page_obj.object_list
+            'tasks': page_obj.object_list,
+            'default_image_count': 3
         }
 
         return render(request, 'automation/upload.html', context)
@@ -101,6 +102,7 @@ class UploadFileView(View):
 
             # Set the project_title in the form
             form.initial['project_title'] = project_title
+            image_count = request.POST.get('image_count', '3')
 
             task = ScrapingTask(
                 user=request.user,
@@ -127,6 +129,7 @@ class UploadFileView(View):
                 'level': task.level.ls_id if task.level else None,
                 'main_category': task.main_category.title if task.main_category else '',
                 'subcategory': task.subcategory.title if task.subcategory else '',
+                'image_count': int(image_count),
             }
             try:
                 # asynchronous task processing Celery, use delay()
@@ -850,8 +853,7 @@ def update_business_status(request, business_id):
                         'status': 'error',
                         'message': f"Error formatting operating hours: {str(e)}"
                     }, status=400)
-
-                # Continue with existing functionality...
+ 
                 task_obj = business.task
                 business_data["level_id"] = task_obj.level.ls_id
 
@@ -2060,3 +2062,4 @@ def delete_task(request, id):
         return JsonResponse({'status': 'error', 'message': 'Task not found'}, status=404)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
