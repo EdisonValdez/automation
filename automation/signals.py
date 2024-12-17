@@ -25,8 +25,7 @@ def update_logentry_user(sender, **kwargs):
 
 @receiver(post_save, sender=CustomUser)
 def create_user_role(sender, instance, created, **kwargs):
-    if created:
-        UserRole.objects.create(user=instance, role='AMBASSADOR')
+    pass
 
 
 @receiver(post_save, sender=Business)

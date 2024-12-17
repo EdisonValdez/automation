@@ -24,7 +24,7 @@ class CustomUserCreationForm(UserCreationForm):
     role = forms.ChoiceField(
         choices=UserRole.ROLE_CHOICES,
         required=True,
-        widget=forms.Select(attrs={'class': 'form-control select2'})
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})  
     )
     destinations = forms.ModelMultipleChoiceField(
         queryset=Destination.objects.all(),
@@ -50,18 +50,21 @@ class CustomUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         if commit:
-            user.save()
-            role = self.cleaned_data.get('role')
-            destinations = self.cleaned_data.get('destinations')
-            UserRole.objects.create(user=user, role=role)
-            user.destinations.set(destinations)
+            with transaction.atomic():
+                user.save()
+                role = self.cleaned_data.get('role')
+                if role:
+                    UserRole.objects.create(user=user, role=role) 
+                destinations = self.cleaned_data.get('destinations')
+                if destinations:
+                    user.destinations.set(destinations)
         return user
 
 class CustomUserChangeForm(UserChangeForm):
     role = forms.ChoiceField(
         choices=UserRole.ROLE_CHOICES,
         required=True,
-        widget=forms.Select(attrs={'class': 'form-control select2'})
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})  
     )
     
     destinations = forms.ModelMultipleChoiceField(
@@ -114,19 +117,13 @@ class CustomUserChangeForm(UserChangeForm):
             with transaction.atomic():
                 user = super().save(commit=False)
                 if commit:
-                    # Only save if there are actual changes
-                    if self.has_changed():
-                        user.save()
-                    
-                    # Handle role
+                    user.save()
+                     
                     role = self.cleaned_data.get('role')
-                    if role:
-                        UserRole.objects.update_or_create(
-                            user=user,
-                            defaults={'role': role}
-                        )
-                    
-                    # Handle destinations
+                    if role: 
+                        UserRole.objects.filter(user=user).delete()
+                        UserRole.objects.create(user=user, role=role)
+ 
                     destinations = self.cleaned_data.get('destinations')
                     if destinations is not None:
                         user.destinations.set(destinations)
@@ -136,8 +133,7 @@ class CustomUserChangeForm(UserChangeForm):
         except Exception as e:
             logger.error(f"Error saving user {user.username}: {str(e)}")
             raise
-
-
+ 
 class CountryForm(forms.ModelForm):
     class Meta:
         model = Country
@@ -281,8 +277,7 @@ class ScrapingTaskForm(forms.ModelForm):
             instance.save()
             logger.info(f"Created new ScrapingTask with id: {instance.id}")
         return instance
-
-
+ 
 class CsvImportForm(forms.Form):
     csv_upload = forms.FileField(label='Select a CSV file')
  

@@ -114,7 +114,7 @@ class UserRole(models.Model):
     ROLE_CHOICES = (
         ('ADMIN', 'Admin'),
         ('AMBASSADOR', 'Ambassador'),
-        ('STAFF', 'Staff'),
+ 
     )
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='roles')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
@@ -145,8 +145,7 @@ class Level(models.Model):
     class Meta:
         verbose_name = "Level"
         verbose_name_plural = "Levels"
-
-
+ 
 class Category(models.Model):
     title = models.CharField(max_length=100)
     value = models.CharField(max_length=50, unique=True)

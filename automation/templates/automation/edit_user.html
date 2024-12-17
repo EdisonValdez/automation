@@ -91,7 +91,7 @@
                         </div>
 
                         <!-- Mobile and Role -->
-                        <div class="row">
+                        <div class="row mb-24">
                             <div class="col-md-6 col-sm-12 mb-24">
                                 <div class="form-group">
                                     <label class="form-label" for="{{ form.mobile.id_for_label }}">Mobile</label>
@@ -105,15 +105,20 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            <div class="col-md-6 col-sm-12 mb-24">
+                            <div class="col-md-6 col-sm-12 mb-24"> 
                                 <div class="form-group">
-                                    <label class="form-label" for="{{ form.role.id_for_label }}">Role</label>
-                                    {{ form.role }}
+                                    <label class="form-label"  for="{{ radio.id_for_label }}">Role:</label>
+                                    <div class="role-options">
+                                        {% for radio in form.role %}
+                                        <div class="form-check">
+                                            {{ radio }}
+                                             
+                                        </div>
+                                        {% endfor %}
+                                    </div>
                                     {% if form.role.errors %}
                                     <div class="invalid-feedback d-block">
-                                        {% for error in form.role.errors %}
-                                            {{ error }}
-                                        {% endfor %}
+                                        {{ form.role.errors }}
                                     </div>
                                     {% endif %}
                                 </div>
@@ -121,8 +126,8 @@
                         </div>
 
                         <!-- Destinations -->
-                        <div class="row">
-                            <div class="col-md-12 col-sm-12 mb-24">
+                        <div class="row mt-15">
+                            <div class="col-md-12 col-sm-12 mb-24 mt-15">
                                 <div class="form-group">
                                     <label class="form-label" for="{{ form.destinations.id_for_label }}">Destinations</label>
                                     {{ form.destinations }}
