@@ -619,22 +619,39 @@ def create_user(request):
         form = CustomUserCreationForm()
     return render(request, 'automation/create_user.html', {'form': form})
 
+@login_required
 @user_passes_test(is_admin)
 def edit_user(request, user_id):
     logger.info(f"Accessing edit_user view for user_id: {user_id}")
-    edited_user = get_object_or_404(CustomUser, id=user_id)  # Renamed variable
+    
+    try:
+        edited_user = get_object_or_404(CustomUser, id=user_id)
+    except CustomUser.DoesNotExist:
+        messages.error(request, "User not found.")
+        return redirect('user_management')
+        
     if request.method == 'POST':
         form = CustomUserChangeForm(request.POST, instance=edited_user)
-        if form.is_valid():
-            form.save()
-            logger.info(f"User {edited_user.username} has been updated successfully")
-            messages.success(request, f"User {edited_user.username} has been updated successfully.")
-            return redirect('user_management')
-        else:
-            logger.warning(f"Form validation failed: {form.errors}")
+        try:
+            if form.is_valid():
+                form.save()
+                messages.success(request, f"User {edited_user.username} has been updated successfully.")
+                return redirect('user_management')
+            else:
+                logger.warning(f"Form validation failed: {form.errors}")
+                messages.error(request, "Please correct the errors below.")
+        except Exception as e:
+            logger.error(f"Error updating user: {str(e)}")
+            messages.error(request, f"Error updating user: {str(e)}")
     else:
         form = CustomUserChangeForm(instance=edited_user)
-    return render(request, 'automation/edit_user.html', {'form': form, 'edited_user': edited_user})
+
+    context = {
+        'form': form,
+        'edited_user': edited_user,
+    }
+    
+    return render(request, 'automation/edit_user.html', context)
 
 
 @user_passes_test(is_admin)

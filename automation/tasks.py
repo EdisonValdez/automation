@@ -1065,12 +1065,9 @@ def save_business(task, local_result, query, form_data=None):
 
         if 'place_id' not in business_data:
             logger.warning(f"Skipping business entry for task {task.id} due to missing 'place_id'")
-            return None   
+            return None  
 
-        popular_times_data = local_result.get('popular_times')  
-        if popular_times_data:
-            save_popular_times(business, popular_times_data)
-              
+        # Create or update the business FIRST
         business, created = Business.objects.update_or_create(
             place_id=business_data['place_id'],
             defaults=business_data
@@ -1080,7 +1077,13 @@ def save_business(task, local_result, query, form_data=None):
             logger.info(f"New business created: {business.title} (ID: {business.id})")
         else:
             logger.info(f"Existing business updated: {business.title} (ID: {business.id})")
- 
+
+        # THEN save popular times
+        popular_times_data = local_result.get('popular_times')  
+        if popular_times_data:
+            save_popular_times(business, popular_times_data)
+
+        # Save categories
         categories = local_result.get('categories', [])
         for category_id in categories:
             try:
@@ -1089,6 +1092,7 @@ def save_business(task, local_result, query, form_data=None):
             except Category.DoesNotExist:
                 logger.warning(f"Category ID {category_id} does not exist.")
 
+        # Save additional info
         additional_info = [
             AdditionalInfo(
                 business=business,
@@ -1099,7 +1103,8 @@ def save_business(task, local_result, query, form_data=None):
         ]
         AdditionalInfo.objects.bulk_create(additional_info, ignore_conflicts=True)
         logger.info(f"Additional data saved for business {business.id}")
- 
+
+        # Save service options
         service_options = local_result.get('serviceOptions', {})
         if service_options:
             business.service_options = service_options
@@ -1108,7 +1113,8 @@ def save_business(task, local_result, query, form_data=None):
         logger.info(f"All business data processed and saved for business {business.id}")
         logger.info(f"Address components saved - Street: {business.street}, "
             f"Postal Code: {business.postal_code}, City: {business.city}")
- 
+
+        # Download images
         try:
             image_paths = download_images(business, local_result)
             logger.info(f"Downloaded {len(image_paths)} images for business {business.id}")
@@ -1119,7 +1125,7 @@ def save_business(task, local_result, query, form_data=None):
 
     except Exception as e:
         logger.error(f"Error saving business data for task {task.id}: {str(e)}", exc_info=True)
-        raise  # Re-raise the exception to trigger transaction rollback if necessary
+        raise
 
 def generate_full_address(business_data):
     """

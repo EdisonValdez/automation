@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import Country, CustomUser, Business, Destination, Feedback, ScrapingTask, UserRole, Category, Level
 from django.contrib.auth import get_user_model
 import json
-
+from django.db import transaction
 logger = logging.getLogger(__name__)
 
 class UserProfileForm(forms.ModelForm):
@@ -63,6 +63,7 @@ class CustomUserChangeForm(UserChangeForm):
         required=True,
         widget=forms.Select(attrs={'class': 'form-control select2'})
     )
+    
     destinations = forms.ModelMultipleChoiceField(
         queryset=Destination.objects.all(),
         required=False,
@@ -75,28 +76,68 @@ class CustomUserChangeForm(UserChangeForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if 'password' in self.fields:
+            del self.fields['password']
+            
+        # Make username and email read-only if this is an existing user
+        if self.instance and self.instance.pk:
+            self.fields['username'].widget.attrs['readonly'] = True
+            self.fields['email'].widget.attrs['readonly'] = True
+            
         for field in self.fields:
             existing_classes = self.fields[field].widget.attrs.get('class', '')
             self.fields[field].widget.attrs['class'] = f"{existing_classes} form-control".strip()
-        if self.instance:
+        
+        if self.instance and self.instance.pk:
             try:
                 user_role = self.instance.roles.first()
-                self.fields['role'].initial = user_role.role
+                if user_role:
+                    self.fields['role'].initial = user_role.role
                 self.fields['destinations'].initial = self.instance.destinations.all()
             except UserRole.DoesNotExist:
-                pass
+                logger.warning(f"No role found for user {self.instance.username}")
 
+    def clean_username(self):
+        # If this is an existing user, return the current username without validation
+        if self.instance and self.instance.pk:
+            return self.instance.username
+        return self.cleaned_data['username']
+
+    def clean_email(self):
+        # If this is an existing user, return the current email without validation
+        if self.instance and self.instance.pk:
+            return self.instance.email
+        return self.cleaned_data['email']
 
     def save(self, commit=True):
-        user = super().save(commit=False)
-        if commit:
-            user.save()
-            role = self.cleaned_data.get('role')
-            destinations = self.cleaned_data.get('destinations')
-            UserRole.objects.update_or_create(user=user, defaults={'role': role})
-            user.destinations.set(destinations)
-        return user
- 
+        try:
+            with transaction.atomic():
+                user = super().save(commit=False)
+                if commit:
+                    # Only save if there are actual changes
+                    if self.has_changed():
+                        user.save()
+                    
+                    # Handle role
+                    role = self.cleaned_data.get('role')
+                    if role:
+                        UserRole.objects.update_or_create(
+                            user=user,
+                            defaults={'role': role}
+                        )
+                    
+                    # Handle destinations
+                    destinations = self.cleaned_data.get('destinations')
+                    if destinations is not None:
+                        user.destinations.set(destinations)
+                    
+                    logger.info(f"Successfully updated user {user.username}")
+                return user
+        except Exception as e:
+            logger.error(f"Error saving user {user.username}: {str(e)}")
+            raise
+
+
 class CountryForm(forms.ModelForm):
     class Meta:
         model = Country
