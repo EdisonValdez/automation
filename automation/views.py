@@ -51,12 +51,6 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
-from django.urls import get_resolver
-
-def debug_urls():
-    resolver = get_resolver()
-    for pattern in resolver.url_patterns:
-        print(f"URL Pattern: {pattern.pattern}")
  
 def health_check(request):
     try:
