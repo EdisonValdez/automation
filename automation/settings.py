@@ -11,19 +11,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Environment Variables
 # DEBUG = os.getenv('DEBUG', 'False').lower() == 'false' - With this one the deployment failed!
 # DEBUG = os.getenv('DEBUG', 'True').lower() == 'true' - NO It is showing the debug page
-# DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' - Previously worked but showed the debug page
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 
 DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower(
 ) == 'true'  # original in pro set true
  
-DEBUG = True if DEVELOPMENT_MODE else False
+# DEBUG = True if DEVELOPMENT_MODE else False
 
 if DEVELOPMENT_MODE:
     BASE_URL = 'http://localhost:8000'
 else:
     BASE_URL = 'https://orca-app-jasq8.ondigitalocean.app'
-    
+
 # Set to 'True' in production when using S3
 USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
