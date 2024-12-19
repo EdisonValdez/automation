@@ -204,6 +204,12 @@ class ScrapingTask(models.Model):
     objects = ActiveTaskManager()
     all_objects = models.Manager()
 
+    def get_translatable_businesses(self):
+        """Get businesses that can be translated"""
+        return self.businesses.filter(
+            status__in=['PENDING', 'REVIEWED']
+        ).exclude(status='DISCARDED')
+
     def get_level_title(self):
         return self.level.title if self.level else "No Level"
     
@@ -277,7 +283,7 @@ class Business(models.Model):
     
     # Business-specific fields
     title = models.CharField(max_length=255)
-    translated_title = models.CharField(max_length=255, blank=True, null=True)  # Translation for title
+    translated_title = models.CharField(max_length=500, blank=True, null=True)  # Translation for title
     description = models.TextField(blank=True, null=True)
     translated_description = models.TextField(blank=True, null=True)  # Translation for description
 
@@ -318,9 +324,9 @@ class Business(models.Model):
     service_options = JSONField(null=True, blank=True)    
 
     # Translated fields
-    title_esp = models.CharField(max_length=255, blank=True, null=True)
-    title_fr = models.CharField(max_length=255, blank=True, null=True)
-    title_eng = models.CharField(max_length=255, blank=True, null=True)
+    title_esp = models.CharField(max_length=500, blank=True, null=True)
+    title_fr = models.CharField(max_length=500, blank=True, null=True)
+    title_eng = models.CharField(max_length=500, blank=True, null=True)
     description_esp = models.TextField(blank=True, null=True)
     description_eng = models.TextField(blank=True, null=True)
     description_fr = models.TextField(blank=True, null=True)
@@ -331,6 +337,15 @@ class Business(models.Model):
     objects = ActiveBusinessManager()
     all_objects = models.Manager()
 
+    def can_be_translated(self):
+        """Check if business can be translated"""
+        return self.status in ['PENDING', 'REVIEWED'] and not self.is_discarded
+    
+    @property
+    def is_discarded(self):
+        """Check if business is discarded"""
+        return self.status == 'DISCARDED'
+    
     @property
     def level_title(self):
         """Retrieve the title of the associated Level."""

@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils import timezone
 from ratelimit import RateLimitException
 import urllib
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from automation.consumers import get_log_file_path 
 from .models import BusinessImage, Country, Destination, HourlyBusyness, PopularTimes, Review, ScrapingTask, Business, Category, OpeningHours, AdditionalInfo, Image
 from django.conf import settings 
@@ -20,7 +21,7 @@ from django.core.files.base import ContentFile
 import requests
 from django.utils import timezone
 import os
-import logging
+import logging 
 import asyncio
 from .translation_utils import translate_business_info_sync
 from serpapi import GoogleSearch
@@ -568,159 +569,172 @@ def save_results(task, results, query):
 
 
 #####################DESCRIPTION TRANSLATE##################################
- 
-def translate_text(text, language="spanish"):
-    if text and text.strip():
-        language_code = "en-GB" if language == "eng" else language
+
+
+def call_openai_with_retry(messages, model="gpt-3.5-turbo", temperature=0.3, max_tokens=800, presence_penalty=0.0, frequency_penalty=0.0, retries=2, delay=1):
+    for attempt in range(retries):
         try:
-            document = doctran.parse(content=text)
-            translated_doc = document.translate(language=language_code).execute()
-            return translated_doc.transformed_content
-        except Exception as e:
-            logger.error(f"Translation error: {str(e)}", exc_info=True)
-            return None
-    return text
- 
+            return openai.ChatCompletion.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                presence_penalty=presence_penalty,
+                frequency_penalty=frequency_penalty
+            )
+        except openai.error.RateLimitError as e:
+            logger.warning(f"Rate limit error on attempt {attempt+1}: {str(e)}")
+            if attempt == retries - 1:
+                raise
+            time.sleep(delay * (attempt + 1))
+        except openai.error.OpenAIError as e:
+            logger.warning(f"OpenAI error on attempt {attempt+1}: {str(e)}")
+            if attempt == retries - 1:
+                raise
+            time.sleep(delay)
+  
+def translate_text_openai(text, target_language):
+    if not text or text.strip() == "":
+        logger.warning("Empty text provided for translation")
+        return ""
+
+    language_map = {
+        "eng": "British English",
+        "spanish": "Spanish"
+    }
+
+    if target_language not in language_map:
+        logger.error(f"Unsupported target language: {target_language}")
+        return ""
+
+    messages = [
+        {
+            "role": "system",
+            "content": f"You are an expert translator. Translate the following text to {language_map[target_language]}. Maintain the original meaning, tone, and formatting. Do not add any explanatory text or language markers."
+        },
+        {
+            "role": "user",
+            "content": text
+        }
+    ]
+
+    try:
+        response = call_openai_with_retry(
+            messages=messages,
+            max_tokens=len(text.split()) * 2,  
+            temperature=0.3,  
+            presence_penalty=0.0,
+            frequency_penalty=0.0
+        )
+        
+        translated_text = response['choices'][0]['message']['content'].strip()
+        logger.info(f"Successfully translated text to {target_language}")
+        return translated_text
+
+    except Exception as e:
+        logger.error(f"Translation error for {target_language}: {str(e)}", exc_info=True)
+        return ""
+
 def enhance_and_translate_description(business, languages=["spanish", "eng"]):
     """
     Enhances the business description and translates it into specified languages.
-    Uses batch processing and concurrent API calls for better performance.
+    Ensures proper distinction between US and UK English.
     """
     if not business.description or not business.description.strip():
-        logger.info(f"No base description available for business {business.id}. Enhancement and translation skipped.")
+        logger.info(f"No base description available for business {business.id}")
         return False
 
-    try:
-        # Prepare system messages for different tasks
-        messages = {
-            'enhance': [
-                {"role": "system", "content": "You are an expert SEO content writer."},
-                {"role": "user", "content": f"""
-                    Write a detailed description of exactly 220 words.
-                    About: '{business.title}', a '{business.category_name}' in '{business.city}, {business.country}'.
-                    Requirements:
-                    - SEO optimized
-                    - '{business.title}' or synonyms in first paragraph
-                    - Use '{business.title}' twice
-                    - 80% sentences under 20 words
-                    - Formal tone
-                    - Avoid: 'vibrant', 'in the heart of', 'in summary'
-                    - Include blank lines between paragraphs
-                """}
-            ],
-            'translate_es': [
+    try: 
+        enhance_messages = [
+            {"role": "system", "content": "You are an expert SEO content writer specializing in American English."},
+            {"role": "user", "content": f"""
+                Write a detailed description of EXACTLY 220 words using American English.
+                Business: '{business.title}'
+                Category: '{business.category_name}'
+                Location: '{business.city}, {business.country}'
+
+                Requirements:
+                - EXACTLY 220 words
+                - Use American English spelling and terms (e.g., 'rental', 'center', 'customize')
+                - Include '{business.title}' in first paragraph
+                - Use '{business.title}' exactly twice
+                - 80% sentences under 20 words
+                - Formal American tone
+                - SEO optimized
+                - Avoid: 'vibrant', 'in the heart of', 'in summary'
+            """}
+        ]
+ 
+        response = call_openai_with_retry(
+            messages=enhance_messages,
+            model="gpt-3.5-turbo",
+            max_tokens=800,
+            temperature=0.7
+        )
+
+        us_description = response['choices'][0]['message']['content'].strip()
+        business.description = us_description
+ 
+        uk_messages = [
+            {"role": "system", "content": "You are an expert translator specializing in British English adaptations."},
+            {"role": "user", "content": f"""
+                Convert the following American English text to British English.
+                Make sure to:
+                1. Change spellings (e.g., 'color' to 'colour', 'customize' to 'customise')
+                2. Change terms:
+                   - 'rental' to 'hire'
+                   - 'center' to 'centre'
+                   - 'apartment' to 'flat'
+                   - 'vacation' to 'holiday'
+                   - 'downtown' to 'city centre'
+                   - 'parking lot' to 'car park'
+                   - 'elevator' to 'lift'
+                   - 'store' to 'shop'
+                3. Adjust phrases to British usage
+                4. Maintain the exact same length and structure
+                
+                Text to convert:
+                {us_description}
+            """}
+        ]
+ 
+        uk_response = call_openai_with_retry(
+            messages=uk_messages,
+            model="gpt-3.5-turbo",
+            max_tokens=800,
+            temperature=0.3
+        )
+
+        uk_description = uk_response['choices'][0]['message']['content'].strip()
+        business.description_eng = uk_description
+ 
+        if "spanish" in languages:
+            spanish_messages = [
                 {"role": "system", "content": "You are an expert Spanish translator."},
-                {"role": "user", "content": "Translate to Spanish, preserving structure and tone:"}
-            ],
-            'translate_en': [
-                {"role": "system", "content": "You are an expert British English localizer."},
-                {"role": "user", "content": "Convert to British English, using appropriate spellings and conventions:"}
+                {"role": "user", "content": f"""
+                    Translate this text to Spanish, maintaining the formal tone and marketing style:
+                    {us_description}
+                """}
             ]
-        }
 
-        # Function to make API calls with retry logic
-        def call_openai_with_retry(messages, retries=3, delay=2):
-            for attempt in range(retries):
-                try:
-                    return openai.ChatCompletion.create(
-                        model="gpt-3.5-turbo",  # Use 3.5-turbo for better performance/cost balance
-                        messages=messages,
-                        temperature=0.3,
-                        max_tokens=800,
-                        presence_penalty=0.0,
-                        frequency_penalty=0.0
-                    )
-                except openai.error.RateLimitError:
-                    if attempt == retries - 1:
-                        raise
-                    time.sleep(delay * (attempt + 1))
-                except openai.error.OpenAIError as e:
-                    if attempt == retries - 1:
-                        raise
-                    time.sleep(delay)
-
-        response = call_openai_with_retry(messages['enhance'])
-        enhanced_description = response['choices'][0]['message']['content'].strip()
-        business.description = enhanced_description
-
-        if languages:
-            combined_prompt = (
-                "Translate the following text into both Spanish and British English. "
-                "Provide both translations separated by [SPLIT]:\n\n"
-                f"{enhanced_description}"
+            spanish_response = call_openai_with_retry(
+                messages=spanish_messages,
+                model="gpt-3.5-turbo",
+                max_tokens=800,
+                temperature=0.3
             )
-            
-            response_translations = call_openai_with_retry([
-                {"role": "system", "content": "You are an expert multilingual translator."},
-                {"role": "user", "content": combined_prompt}
-            ])
-            
-            translations = response_translations['choices'][0]['message']['content'].split('[SPLIT]')
-            
-            if len(translations) >= 2:
-                if "spanish" in languages:
-                    business.description_esp = translations[0].strip()
-                if "eng" in languages:
-                    business.description_eng = translations[1].strip()
+
+            spanish_description = spanish_response['choices'][0]['message']['content'].strip()
+            business.description_esp = spanish_description
 
         business.save()
-        logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
+        logger.info(f"Successfully enhanced and translated descriptions for business {business.id}")
         return True
 
     except Exception as e:
-        logger.error(f"Error processing business {business.id}: {str(e)}", exc_info=True)
+        logger.error(f"Error in enhance_and_translate_description for business {business.id}: {str(e)}", exc_info=True)
         return False
-
-
-
-def generate_additional_sentences_openai(business, word_deficit):
-    """
-    Generates additional content using OpenAI to meet the required word count.
-    """
-    prompt = (
-        f"Write additional content of about {word_deficit} words to describe:\n"
-        f"'{business.title}', a '{business.category_name}' located in '{business.city}, {business.country}'.\n"
-        f"Focus on its unique features, offerings, and appeal to customers.\n"
-    )
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are an expert content writer."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-        )
-        return response['choices'][0]['message']['content'].strip()
-    except openai.error.OpenAIError as e:
-        logger.error(f"Error generating additional sentences: {str(e)}", exc_info=True)
-        return ""
-
-
-def translate_text_openai(text, target_language):
-    """
-    Translates the given text into the specified language using OpenAI's newer models.
-    """
-    prompt = (
-        f"Translate the following text into {target_language}:\n\n"
-        f"{text}\n\n"
-        f"Preserve the structure, formatting, and tone of the original text."
-    )
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are an expert translator."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-        )
-        return response['choices'][0]['message']['content'].strip()
-    except openai.error.OpenAIError as e:
-        logger.error(f"Error translating text: {str(e)}", exc_info=True)
-        return ""
-
-
+ 
 def generate_additional_sentences(business, word_deficit):
     """
     Generates additional sentences to meet the required word count.
@@ -731,44 +745,156 @@ def generate_additional_sentences(business, word_deficit):
             f"'{business.title}', a '{business.category_name}' located in '{business.city}, {business.country}'.\n"
             f"Focus on its unique features, offerings, and appeal to customers."
         )
+
         document = doctran.parse(content=prompt)
-        additional_sentences = document.summarize(token_limit=word_deficit * 2).transformed_content.strip()
+        additional_sentences = document.summarize(
+            token_limit=word_deficit * 2
+        ).transformed_content.strip()
+
         return additional_sentences
     except Exception as e:
         logger.error(f"Error generating additional sentences: {str(e)}", exc_info=True)
         return ""
 
-
 def translate_business_info(business, languages=["spanish", "eng"]):
-    logger.info(f"Starting translation for business {business.id}")
+    """
+    Handles the complete business translation process including validation and status updates.
+    """
+    logger.info(f"Starting translation process for business {business.id}")
+    
+    try:
+        # Case 1: Validate existing content
+        if not validate_business_content(business):
+            logger.warning(f"Business {business.id} content validation failed")
+            return False
 
+        # Case 2: Process title translations if needed
+        if business.title and (not business.title_eng or not business.title_esp):
+            success = translate_business_titles(business, languages)
+            if not success:
+                logger.error(f"Failed to translate titles for business {business.id}")
+                return False
+
+        # Case 3: Process description translations
+        if business.description:
+            word_count = len(business.description.split())
+            
+            # Enhancement needed if description is too short
+            if word_count < 220:
+                logger.info(f"Business {business.id} description needs enhancement ({word_count} words)")
+                success = enhance_and_translate_description(business)
+                if not success:
+                    return False
+
+            # Process translations
+            success = process_business_translations(business, languages)
+            if not success:
+                return False
+
+        # Final validation and status update
+        if validate_translations(business):
+            business.status = 'REVIEWED'
+            business.save(update_fields=['status'])
+            logger.info(f"Successfully completed translations for business {business.id}")
+            return True
+        else:
+            logger.error(f"Final validation failed for business {business.id}")
+            return False
+
+    except Exception as e:
+        logger.error(f"Error in translation process for business {business.id}: {str(e)}", exc_info=True)
+        return False
+
+def validate_business_content(business):
+    """
+    Validates the basic content requirements for a business.
+    """
+    if not business.title:
+        logger.error(f"Business {business.id} missing title")
+        return False
+
+    if not business.description and not business.description_eng and not business.description_esp:
+        logger.error(f"Business {business.id} missing all descriptions")
+        return False
+
+    return True
+
+def translate_business_titles(business, languages):
+    """
+    Handles the translation of business titles.
+    """
     try:
         for lang in languages:
-            language_code = "en-GB" if lang == "eng" else lang
-
-            if business.title:
-                translated_title = translate_text(business.title, language=language_code)
-                if lang == "spanish":
+            if lang == "spanish" and not business.title_esp:
+                translated_title = translate_text_openai(business.title, "spanish")
+                if translated_title:
                     business.title_esp = translated_title
-                elif lang == "eng":
+                    
+            elif lang == "eng" and not business.title_eng:
+                translated_title = translate_text_openai(business.title, "eng")
+                if translated_title:
                     business.title_eng = translated_title
 
-            if business.description:
-                translated_description = translate_text(business.description, language=language_code)
-                if lang == "spanish":
-                    business.description_esp = translated_description
-                elif lang == "eng":
-                    business.description_eng = translated_description
+        business.save(update_fields=['title_esp', 'title_eng'])
+        return True
 
-        business.save()
-        logger.info(f"Completed translation for business {business.id} into {', '.join(languages)}")
     except Exception as e:
-        logger.error(f"Error translating business {business.id}: {str(e)}", exc_info=True)
+        logger.error(f"Error translating titles for business {business.id}: {str(e)}", exc_info=True)
+        return False
 
+def process_business_translations(business, languages):
+    """
+    Processes translations for business descriptions.
+    """
+    try:
+        for lang in languages:
+            if lang == "spanish" and not business.description_esp:
+                translated_desc = translate_text_openai(business.description, "spanish")
+                if translated_desc:
+                    business.description_esp = translated_desc
+                    
+            elif lang == "eng" and not business.description_eng:
+                translated_desc = translate_text_openai(business.description, "eng")
+                if translated_desc:
+                    business.description_eng = translated_desc
+
+        business.save(update_fields=['description_esp', 'description_eng'])
+        return True
+
+    except Exception as e:
+        logger.error(f"Error processing translations for business {business.id}: {str(e)}", exc_info=True)
+        return False
+
+def validate_translations(business):
+    """
+    Performs final validation of all translated content.
+    """
+    required_fields = {
+        'title': business.title,
+        'description': business.description,
+        'title_eng': business.title_eng,
+        'title_esp': business.title_esp,
+        'description_eng': business.description_eng,
+        'description_esp': business.description_esp
+    }
+
+    invalid_fields = []
+    for field, value in required_fields.items():
+        if not value or value.lower() in ['no description', 'none', '']:
+            invalid_fields.append(field)
+
+    if invalid_fields:
+        logger.error(f"Business {business.id} missing or invalid fields: {', '.join(invalid_fields)}")
+        return False
+
+    return True
 
 def enhance_translate_and_summarize_business(business_id, languages=["spanish", "eng"]):
-    logger.info(f"Starting enhancement, translation, and summarisation for business {business_id}")
-
+    """
+    Main function to coordinate the enhancement, translation, and summarization process.
+    """
+    logger.info(f"Starting enhancement, translation, and summarization for business {business_id}")
+    
     try:
         business = Business.objects.get(id=business_id)
     except Business.DoesNotExist:
@@ -779,25 +905,286 @@ def enhance_translate_and_summarize_business(business_id, languages=["spanish", 
         return False
 
     try:
-        # Enhance and translate the description
-        enhance_and_translate_description(business, languages=languages)
-    except Exception as e:
-        logger.error(f"Error enhancing and translating description for business {business_id}: {str(e)}", exc_info=True)
-        return False
+        # Step 1: Initial validation
+        if not validate_business_content(business):
+            logger.error(f"Initial validation failed for business {business_id}")
+            return False
 
-    try:
-        # Translate business information
-        translate_business_info(business, languages=languages)
+        # Step 2: Generate description if needed
+        if not business.description or business.description.lower() in ['no description', 'none', '']:
+            logger.info(f"Generating new description for business {business_id}")
+            success = generate_new_description(business)
+            if not success:
+                logger.error(f"Failed to generate description for business {business_id}")
+                return False
+
+        # Step 3: Enhance and translate
+        success = enhance_and_translate_description(business, languages)
+        if not success:
+            logger.error(f"Enhancement and translation failed for business {business_id}")
+            return False
+
+        # Step 4: Process additional translations
+        success = translate_business_info(business, languages)
+        if not success:
+            logger.error(f"Business info translation failed for business {business_id}")
+            return False
+
+        # Step 5: Final validation
+        if not validate_translations(business):
+            logger.error(f"Final validation failed for business {business_id}")
+            return False
+
+        # Update business status
+        business.status = 'REVIEWED'
+        business.save(update_fields=['status'])
+        
+        logger.info(f"Successfully completed all processes for business {business_id}")
+        return True
+
     except Exception as e:
         logger.error(f"Error processing business {business_id}: {str(e)}", exc_info=True)
         return False
 
-    logger.info(f"Completed enhancement, translation, and summarisation for business {business_id}")
-    return True
+def generate_new_description(business):
+    """
+    Generates a new description for businesses with missing or invalid descriptions.
+    """
+    try:
+        messages = [
+            {
+                "role": "system",
+                "content": "You are an expert content writer specializing in business descriptions."
+            },
+            {
+                "role": "user",
+                "content": f"""
+                Create a comprehensive business description with EXACTLY 220 words.
+                Business: '{business.title}'
+                Category: '{business.category_name}'
+                Location: '{business.city}, {business.country}'
 
+                Requirements:
+                - EXACTLY 220 words
+                - Include '{business.title}' in first paragraph
+                - Use '{business.title}' exactly twice
+                - 80% sentences under 20 words
+                - Formal tone
+                - SEO optimized
+                - Avoid: 'vibrant', 'in the heart of', 'in summary'
+                - Include specific details about services/offerings
+                - Maintain professional language
+                """
+            }
+        ]
 
+        response = call_openai_with_retry(
+            messages=messages,
+            max_tokens=800,
+            temperature=0.3
+        )
+
+        new_description = response['choices'][0]['message']['content'].strip()
+        
+        if new_description and len(new_description.split()) >= 200:
+            business.description = new_description
+            business.save(update_fields=['description'])
+            logger.info(f"Successfully generated new description for business {business.id}")
+            return True
+        else:
+            logger.error(f"Generated description for business {business.id} did not meet length requirements")
+            return False
+
+    except Exception as e:
+        logger.error(f"Error generating new description for business {business.id}: {str(e)}", exc_info=True)
+        return False
+
+def monitor_translation_progress(business_id):
+    """
+    Monitors and logs the translation progress for a business.
+    """
+    try:
+        business = Business.objects.get(id=business_id)
+        total_fields = 6  # title, description in 3 languages
+        completed_fields = sum(1 for field in [
+            business.title, business.description,
+            business.title_eng, business.description_eng,
+            business.title_esp, business.description_esp
+        ] if field and field.strip())
+
+        progress = (completed_fields / total_fields) * 100
+        logger.info(f"Translation progress for business {business_id}: {progress:.2f}%")
+        
+        return {
+            'business_id': business_id,
+            'progress': progress,
+            'completed_fields': completed_fields,
+            'total_fields': total_fields,
+            'missing_fields': total_fields - completed_fields
+        }
+
+    except Exception as e:
+        logger.error(f"Error monitoring translation progress for business {business_id}: {str(e)}", exc_info=True)
+        return None
+
+def batch_translate_similar(texts, target_language, batch_size=5):
+    """
+    Processes similar translations in batches to optimize API usage and maintain consistency.
+    """
+    results = []
+    
+    try:
+        # Process texts in batches
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i:i + batch_size]
+            
+            # Create a combined prompt for the batch
+            combined_prompt = "\n===\n".join([
+                f"Text {idx + 1}:\n{text}" 
+                for idx, text in enumerate(batch)
+            ])
+            
+            messages = [
+                {
+                    "role": "system",
+                    "content": f"Translate the following texts to {target_language}. Maintain the original format and numbering."
+                },
+                {
+                    "role": "user",
+                    "content": combined_prompt
+                }
+            ]
+            
+            response = call_openai_with_retry(
+                messages=messages,
+                max_tokens=sum(len(text.split()) for text in batch) * 2,
+                temperature=0.3
+            )
+            
+            # Parse the batch response
+            translated_batch = parse_batch_translations(
+                response['choices'][0]['message']['content'],
+                len(batch)
+            )
+            
+            results.extend(translated_batch)
+            
+            # Add delay between batches
+            time.sleep(1)
+            
+        return results
+        
+    except Exception as e:
+        logger.error(f"Error in batch translation: {str(e)}", exc_info=True)
+        return []
+
+def parse_batch_translations(response_text, expected_count):
+    """
+    Parses the batch translation response into individual translations.
+    """
+    try:
+        # Split by the separator we defined
+        parts = response_text.split("===")
+        
+        # Clean and validate each part
+        translations = []
+        for part in parts:
+            # Remove "Text N:" prefix and clean whitespace
+            cleaned = re.sub(r'^Text \d+:', '', part, flags=re.MULTILINE).strip()
+            if cleaned:
+                translations.append(cleaned)
+        
+        # Validate we got the expected number of translations
+        if len(translations) != expected_count:
+            logger.warning(f"Expected {expected_count} translations but got {len(translations)}")
+            
+        return translations
+        
+    except Exception as e:
+        logger.error(f"Error parsing batch translations: {str(e)}", exc_info=True)
+        return []
+
+def clean_and_validate_text(text, field_name, business_id):
+    """
+    Cleans and validates text content before processing.
+    """
+    if not text:
+        logger.warning(f"Empty {field_name} for business {business_id}")
+        return None
+        
+    # Remove excessive whitespace
+    text = ' '.join(text.split())
+    
+    # Remove unwanted characters
+    text = re.sub(r'[^\w\s.,!?;:()\-\'\"]+', ' ', text)
+    
+    # Validate minimum length
+    if len(text.split()) < 3:
+        logger.warning(f"Too short {field_name} for business {business_id}: {text}")
+        return None
+        
+    return text
+
+def update_translation_status(business, success=True):
+    """
+    Updates the translation status and logs the outcome.
+    """
+    try:
+        if success:
+            business.translation_status = 'TRANSLATED'
+            logger.info(f"Translation completed successfully for business {business.id}")
+        else:
+            business.translation_status = 'FAILED'
+            logger.error(f"Translation failed for business {business.id}")
+            
+        business.translation_updated_at = timezone.now()
+        business.save(update_fields=['translation_status', 'translation_updated_at'])
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error updating translation status for business {business.id}: {str(e)}", exc_info=True)
+        return False
+
+def log_translation_metrics(business_id, start_time):
+    """
+    Logs metrics about the translation process.
+    """
+    try:
+        end_time = time.time()
+        duration = end_time - start_time
+        
+        logger.info(f"""
+            Translation Metrics for Business {business_id}:
+            Duration: {duration:.2f} seconds
+            Timestamp: {timezone.now().isoformat()}
+        """)
+        
+        # Store metrics in database if needed
+        TranslationMetrics.objects.create(
+            business_id=business_id,
+            duration=duration,
+            timestamp=timezone.now()
+        )
+        
+    except Exception as e:
+        logger.error(f"Error logging translation metrics: {str(e)}", exc_info=True)
+
+class TranslationMetrics(models.Model):
+    """
+    Model to store translation metrics.
+    """
+    business = models.ForeignKey('Business', on_delete=models.CASCADE)
+    duration = models.FloatField()
+    timestamp = models.DateTimeField()
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['business', 'timestamp'])
+        ]
+ 
 #####################DESCRIPTION TRANSLATE##################################
-
+ 
 def get_postal_code_pattern(country: str) -> Optional[str]:
         patterns = {
         'spain': r'\b\d{5}\b',
@@ -824,8 +1211,7 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'default': r'\b\d{5}\b'
     }
         return patterns.get(country.lower(), patterns['default'])
-
-
+ 
 def extract_address_components(address_string: string, country: str = None):
     """
     Extract address components from a full address string with country-specific postal code formats.
@@ -921,7 +1307,6 @@ def fill_missing_address_components(business_data, task, query, form_data=None):
     logger.info(f"Postal Code: {business_data.get('postal_code', '')}")
     logger.info(f"City: {business_data.get('city', '')}")
     logger.info(f"Country: {business_data.get('country', '')}")
- 
  
 @transaction.atomic
 def save_business(task, local_result, query, form_data=None):

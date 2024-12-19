@@ -8,18 +8,23 @@
         <span class="sr-only">Loading...</span>
     </div>
 </div>
-
-<div class="main-content">
- 
-<h3 class="mb-4">Businesses Board</h3>
-<p class="fs-18 font-w400 font-main mt-27 mb-29">Upon review, please ensure that each element is placed in its corresponding column. Note that the 'Move To APP' column is designated for ADMIN users only.</p>
-<div class="col-12">
+<div class="main-content project"> 
     <div class="row">
         <div class="col-12">
-   
-                <h4> {{ task.project_title }} - Total: {{ businesses|length }}</h4>
-     
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-tasks"></i>
+                    </span>
+                    <span class="title-text"><strong>Kanban Board:</strong> {{ task.project_title }} - Total: {{ businesses|length }} 
+                    </span>
+                </h1>
+            </div>
         </div>
+    </div> 
+<div class="col-12">
+    <div class="row">
+        
         <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12"></div>
 
         <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">

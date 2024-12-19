@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
 import json
+from django.core.cache import cache
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
@@ -45,9 +46,17 @@ from .models import Event
 from automation.request.client import RequestClient
 from automation import constants as const
 from automation.helper import datetime_serializer
+from django.views.generic import ListView 
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 User = get_user_model()
 logger = logging.getLogger(__name__)
+from django.urls import get_resolver
 
+def debug_urls():
+    resolver = get_resolver()
+    for pattern in resolver.url_patterns:
+        print(f"URL Pattern: {pattern.pattern}")
  
 def health_check(request):
     try:
@@ -61,6 +70,7 @@ def welcome_view(request):
         return render(request, 'automation/welcome.html')
     else:
         return redirect('login')
+
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
 
@@ -158,7 +168,6 @@ class UploadFileView(View):
                 'errors': form.errors  # Return form errors to the frontend
             })
 
-
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
     def get(self, request, id):
@@ -213,68 +222,296 @@ class TaskDetailView(View):
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class TranslateBusinessesView(View):
-    def get(self, request, task_id):
-        task = get_object_or_404(ScrapingTask, id=task_id)
-        return render(request, 'automation/task_detail.html', {'task': task})
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.base_url = settings.BASE_URL
 
     def post(self, request, task_id):
         logger.info(f"Received request to translate businesses for task {task_id}")
-
-        task = get_object_or_404(ScrapingTask, id=task_id)
-
-        # Check if the translation status allows proceeding
-        if task.translation_status in ['TRANSLATED', 'PENDING_TRANSLATION']:
-            message = (
-                'Task already translated.'
-                if task.translation_status == 'TRANSLATED'
-                else 'Translation already in progress.'
-            )
-            logger.warning(f"Task {task_id}: {message}")
-            return JsonResponse({'status': 'error', 'message': message}, status=400)
-
-        # Mark translation as in progress
-        task.translation_status = 'PENDING_TRANSLATION'
-        task.save(update_fields=['translation_status'])
-
+        
         try:
-            # Exclude businesses with status 'DISCARDED'
-            businesses = task.businesses.exclude(status='DISCARDED')
+            task = get_object_or_404(ScrapingTask, id=task_id)
+            
+            # Get initial business counts and status
+            business_stats = self.get_business_stats(task)
+            logger.info(f"Initial business stats for task {task_id}: {business_stats}")
 
-            if not businesses.exists():
-                logger.info(f"No businesses to translate for task {task_id}")
-                task.translation_status = 'NO_BUSINESSES_TO_TRANSLATE'
-                task.save(update_fields=['translation_status'])
-                return JsonResponse({'status': 'success', 'message': 'No businesses to translate.'})
+            # Validate task status and businesses
+            validation_result = self.validate_task_and_businesses(task, business_stats)
+            if validation_result:
+                return validation_result
 
-            # Process translation for each business
-            for business in businesses:
-                logger.info(f"Translating and enhancing business: {business.title}")
-                try:
-                    enhance_and_translate_description(business)
-                    translate_business_info_sync(business)
-                    business.save()
-                except Exception as e:
-                    logger.error(f"Error translating business {business.id}: {str(e)}", exc_info=True)
+            # Get businesses to translate
+            businesses = task.businesses.filter(
+                status__in=['PENDING', 'REVIEWED']
+            ).exclude(
+                status='DISCARDED'
+            ).select_related('task')
 
-            # Update task status
-            discarded_exists = task.businesses.filter(status='DISCARDED').exists()
-            if not discarded_exists:
-                task.translation_status = 'TRANSLATED'
-                task.status = 'TRANSLATED'
-                logger.info(f"Task {task_id} marked as 'TRANSLATED'")
-            else:
-                task.translation_status = 'PARTIALLY_TRANSLATED'
-                logger.info(f"Task {task_id} marked as 'PARTIALLY_TRANSLATED' due to discarded businesses")
-            task.save(update_fields=['translation_status', 'status'])
+            # Start translation process
+            task.translation_status = 'PENDING_TRANSLATION'
+            task.save(update_fields=['translation_status'])
 
-            return JsonResponse({'status': 'success', 'message': 'Businesses translated and enhanced successfully.'})
+            # Process translations
+            results = self.process_translations(businesses)
+            
+            # Update final status
+            task.translation_status = self.determine_final_status(results)
+            task.save(update_fields=['translation_status'])
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Translation process completed',
+                'details': results
+            })
 
         except Exception as e:
-            logger.error(f"Error translating businesses for task {task_id}: {str(e)}", exc_info=True)
-            task.translation_status = 'TRANSLATION_FAILED'
-            task.save(update_fields=['translation_status'])
-            return JsonResponse({'status': 'error', 'message': 'Translation failed.'}, status=500)
+            logger.error(f"Error in translation process for task {task_id}: {str(e)}", exc_info=True)
+            if 'task' in locals():
+                task.translation_status = 'TRANSLATION_FAILED'
+                task.save(update_fields=['translation_status'])
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Translation failed: {str(e)}',
+                'details': self.get_business_stats(task) if 'task' in locals() else None
+            }, status=500)
 
+    def process_translations(self, businesses):
+        """Process translations for businesses"""
+        results = {
+            'total': businesses.count(),
+            'success': 0,
+            'failed': 0,
+            'skipped': 0,
+            'details': []
+        }
+
+        for business in businesses:
+            try:
+                logger.info(f"Processing business {business.id}: {business.title}")
+                
+                # Generate description if missing
+                if not business.description:
+                    logger.info(f"Generating missing description for business {business.id}")
+                    if not self.generate_description(business):
+                        results['failed'] += 1
+                        continue
+
+                # Perform translation
+                if self.translate_business(business):
+                    results['success'] += 1
+                    results['details'].append({
+                        'id': business.id,
+                        'status': 'success',
+                        'message': 'Translation completed successfully'
+                    })
+                else:
+                    results['failed'] += 1
+                    results['details'].append({
+                        'id': business.id,
+                        'status': 'error',
+                        'message': 'Translation failed'
+                    })
+
+            except Exception as e:
+                results['failed'] += 1
+                results['details'].append({
+                    'id': business.id,
+                    'status': 'error',
+                    'message': str(e)
+                })
+                logger.error(f"Failed to process business {business.id}: {str(e)}")
+
+        return results
+
+    def generate_description(self, business):
+        """Generate description for a business"""
+        try:
+            # Prepare data for description generation
+            description_data = {
+                'business_id': business.id,
+                'title': business.title,
+                'category': business.main_category,
+                'city': business.city,
+                'country': business.country,
+                'sub_category': getattr(business, 'tailored_category', '')
+            }
+            
+            generate_url = f"{self.base_url}/generate-description"  # Direct endpoint path
+            logger.info(f"Making description generation request to: {generate_url}")
+            
+            response = requests.post(
+                generate_url,
+                json=description_data,
+                headers={'Content-Type': 'application/json'}
+            )
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                if not response_data.get('success', False):
+                    logger.error(f"Description generation failed: {response_data.get('error', 'Unknown error')}")
+                    return False
+                
+                generated_description = response_data.get('description')
+                if generated_description:
+                    business.description = generated_description
+                    business.save(update_fields=['description'])
+                    logger.info(f"Generated description for business {business.id}")
+                    return True
+            
+            logger.error(f"Failed to generate description for business {business.id}. Status code: {response.status_code}")
+            return False
+                
+        except Exception as e:
+            logger.error(f"Error generating description for business {business.id}: {str(e)}")
+            return False
+        
+    def translate_business(self, business):
+        """Translate a single business"""
+        try:
+            logger.info(f"Starting translation for business {business.id} (Current status: {business.status})")
+            
+            # Construct URL using reverse
+            relative_url = reverse('enhance_translate_business', kwargs={'business_id': business.id})
+            translate_url = f"{self.base_url}{relative_url}"
+            
+            logger.debug(f"Attempting to access URL: {translate_url}")
+            
+            response = requests.post(
+                translate_url,
+                json={'languages': ['spanish', 'eng']},
+                headers={'Content-Type': 'application/json'},
+                timeout=30
+            )
+            
+            logger.debug(f"Response status code: {response.status_code}")
+            if response.status_code != 200:
+                logger.debug(f"Response content: {response.text[:200]}")
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                if response_data.get('success'):
+                    logger.info(f"Translation successful for business {business.id}")
+                    if business.status == 'PENDING':
+                        business.status = 'REVIEWED'
+                        business.save(update_fields=['status'])
+                    return True
+                else:
+                    logger.error(f"Translation failed: {response_data.get('message')}")
+                    return False
+            
+            logger.error(f"Translation failed for business {business.id}. Status code: {response.status_code}")
+            return False
+                
+        except requests.Timeout:
+            logger.error(f"Request timeout for business {business.id}")
+            return False
+        except requests.RequestException as e:
+            logger.error(f"Request failed for business {business.id}: {str(e)}")
+            return False
+        except Exception as e:
+            logger.error(f"Translation failed for business {business.id}: {str(e)}")
+            return False
+ 
+    def get_business_stats(self, task):
+        """Get detailed business statistics"""
+        businesses = task.businesses.all()
+        stats = {
+            'total': businesses.count(),
+            'pending': businesses.filter(status='PENDING').count(),
+            'reviewed': businesses.filter(status='REVIEWED').count(),
+            'discarded': businesses.filter(status='DISCARDED').count(),
+            'task_status': task.translation_status,
+            'last_update': task.created_at.isoformat() if task.created_at else None,
+            'has_errors': False,
+            'error_details': [],
+            'missing_descriptions': []
+        }
+        
+        for business in businesses:
+            if not business.description:
+                stats['has_errors'] = True
+                stats['error_details'].append({
+                    'business_id': business.id,
+                    'issue': 'Missing description'
+                })
+                stats['missing_descriptions'].append({
+                    'business_id': business.id,
+                    'title': business.title,
+                    'category': business.main_category,
+                    'city': business.city
+                })
+                
+        return stats
+
+    def validate_task_and_businesses(self, task, stats):
+        """Validate task status and business availability"""
+        if not stats['total']:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No businesses found for this task.',
+                'details': stats
+            }, status=400)
+
+        # Check if task is stuck in PENDING_TRANSLATION
+        if task.translation_status == 'PENDING_TRANSLATION':
+            last_update = task.completed_at or task.created_at
+            time_diff = (timezone.now() - last_update).total_seconds()
+            
+            # If stuck for more than 5 minutes, reset status
+            if time_diff > 300:
+                logger.warning(f"Task {task.id} stuck in PENDING_TRANSLATION for {time_diff} seconds. Resetting status.")
+                task.translation_status = 'TRANSLATION_FAILED'
+                task.save(update_fields=['translation_status'])
+                # Continue with translation after reset
+            else:
+                # Only block if the task started recently
+                if time_diff < 60:  # Allow retry after 1 minute
+                    return JsonResponse({
+                        'status': 'warning',
+                        'message': 'Translation is in progress. Please wait 1 minute before retrying.',
+                        'details': {
+                            **stats,
+                            'last_update': last_update.isoformat(),
+                            'seconds_elapsed': time_diff
+                        }
+                    }, status=400)
+
+        # Check if already translated
+        if task.translation_status == 'TRANSLATED':
+            # Allow re-translation if there are pending businesses
+            if stats['pending'] > 0:
+                logger.info(f"Task {task.id} marked as TRANSLATED but has {stats['pending']} pending businesses. Allowing re-translation.")
+            else:
+                return JsonResponse({
+                    'status': 'warning',
+                    'message': 'Task has already been translated.',
+                    'details': stats
+                }, status=400)
+
+        # Check for translatable businesses
+        translatable = stats['pending'] + stats['reviewed']
+        if not translatable:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No businesses available for translation.',
+                'details': {
+                    **stats,
+                    'reason': 'All businesses are either discarded or in an invalid state.'
+                }
+            }, status=400)
+
+        return None
+
+    def determine_final_status(self, results):
+        """Determine final translation status based on results"""
+        if results['failed'] == 0 and results['skipped'] == 0 and results['success'] > 0:
+            return 'TRANSLATED'
+        elif results['success'] > 0:
+            return 'PARTIALLY_TRANSLATED'
+        else:
+            return 'TRANSLATION_FAILED'
+ 
 
 @login_required
 def task_detail(request, task_id):
@@ -1180,23 +1417,39 @@ def delete_business(request, business_id):
         messages.error(request, "An error occurred while deleting the business.")
     return redirect('business_list')
 
-# /***********enhance_translate_business_view********** generate_description *****/
+
+
+###########ENHANCE AND GENERATE DESCRIPTION##################
+ 
 @csrf_exempt
 def generate_description(request):
+    logger.debug("generate_description view called.")
     if request.method == 'POST':
         try:
+            logger.debug("POST request received in generate_description.")
+            logger.debug(f"Request body: {request.body}")
             data = json.loads(request.body)
+            logger.debug(f"Parsed JSON data: {data}")
+
             business_id = data.get('business_id')
             title = data.get('title')
             city = data.get('city')
             country = data.get('country')
             category = data.get('category')
             sub_category = data.get('sub_category')
-            if sub_category != None:
-             sub_category=''
 
-            # Build the prompt in the chat format
-            system_prompt = "You are a helpful assistant that writes formal business descriptions. You must ALWAYS generate no less from the requested number of words."
+            # Log the incoming parameters
+            logger.debug(f"business_id: {business_id}, title: {title}, city: {city}, country: {country}, category: {category}, sub_category: {sub_category}")
+
+            # Ensure sub_category is handled correctly
+            if sub_category is None:
+                sub_category = ''
+            logger.debug(f"Final sub_category value: {sub_category}")
+
+            system_prompt = (
+                "You are a helpful assistant that writes formal business descriptions. "
+                "You must ALWAYS generate no less than the requested number of words."
+            )
 
             user_prompt = (
                 f"Write a 220 words description\n"
@@ -1210,48 +1463,80 @@ def generate_description(request):
                 f"Avoid the words: 'vibrant', 'in the heart of', 'in summary'."
             )
 
-            openai.api_key = settings.OPENAI_API_KEY
+            logger.debug("Constructed system and user prompts for OpenAI request.")
 
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",  
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
+            openai.api_key = settings.OPENAI_API_KEY
+            logger.debug(f"OpenAI API Key set? {'Yes' if settings.OPENAI_API_KEY else 'No'}")
+
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+
+            logger.debug("Sending request to OpenAI...")
+            response = call_openai_with_retry(
+                messages=messages,
+                model="gpt-3.5-turbo",
                 max_tokens=900,
-                n=1,
-                stop=None,
                 temperature=0.3,
+                presence_penalty=0.0,
+                frequency_penalty=0.0
             )
+            logger.debug("OpenAI response received.")
+
+            if 'choices' not in response or len(response['choices']) == 0:
+                logger.error("No choices in OpenAI response.")
+                return JsonResponse({'success': False, 'error': 'No response from OpenAI.'})
 
             description = response['choices'][0]['message']['content'].strip()
+            logger.debug(f"Generated description: {description[:100]}... (truncated for log)")
 
             return JsonResponse({'success': True, 'description': description})
 
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decoding error: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'error': 'Invalid JSON in request body'})
         except Exception as e:
             logger.error(f"Error generating description: {str(e)}", exc_info=True)
             return JsonResponse({'success': False, 'error': 'Failed to generate description'})
     else:
+        logger.debug("Invalid request method. Only POST is allowed.")
         return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
 @csrf_exempt
 def enhance_translate_business(request, business_id):
+    logger.debug("enhance_translate_business view called.")
     if request.method == 'POST':
         try:
+            logger.debug("POST request received in enhance_translate_business.")
+            logger.debug(f"Request body: {request.body}")
             data = json.loads(request.body)
+            logger.debug(f"Parsed JSON data: {data}")
+
             languages = data.get('languages', ['spanish', 'eng'])
+            logger.debug(f"Languages to enhance and translate: {languages}")
+
             success = enhance_translate_and_summarize_business(business_id, languages=languages)
             if not success:
+                logger.error("Enhancement and translation failed or skipped.")
                 return JsonResponse({'success': False, 'message': 'Enhancement and translation failed or skipped.'})
-     
+
             business = Business.objects.get(id=business_id)
+            logger.debug(f"Returning enhanced and translated descriptions for business_id: {business_id}")
             return JsonResponse({
                 'success': True,
                 'description': business.description,
                 'description_eng': business.description_eng,
                 'business_esp': business.description_esp
             })
+
+        except Business.DoesNotExist:
+            logger.error(f"Business with id {business_id} does not exist")
+            return JsonResponse({'success': False, 'message': f"Business {business_id} does not exist."})
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON decoding error: {str(e)}", exc_info=True)
+            return JsonResponse({'success': False, 'message': 'Invalid JSON in request body'})
         except Exception as e:
             logger.error(f"Error in enhance_translate_business_view: {str(e)}", exc_info=True)
             return JsonResponse({
@@ -1259,10 +1544,12 @@ def enhance_translate_business(request, business_id):
                 'message': str(e)
             })
     else:
+        logger.debug("Invalid request method in enhance_translate_business. Only POST is allowed.")
         return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+    
+###########ENHANCE AND GENERATE DESCRIPTION##################
 
 
-# /***********enhance_translate_business_view********** generate_description *****/#
 
 @csrf_exempt
 def update_business_hours(request):
@@ -1416,6 +1703,12 @@ def destination_management(request):
     for destination in destinations:
         ambassadors = destination.customuser_set.filter(roles__role='AMBASSADOR')
         ambassador_names = ', '.join(ambassador.username for ambassador in ambassadors)
+        destination_dict = {
+            'destination': destination,
+            'ambassador_name': ambassador_names if ambassador_names else 'No ambassador assigned',
+            'ls_id': destination.ls_id if hasattr(destination, 'ls_id') else None  # Add this line
+        }
+        destination_data.append(destination_dict)
         destination_data.append({
             'destination': destination,
             'ambassador_name': ambassador_names if ambassador_names else 'No ambassador assigned'
@@ -2080,3 +2373,55 @@ def delete_task(request, id):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     
+
+class FeedbackListView(LoginRequiredMixin, ListView):
+    model = Feedback
+    template_name = 'feedbacks/feedback_list.html'
+    context_object_name = 'feedbacks'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['status_choices'] = Feedback.STATUS_CHOICES
+        return context
+
+    def get_queryset(self):
+        queryset = Feedback.objects.select_related('business').order_by('-created_at')
+        
+        # Filter by status if provided
+        status = self.request.GET.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+        
+        # Filter by business if provided
+        business_id = self.request.GET.get('business')
+        if business_id:
+            queryset = queryset.filter(business_id=business_id)
+        
+        return queryset
+
+@require_POST
+def update_feedback_status(request, feedback_id):
+    try:
+        feedback = get_object_or_404(Feedback, id=feedback_id)
+        data = json.loads(request.body)
+        new_status = data.get('status')
+        
+        if new_status not in dict(Feedback.STATUS_CHOICES):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid status'
+            }, status=400)
+        
+        feedback.status = new_status
+        feedback.save()
+        
+        return JsonResponse({
+            'status': 'success',
+            'new_status': feedback.get_status_display(),
+            'feedback_id': feedback.id
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)

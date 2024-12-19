@@ -142,7 +142,7 @@ class CountryForm(forms.ModelForm):
 class DestinationForm(forms.ModelForm):
     class Meta:
         model = Destination
-        fields = ['name', 'description', 'cp', 'province', 'slogan', 'latitude', 'longitude', 'country', 'ambassador']
+        fields = ['name', 'description', 'cp', 'province', 'slogan', 'latitude', 'longitude', 'country', 'ls_id', 'ambassador']
 
     def clean_country(self):
         country = self.cleaned_data.get('country')

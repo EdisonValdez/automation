@@ -1,241 +1,358 @@
 {% extends 'base.html' %}
 
-{% block content %}
- 
-<div class="main-content project">
- 
-        <h2>Ambassador Dashboard</h2>
-        <div class="row">
-            <div class="col-12">
-                <div class="">
-                    <div class="box-header pt-0">
-                        <div class="me-auto">
-                            <h2 class="card-title mb-25 fs-22">Places to review</h2>
-                        </div>
+{% block content %}<style>
+/* Card Styles */
+.task-card {
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.task-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+}
+
+.task-card .card-title {
+color: #2c3e50;
+font-weight: 600;
+}
+
+.task-card .card-title a:hover {
+color: var(--bs-primary);
+}
+
+/* Progress Bar */
+.progress {
+background-color: #eef2f7;
+border-radius: 10px;
+}
+
+.progress-bar {
+background-color: var(--bs-primary);
+border-radius: 10px;
+}
+
+/* Empty State */
+.empty-state {
+padding: 2rem;
+background: #f8f9fa;
+border-radius: 1rem;
+}
+
+.empty-state i {
+color: #dee2e6;
+}
+
+/* Table Styles */
+.table th {
+font-weight: 600;
+background: #f8f9fa;
+}
+
+.table td {
+vertical-align: middle;
+}
+
+/* Badge Styles */
+.badge {
+padding: 0.5em 1em;
+font-weight: 500;
+}
+
+/* Dropdown Styles */
+.btn-icon {
+padding: 0.25rem;
+line-height: 1;
+border: none;
+background: transparent;
+}
+
+.btn-icon:hover {
+background: #f8f9fa;
+border-radius: 0.25rem;
+}
+
+/* Pagination */
+.pagination {
+margin-bottom: 0;
+}
+
+.page-link {
+border: none;
+padding: 0.5rem 1rem;
+color: var(--bs-primary);
+}
+
+.page-link:hover {
+background: #f8f9fa;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+.task-card {
+    background: #2d3436;
+}
+
+.empty-state {
+    background: #2d3436;
+}
+
+.table th {
+    background: #2d3436;
+}
+}
+</style>
+
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="bx bx-crown fs-3 me-2 text-primary"></i>
+                    </span>
+                    <span class="title-text"> Ambassador Dashboard
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>  
+    <!-- Places to Review Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-transparent">
+                    <div class="d-flex align-items-center">
+                        <h5 class="card-title mb-0 mr-10">Number of Content </h5>
+                        <span class="badge bg-primary ms-2 text-white">{{ tasks|length }}</span>
                     </div>
-                    <div class="row">
+                </div>
+                
+                <div class="card-body">
+                    {% if tasks %}
+                    <div class="row g-4">
                         {% for task in tasks %}
-                 
-                            {% if task.status != 'DONE' %}
-                                <div class="col-3 col-xl-6 col-md-6 col-sm-12">
-                                    <div class="box left-dot">
-                                        <div class="box-body">
-                                            <div class="row">
-                                                <div class="col-12 mb-10">
-                                                    <div class="mt-0 text-start">
-                                                        <a href="{% url 'task_detail' task.id %}" class="box-title mb-0 mt-1 mb-3 font-w600 fs-18">{{ task.project_title }}</a>
-                                                        <p class="fs-14 font-w500 text-muted mb-6">Start: {{ task.created_at|date:"d-m-Y" }}</p>
-                                                        <p class="fs-14 font-w500 text-muted mb-6">Deadline: {{ task.deadline|date:"d-m-Y" }}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="box-footer">
-                                            <div class="d-flex align-items-center justify-content-between py-2 px-3 bg-light rounded border">
-                                                <!-- Task Status -->
-                                                <div class="task-status d-flex align-items-center">
-                                                    <span 
-                                                        class="badge 
-                                                        {% if task.status == 'IN_PROGRESS' %}
-                                                            bg-success text-white
-                                                        {% elif task.status == 'PENDING' %}
-                                                            bg-warning text-dark
-                                                        {% elif task.status == 'FAILED' %}
-                                                            bg-danger text-white
-                                                        {% elif task.status == 'COMPLETED' %}
-                                                            bg-success text-white
-                                                        {% else %}
-                                                            bg-secondary text-white
-                                                        {% endif %} fs-14 px-3 py-2 rounded-pill" 
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Task Status">
-                                                        {{ task.status|default:"Pending Task" }}
-                                                    </span>
-                                                </div>
-                                            
-                                                <!-- Actions -->
-                                                <div class="actions ms-auto">
-                                                    <div class="dropdown">
-                                                        <button 
-                                                            class="btn btn-outline-secondary rounded-circle p-0 d-flex align-items-center justify-content-center" 
-                                                            data-bs-toggle="dropdown" 
-                                                            aria-haspopup="true" 
-                                                            aria-expanded="false" 
-                                                            title="More Actions">
-                                                            <i class="bx bx-dots-vertical-rounded fs-20"></i>
-                                                        </button>
-                                                        <ul class="dropdown-menu dropdown-menu-end">
-                                                            <li>
-                                                                <a class="dropdown-item text-dark" href="{% url 'task_detail' task.id %}">
-                                                                    <i class="far fa-eye me-2"></i> View
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
+                        {% if task.status != 'DONE' %}
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card task-card h-100 border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <span class="badge {% if task.status == 'IN_PROGRESS' %}bg-success
+                                                         {% elif task.status == 'PENDING' %}bg-warning
+                                                         {% elif task.status == 'FAILED' %}bg-danger
+                                                         {% else %}bg-secondary{% endif %}">
+                                            {{ task.status|default:"Pending" }}
+                                        </span>
+                                        <div class="dropdown">
+                                            <button class="btn btn-icon" data-bs-toggle="dropdown">
+                                                <i class="bx bx-dots-vertical-rounded"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'task_detail' task.id %}">
+                                                        <i class="bx bx-show me-2"></i>View Details
+                                                    </a>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </div>
+
+                                    <h5 class="card-title mb-3 mt-18">
+                                        <a href="{% url 'task_detail' task.id %}" class="text-decoration-none">
+                                            {{ task.project_title }}
+                                        </a>
+                                    </h5>
+
+                                    <div class="task-meta mb-3 mt-17">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bx bx-calendar me-2 text-muted"></i>
+                                            <small class="text-muted">Started: {{ task.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bx bx-time me-2 text-muted"></i>
+                                            <small class="text-muted">Due: {{ task.deadline|date:"M d, Y" }}</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="progress mt-4" style="height: 6px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 45%"></div>
+                                    </div>
                                 </div>
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function () {
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-        new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
-</script>
-                            {% endif %}
-                        {% empty %}
-                        <div class="col-12">
-                            <p>No tasks found.</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    
-                    
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12">
-                <div class="box">
-                    <div class="box-header pt-0">
-                        <div class="me-auto">
-                            <h4 class="card-title mb-15 fs-22">Recent Businesses</h4>
-                        </div>
-                    </div>
-                    
-                        <div class="box-body">
-                            <div class="table-responsive">
-                            <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="business-profile" role="grid">
-                                <thead>
-                                    <tr class="top">
-                                        <th>Business Name</th>
-                                        <th>Category</th>
-                                        <th>Address(es)</th> 
-                                        <th>City</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                    <tr> 
-                                        <th><input type="text" placeholder="Search Business Name" /></th>
-                                        <th><input type="text" placeholder="Search Category" /></th>
-                                        <th><input type="text" placeholder="Search Address(es)" /></th>
-                                        <th><input type="text" placeholder="Search City" /></th>
-                                        <th><input type="text" placeholder="Search Status" /></th>
-                                        <th></th>
-                                  
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {% for business in businesses %}
-                                    <tr class="{% cycle 'odd' 'even' %}">
-                                        <td>
-                                            <a href="{% url 'business_detail' business.id %}" class="d-flex"><span>{{ business.title }}</span></a>
-                                        </td>
-                                        <td>{{ business.category_name }}</td>
-                                        <td>
-                                            {% if business.address %}
-                                                {{ business.address|truncatechars:30 }}
-                                            {% else %}
-                                                N/A
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ business.destination }}</td>
-                                        <td>
-                                            <span class="badge 
-                                                {% if business.status == 'REVIEWED' %} badge-success 
-                                                {% elif business.status == 'PENDING' %} badge-warning 
-                                                {% elif business.status == 'DISCARDED' %} badge-danger 
-                                                {% elif business.status == 'IN_PRODUCTION' %} badge-primary 
-                                                {% endif %}">
-                                                {{ business.get_status_display }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="dropdown">
-                                                <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="bx bx-dots-horizontal-rounded"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item" href="{% url 'business_detail' business.id %}">
-                                                        <i class="bx bx-info-circle font-size-16 align-middle me-1"></i>View
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% empty %}
-                                    <tr>
-                                        <td colspan="6">No businesses found.</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                                        
-           <!-- Paginator with Custom Styling -->
-           <div class="pagination">
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
-                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
-                {% endif %}
-    
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
-    
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
-                {% endif %}
-            </span>
-        </div>
-         <!-- Paginator with Custom Styling -->
-                            
+                                <div class="card-footer bg-transparent border-top-0">
+                                    <a href="{% url 'task_detail' task.id %}" class="btn btn-primary w-100">
+                                        Review Now
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- Empty State -->
+                    <div class="text-center py-5">
+                        <div class="empty-state">
+                            <i class="bx bx-task-x display-4 text-muted mb-3"></i>
+                            <h6>No Places to Review</h6>
+                            <p class="text-muted mb-0">
+                                You're all caught up! Check back later for new places to review.
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
- 
+    </div>
 
- <script>
-$(document).ready(function() {
-    // Setup - add a text input to each footer cell
-    $('#business-profile thead tr:eq(1) th').each(function (i) {
-        var title = $(this).text();
-        if (title !== 'Select' && title !== 'Action') {
-            $('input', this).on('keyup change', function () {
-                if (table.column(i).search() !== this.value) {
-                    table
-                        .column(i)
-                        .search(this.value)
-                        .draw();
-                }
-            });
-        }
-    });
+    <!-- Recent Businesses Section -->
+    <div class="card">
+        <div class="card-header bg-transparent">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Businesses</h5>
+                <!--<div class="card-actions">
+                    <button class="btn btn-light" id="refreshTable">
+                        <i class="bx bx-refresh me-2"></i>Refresh
+                    </button>
+                </div>-->
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if businesses %}
+            <div class="table-responsive">
+                <table class="table table-hover" id="business-table">
+                    <thead>
+                        <tr class="top">
+                            <th>Business Name</th>
+                            <th>Category</th>
+                            <th>Address(es)</th> 
+                            <th>City</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        <tr> 
+                            <th><input type="text" placeholder="Search Business Name" /></th>
+                            <th><input type="text" placeholder="Search Category" /></th>
+                            <th><input type="text" placeholder="Search Address(es)" /></th>
+                            <th><input type="text" placeholder="Search City" /></th>
+                            <th><input type="text" placeholder="Search Status" /></th>
+                            <th></th>
+                        
+                        </tr>
+                    </thead>
 
-    // Initialize DataTable
-    var table = $('#business-profile').DataTable({
-        "pageLength": 12,
-        "lengthChange": true,
-        "searching": true,
-        "ordering": true,
-        "info": true,
-        "autoWidth": false,
-        orderCellsTop: true,
-        fixedHeader: true
-    });
-});
-
-</script>
- 
+                    <tbody>
+                        {% for business in businesses %}
+                        <tr class="{% cycle 'odd' 'even' %}">
+                            <td>
+                                <a href="{% url 'business_detail' business.id %}" class="d-flex"><span>{{ business.title }}</span></a>
+                            </td>
+                            <td>{{ business.category_name }}</td>
+                            <td>
+                                {% if business.address %}
+                                    {{ business.address|truncatechars:30 }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>{{ business.destination }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if business.status == 'REVIEWED' %} badge-success 
+                                    {% elif business.status == 'PENDING' %} badge-warning 
+                                    {% elif business.status == 'DISCARDED' %} badge-danger 
+                                    {% elif business.status == 'IN_PRODUCTION' %} badge-primary 
+                                    {% endif %}">
+                                    {{ business.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bx bx-dots-horizontal-rounded"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <a class="dropdown-item" href="{% url 'business_detail' business.id %}">
+                                            <i class="bx bx-info-circle font-size-16 align-middle me-1"></i>View
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6">No businesses found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                                        
+            </table>
+        </div>
+        {% else %}
+        <!-- Empty State for Businesses -->
+        <div class="text-center py-5">
+            <div class="empty-state">
+                <i class="bx bx-store display-4 text-muted mb-3"></i>
+                <h6>No Businesses Found</h6>
+                <p class="text-muted mb-0">
+                    There are no businesses to display at the moment.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
+</div>
+
+ 
+<script>
+    // Initialize DataTable
+    $(document).ready(function() {
+        const businessTable = $('#business-table').DataTable({
+            pageLength: 24,
+            order: [[0, 'desc']],
+            language: {
+                search: "",
+                searchPlaceholder: "Search...",
+            },
+            dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        });
+    
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+            new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    
+        // Refresh table
+        $('#refreshTable').click(function() {
+            location.reload();
+        });
+    });
+    </script>
+
+<script>
+    $(document).ready(function() {
+        // Setup - add a text input to each footer cell
+        $('#business-profile thead tr:eq(1) th').each(function (i) {
+            var title = $(this).text();
+            if (title !== 'Select' && title !== 'Action') {
+                $('input', this).on('keyup change', function () {
+                    if (table.column(i).search() !== this.value) {
+                        table
+                            .column(i)
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+        });
+    
+ 
+    });
+    
+    </script>
 {% endblock %}

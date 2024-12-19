@@ -630,7 +630,7 @@
 
 </div>
 <!--Main content--> 
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
   
@@ -1162,38 +1162,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 toastr.error('An error occurred while updating the business.');
             });
     });
-
-    // Add event listener for the Generate Description button
+ 
     const generateDescriptionBtn = document.getElementById('generate-description-btn');
     if (generateDescriptionBtn) {
         generateDescriptionBtn.addEventListener('click', function () {
-            // Show loading modal using SweetAlert2
+            // This is where you handle the logic to generate the description.
+            // You can access the business_id via a data attribute or by including it elsewhere in the code.
+            
+            const businessId = '{{ business.id }}'; // If available in the template context
+            
+            // Show loading UI
             Swal.fire({
                 title: 'Generating Description',
-                text: 'Please wait while the description is being generated...',
+                text: 'Please wait...',
                 allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+                didOpen: () => Swal.showLoading()
             });
 
-            // Collect business details
-            const businessId = '{{ business.id }}';
-            const businessTitle = '{{ business.title }}';
-            const city = '{{ business.city }}';
-            const country = '{{ business.form_country_name }}';
-            const category = '{{ business.main_category }}';
-
-            // Prepare data to send
+            // Prepare data and send fetch request
             const data = {
                 business_id: businessId,
-                title: businessTitle,
-                city: city,
-                country: country,
-                category: category,
+                title: '{{ business.title }}',
+                city: '{{ business.city }}',
+                country: '{{ business.form_country_name }}',
+                category: '{{ business.main_category }}'
             };
 
-            // Send AJAX request to generate description
             fetch('{% url "generate_description" %}', {
                 method: 'POST',
                 headers: {
@@ -1202,31 +1196,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 body: JSON.stringify(data),
             })
-                .then(response => response.json())
-                .then(result => {
-                    Swal.close();
-
-                    if (result.success) {
-                        const descriptionEdit = document.getElementById('description-edit');
-                        descriptionEdit.value = result.description;
-                        descriptionEdit.style.display = 'block';
-                        const descriptionDisplay = document.getElementById('description-display');
-                        descriptionDisplay.style.display = 'none';
-                        generateDescriptionBtn.style.display = 'none';
-                        toastr.success('Description generated successfully!');
-                    } else {
-                        toastr.error('Error generating description: ' + result.error);
-                    }
-                })
-                .catch(error => {
-                    Swal.close();
-                    console.error('Error:', error);
-                    toastr.error('An error occurred while generating the description.');
-                });
+            .then(response => response.json())
+            .then(result => {
+                Swal.close();
+                if (result.success) {
+                    const descriptionEdit = document.getElementById('description-edit');
+                    descriptionEdit.value = result.description;
+                    descriptionEdit.style.display = 'block';
+                    document.getElementById('description-display').style.display = 'none';
+                    generateDescriptionBtn.style.display = 'none';
+                    toastr.success('Description generated successfully!');
+                } else {
+                    toastr.error('Error generating description: ' + result.error);
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                console.error('Error:', error);
+                toastr.error('An error occurred while generating the description.');
+            });
         });
     }
-});  
-
+});
 
 </script> 
 <!--Edit-business-->

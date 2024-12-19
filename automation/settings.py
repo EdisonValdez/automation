@@ -7,14 +7,23 @@ from dotenv import load_dotenv
 load_dotenv(dotenv_path='./.env')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+ 
 # Environment Variables
 # DEBUG = os.getenv('DEBUG', 'False').lower() == 'false' - With this one the deployment failed!
 # DEBUG = os.getenv('DEBUG', 'True').lower() == 'true' - NO It is showing the debug page
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+# DEBUG = os.getenv('DEBUG', 'False').lower() == 'true' - Previously worked but showed the debug page
+
 
 DEVELOPMENT_MODE = os.getenv('DEVELOPMENT_MODE', 'True').lower(
 ) == 'true'  # original in pro set true
+ 
+DEBUG = True if DEVELOPMENT_MODE else False
+
+if DEVELOPMENT_MODE:
+    BASE_URL = 'http://localhost:8000'
+else:
+    BASE_URL = 'https://orca-app-jasq8.ondigitalocean.app'
+    
 # Set to 'True' in production when using S3
 USE_S3 = os.getenv('USE_S3', 'False').lower() == 'true'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
@@ -258,7 +267,5 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME')
 AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
  
- 
-
 LOCAL_SECRET_BASE_URL = os.environ.get('LOCAL_SECRET_BASE_URL')
 SIGATURE_SECRET = os.environ.get('SIGATURE_SECRET')

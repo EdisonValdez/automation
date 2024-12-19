@@ -108,7 +108,7 @@ class BusinessAdmin(admin.ModelAdmin):
 class ScrapingTaskAdmin(admin.ModelAdmin):
     list_display = ('project_title', 'level', 'level_name', 'level_type', 'main_category', 'subcategory', 'status', 'created_at', 'completed_at')
     list_filter = ('main_category', 'tailored_category')
-    search_fields = ('project_title', 'main_category', 'tailored_category')
+    search_fields = ('project_title', 'main_category__name', 'tailored_category__name')  # Use __fieldname for ForeignKeys
     readonly_fields = ('created_at', 'completed_at', 'status')
 
     def level_name(self, obj):
@@ -119,6 +119,8 @@ class ScrapingTaskAdmin(admin.ModelAdmin):
 
     level_name.short_description = "Level Name"
     level_type.short_description = "Level Type"
+
+
 
 class BaseCsvImportAdmin(admin.ModelAdmin):
     change_list_template = "admin/change_list_with_import.html"

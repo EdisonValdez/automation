@@ -7,12 +7,23 @@
 {% endblock %}
 
 {% block content %}
-<div class="main-content project">
+<div class="main-content project"> 
     <div class="row">
         <div class="col-12">
-            <div class="main-title">
-                Edit User: {{ edited_user.username }}
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-pencil-alt"></i>
+                    </span>
+                    <span class="title-text"> Edit User: {{ edited_user.username }}
+                    </span>
+                </h1>
             </div>
+        </div>
+    </div> 
+    <div class="row">
+        <div class="col-12">
+ 
 
             {% if messages %}
             <div class="messages mb-3">

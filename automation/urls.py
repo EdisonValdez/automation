@@ -34,7 +34,11 @@ urlpatterns = [
 
     path('tasks/<int:id>/delete/', views.delete_task, name='delete_task'),
 
-
+    path('feedbacks/', views.FeedbackListView.as_view(), name='feedback_list'),
+    path('feedbacks/<int:feedback_id>/update-status/', 
+         views.update_feedback_status, 
+         name='update_feedback_status'),
+         
     path('businesses/', views.business_list, name='business_list'),
     path('update-business/<int:business_id>/', views.update_business, name='update_business'),
     path('delete-image/<int:image_id>/', views.delete_image, name='delete_image'),
