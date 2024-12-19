@@ -82,7 +82,9 @@ urlpatterns = [
     path('edit-destination/', views.edit_destination, name='edit_destination'),
 
     path('feedback/<int:business_id>/', views.submit_feedback, name='submit_feedback'),
-
+    path('feedbacks/<int:feedback_id>/delete/', 
+            views.delete_feedback, 
+            name='delete_feedback'),
     path('tasks/<int:task_id>/translate/', views.TranslateBusinessesView.as_view(), name='translate_businesses'),
 
     path('ambassador-dashboard/', views.AmbassadorDashboardView.as_view(), name='ambassador_dashboard'),

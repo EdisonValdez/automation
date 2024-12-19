@@ -539,6 +539,12 @@ class Feedback(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def can_delete(self, user):
+        """
+        Check if user has permission to delete this feedback
+        """
+        return user.is_admin or self.created_by == user
+
     def __str__(self):
         return f"Feedback for {self.business.title} - {self.get_status_display()}"
 

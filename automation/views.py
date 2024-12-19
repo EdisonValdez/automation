@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
 import json
+from django.views.decorators.http import require_http_methods
 from django.core.cache import cache
 from django.views.decorators.http import require_POST
 from django.views.decorators.cache import cache_page
@@ -2418,4 +2419,55 @@ def update_feedback_status(request, feedback_id):
         return JsonResponse({
             'status': 'error',
             'message': str(e)
+        }, status=500)
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_feedback(request, feedback_id):
+    try:
+        feedback = get_object_or_404(Feedback, id=feedback_id)
+        
+        # Check if user has permission to delete this feedback
+        if not request.user.is_staff and feedback.created_by != request.user:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'You do not have permission to delete this feedback'
+            }, status=403)
+        
+        # Store feedback details for logging
+        feedback_details = {
+            'id': feedback.id,
+            'business': feedback.business.title if feedback.business else 'N/A',
+            'content': feedback.content[:100],  # First 100 chars for logging
+            'deleted_by': request.user.username
+        }
+        
+        # Delete the feedback
+        feedback.delete()
+        
+        # Log the deletion
+        logger.info(
+            f"Feedback deleted - ID: {feedback_details['id']}, "
+            f"Business: {feedback_details['business']}, "
+            f"Deleted by: {feedback_details['deleted_by']}"
+        )
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Feedback deleted successfully',
+            'feedback_id': feedback_id
+        })
+        
+    except Feedback.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Feedback not found'
+        }, status=404)
+    except Exception as e:
+        # Log the error
+        logger.error(f"Error deleting feedback {feedback_id}: {str(e)}", exc_info=True)
+        
+        return JsonResponse({
+            'status': 'error',
+            'message': 'An error occurred while deleting the feedback'
         }, status=500)

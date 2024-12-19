@@ -5,13 +5,13 @@ from django.contrib.admin.models import LogEntry
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-from automation.models import Business, CustomUser, UserRole
+from automation.models import Business, CustomUser, UserRole, Feedback
 from django.db.models.signals import pre_save
 import logging
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils.timezone import now
-
+from django.db.models.signals import pre_delete
 from django.template.loader import render_to_string
 from django.contrib.messages import add_message, SUCCESS, WARNING
 logger = logging.getLogger(__name__)
@@ -94,3 +94,18 @@ def enforce_description_validation(sender, instance, **kwargs):
         logger.info(f"Instance status is: {instance.status}")
         instance.status = 'PENDING'
         logger.info(f"Instance status now is: {instance.status}")
+
+
+@receiver(pre_delete, sender=Feedback)
+def cleanup_feedback(sender, instance, **kwargs):
+    """
+    Signal handler to cleanup any related data before feedback deletion
+    """
+    try: 
+        if hasattr(instance, 'attachments'):
+            for attachment in instance.attachments.all():
+                attachment.file.delete(save=False)
+                attachment.delete() 
+        
+    except Exception as e:
+        logger.error(f"Error in cleanup_feedback signal: {str(e)}", exc_info=True)
