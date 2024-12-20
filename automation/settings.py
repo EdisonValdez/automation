@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     'storages',
 ]
 
+LOGIN_URL = '/login/'  
+LOGIN_REDIRECT_URL = '/dashboard/'   
+
+
 CSRF_TRUSTED_ORIGINS = ["https://localsecrets.zoondia.org"]
 
 # Middleware

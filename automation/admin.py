@@ -68,42 +68,80 @@ def move_to_pending(modeladmin, request, queryset):
     ).update(status='PENDING')
     modeladmin.message_user(request, f"{updated_count} businesses moved to PENDING")
  
-    
 
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
-    list_display = ('project_title', 'level', 'level_title', 'level_type', 'address', 'street', 'postal_code', 'main_category', 'status', 'country', 'city', 'task', 'scraped_at')
+    list_display = (
+        'project_title',
+        'destination',
+        'level',
+        'level_title',
+        'level_type',
+        'address',
+        'street',
+        'postal_code',
+        'main_category',
+        'status',
+        'country',
+        'city',
+        'task',
+        'scraped_at'
+    )
+
+    list_filter = (
+        'status',
+        'main_category',
+        'level',
+        'country',
+        'city',
+        'address',
+        'street',
+        'postal_code',
+        'task',
+        'destination'
+    )
+ 
+    search_fields = (
+        'project_title',
+        'destination__name',  
+        'street',
+        'address',
+        'city',
+        'country',
+        'postal_code',
+        'main_category', 
+        'task__level__title'  
+    )
+
     readonly_fields = ('scraped_at', 'level_title', 'level_type')
 
-    list_filter = ('status', 'main_category', 'level', 'country', 'city', 'address', 'street', 'postal_code',  'task')
-    search_fields = ('project_title', 'main_category__title', 'subcategory__title', 'street__title', 'address__title')
-    readonly_fields = ('scraped_at', 'level_title', 'level_type')
-    inlines = [CategoryInline, OpeningHoursInline, AdditionalInfoInline, ImageInline, ReviewInline]
+    inlines = [
+        CategoryInline,
+        OpeningHoursInline,
+        AdditionalInfoInline,
+        ImageInline,
+        ReviewInline
+    ]
+
     actions = [move_to_pending]
 
     def level_title(self, obj):
-        if obj.task and obj.task.level:
-            print(f"Level: {obj.task.level.title}")  
-            return obj.task.level.title
-        print("No Level found")  
-        return "No Level"
+        return obj.task.level.title if obj.task and obj.task.level else "No Level"
 
     def level_type(self, obj):
-        """Fetch the level type from the task's level."""
         return obj.level_type if hasattr(obj, 'level_type') else "No Type"
 
     level_title.short_description = "Level Title"
-    level_type.short_description = "Level Type"    
-
-    def get_category_name(self, obj):
-        return obj.main_category.title if obj.main_category else None
-    get_category_name.short_description = 'Category Name'
+    level_type.short_description = "Level Type"
 
     def get_queryset(self, request):
-        """Optimize queries by preloading task and level relationships."""
-        qs = super().get_queryset(request)
-        return qs.select_related('task__level') 
- 
+        return super().get_queryset(request).select_related(
+            'task__level',  
+            'destination'
+        )
+
+
+
 @admin.register(ScrapingTask)
 class ScrapingTaskAdmin(admin.ModelAdmin):
     list_display = ('project_title', 'level', 'level_name', 'level_type', 'main_category', 'subcategory', 'status', 'created_at', 'completed_at')

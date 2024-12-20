@@ -238,7 +238,7 @@ class TranslateBusinessesView(View):
 
             # Get businesses to translate
             businesses = task.businesses.filter(
-                status__in=['PENDING', 'REVIEWED']
+                status = 'REVIEWED' 
             ).exclude(
                 status='DISCARDED'
             ).select_related('task')
@@ -387,9 +387,10 @@ class TranslateBusinessesView(View):
                 response_data = response.json()
                 if response_data.get('success'):
                     logger.info(f"Translation successful for business {business.id}")
-                    if business.status == 'PENDING':
-                        business.status = 'REVIEWED'
-                        business.save(update_fields=['status'])
+                    # Remove the status change
+                    # if business.status == 'PENDING':
+                    #     business.status = 'REVIEWED'
+                    #     business.save(update_fields=['status'])
                     return True
                 else:
                     logger.error(f"Translation failed: {response_data.get('message')}")
