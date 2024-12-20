@@ -82,18 +82,28 @@ def update_task_status(sender, instance, **kwargs):
             task.save(update_fields=['status'])
             logger.info(f"Task ID {task.id} status updated to 'IN_PROGRESS'")
 
-      
+ 
 
 @receiver(pre_save, sender=Business)
 def enforce_description_validation(sender, instance, **kwargs):
-    if instance.status in ['REVIEWD', 'IN_PRODUCTION'] and instance.description in [None, '', 'None']:
-        logger.info(f"Instance status is: {instance.status}")
-        instance.status = 'PENDING'
-        logger.info(f"Instance status now is: {instance.status}")
-    elif instance.status in ['REVIEWD', 'IN_PRODUCTION'] and instance.description_esp in [None, '', 'None']:
-        logger.info(f"Instance status is: {instance.status}")
-        instance.status = 'PENDING'
-        logger.info(f"Instance status now is: {instance.status}")
+    """Ensure that businesses in REVIEWED or IN_PRODUCTION status have their descriptions."""
+    
+    if instance.status in ['REVIEWED', 'IN_PRODUCTION']:
+        missing_descriptions = []
+
+        if instance.description in [None, '', 'None']:
+            missing_descriptions.append('original description')
+
+        if instance.description_esp in [None, '', 'None']:
+            missing_descriptions.append('Spanish description')
+
+        if missing_descriptions:
+            logger.info(f"Instance status is: {instance.status}. Missing descriptions: {', '.join(missing_descriptions)}.")
+            instance.status = 'PENDING'
+            logger.info(f"Instance status now is: {instance.status}.")
+
+
+
 
 
 @receiver(pre_delete, sender=Feedback)

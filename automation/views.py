@@ -236,11 +236,8 @@ class TranslateBusinessesView(View):
             if validation_result:
                 return validation_result
 
-            # Get businesses to translate
             businesses = task.businesses.filter(
-                status = 'REVIEWED' 
-            ).exclude(
-                status='DISCARDED'
+                status='REVIEWED'  
             ).select_related('task')
 
             # Start translation process
@@ -365,7 +362,12 @@ class TranslateBusinessesView(View):
         """Translate a single business"""
         try:
             logger.info(f"Starting translation for business {business.id} (Current status: {business.status})")
-            
+           
+            # Only proceed if business is in REVIEWED status
+            if business.status != 'REVIEWED':
+                logger.warning(f"Skipping translation for business {business.id}: Not in REVIEWED status")
+                return False
+                       
             # Construct URL using reverse
             relative_url = reverse('enhance_translate_business', kwargs={'business_id': business.id})
             translate_url = f"{self.base_url}{relative_url}"
@@ -387,10 +389,6 @@ class TranslateBusinessesView(View):
                 response_data = response.json()
                 if response_data.get('success'):
                     logger.info(f"Translation successful for business {business.id}")
-                    # Remove the status change
-                    # if business.status == 'PENDING':
-                    #     business.status = 'REVIEWED'
-                    #     business.save(update_fields=['status'])
                     return True
                 else:
                     logger.error(f"Translation failed: {response_data.get('message')}")
@@ -408,7 +406,7 @@ class TranslateBusinessesView(View):
         except Exception as e:
             logger.error(f"Translation failed for business {business.id}: {str(e)}")
             return False
- 
+    
     def get_business_stats(self, task):
         """Get detailed business statistics"""
         businesses = task.businesses.all()
@@ -417,6 +415,7 @@ class TranslateBusinessesView(View):
             'pending': businesses.filter(status='PENDING').count(),
             'reviewed': businesses.filter(status='REVIEWED').count(),
             'discarded': businesses.filter(status='DISCARDED').count(),
+            'in_production': businesses.filter(status='IN_PRODUCTION').count(),
             'task_status': task.translation_status,
             'last_update': task.created_at.isoformat() if task.created_at else None,
             'has_errors': False,
@@ -424,7 +423,8 @@ class TranslateBusinessesView(View):
             'missing_descriptions': []
         }
         
-        for business in businesses:
+        # Only check descriptions for REVIEWED businesses
+        for business in businesses.filter(status='REVIEWED'):
             if not business.description:
                 stats['has_errors'] = True
                 stats['error_details'].append({
@@ -439,7 +439,7 @@ class TranslateBusinessesView(View):
                 })
                 
         return stats
-
+ 
     def validate_task_and_businesses(self, task, stats):
         """Validate task status and business availability"""
         if not stats['total']:
@@ -459,7 +459,6 @@ class TranslateBusinessesView(View):
                 logger.warning(f"Task {task.id} stuck in PENDING_TRANSLATION for {time_diff} seconds. Resetting status.")
                 task.translation_status = 'TRANSLATION_FAILED'
                 task.save(update_fields=['translation_status'])
-                # Continue with translation after reset
             else:
                 # Only block if the task started recently
                 if time_diff < 60:  # Allow retry after 1 minute
@@ -475,30 +474,26 @@ class TranslateBusinessesView(View):
 
         # Check if already translated
         if task.translation_status == 'TRANSLATED':
-            # Allow re-translation if there are pending businesses
-            if stats['pending'] > 0:
-                logger.info(f"Task {task.id} marked as TRANSLATED but has {stats['pending']} pending businesses. Allowing re-translation.")
-            else:
-                return JsonResponse({
-                    'status': 'warning',
-                    'message': 'Task has already been translated.',
-                    'details': stats
-                }, status=400)
-
+            return JsonResponse({
+                'status': 'warning',
+                'message': 'Task has already been translated.',
+                'details': stats
+            }, status=400)
+ 
         # Check for translatable businesses
-        translatable = stats['pending'] + stats['reviewed']
+        translatable = stats['reviewed']
         if not translatable:
             return JsonResponse({
                 'status': 'error',
                 'message': 'No businesses available for translation.',
                 'details': {
                     **stats,
-                    'reason': 'All businesses are either discarded or in an invalid state.'
+                    'reason': 'No businesses in REVIEWED status found.'
                 }
             }, status=400)
 
         return None
-
+ 
     def determine_final_status(self, results):
         """Determine final translation status based on results"""
         if results['failed'] == 0 and results['skipped'] == 0 and results['success'] > 0:
@@ -1001,7 +996,7 @@ def change_business_status(request, business_id):
         business = get_object_or_404(Business, id=business_id)
         new_status = request.POST.get('status', '').strip()
     
-        if new_status in ['IN_PRODUCTION', 'REVIEWED'] and (not business.description or business.description.strip() == ''):
+        if new_status in ['IN_PRODUCTION',] and (not business.description or business.description.strip() == ''):
             return JsonResponse({
                 'status': 'error',
                 'message': f'Description is mandatory for moving to {new_status}.'
@@ -1046,7 +1041,6 @@ def change_business_status(request, business_id):
 
 
 ##consolidated function update+change
-
 @require_POST
 @csrf_exempt
 def update_business_status(request, business_id):
@@ -1057,18 +1051,25 @@ def update_business_status(request, business_id):
         new_status = data.get('status', '').strip()
         user_id = data.get('userId')
 
-        # Comprehensive description validation
+        # Description validation logic
         missing_descriptions = []
-        if not business.description or not business.description.strip():
-            missing_descriptions.append('Original description')
-        if not business.description_eng or not business.description_eng.strip():
-            missing_descriptions.append('English description')
-        if not business.description_esp or not business.description_esp.strip():
-            missing_descriptions.append('Spanish description')
 
-        # Status validation logic
+        # Validate original description for both REVIEWED and IN_PRODUCTION
+        if new_status in ['REVIEWED', 'IN_PRODUCTION']:
+            if not business.description or not business.description.strip():
+                missing_descriptions.append('Original description')
+            
+            # Additional validations for IN_PRODUCTION only
+            if new_status == 'IN_PRODUCTION':
+                if not business.description_eng or not business.description_eng.strip():
+                    missing_descriptions.append('English description')
+                if not business.description_esp or not business.description_esp.strip():
+                    missing_descriptions.append('Spanish description')
+
+        # Handle missing descriptions
         if missing_descriptions:
-            if business.status in ['REVIEWED', 'IN_PRODUCTION']:
+            # If current status is IN_PRODUCTION, move to PENDING
+            if business.status == 'IN_PRODUCTION':
                 business.status = 'PENDING'
                 business.save()
                 return JsonResponse({
@@ -1076,20 +1077,22 @@ def update_business_status(request, business_id):
                     'message': f"Business descriptions missing: {', '.join(missing_descriptions)}. Status moved to PENDING."
                 }, status=400)
 
-            if new_status in ['REVIEWED', 'IN_PRODUCTION']:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': f"Cannot move to {new_status}: {', '.join(missing_descriptions)} is missing."
-                }, status=400)
+            # Prevent status change if descriptions are missing
+            return JsonResponse({
+                'status': 'error',
+                'message': f"Cannot move to {new_status}: {', '.join(missing_descriptions)} is missing."
+            }, status=400)
 
+        # Proceed with status change if validations pass
         if new_status in dict(Business.STATUS_CHOICES):
             old_status = business.status
             business.status = new_status
             business.save()
 
+            # Handle IN_PRODUCTION specific logic
             if new_status == 'IN_PRODUCTION':
                 business_data = model_to_dict(business)
-                
+
                 # Format operating hours
                 try:
                     if business_data.get('operating_hours'):
@@ -1103,30 +1106,22 @@ def update_business_status(request, business_id):
                         'status': 'error',
                         'message': f"Error formatting operating hours: {str(e)}"
                     }, status=400)
- 
+
+                # Add required IDs and relationships
                 task_obj = business.task
                 business_data["level_id"] = task_obj.level.ls_id
-
+                
                 # Category handling
                 category_obj = get_object_or_404(Category, title=business.main_category)
                 business_data["category_id"] = category_obj.ls_id
 
                 # Subcategory handling
-                if business.tailored_category and (
-                    sub_category_obj := get_object_or_404(
-                        Category,
-                        title=business.tailored_category,
-                        parent=category_obj
-                    )
-                ):
+                if business.tailored_category:
+                    sub_category_obj = get_object_or_404(Category, title=business.tailored_category, parent=category_obj)
                     business_data["sub_category_id"] = sub_category_obj.ls_id
 
                 # City and Country handling
-                business_data["city_id"] = get_object_or_404(
-                    Destination,
-                    name__iexact=business.city
-                ).ls_id
-
+                business_data["city_id"] = get_object_or_404(Destination, name__iexact=business.city).ls_id
                 country_obj = get_object_or_404(Country, name__iexact=business.country)
                 country_data = model_to_dict(country_obj)
                 business_data["country_id"] = country_obj.ls_id
@@ -1134,7 +1129,6 @@ def update_business_status(request, business_id):
                 # User and images
                 user = CustomUser.objects.filter(id=int(user_id)).first()
                 user_data = model_to_dict(user)
-
                 image_urls = list(
                     Image.objects.filter(
                         business=business_id,
@@ -1161,6 +1155,7 @@ def update_business_status(request, business_id):
                         'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(e)}"
                     }, status=400)
 
+            # Update status counts
             old_status_count = Business.objects.filter(status=old_status).count()
             new_status_count = Business.objects.filter(status=new_status).count()
 
@@ -1174,17 +1169,11 @@ def update_business_status(request, business_id):
 
         else:
             logger.error(f"Invalid status attempted: {new_status}")
-            return JsonResponse(
-                {'status': 'error', 'message': 'Invalid status'},
-                status=400
-            )
+            return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
 
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {str(e)}")
-        return JsonResponse(
-            {'status': 'error', 'message': 'Invalid JSON'},
-            status=400
-        )
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
     except Exception as e:
         logger.error(f"Update business status exception for business {business_id}: {str(e)}")
         if (tb := traceback.extract_tb(e.__traceback__)):
@@ -1192,6 +1181,7 @@ def update_business_status(request, business_id):
             debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
             logger.error(f"Traceback Error: {debugger}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
 ########CHANGE STATUS#############################
  

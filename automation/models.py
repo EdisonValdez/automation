@@ -203,12 +203,14 @@ class ScrapingTask(models.Model):
 
     objects = ActiveTaskManager()
     all_objects = models.Manager()
-
+     
     def get_translatable_businesses(self):
         """Get businesses that can be translated"""
         return self.businesses.filter(
-            status__in=['PENDING', 'REVIEWED']
+            status='REVIEWED'   
         ).exclude(status='DISCARDED')
+
+
 
     def get_level_title(self):
         return self.level.title if self.level else "No Level"
@@ -337,9 +339,10 @@ class Business(models.Model):
     objects = ActiveBusinessManager()
     all_objects = models.Manager()
 
+ 
     def can_be_translated(self):
         """Check if business can be translated"""
-        return self.status in ['PENDING', 'REVIEWED'] and not self.is_discarded
+        return self.status == 'REVIEWED' and not self.is_discarded 
     
     @property
     def is_discarded(self):

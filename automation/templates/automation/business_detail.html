@@ -638,71 +638,86 @@
  <!-- JavaScript code for changing business status -->
  <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const businessId = '{{ business.id }}';
-        const statusDisplay = document.getElementById('status-display');
+    const businessId = '{{ business.id }}';
+    const statusDisplay = document.getElementById('status-display');
     
-        // For status options (e.g., buttons or links)
-        const statusOptions = document.querySelectorAll('.status-option');
-    
-        statusOptions.forEach(option => {
-            option.addEventListener('click', function () {
+    // Status validation configurations
+    const STATUS_VALIDATIONS = {
+        'IN_PRODUCTION': ['description', 'description_eng', 'description_esp'],
+        'REVIEWED': ['description'] // Only original description required for REVIEWED
+    };
+
+    // Initialize event listeners
+    initializeStatusListeners();
+
+    function initializeStatusListeners() {
+        // For status options (buttons/links)
+        document.querySelectorAll('.status-option').forEach(option => {
+            option.addEventListener('click', function() {
                 const newStatus = this.getAttribute('data-status');
                 updateStatus(businessId, newStatus, statusDisplay);
             });
         });
-    
-        // For status dropdown (if used)
+
+        // For status dropdown
         const statusDropdown = document.getElementById('status-edit');
         if (statusDropdown) {
-            statusDropdown.addEventListener('change', function () {
+            statusDropdown.addEventListener('change', function() {
                 const newStatus = this.value;
                 updateStatus(businessId, newStatus, statusDisplay, statusDropdown);
             });
         }
-    
-        // Helper function to get CSRF token from cookies
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
+    }
+
+    function validateDescriptions(newStatus) {
+        const requiredFields = STATUS_VALIDATIONS[newStatus] || [];
+        const missingDescriptions = [];
+
+        const descriptions = {
+            'description': document.querySelector('textarea[name="description"]')?.value,
+            'description_eng': document.querySelector('textarea[name="description_eng"]')?.value,
+            'description_esp': document.querySelector('textarea[name="description_esp"]')?.value
+        };
+
+        for (const field of requiredFields) {
+            if (isDescriptionEmpty(descriptions[field])) {
+                missingDescriptions.push(
+                    field === 'description' ? 'Original description' :
+                    field === 'description_eng' ? 'English description' : 
+                    'Spanish description'
+                );
+            }
+        }
+
+        return missingDescriptions;
+    }
+
+    function isDescriptionEmpty(description) {
+        return !description || 
+               description.trim() === '' || 
+               description.trim().toLowerCase() === 'none';
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            return cookieValue;
         }
-    
-        // Helper function to check if a description is empty or "None"
-        function isDescriptionEmpty(description) {
-            return !description || description.trim() === '' || description.trim().toLowerCase() === 'none';
-        }
-    
-        // Function to update the business status
-        function updateStatus(businessId, newStatus, statusDisplay, statusDropdown = null) {
-            // Fetch current descriptions dynamically
-            const originalDescription = document.querySelector('textarea[name="description"]')?.value;
-            const englishDescription = document.querySelector('textarea[name="description_eng"]')?.value;
-            const spanishDescription = document.querySelector('textarea[name="description_esp"]')?.value;
-    
-            let missingDescriptions = [];
-    
-            // Enhanced validation logic matching the backend
-            if (['REVIEWED', 'IN_PRODUCTION'].includes(newStatus)) {
-                if (isDescriptionEmpty(originalDescription)) {
-                    missingDescriptions.push('Original description');
-                }
-                if (isDescriptionEmpty(englishDescription)) {
-                    missingDescriptions.push('English description');
-                }
-                if (isDescriptionEmpty(spanishDescription)) {
-                    missingDescriptions.push('Spanish description');
-                }
-            }
-    
+        return cookieValue;
+    }
+
+    async function updateStatus(businessId, newStatus, statusDisplay, statusDropdown = null) {
+        try {
+            // Validate descriptions based on new status
+            const missingDescriptions = validateDescriptions(newStatus);
+            
             if (missingDescriptions.length > 0) {
                 toastr.error(`Cannot move to ${newStatus}: ${missingDescriptions.join(', ')} is missing.`);
                 if (statusDropdown) {
@@ -710,83 +725,81 @@
                 }
                 return;
             }
-    
-            // Prepare request data as JSON
-            const requestData = {
-                status: newStatus,
-                userId: '{{ request.user.id }}' // Ensure this is available in your template
-            };
-    
-            // Make the API request
-            fetch(`/update-business-status/${businessId}/`, {
+
+            const response = await fetch(`/update-business-status/${businessId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': getCookie('csrftoken'),
                 },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(data.message || `HTTP error! Status: ${response.status}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    // Update status display
-                    statusDisplay.textContent = `${data.new_status} `;
-                    const icon = document.createElement('i');
-                    icon.className = 'bx bx-caret-down';
-                    statusDisplay.appendChild(icon);
-    
-                    // Update status counts if they exist
-                    const oldStatusCount = document.querySelector(`[data-status-count="${data.old_status}"]`);
-                    const newStatusCount = document.querySelector(`[data-status-count="${data.new_status}"]`);
-                    
-                    if (oldStatusCount) {
-                        oldStatusCount.textContent = data.old_status_count;
-                    }
-                    if (newStatusCount) {
-                        newStatusCount.textContent = data.new_status_count;
-                    }
-    
-                    toastr.success(`Status updated to ${data.new_status}`);
-                } else if (data.status === 'move-to-app-error') {
-                    toastr.error(`Error moving to production: ${data.message}`);
-                    if (statusDropdown) {
-                        statusDropdown.value = '{{ business.status }}';
-                    }
-                } else {
-                    toastr.error(data.message || 'Error updating business status');
-                    if (statusDropdown) {
-                        statusDropdown.value = '{{ business.status }}';
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                let errorMessage = error.message;
-                
-                // Handle specific error cases
-                if (errorMessage.includes('time data')) {
-                    errorMessage = 'Error processing business hours format. Please contact support.';
-                } else if (errorMessage.includes('HTTPS request')) {
-                    errorMessage = 'Secure connection error. Please try again or contact support.';
-                }
-                
-                toastr.error(errorMessage || 'An error occurred while updating the status');
-                if (statusDropdown) {
-                    statusDropdown.value = '{{ business.status }}';
-                }
+                body: JSON.stringify({
+                    status: newStatus,
+                    userId: '{{ request.user.id }}'
+                })
             });
 
-        }
-    });
-    </script>  
+            const data = await response.json();
 
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP error! Status: ${response.status}`);
+            }
+
+            handleStatusUpdateResponse(data, statusDisplay, statusDropdown);
+
+        } catch (error) {
+            handleStatusUpdateError(error, statusDropdown);
+        }
+    }
+
+    function handleStatusUpdateResponse(data, statusDisplay, statusDropdown) {
+        if (data.status === 'success') {
+            updateStatusDisplay(data, statusDisplay);
+            updateStatusCounts(data);
+            toastr.success(`Status updated to ${data.new_status}`);
+        } else if (data.status === 'move-to-app-error') {
+            handleError(`Error moving to production: ${data.message}`, statusDropdown);
+        } else {
+            handleError(data.message || 'Error updating business status', statusDropdown);
+        }
+    }
+
+    function updateStatusDisplay(data, statusDisplay) {
+        statusDisplay.textContent = `${data.new_status} `;
+        const icon = document.createElement('i');
+        icon.className = 'bx bx-caret-down';
+        statusDisplay.appendChild(icon);
+    }
+
+    function updateStatusCounts(data) {
+        const oldStatusCount = document.querySelector(`[data-status-count="${data.old_status}"]`);
+        const newStatusCount = document.querySelector(`[data-status-count="${data.new_status}"]`);
+        
+        if (oldStatusCount) oldStatusCount.textContent = data.old_status_count;
+        if (newStatusCount) newStatusCount.textContent = data.new_status_count;
+    }
+
+    function handleStatusUpdateError(error, statusDropdown) {
+        console.error('Error:', error);
+        let errorMessage = error.message;
+
+        if (errorMessage.includes('time data')) {
+            errorMessage = 'Error processing business hours format. Please contact support.';
+        } else if (errorMessage.includes('HTTPS request')) {
+            errorMessage = 'Secure connection error. Please try again or contact support.';
+        }
+
+        handleError(errorMessage || 'An error occurred while updating the status', statusDropdown);
+    }
+
+    function handleError(message, statusDropdown) {
+        toastr.error(message);
+        if (statusDropdown) {
+            statusDropdown.value = '{{ business.status }}';
+        }
+    }
+});
+
+ </script>  
 <!-- End of JavaScript code for changing business status -->
 <!--UPDATE BUSINESS STATUS-->
  
