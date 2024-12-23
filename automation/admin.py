@@ -140,13 +140,16 @@ class BusinessAdmin(admin.ModelAdmin):
             'destination'
         )
 
-
-
 @admin.register(ScrapingTask)
 class ScrapingTaskAdmin(admin.ModelAdmin):
-    list_display = ('project_title', 'level', 'level_name', 'level_type', 'main_category', 'subcategory', 'status', 'created_at', 'completed_at')
+    list_display = (
+        'project_title', 'level', 'level_name', 'level_type',
+        'main_category', 'subcategory', 'status', 'created_at', 'completed_at'
+    )
     list_filter = ('main_category', 'tailored_category')
-    search_fields = ('project_title', 'main_category__name', 'tailored_category__name')  # Use __fieldname for ForeignKeys
+    search_fields = (
+        'project_title', 'main_category__title', 'tailored_category'
+    )
     readonly_fields = ('created_at', 'completed_at', 'status')
 
     def level_name(self, obj):
@@ -350,5 +353,9 @@ admin.site.register(OpeningHours)
 admin.site.register(AdditionalInfo)
 admin.site.register(Image)
 admin.site.register(BusinessCategory)  
-admin.site.register(Review)
+ 
+
+admin.site.site_header = "Discovery Tool Administration"
+admin.site.site_title = "Discovery Tool Admin Portal"
+admin.site.index_title = "Welcome to the Discovery Tool Administration"
  

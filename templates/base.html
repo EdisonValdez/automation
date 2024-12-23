@@ -56,143 +56,123 @@ Local Secrets - Content Curation Management Admin Dashboard
 </head>
 
 <body class="sidebar-expand counter-scroll">
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="sidebar-logo">
-            <a href="{%   if user.is_admin %}/{% else %}{% url 'ambassador_dashboard' %}{% endif %}">
-                <img src="https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png" alt="logo">
-            </a>
-            
-        
-            <div class="sidebar-close" id="sidebar-close">
-                <i class='bx bx-left-arrow-alt'></i>
-            </div>
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-logo">
+        <a href="{% if user.is_admin %}{% url 'dashboard' %}{% else %}{% url 'ambassador_dashboard' %}{% endif %}">
+            <img src="https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png" alt="Local Secrets Logo">
+        </a>
+        <div class="sidebar-close" id="sidebar-close">
+            <i class='bx bx-left-arrow-alt'></i>
         </div>
-        <!-- SIDEBAR MENU -->
-        <div class="simlebar-sc" data-simplebar="init"><div class="simplebar-wrapper" style="margin: 0px;"><div class="simplebar-height-auto-observer-wrapper"><div class="simplebar-height-auto-observer"></div></div><div class="simplebar-mask"><div class="simplebar-offset" style="right: 0px; bottom: 0px;"><div class="simplebar-content-wrapper" style="height: 100%; overflow: hidden; padding-right: 0px; padding-bottom: 0px;"><div class="simplebar-content" style="padding: 0px;">
-            <ul class="sidebar-menu tf">
-                <li class="sidebar-submenu">
-                    <a href="/" class="sidebar-menu-dropdown current-menu-item">
-                        <i class='bx bxs-bolt'></i>
-                        <span>Content Curation</span>
-                        <div class="dropdown-icon"><i class='bx bx-chevron-down'></i></div>
-                    </a>    
-                    <ul class="sidebar-menu sidebar-menu-dropdown-content active">
-                   
-                        {%   if user.is_admin  %}
-                            <li>
-                                <a href="{% url 'dashboard' %}">Dashboard</a>
-                            </li>
-                            <li>
-                                <a href="{% url 'task_list' %}">Content List</a>
-                            </li>
-                            <li>
-                                <a href="{% url 'upload_file' %}">Add New Content</a>
-                            </li>
-                        {% elif user.is_ambassador %}
-                            <li>
-                                <a href="{% url 'ambassador_dashboard' %}">Dashboard</a>
-                            </li>
-                            <li>
-                                <a href="{% url 'task_list' %}">Content List</a>
-                            </li>
+    </div>
 
-                        {% endif %}
-                    </ul>
-                    
-                </li>
-            
+    <!-- SIDEBAR MENU -->
+    <div class="simplebar-sc" data-simplebar>
+        <ul class="sidebar-menu tf">
+            <!-- Content Curation Section -->
+            <li class="sidebar-submenu">
+                <a href="#" class="sidebar-menu-dropdown current-menu-item">
+                    <i class='bx bxs-bolt'></i>
+                    <span>Content Curation</span>
+                    <div class="dropdown-icon">
+                        <i class='bx bx-chevron-down'></i>
+                    </div>
+                </a>
+                <ul class="sidebar-menu sidebar-menu-dropdown-content active">
+                    {% if user.is_admin %}
+                        <li>
+                            <a href="{% url 'dashboard' %}">Dashboard</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'task_list' %}">Content List</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'upload_file' %}">Add New Content</a>
+                        </li>
+                    {% elif user.is_ambassador %}
+                        <li>
+                            <a href="{% url 'ambassador_dashboard' %}">Dashboard</a>
+                        </li>
+                        <li>
+                            <a href="{% url 'task_list' %}">Content List</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </li>
+
+            <!-- Places Section -->
+            <li class="sidebar-submenu">
+                <a href="#" class="sidebar-menu-dropdown">
+                    <i class='bx bxs-business'></i>
+                    <span>Places</span>
+                    <div class="dropdown-icon">
+                        <i class='bx bx-chevron-down'></i>
+                    </div>
+                </a>
+                <ul class="sidebar-menu sidebar-menu-dropdown-content">
+                    <li>
+                        <a href="{% url 'business_list' %}">View all Places</a>
+                    </li>
+                </ul>
+            </li>
+
+            {% if user.is_admin %}
+                <!-- Events Section -->
                 <li class="sidebar-submenu">
                     <a href="#" class="sidebar-menu-dropdown">
-                        <i class='bx bxs-business'></i>
-                        <span>Places</span>
-                        <div class="dropdown-icon"><i class='bx bx-chevron-down'></i></div>
-                    </a>
-                    <ul class="sidebar-menu sidebar-menu-dropdown-content">
-                        <li>
-                            <a href="{% url 'business_list' %}">
-                                View all Places
-                            </a>
-                        </li>
-                        <!--
-                        <li>
-                            <a href="">
-                                Sugested to Review
-                            </a>
-                        </li>
-                        <li>
-                            <a href="">
-                                Suggested by travellers
-                            </a>
-                        </li>
-                        -->
-                 
-                    </ul>
-                </li>
-            
-                {%   if user.is_admin %}
-                  
-                <li class="sidebar-submenu">
-                    <a href="#" class="sidebar-menu-dropdown">
-                        <i class='bx bxs-bolt'></i>
+                        <i class='bx bxs-calendar-event'></i>
                         <span>Events</span>
-                        <div class="dropdown-icon"><i class='bx bx-chevron-down'></i></div>
+                        <div class="dropdown-icon">
+                            <i class='bx bx-chevron-down'></i>
+                        </div>
                     </a>
                     <ul class="sidebar-menu sidebar-menu-dropdown-content">
- 
                         <li>
-                            <a  href="{% url 'search_events' %}" class="sidebar-menu-dropdown">
-                               
-                                <span>Suggested by travellers</span>
-                                <div class="dropdown-icon"></div>
-                            </a>
+                            <a href="{% url 'search_events' %}">Suggested by Travellers</a>
                         </li>
-                        
                     </ul>
                 </li>
+
+                <!-- Content Comments -->
                 <li>
                     <a href="{% url 'feedback_list' %}">
                         <i class="fas fa-comments"></i>
                         <span>Content Comments</span>
                     </a>
                 </li>
-            
+
+                <!-- Admin Tools -->
                 <li>
                     <a href="{% url 'admin:index' %}" target="_blank">
                         <i class='bx bxs-dashboard'></i>
-                        <span>Admin tools</span>
+                        <span>Admin Tools</span>
                     </a>
                 </li>
-                {% endif %}
-             
-          
-            
-                <li>
-                    <a href="{% url 'logout' %}">
-                        <i class='bx bxs-log-out'></i>
-                        <span>Logout</span>
-                    </a>
-                </li>
-            
-                <li>
-                    <a class="darkmode-toggle" id="darkmode-toggle" onclick="switchTheme()">
-                        <div>
-                            <i class='bx bx-cog mr-10'></i>
-                            <span>darkmode</span>
-                        </div>
-                        <span class="darkmode-switch"></span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+            {% endif %}
+
+            <!-- Logout -->
+            <li>
+                <a href="{% url 'logout' %}">
+                    <i class='bx bxs-log-out'></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+
+            <!-- Dark Mode Toggle -->
+            <li>
+                <a class="darkmode-toggle" id="darkmode-toggle" onclick="switchTheme()">
+                    <i class='bx bx-cog mr-10'></i>
+                    <span>Dark Mode</span>
+                    <span class="darkmode-switch"></span>
+                </a>
+            </li>
+        </ul>
     </div>
+    <!-- END SIDEBAR MENU -->
 </div>
-</div>
-</div>            
-</div>
-        <!-- END SIDEBAR MENU -->
-    </div>
+<!-- END SIDEBAR -->
+
     <!-- END SIDEBAR -->
     <!-- Main Header -->
     <div class="main-header">
