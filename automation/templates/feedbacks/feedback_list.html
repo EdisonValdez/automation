@@ -35,37 +35,43 @@
                 </thead>
                 <tbody>
                     {% for feedback in feedbacks %}
-                    <tr data-feedback-id="{{ feedback.id }}">
-                        <td>{{ feedback.business.title }}</td>
-                        <td>{{ feedback.content|truncatechars:100 }}</td>
-                        <td>
-                            <select class="form-select status-select" data-feedback-id="{{ feedback.id }}">
-                                {% for status_code, status_label in status_choices %}
-                                <option value="{{ status_code }}" {% if feedback.status == status_code %}selected{% endif %}>
-                                    {{ status_label }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                        <td data-order="{{ feedback.created_at|date:'Y-m-d H:i:s' }}">
-                            {{ feedback.created_at|date:"M d, Y H:i" }}
-                        </td>
-                        <td data-order="{{ feedback.updated_at|date:'Y-m-d H:i:s' }}">
-                            {{ feedback.updated_at|date:"M d, Y H:i" }}
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                           
-                                <button class="btn btn-sm btn-danger delete-feedback" data-feedback-id="{{ feedback.id }}"
-                                        data-bs-toggle="tooltip" title="Delete Feedback">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                        {% if feedback.status != 'DONE' %}
+                            <tr data-feedback-id="{{ feedback.id }}">
+                                <td>
+                                    <a href="{% url 'business_detail' feedback.business.id %}" target="_blank">
+                                        {{ feedback.business.title }}
+                                    </a>
+                                </td>
+                                <td>{{ feedback.content|truncatechars:100 }}</td>
+                                <td>
+                                    <select class="form-select status-select" data-feedback-id="{{ feedback.id }}">
+                                        {% for status_code, status_label in status_choices %}
+                                            <option value="{{ status_code }}" {% if feedback.status == status_code %}selected{% endif %}>
+                                                {{ status_label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td data-order="{{ feedback.created_at|date:'Y-m-d H:i:s' }}">
+                                    {{ feedback.created_at|date:"M d, Y H:i" }}
+                                </td>
+                                <td data-order="{{ feedback.updated_at|date:'Y-m-d H:i:s' }}">
+                                    {{ feedback.updated_at|date:"M d, Y H:i" }}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-danger delete-feedback" data-feedback-id="{{ feedback.id }}"
+                                                data-bs-toggle="tooltip" title="Delete Feedback">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
                     {% endfor %}
                 </tbody>
             </table>
+            
         </div>
     </div>
 </div>  
