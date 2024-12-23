@@ -93,19 +93,13 @@ def enforce_description_validation(sender, instance, **kwargs):
 
         if instance.description in [None, '', 'None']:
             missing_descriptions.append('original description')
-
-        if instance.description_esp in [None, '', 'None']:
-            missing_descriptions.append('Spanish description')
-
+ 
         if missing_descriptions:
             logger.info(f"Instance status is: {instance.status}. Missing descriptions: {', '.join(missing_descriptions)}.")
             instance.status = 'PENDING'
             logger.info(f"Instance status now is: {instance.status}.")
 
-
-
-
-
+ 
 @receiver(pre_delete, sender=Feedback)
 def cleanup_feedback(sender, instance, **kwargs):
     """
