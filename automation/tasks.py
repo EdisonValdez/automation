@@ -277,7 +277,7 @@ def process_scraping_task(self, task_id, form_data=None):
     logger.addHandler(file_handler)
 
     try:
-        logger.info(f"Starting scraping task {task_id}")
+        logger.info(f"Starting Sites Gathering task {task_id}")
         task = ScrapingTask.objects.get(id=task_id)
         task.status = 'IN_PROGRESS'
         task.save()
@@ -375,15 +375,15 @@ def process_scraping_task(self, task_id, form_data=None):
 
         logger.info(f"Total results processed across all queries: {total_results}")
 
-        logger.info(f"Scraping task {task_id} completed successfully")
+        logger.info(f"Sites Gathering task {task_id} completed successfully")
         task.status = 'COMPLETED'
         task.completed_at = timezone.now()
         task.save()
 
     except ScrapingTask.DoesNotExist:
-        logger.error(f"Scraping task with id {task_id} not found")
+        logger.error(f"Sites Gathering task with id {task_id} not found")
     except Exception as e:
-        logger.error(f"Error in scraping task {task_id}: {str(e)}", exc_info=True)
+        logger.error(f"Error in Sites Gathering task {task_id}: {str(e)}", exc_info=True)
         task.status = 'FAILED'
         task.save()
     finally:

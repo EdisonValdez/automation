@@ -275,109 +275,42 @@ class ScrapingTaskForm(forms.ModelForm):
         instance.status = 'PENDING'
         if commit:
             instance.save()
-            logger.info(f"Created new ScrapingTask with id: {instance.id}")
+            logger.info(f"Created new Gathering Project Task with id: {instance.id}")
         return instance
  
 class CsvImportForm(forms.Form):
     csv_upload = forms.FileField(label='Select a CSV file')
- 
+
 class BusinessForm(forms.ModelForm):
     main_category = forms.MultipleChoiceField(
-        choices=[],
+        choices=[],  # Populated dynamically in __init__
         required=False,
         widget=forms.SelectMultiple(attrs={'class': 'form-control select2'})
     )
+
     tailored_category = forms.MultipleChoiceField(
-        choices=[],
+        choices=[],  # Populated dynamically in __init__
         required=False,
         widget=forms.SelectMultiple(attrs={'class': 'form-control select2'})
     )
+
     categories = forms.ModelMultipleChoiceField(
         queryset=Category.objects.all(),
         widget=forms.CheckboxSelectMultiple,
         required=False
     )
+
     level_title = forms.CharField(
         label="Level Title",
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'})
     )
+
     level_type = forms.CharField(
         label="Level Type",
         required=False,
         widget=forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'})
     )
-    class Meta:
-        model = Business
-        fields = [
-            'status', 
-            'title', 
-            'level_title', 
-            'level_type', 
-            'city', 
-            'price', 
-            'phone',
-            'website', 
-            'main_category',
-            'tailored_category',
-            'categories', 
-            'description', 
-            'description_esp', 
-            'description_eng', 
-            'operating_hours', 
-            'category_name', 
-            'service_options'
-        ]
-        widgets = {
-            'service_options': forms.HiddenInput(),
- 
-        }
-
-    def __init__(self, *args, **kwargs):
-        super(BusinessForm, self).__init__(*args, **kwargs)
-        # Populate main_category choices
-        main_categories = Category.objects.filter(parent__isnull=True)
-        self.fields['main_category'].choices = [(cat.title, cat.title) for cat in main_categories]
-        if self.instance and self.instance.main_category:
-            self.fields['main_category'].initial = [cat.strip() for cat in self.instance.main_category.split(',')]
-        
-        # Populate tailored_category choices
-        subcategories = Category.objects.filter(parent__isnull=False)
-        self.fields['tailored_category'].choices = [(cat.title, cat.title) for cat in subcategories]
-        if self.instance and self.instance.tailored_category:
-            self.fields['tailored_category'].initial = [cat.strip() for cat in self.instance.tailored_category.split(',')]
-
-        if self.instance and self.instance.task:
-            self.fields['level_title'].initial = self.instance.task.level.title if self.instance.task.level else ""
-            self.fields['level_type'].initial = self.instance.task.level.site_types if self.instance.task.level else ""
-
-    def clean_main_category(self):
-        data = self.cleaned_data.get('main_category', [])
-        return ', '.join(data)
-
-    def clean_tailored_category(self):
-        data = self.cleaned_data.get('tailored_category', [])
-        return ', '.join(data)
-
-    def clean_operating_hours(self):
-        """
-        Pass through the operating hours without any validation or formatting
-        """
-        hours = self.cleaned_data.get('operating_hours')
-        if not hours:
-            return hours
-
-        try:
-            if isinstance(hours, str):
-                hours = json.loads(hours)
-             
-            return hours
-
-        except json.JSONDecodeError:
-            return hours
-        except Exception as e:
-            logger.error(f"Error in operating hours: {str(e)}")
-            return hours
 
     class Meta:
         model = Business
@@ -393,6 +326,87 @@ class BusinessForm(forms.ModelForm):
             'operating_hours': forms.HiddenInput(),
         }
 
+    def __init__(self, *args, **kwargs):
+        super(BusinessForm, self).__init__(*args, **kwargs)
+        
+        # Populate main_category choices
+        main_categories = Category.objects.filter(parent__isnull=True)
+        self.fields['main_category'].choices = [(cat.title, cat.title) for cat in main_categories]
+        if self.instance and self.instance.main_category:
+            self.fields['main_category'].initial = [cat.strip() for cat in self.instance.main_category.split(',')]
+        else:
+            self.fields['main_category'].initial = []
+
+        # Populate tailored_category choices
+        subcategories = Category.objects.filter(parent__isnull=False)
+        self.fields['tailored_category'].choices = [(cat.title, cat.title) for cat in subcategories]
+        if self.instance and self.instance.tailored_category:
+            self.fields['tailored_category'].initial = [cat.strip() for cat in self.instance.tailored_category.split(',')]
+        else:
+            self.fields['tailored_category'].initial = []
+
+        # Populate level_title and level_type if related task exists
+        if self.instance and self.instance.task and self.instance.task.level:
+            self.fields['level_title'].initial = self.instance.task.level.title
+            self.fields['level_type'].initial = self.instance.task.level.site_types
+
+        # Log initial data
+        logger.debug(f"Initialized BusinessForm for Business ID: {self.instance.id if self.instance else 'New Business'}")
+        logger.debug(f"Initial main_category: {self.fields['main_category'].initial}")
+        logger.debug(f"Initial tailored_category: {self.fields['tailored_category'].initial}")
+
+    def clean_main_category(self):
+        data = self.cleaned_data.get('main_category', [])
+        if not data and self.instance.main_category:
+            # Preserve existing categories if none selected
+            return self.instance.main_category
+        return ', '.join(data) if isinstance(data, (list, tuple)) else data
+
+    def clean_tailored_category(self):
+        data = self.cleaned_data.get('tailored_category', [])
+        if not data and self.instance.tailored_category:
+            # Preserve existing categories if none selected
+            return self.instance.tailored_category
+        return ', '.join(data) if isinstance(data, (list, tuple)) else data
+
+    def clean_operating_hours(self):
+        """
+        Pass through the operating hours without any validation or formatting
+        """
+        hours = self.cleaned_data.get('operating_hours')
+        if not hours:
+            logger.debug("No operating_hours provided.")
+            return hours
+        try:
+            if isinstance(hours, str):
+                hours = json.loads(hours)
+            logger.debug(f"Cleaned operating_hours: {hours}")
+            return hours
+        except json.JSONDecodeError:
+            logger.error("JSONDecodeError while cleaning operating_hours.")
+            return hours
+        except Exception as e:
+            logger.error(f"Error in operating_hours: {str(e)}")
+            return hours
+
+    def save(self, commit=True):
+        business = super(BusinessForm, self).save(commit=False)
+        
+        # Log before saving
+        logger.debug(f"Saving Business ID: {business.id}")
+        logger.debug(f"Before Save - main_category: {business.main_category}")
+        logger.debug(f"Before Save - tailored_category: {business.tailored_category}")
+        
+        if commit:
+            business.save()
+            # Log after saving
+            logger.debug(f"After Save - main_category: {business.main_category}")
+            logger.debug(f"After Save - tailored_category: {business.tailored_category}")
+
+        return business
+    
+
+             
 FeedbackFormSet = forms.inlineformset_factory(
     Business,
     Feedback,

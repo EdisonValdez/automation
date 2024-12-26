@@ -143,17 +143,17 @@ class UploadFileView(View):
                 # For synchronous processing
                 process_scraping_task(task_id=task.id, form_data=form_data)
                 
-                logger.info(f"Scraping task {task.id} created and queued, project ID: {task.project_id}")
+                logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
                 return JsonResponse({
                     'status': 'success',
                     'message': "File uploaded successfully and task queued.",
                     'redirect_url': reverse('dashboard')
                 })
             except Exception as e:
-                logger.error(f"Failed to start the scraping task for task_id {task.id}: {str(e)}", exc_info=True)
+                logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
                 return JsonResponse({
                     'status': 'error',
-                    'message': "Failed to start the scraping task. Please try again.",
+                    'message': "Failed to start the Sites Gathering task. Please try again.",
                 })
         else:
             logger.warning(f"Form validation failed: {form.errors}")
@@ -1243,6 +1243,7 @@ def business_detail(request, business_id):
     task_businesses = list(business.task.businesses.order_by('id'))
     current_index = task_businesses.index(business)
     feedback_formset = FeedbackFormSet(instance=business)
+
     # Determine previous and next businesses
     prev_business = task_businesses[current_index - 1] if current_index > 0 else None
     next_business = task_businesses[current_index + 1] if current_index < len(task_businesses) - 1 else None
@@ -1252,14 +1253,15 @@ def business_detail(request, business_id):
     next_url = reverse('business_detail', args=[next_business.id]) if next_business else None
 
     is_admin = request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists()
-    
+
     # Fetch main categories and subcategories
     main_categories = Category.objects.filter(parent__isnull=True)
     subcategories = Category.objects.filter(parent__isnull=False)
 
     if request.method == 'POST':
         post_data = request.POST.copy()
-        
+
+        # Validate description
         description = post_data.get('description', '').strip()
         if not description:
             logger.error("Cannot update business %s: description is blank or None", business.project_title)
@@ -1268,10 +1270,42 @@ def business_detail(request, business_id):
                 'errors': {'description': 'Description cannot be blank or None'}
             })
 
-        main_category_titles = post_data.getlist('main_category')
-        post_data['main_category'] = ', '.join(main_category_titles)
-        tailored_category_titles = post_data.getlist('tailored_category')
-        post_data['tailored_category'] = ', '.join(tailored_category_titles)
+        # Get existing categories
+        existing_main = set(cat.strip() for cat in (business.main_category or '').split(',') if cat.strip())
+        existing_tailored = set(cat.strip() for cat in (business.tailored_category or '').split(',') if cat.strip())
+
+        # Get new categories from POST data
+        new_main = set(cat.strip() for cat in post_data.getlist('main_category') if cat.strip())
+        new_tailored = set(cat.strip() for cat in post_data.getlist('tailored_category') if cat.strip())
+
+        # Check for removals
+        removed_main = existing_main - new_main
+        removed_tailored = existing_tailored - new_tailored
+
+        # If there are removals and no confirmation, return error
+        if (removed_main or removed_tailored) and not post_data.get('confirm_removal'):
+            return JsonResponse({
+                'success': False,
+                'needs_confirmation': True,
+                'removed_categories': {
+                    'main': list(removed_main),
+                    'tailored': list(removed_tailored)
+                }
+            })
+
+        # Combine categories (if confirmed or no removals)
+        final_main = new_main if post_data.get('confirm_removal') else (existing_main | new_main)
+        final_tailored = new_tailored if post_data.get('confirm_removal') else (existing_tailored | new_tailored)
+
+        # Update post_data with final categories
+        post_data['main_category'] = ', '.join(final_main)
+        post_data['tailored_category'] = ', '.join(final_tailored)
+
+        # Log category changes
+        logger.debug("Previous main categories: %s", existing_main)
+        logger.debug("New main categories: %s", final_main)
+        logger.debug("Previous tailored categories: %s", existing_tailored)
+        logger.debug("New tailored categories: %s", final_tailored)
 
         # Initialize the form with updated post_data
         form = BusinessForm(post_data, instance=business)
@@ -1280,14 +1314,20 @@ def business_detail(request, business_id):
         if form.is_valid():
             form.save()
             feedback_formset.save()
+            
+            # Log successful update
+            logger.info("Business %s updated successfully", business.project_title)
+            logger.info("Main categories updated from %s to %s", existing_main, final_main)
+            logger.info("Tailored categories updated from %s to %s", existing_tailored, final_tailored)
+
             messages.success(request, "Saved!")
             return redirect('business_detail', business_id=business.id)
         else:
+            logger.error("Form errors: %s", form.errors)
             messages.error(request, "An error occurred while saving the business.")
     else:
         form = BusinessForm(instance=business)
 
-    # Pass prev_url and next_url to the template
     context = {
         'form': form,
         'business': business,
@@ -1297,10 +1337,14 @@ def business_detail(request, business_id):
         'is_admin': is_admin,
         'main_categories': main_categories,
         'subcategories': subcategories,
-        'feedback_formset': feedback_formset
+        'feedback_formset': feedback_formset,
+        # Add existing categories for JavaScript handling
+        'existing_main_categories': business.main_category.split(',') if business.main_category else [],
+        'existing_tailored_categories': business.tailored_category.split(',') if business.tailored_category else []
     }
 
     return render(request, 'automation/business_detail.html', context)
+
 
 @csrf_protect
 def update_business(request, business_id):
@@ -1378,6 +1422,8 @@ def edit_business(request, business_id):
                 form.save()
                 messages.success(request, f"Business '{business.title}' has been updated successfully.")
                 return redirect('business_detail', business_id=business.id)
+            else:
+                messages.error(request, "Please correct the errors below.")
         else:
             form = BusinessForm(instance=business)
         return render(request, 'automation/edit_business.html', {'form': form, 'business': business})
@@ -1905,13 +1951,13 @@ def search_destinations(request):
    
 
 def start_scraping(request, project_id):
-    logger.info(f"Attempting to start scraping for project_id: {project_id}")
+    logger.info(f"Attempting to start Sites Gathering for project_id: {project_id}")
     scraping_task = get_object_or_404(ScrapingTask, project_id=project_id)
     
     if scraping_task.status == 'IN_PROGRESS':
-        logger.warning(f"Scraping already in progress for project: {scraping_task.project_title}")
-        messages.warning(request, f"Scraping is already in progress for project: {scraping_task.project_title}")
-        return JsonResponse({"status": "warning", "message": "Scraping already in progress"})
+        logger.warning(f"Sites Gathering already in progress for project: {scraping_task.project_title}")
+        messages.warning(request, f"Sites Gathering is already in progress for project: {scraping_task.project_title}")
+        return JsonResponse({"status": "warning", "message": "Sites Gathering already in progress"})
     
     try:
         logger.info(f"Calling process_scraping_task with task_id: {scraping_task.id}")
@@ -1922,12 +1968,12 @@ def start_scraping(request, project_id):
         scraping_task.celery_task_id = celery_task.id
         scraping_task.save()
         
-        logger.info(f"Scraping started for project: {scraping_task.project_title} (ID: {scraping_task.id})")
-        messages.success(request, f"Scraping started for project: {scraping_task.project_title}")
-        return JsonResponse({"status": "success", "message": "Scraping started successfully"})
+        logger.info(f"Sites Gathering started for project: {scraping_task.project_title} (ID: {scraping_task.id})")
+        messages.success(request, f"Sites Gathering started for project: {scraping_task.project_title}")
+        return JsonResponse({"status": "success", "message": "Sites Gathering started successfully"})
     
     except Exception as e:
-        logger.exception(f"An error occurred while starting scraping for project: {scraping_task.project_title}")
+        logger.exception(f"An error occurred while starting Sites Gathering for project: {scraping_task.project_title}")
         messages.error(request, f"An unexpected error occurred: {str(e)}")
         return JsonResponse({"status": "error", "message": str(e)})
 
@@ -2273,8 +2319,8 @@ def get_log_file_path(task_id):
 
 def send_task_completion_email(task_id):
     task = ScrapingTask.objects.get(id=task_id)
-    subject = f'Scraping Task {task_id} Completed'
-    message = f'Your scraping task "{task.project_title}" has been completed.\n'
+    subject = f'Sites Gathering Task {task_id} Completed'
+    message = f'Your Sites Gathering task "{task.project_title}" has been completed.\n'
     if task.report_url:
         report_full_url = f"{settings.BASE_URL}{task.report_url}"
         message += f'You can view the report at: {report_full_url}\n'

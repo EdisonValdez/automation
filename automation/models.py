@@ -203,15 +203,23 @@ class ScrapingTask(models.Model):
 
     objects = ActiveTaskManager()
     all_objects = models.Manager()
-     
+
+    class Meta:
+        verbose_name = "Sites Gathering"
+        verbose_name_plural = "Sites Gatherings"
+
+    def __str__(self):
+        project = self.project_title or 'Untitled Task'
+        destination = self.destination_name or 'No Destination'
+        return f"{project} - {destination} (ID: {self.id})"
+
+
     def get_translatable_businesses(self):
         """Get businesses that can be translated"""
         return self.businesses.filter(
             status='REVIEWED'   
         ).exclude(status='DISCARDED')
-
-
-
+ 
     def get_level_title(self):
         return self.level.title if self.level else "No Level"
     
@@ -317,7 +325,7 @@ class Business(models.Model):
     data_cid = models.CharField(max_length=255, blank=True, null=True)
     reviews_count = models.PositiveIntegerField(default=0)
     rating = models.FloatField(null=True, blank=True)
-    scraped_at = models.DateTimeField()
+    scraped_at = models.DateTimeField(verbose_name='gathered_at')
     url = models.URLField(max_length=500, blank=True, null=True)
     website = models.URLField(max_length=500, blank=True, null=True)
     thumbnail = models.URLField(max_length=500, blank=True, null=True)
@@ -332,6 +340,10 @@ class Business(models.Model):
     description_esp = models.TextField(blank=True, null=True)
     description_eng = models.TextField(blank=True, null=True)
     description_fr = models.TextField(blank=True, null=True)
+
+    types_esp = models.TextField(blank=True, null=True) #Translate types provided by google
+    types_eng = models.TextField(blank=True, null=True) #Translate types provided by google
+    types_fr = models.TextField(blank=True, null=True) #Translate types provided by google
 
     #comments = models.TextField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)

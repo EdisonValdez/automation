@@ -131,19 +131,19 @@
                                             .then(response => response.json())
                                             .then(data => {
                                                 if (data.status === 'success') {
-                                                    this.textContent = 'Scraping Started';
+                                                    this.textContent = 'Started';
                                                 } else if (data.status === 'warning') {
                                                     this.textContent = 'Already In Progress';
                                                     this.classList.remove('disabled');
                                                 } else {
-                                                    this.textContent = 'Error Starting Scraping';
+                                                    this.textContent = 'Error Starting';
                                                     this.classList.remove('disabled');
                                                 }
                                                 console.log(data.message);
                                             })
                                             .catch(error => {
                                                 console.error('Error:', error);
-                                                this.textContent = 'Error Starting Scraping';
+                                                this.textContent = 'Error Starting';
                                                 this.classList.remove('disabled');
                                             });
                                         });

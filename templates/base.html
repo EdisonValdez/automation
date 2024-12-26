@@ -327,13 +327,13 @@ Local Secrets - Content Curation Management Admin Dashboard
                 success: function(response) {
                     if (response.status === 'IN_PROGRESS') {
                         $('#scraping-status').show();
-                        $('#status-message').text('Scraping is in progress. Please wait...');
+                        $('#status-message').text('Sites Gathering is in progress. Please wait...');
                     } else if (response.status === 'COMPLETED') {
                         $('#scraping-status').hide();
-                        alert('Scraping completed successfully!');
+                        alert('Sites Gathering completed successfully!');
                     } else if (response.status === 'FAILED') {
                         $('#scraping-status').hide();
-                        alert('Scraping failed. Please try again later.');
+                        alert('Sites Gathering failed. Please try again later.');
                     }
                 },
                 error: function(xhr, status, error) {
