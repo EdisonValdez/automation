@@ -63,6 +63,8 @@
             <a class="btn btn-outline-primary start-translating-btn" href="#" data-task-id="{{ task.id }}">
                 <i class="fas fa-sync danger"></i> Translate and Enhance
             </a>
+            {% elif task.translation_status == 'TRANSLATED' %}
+            <span class="badge badge-secondary badge-category mt-11">This project has been TRANSLATED!</span>
             {% endif %} 
         </div>
         
