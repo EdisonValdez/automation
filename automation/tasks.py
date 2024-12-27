@@ -1207,6 +1207,7 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'china': r'\b\d{6}\b',
         'india': r'\b\d{6}\b',
         'singapore': r'\b\d{6}\b',
+        'belgium': r'\b\d{4}\b',
 
         'default': r'\b\d{5}\b'
     }

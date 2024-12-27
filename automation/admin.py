@@ -72,7 +72,7 @@ def move_to_pending(modeladmin, request, queryset):
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
     list_display = (
-        'project_title',
+        'title',
         'destination',
         'level',
         'level_title',
@@ -102,7 +102,7 @@ class BusinessAdmin(admin.ModelAdmin):
     )
  
     search_fields = (
-        'project_title',
+        'title',
         'destination__name',  
         'street',
         'address',
@@ -137,7 +137,8 @@ class BusinessAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).select_related(
             'task__level',  
-            'destination'
+            'destination',
+    
         )
 
 @admin.register(ScrapingTask)

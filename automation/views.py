@@ -1345,7 +1345,6 @@ def business_detail(request, business_id):
 
     return render(request, 'automation/business_detail.html', context)
 
-
 @csrf_protect
 def update_business(request, business_id):
     business = get_object_or_404(Business, id=business_id)

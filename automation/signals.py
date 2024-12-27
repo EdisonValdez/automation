@@ -135,19 +135,41 @@ def before_business_save(sender, instance, **kwargs):
         instance._previous_tailored_category = ""
         logger.debug("Pre-save: New Business instance. Setting previous categories to empty.")
 
+
 @receiver(post_save, sender=Business)
 def after_business_save(sender, instance, created, **kwargs):
-    previous_main = getattr(instance, '_previous_main_category', "")
-    previous_tailored = getattr(instance, '_previous_tailored_category', "")
+    # Safely handle None values by defaulting to an empty string
+    previous_main = getattr(instance, '_previous_main_category', "") or ""
+    previous_tailored = getattr(instance, '_previous_tailored_category', "") or ""
     current_main = instance.main_category or ""
     current_tailored = instance.tailored_category or ""
 
-    main_added = set([cat.strip() for cat in current_main.split(',') if cat.strip()]) - set([cat.strip() for cat in previous_main.split(',') if cat.strip()])
-    main_removed = set([cat.strip() for cat in previous_main.split(',') if cat.strip()]) - set([cat.strip() for cat in current_main.split(',') if cat.strip()])
+    # Calculate added and removed categories
+    main_added = set([
+        cat.strip() for cat in current_main.split(',') if cat.strip()
+    ]) - set([
+        cat.strip() for cat in previous_main.split(',') if cat.strip()
+    ])
 
-    tailored_added = set([cat.strip() for cat in current_tailored.split(',') if cat.strip()]) - set([cat.strip() for cat in previous_tailored.split(',') if cat.strip()])
-    tailored_removed = set([cat.strip() for cat in previous_tailored.split(',') if cat.strip()]) - set([cat.strip() for cat in current_tailored.split(',') if cat.strip()])
+    main_removed = set([
+        cat.strip() for cat in previous_main.split(',') if cat.strip()
+    ]) - set([
+        cat.strip() for cat in current_main.split(',') if cat.strip()
+    ])
 
+    tailored_added = set([
+        cat.strip() for cat in current_tailored.split(',') if cat.strip()
+    ]) - set([
+        cat.strip() for cat in previous_tailored.split(',') if cat.strip()
+    ])
+
+    tailored_removed = set([
+        cat.strip() for cat in previous_tailored.split(',') if cat.strip()
+    ]) - set([
+        cat.strip() for cat in current_tailored.split(',') if cat.strip()
+    ])
+
+    # Logging changes
     if created:
         logger.debug(f"Post-save: Created Business: '{instance.title}' with Main Categories: {current_main} and Tailored Categories: {current_tailored}")
     else:

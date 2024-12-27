@@ -405,8 +405,7 @@ class BusinessForm(forms.ModelForm):
 
         return business
     
-
-             
+           
 FeedbackFormSet = forms.inlineformset_factory(
     Business,
     Feedback,
