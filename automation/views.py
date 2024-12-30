@@ -180,29 +180,58 @@ class TaskDetailView(View):
                 businesses__form_destination_id__in=ambassador_destinations
             ).distinct()
         else:
-            return render(request, 'automation/error.html', 
-                        {'error': 'You do not have permission to access this task.'}, 
+            return render(request, 'automation/error.html',
+                        {'error': 'You do not have permission to access this task.'},
                         status=403)
 
         # Get the current task with prefetched businesses
         task = get_object_or_404(
             base_task_queryset.prefetch_related(
-                Prefetch('businesses', 
+                Prefetch('businesses',
                         queryset=Business.objects.filter(is_deleted=False))
-            ), 
+            ),
             id=id
         )
-
+        
         # Get previous and next tasks from the base queryset
         previous_task = base_task_queryset.filter(id__lt=task.id).order_by('-id').first()
         next_task = base_task_queryset.filter(id__gt=task.id).order_by('id').first()
 
         # Prefetch businesses with images
         businesses = task.businesses.filter(is_deleted=False).prefetch_related(
-            Prefetch('images', 
+            Prefetch('images',
                     queryset=Image.objects.filter(is_deleted=False).order_by('id'),
                     to_attr='first_image')
         )
+
+        # Get business counts by status
+        business_counts = {
+            'total': businesses.count(),
+            'by_status': businesses.values('status').annotate(
+                count=Count('id')
+            ).order_by('status'),
+            'pending': businesses.filter(status='PENDING').count(),
+            'reviewed': businesses.filter(status='REVIEWED').count(),
+            'discarded': businesses.filter(status='DISCARDED').count(),
+            'in_production': businesses.filter(status='IN_PRODUCTION').count(),
+            'empty_descriptions': businesses.filter(
+                Q(description__isnull=True) | Q(description='')
+            ).count(),
+        }
+
+        # Add percentage calculations
+        total_count = business_counts['total']
+        if total_count > 0:
+            business_counts['percentages'] = {
+                'pending': (business_counts['pending'] / total_count) * 100,
+                'reviewed': (business_counts['reviewed'] / total_count) * 100,
+                'discarded': (business_counts['discarded'] / total_count) * 100,
+                'in_production': (business_counts['in_production'] / total_count) * 100,
+            }
+        else:
+            business_counts['percentages'] = {
+                'pending': 0, 'reviewed': 0, 'discarded': 0, 'in_production': 0
+            }
 
         # Attach first image to each business
         for business in businesses:
@@ -217,9 +246,9 @@ class TaskDetailView(View):
         context = {
             'task': task,
             'businesses': businesses,
-            'business_count': businesses.count(),
+            'business_counts': business_counts,
             'has_empty_descriptions': has_empty_descriptions,
-            'previous_task': previous_task,   
+            'previous_task': previous_task,
             'next_task': next_task,
             'is_first_task': previous_task is None,
             'is_last_task': next_task is None,
@@ -229,11 +258,13 @@ class TaskDetailView(View):
             'DEFAULT_IMAGE_URL': settings.DEFAULT_IMAGE_URL,
         }
 
-        logger.info(f"Retrieved task {id} with {businesses.count()} businesses")
+        logger.info(f"Retrieved task {id} with {business_counts['total']} businesses")
+        logger.debug(f"Business counts: {business_counts}")
         logger.debug(f"Previous task: {previous_task.id if previous_task else None}, "
                     f"Next task: {next_task.id if next_task else None}")
 
         return render(request, 'automation/task_detail.html', context)
+
 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
@@ -581,28 +612,57 @@ def ambassador_view(request):
 @method_decorator(user_passes_test(lambda u: u.roles.filter(role='AMBASSADOR').exists()), name='dispatch')
 class AmbassadorDashboardView(View):
     def get(self, request):
-        ambassador = request.user 
-        ambassador_destinations = ambassador.destinations.all()   
- 
-        destination_ids = [dest.id for dest in ambassador_destinations]  
-        task_ids = Business.objects.filter(form_destination_id__in=destination_ids).values_list('task__id', flat=True)
- 
-        tasks = ScrapingTask.objects.filter(id__in=task_ids).order_by('-created_at')
-         
+        ambassador = request.user
+        ambassador_destinations = ambassador.destinations.all()
+        destination_ids = [dest.id for dest in ambassador_destinations]
+        
+        # Get all tasks for the ambassador
+        tasks = ScrapingTask.objects.filter(
+            id__in=Business.objects.filter(
+                form_destination_id__in=destination_ids
+            ).values_list('task__id', flat=True)
+        ).order_by('-created_at')
+
+        # Calculate all status counts
+        status_counts = {
+            'total': tasks.count(),
+            'completed': tasks.filter(status='COMPLETED').count(),
+            'in_progress': tasks.filter(status='IN_PROGRESS').count(),
+            'pending': tasks.filter(status='PENDING').count(),
+            'done': tasks.filter(status='DONE').count()
+        }
+
+        # Calculate percentages
+        total = status_counts['total']
+        status_percentages = {
+            'completed': (status_counts['completed'] / total * 100) if total > 0 else 0,
+            'in_progress': (status_counts['in_progress'] / total * 100) if total > 0 else 0,
+            'pending': (status_counts['pending'] / total * 100) if total > 0 else 0,
+            'done': (status_counts['done'] / total * 100) if total > 0 else 0
+        }
+
+        # Paginate tasks
         paginator = Paginator(tasks, 5)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
- 
-        businesses = Business.objects.filter(form_destination_id__in=destination_ids).order_by('-scraped_at')[:10]
+
+        # Get recent businesses
+        businesses = Business.objects.filter(
+            form_destination_id__in=destination_ids
+        ).order_by('-scraped_at')[:10]
 
         context = {
             'page_obj': page_obj,
             'tasks': page_obj.object_list,
+            'all_tasks': tasks,  # Keep the full queryset for counts
             'businesses': businesses,
             'ambassador_destinations': ambassador_destinations,
+            'status_counts': status_counts,
+            'status_percentages': status_percentages,
         }
 
         return render(request, 'automation/ambassador_dashboard.html', context)
+
 
 ###Not using this one
 # it will be removed in the furure    
@@ -650,6 +710,13 @@ def login_view(request):
             messages.error(request, "Invalid username or password.")
     return render(request, 'automation/login.html')
 
+class DestinationCategoriesView(View):
+    def get(self, request):
+        destination = request.GET.get('destination')
+        dashboard_view = DashboardView()
+        data = dashboard_view.get_destination_categories(destination)
+        return JsonResponse(data)
+
 
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
@@ -689,6 +756,18 @@ class DashboardView(View):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
+        
+        completed_count = tasks.filter(status='COMPLETED').count()
+        in_progress_count = tasks.filter(status='IN_PROGRESS').count()
+        pending_count = tasks.filter(status='PENDING').count()
+        total_count = tasks.count()
+        
+        if total_count > 0:
+            completed_percentage = (completed_count / total_count) * 100
+            in_progress_percentage = (in_progress_count / total_count) * 100
+        else:
+            completed_percentage = in_progress_percentage = 0
+
         # Add role flags and other data to context
         context.update({
             'tasks': page_obj.object_list,
@@ -697,13 +776,51 @@ class DashboardView(View):
             'is_ambassador': is_ambassador,
             'is_staff': is_staff,
             'is_superuser': is_superuser,
+            'completed_count': completed_count,
+            'in_progress_count': in_progress_count,
+            'pending_count': pending_count,
+            'completed_percentage': completed_percentage,
+            'in_progress_percentage': in_progress_percentage,
         })
 
         return render(request, 'automation/dashboard.html', context)
- 
+
+    def get_destination_categories(self, destination_name=None):
+        """Get category distribution for a specific destination"""
+        try:
+            query = Business.objects.all()
+            
+            if destination_name:
+                query = query.filter(
+                    Q(form_destination_name__iexact=destination_name) |
+                    Q(city__iexact=destination_name)
+                )
+            
+            category_data = query.values('main_category').annotate(
+                count=Count('id', distinct=True)
+            ).exclude(
+                main_category__isnull=True
+            ).order_by('-count')
+
+            return {
+                'categories': [item['main_category'] or 'Uncategorized' for item in category_data],
+                'counts': [item['count'] for item in category_data],
+                'destination': destination_name
+            }
+
+        except Exception as e:
+            logger.error(f"Error getting destination categories: {str(e)}")
+            return {
+                'categories': [],
+                'counts': [],
+                'destination': destination_name
+            }
+        
     def get_common_context(self):
         context = {}
         try:
+            translation_status_counts = ScrapingTask.objects.values('translation_status').annotate(count=Count('id')).order_by()
+
             # Get total counts with proper filtering
             context['total_projects'] = ScrapingTask.objects.filter(
                 status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
@@ -712,7 +829,19 @@ class DashboardView(View):
             context['total_businesses'] = Business.objects.filter(
                 status__in=['PENDING', 'REVIEWED', 'IN_PRODUCTION']
             ).count()
+            
+            context['destination_categories'] = json.dumps(
+                self.get_destination_categories(), 
+                cls=DjangoJSONEncoder
+            )
 
+            context['available_destinations'] = json.dumps(
+                list(Business.objects.values_list(
+                    'form_destination_name', flat=True
+                ).distinct().exclude(
+                    form_destination_name__isnull=True
+                ).order_by('form_destination_name'))
+            )         
             # Get status counts with explicit filtering
             status_counts = ScrapingTask.objects.values('status').annotate(
                 count=Count('id', distinct=True)  # Use distinct to avoid duplicates
@@ -728,6 +857,8 @@ class DashboardView(View):
             context['ongoing_projects'] = 0
             context['completed_projects'] = 0
             context['failed_projects'] = 0
+            context['translated_projects'] = next((item['count'] for item in translation_status_counts if item['translation_status'] == 'TRANSLATED'), 0)
+            
 
             # Assign counts with validation
             for item in status_counts:
@@ -1075,46 +1206,50 @@ def task_list(request):
 
     # Fetch available countries and destinations for the search form
     countries = Country.objects.all()
-    destinations = Destination.objects.exclude(name__isnull=True).exclude(name='')  # Exclude empty 'None' values
+    destinations = Destination.objects.exclude(name__isnull=True).exclude(name='')
 
     # Fetch tasks based on user role
     if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
         tasks = ScrapingTask.objects.all()
-        for task in tasks:
-            task.save()  # Check and update task status
-        businesses = Business.objects.filter(task__in=tasks)
     elif request.user.roles.filter(role='AMBASSADOR').exists():
         ambassador_destinations = request.user.destinations.all()
         tasks = ScrapingTask.objects.filter(destination__in=ambassador_destinations)
-        for task in tasks:
-            task.save()
-        businesses = Business.objects.filter(task__in=tasks)
     else:
         tasks = ScrapingTask.objects.none()
-        businesses = Business.objects.none()
 
-    # Apply search filters if they exist
+    # Apply search filters
     if search_destination:
         tasks = tasks.filter(destination_name__icontains=search_destination)
     if search_country:
-        tasks = tasks.filter(country_name__icontains=search_country)  # Filter by country name
+        tasks = tasks.filter(country_name__icontains=search_country)
     if search_status:
         tasks = tasks.filter(status__iexact=search_status)
 
+    # Annotate tasks with empty descriptions count
+    tasks = tasks.annotate(
+        empty_descriptions_count=Count(
+            'businesses',
+            filter=Q(businesses__description__isnull=True) | Q(businesses__description='')
+        )
+    )
+
+    # For each task, add the has_empty_descriptions property
+    for task in tasks:
+        task.has_empty_descriptions = task.empty_descriptions_count > 0
+
     # Apply pagination
-    paginator = Paginator(tasks, 10000000)   
+    paginator = Paginator(tasks, 10000000)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
         'tasks': page_obj.object_list,
-        'businesses': businesses,
         'page_obj': page_obj,
         'search_destination': search_destination,
         'search_country': search_country,
         'search_status': search_status,
         'countries': countries,
-        'destinations': destinations,  # Only pass valid destinations
+        'destinations': destinations,
     }
 
     return render(request, 'automation/task_list.html', context)

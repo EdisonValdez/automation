@@ -1,106 +1,112 @@
 {% extends 'base.html' %}
+{% load project_tags %}
+{% block content %}
+<style><style>
+    .custom-progress-container {
+        width: 250px;
+        padding: 5px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
 
-{% block content %}<style>
-/* Card Styles */
-.task-card {
-transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+    .custom-progress {
+        height: 25px;
+        display: flex;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #e9ecef;
+        position: relative;
+        transition: all 0.3s ease;
+    }
 
-.task-card:hover {
-transform: translateY(-5px);
-box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
-}
+    .progress-segment {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: width 0.6s ease;
+        position: relative;
+        min-width: 30px;
+    }
 
-.task-card .card-title {
-color: #2c3e50;
-font-weight: 600;
-}
+    .progress-segment:not(:last-child) {
+        border-right: 1px solid rgba(255,255,255,0.3);
+    }
 
-.task-card .card-title a:hover {
-color: var(--bs-primary);
-}
+    .progress-label {
+        color: white;
+        font-size: 0.75rem;
+        font-weight: bold;
+        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
 
-/* Progress Bar */
-.progress {
-background-color: #eef2f7;
-border-radius: 10px;
-}
+    .progress-stats {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 80px;
+    }
 
-.progress-bar {
-background-color: var(--bs-primary);
-border-radius: 10px;
-}
+    .total-count {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #495057;
+    }
 
-/* Empty State */
-.empty-state {
-padding: 2rem;
-background: #f8f9fa;
-border-radius: 1rem;
-}
+    .total-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
 
-.empty-state i {
-color: #dee2e6;
-}
+    /* Status colors with improved visibility */
+    .bg-success {
+        background-color: #28a745 !important;
+    }
 
-/* Table Styles */
-.table th {
-font-weight: 600;
-background: #f8f9fa;
-}
+    .bg-warning {
+        background-color: #ffc107 !important;
+    }
 
-.table td {
-vertical-align: middle;
-}
+    .bg-info {
+        background-color: #17a2b8 !important;
+    }
 
-/* Badge Styles */
-.badge {
-padding: 0.5em 1em;
-font-weight: 500;
-}
+    .bg-primary {
+        background-color: #0d6efd !important;
+    }
 
-/* Dropdown Styles */
-.btn-icon {
-padding: 0.25rem;
-line-height: 1;
-border: none;
-background: transparent;
-}
+    /* Hover effects */
+    .progress-segment:hover {
+        filter: brightness(110%);
+    }
 
-.btn-icon:hover {
-background: #f8f9fa;
-border-radius: 0.25rem;
-}
+    /* Empty state */
+    .custom-progress.empty {
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f9fa;
+    }
 
-/* Pagination */
-.pagination {
-margin-bottom: 0;
-}
+    .no-data {
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
 
-.page-link {
-border: none;
-padding: 0.5rem 1rem;
-color: var(--bs-primary);
-}
+    /* Animation for segments */
+    @keyframes growWidth {
+        from { width: 0; }
+        to { width: 100%; }
+    }
 
-.page-link:hover {
-background: #f8f9fa;
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-.task-card {
-    background: #2d3436;
-}
-
-.empty-state {
-    background: #2d3436;
-}
-
-.table th {
-    background: #2d3436;
-}
-}
-</style>
+    .progress-segment {
+        animation: growWidth 0.6s ease-out;
+    } 
+.progress {  background-color: #f0f0f0;border-radius: 15px;overflow: hidden;}.progress-bar { text-align: center;line-height: 24px;font-size: 0.8rem;font-weight: bold;transition: width 0.6s ease;
+}.status-pill {padding: 0.5rem 1rem; border-radius: 20px;font-size: 0.9rem;display: inline-flex;align-items: center;gap: 0.5rem;
+}.status-pill i {font-size: 1rem;}.task-card {transition: transform 0.2s ease, box-shadow 0.2s ease;}.task-card:hover {transform: translateY(-5px);box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;}.task-card .card-title {color: #2c3e50;font-weight: 600;}.task-card .card-title a:hover {color: var(--bs-primary);}.progress {background-color: #eef2f7;border-radius: 10px;}.progress-bar {background-color: var(--bs-primary);border-radius: 10px;}.empty-state {padding: 2rem;background: #f8f9fa;border-radius: 1rem;}.empty-state i {color: #dee2e6;}.table th {font-weight: 600;background: #f8f9fa;}.table td {vertical-align: middle;}.badge {padding: 0.5em 1em;font-weight: 500;}.btn-icon {padding: 0.25rem;line-height: 1;border: none;background: transparent;}.btn-icon:hover {background: #f8f9fa;border-radius: 0.25rem;}.pagination {margin-bottom: 0;}.page-link {border: none;padding: 0.5rem 1rem;color: var(--bs-primary);}.page-link:hover {background: #f8f9fa;}@media (prefers-color-scheme: dark) {.task-card {background: #2d3436;}.empty-state {background: #2d3436;}.table th {background: #2d3436;}}</style>
 
 <div class="main-content project"> 
     <div class="row">
@@ -121,12 +127,99 @@ background: #f8f9fa;
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-transparent">
-                    <div class="d-flex align-items-center">
-                        <h5 class="card-title mb-0 mr-10">Number of Content </h5>
-                        <span class="badge bg-primary ms-2 text-white">{{ tasks|length }}</span>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-tasks me-2"></i>&nbsp;
+                                Content Curation Progress
+                            </h5>&nbsp;
+                            <div class="ms-3 d-flex align-items-center">
+                                <div class="custom-progress-container">
+                                    {% if status_counts.total > 0 %}
+                                        <div class="custom-progress">
+                                            <div class="progress-segment bg-success" 
+                                                 style="width: {{ status_percentages.completed }}%"
+                                                 data-bs-toggle="tooltip"
+                                                 data-bs-placement="top"
+                                                 title="Completed: {{ status_counts.completed }}">
+                                                {% if status_counts.completed > 0 %}
+                                                    <span class="progress-label">{{ status_counts.completed }}</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="progress-segment bg-warning" 
+                                                 style="width: {{ status_percentages.in_progress }}%"
+                                                 data-bs-toggle="tooltip"
+                                                 data-bs-placement="top"
+                                                 title="In Progress: {{ status_counts.in_progress }}">
+                                                {% if status_counts.in_progress > 0 %}
+                                                    <span class="progress-label">{{ status_counts.in_progress }}</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="progress-segment bg-info" 
+                                                 style="width: {{ status_percentages.pending }}%"
+                                                 data-bs-toggle="tooltip"
+                                                 data-bs-placement="top"
+                                                 title="Pending: {{ status_counts.pending }}">
+                                                {% if status_counts.pending > 0 %}
+                                                    <span class="progress-label">{{ status_counts.pending }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% if status_counts.done > 0 %}
+                                                <div class="progress-segment bg-primary" 
+                                                     style="width: {{ status_percentages.done }}%"
+                                                     data-bs-toggle="tooltip"
+                                                     data-bs-placement="top"
+                                                     title="Done: {{ status_counts.done }}">
+                                                    <span class="progress-label">{{ status_counts.done }}</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="custom-progress empty">
+                                            <span class="no-data">No tasks available</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="ms-3 progress-stats">
+                                    <span class="total-count">{{ status_counts.total }}</span>
+                                    <span class="total-label">Total Tasks</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                
+                    <!-- Status Summary -->
+                    <div class="row mt-3">
+                        <div class="col-10">
+                            <div class="d-flex gap-3">
+                                <div class="status-pill bg-success-subtle">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    {{ status_counts.completed }} Completed
+                                </div>
+                                <div class="status-pill bg-warning-subtle">
+                                    <i class="fas fa-clock text-warning"></i>
+                                    {{ status_counts.in_progress }} In Progress
+                                </div>
+                                <div class="status-pill bg-info-subtle">
+                                    <i class="fas fa-hourglass-start text-info"></i>
+                                    {{ status_counts.pending }} Pending
+                                </div>
+                                {% if status_counts.done > 0 %}
+                                    <div class="status-pill bg-primary-subtle">
+                                        <i class="fas fa-flag-checkered text-primary"></i>
+                                        {{ status_counts.done }} Done
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div> 
+                            <div class="col-2">
+                                <a href="{% url 'task_list' %}" class="btn btn-secondary">Go To Content List</a>
+                     
+                        </div>
                     </div>
                 </div>
-                
+        
                 <div class="card-body">
                     {% if tasks %}
                     <div class="row g-4">
@@ -136,7 +229,7 @@ background: #f8f9fa;
                             <div class="card task-card h-100 border-0 shadow-sm">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between mb-3">
-                                        <span class="badge {% if task.status == 'IN_PROGRESS' %}bg-success
+                                        <span style="color:white" class="badge {% if task.status == 'IN_PROGRESS' %}bg-success
                                                          {% elif task.status == 'PENDING' %}bg-warning
                                                          {% elif task.status == 'FAILED' %}bg-danger
                                                          {% else %}bg-secondary{% endif %}">
@@ -203,6 +296,7 @@ background: #f8f9fa;
             </div>
         </div>
     </div>
+
 
     <!-- Recent Businesses Section -->
     <div class="card">

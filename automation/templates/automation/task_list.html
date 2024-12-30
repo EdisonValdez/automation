@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-
+<style>.btn-generate-descriptions {display: inline-flex;    align-items: center;    gap: 8px;    width: 100%;    padding: 8px 12px;
+    transition: all 0.3s ease;}.btn-generate-descriptions:not(.disabled):hover { background-color: #f8f9fa;}.btn-generate-descriptions.disabled {opacity: 0.6;cursor: not-allowed;}.progress { margin-top: 1rem;border-radius: 0.25rem;}
+</style>
 <div class="main-content project"> 
     <div class="row">
         <div class="col-12">
@@ -68,6 +70,19 @@
                                         <i class="bx bx-dots-horizontal-rounded"></i>
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right">
+                                    <a id="generateDescriptionsBtn-{{ task.id }}"
+                                        class="btn-generate-descriptions {% if not task.has_empty_descriptions %}disabled{% endif %}"
+                                        {% if not task.has_empty_descriptions %}disabled{% endif %}
+                                        data-task-id="{{ task.id }}"
+                                        href="javascript:void(0);">
+                                            <i class="fas fa-language"></i> 
+                                            Generate Descriptions
+                                            {% if task.empty_descriptions_count > 0 %}
+                                                <span class="badge bg-warning">{{ task.empty_descriptions_count }}</span>
+                                            {% endif %}
+                                        </a>
+
+
                                         {% if task.translation_status != 'TRANSLATED' %}
                                         <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
                                             <i class="fas fa-sync"></i> Translate and Enhance
@@ -514,4 +529,160 @@ $(document).ready(function() {
 <!--Delete tasks-->
 
 
+<!-- Based description task-->
+<script>
+ 
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle description generation for all tasks
+    const descriptionButtons = document.querySelectorAll('.btn-generate-descriptions');
+    
+    descriptionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (this.classList.contains('disabled')) {
+                return;
+            }
+            
+            const taskId = this.getAttribute('data-task-id');
+            handleDescriptionGeneration(taskId, this);
+        });
+    });
+    
+    function handleDescriptionGeneration(taskId, buttonElement) {
+        // Show loading state
+        Swal.fire({
+            title: 'Generating Descriptions',
+            html: `
+                <div class="text-center">
+                    <p>Please wait while we generate descriptions...</p>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            `,
+            allowOutsideClick: false,
+            showConfirmButton: false
+        });
+        
+        // Make the API call
+        fetch(`/tasks/${taskId}/generate-descriptions/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFTask': taskId,
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            Swal.close();
+            
+            if (data.success) {
+                let message = data.message;
+                let warningHtml = '';
+                
+                // Format warnings if any
+                if (data.warnings && data.warnings.length > 0) {
+                    warningHtml = `
+                        <div class="alert alert-warning mt-3">
+                            <h6>Warnings:</h6>
+                            <ul class="mb-0">
+                                ${data.warnings.map(w => `<li>${w}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    html: `
+                        <div>
+                            ${message.replace(/\n/g, '<br>')}
+                            ${warningHtml}
+                        </div>
+                    `,
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload only the task row instead of full page
+                        updateTaskRow(taskId);
+                    }
+                });
+                
+                // Update button state
+                if (!data.has_empty_descriptions) {
+                    buttonElement.classList.add('disabled');
+                    buttonElement.disabled = true;
+                }
+            } else {
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    html: `
+                        <div class="alert alert-danger">
+                            ${data.error || 'An error occurred while generating descriptions'}
+                        </div>
+                    `
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: `
+                    <div class="alert alert-danger">
+                        An unexpected error occurred. Please try again later.
+                        <br><small>${error.message}</small>
+                    </div>
+                `
+            });
+        });
+    }
+    
+    // Function to update single task row
+    function updateTaskRow(taskId) {
+        fetch(`/tasks/${taskId}/row/`)
+            .then(response => response.text())
+            .then(html => {
+                const taskRow = document.querySelector(`#task-row-${taskId}`);
+                if (taskRow) {
+                    taskRow.outerHTML = html;
+                }
+            })
+            .catch(error => {
+                console.error('Error updating task row:', error);
+                window.location.reload(); // Fallback to full page reload
+            });
+    }
+    
+    // Cookie getter function
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+ 
 {% endblock %}

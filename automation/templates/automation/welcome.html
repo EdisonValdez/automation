@@ -200,6 +200,15 @@
                                 <p>Monitor and manage tasks</p>
                             </div>
                         </a>
+                        <a href="{% url 'feedback_list' %}" class="quick-link-card ambassador">
+                            <div class="card-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Comments</h6>
+                                <p>Manage business feedback</p>
+                            </div>
+                        </a>
                         {% endif %}
                 
                         {% if 'AMBASSADOR' in user.get_roles %}
@@ -213,15 +222,16 @@
                                 <p>View assigned businesses</p>
                             </div>
                         </a>
-                        <a href="{% url 'feedback_list' %}" class="quick-link-card ambassador">
+                        <a href="{% url 'task_list' %}" class="quick-link-card admin">
                             <div class="card-icon">
-                                <i class="fas fa-comments"></i>
+                                <i class="fas fa-tasks"></i>
                             </div>
                             <div class="card-info">
-                                <h6>Comments</h6>
-                                <p>Manage business feedback</p>
+                                <h6>Content List</h6>
+                                <p>Monitor and manage tasks</p>
                             </div>
                         </a>
+
                         {% endif %}
 
                     </div>

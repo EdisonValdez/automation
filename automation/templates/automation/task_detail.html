@@ -60,9 +60,11 @@
                 {% if not has_empty_descriptions %}disabled{% endif %}
                 data-task-id="{{ task.id }}">
                 <i class="fas fa-language"></i> Descriptions
+                {% if task.empty_descriptions_count > 0 %}
+                <span class="badge bg-warning">{{ task.empty_descriptions_count }}</span>
+            {% endif %}
              </button>
-
-
+ 
             {% if task.translation_status != 'TRANSLATED' %}
             <a class="btn btn-outline-primary start-translating-btn" href="#" data-task-id="{{ task.id }}">
                 <i class="fas fa-sync"></i> Translate

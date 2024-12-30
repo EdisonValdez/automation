@@ -135,7 +135,89 @@
                             <canvas id="timelineChart" height="300"></canvas>
                         </div>
                     </div>
-            
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Businesses by Category</h5>
+                            <select id="destinationSelector" class="form-select" style="width: 200px;">
+                                <option value="">Select Destination</option>
+                            </select>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="height: 400px;">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div> 
+                    <!-- Business Statistics Section 
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Business Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Total Counts</h6>
+                                    <ul class="list-group">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Total Businesses
+                                            <span class="badge bg-primary rounded-pill">{{ business_counts.total }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Pending
+                                            <span class="badge bg-warning rounded-pill">{{ business_counts.pending }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Reviewed
+                                            <span class="badge bg-success rounded-pill">{{ business_counts.reviewed }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Discarded
+                                            <span class="badge bg-danger rounded-pill">{{ business_counts.discarded }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            In Production
+                                            <span class="badge bg-info rounded-pill">{{ business_counts.in_production }}</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Empty Descriptions
+                                            <span class="badge bg-warning rounded-pill">{{ business_counts.empty_descriptions }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Progress</h6>
+                                    <div class="progress" style="height: 25px;">
+                                        {% if business_counts.percentages.pending > 0 %}
+                                        <div class="progress-bar bg-warning" 
+                                            role="progressbar" 
+                                            style="width: {{ business_counts.percentages.pending }}%" 
+                                            title="Pending: {{ business_counts.percentages.pending|floatformat:1 }}%">
+                                            {{ business_counts.pending }}
+                                        </div>
+                                        {% endif %}
+                                        {% if business_counts.percentages.reviewed > 0 %}
+                                        <div class="progress-bar bg-success" 
+                                            role="progressbar" 
+                                            style="width: {{ business_counts.percentages.reviewed }}%" 
+                                            title="Reviewed: {{ business_counts.percentages.reviewed|floatformat:1 }}%">
+                                            {{ business_counts.reviewed }}
+                                        </div>
+                                        {% endif %}
+                                        {% if business_counts.percentages.discarded > 0 %}
+                                        <div class="progress-bar bg-danger" 
+                                            role="progressbar" 
+                                            style="width: {{ business_counts.percentages.discarded }}%" 
+                                            title="Discarded: {{ business_counts.percentages.discarded|floatformat:1 }}%">
+                                            {{ business_counts.discarded }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+-->
 
             </div>
             <div class="row"> 
@@ -143,23 +225,18 @@
                         <a href="{% url 'task_list' %}" class="btn bx-dots-horizontal-rounded" >View all tasks</a>
                     </div>
          
-                {% for task in tasks|slice:":15" %}
-                <div class="col-xl-3 col-xl-3 col-md-6 col-sm-12 float mt-11">
-            
+                {% for task in tasks|slice:":8" %}
+                <div class="col-xl-3 col-xl-3 col-md-6 col-sm-12 float mt-11">            
                         <div class="box left-dot">
                             <div class="box-body">
                                  
                                         <div class="mt-0 text-start">
                                             <a href="{% url 'task_detail' id=task.id %}" class="box-title mb-0 mt-1 mb-3 font-w600 fs-14">{{task.id}} - {{ task.project_title }} </a>
-                                            <p class="fs-14 font-w600 text-start"># Businesses: {{ task.businesses.count }}</p>
-                                            <p class="fs-14 font-w600 text-muted">Category: {{ task.main_category }}</p>
-                                            <p class="fs-14 text-muted">User: {{ task.user }}</p>
-                                            <p class="fs-14 text-muted">Level: {{ task.level }}</p>
+                                            <p class="fs-14 font-w600 text-start"># Businesses: {{ task.businesses.count }}</p> 
+                                            <p class="fs-14 text-muted">User: {{ task.user }}</p> 
                                             <p class="fs-12 text-muted">Created: {{ task.created_at }}</p>
                                             <p class="fs-12 text-muted">Completed: {{ task.completed_at }}</p>
- 
-                                        </div>
-                                     
+                                         </div>                                     
                             </div>                            
                             <div class="box-footer">
                                 <div class="d-flex align-items-center">
@@ -782,5 +859,116 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <!--Delete tasks-->
 
+<!--Char Destination by categories-->
+<script>
+    // Initialize destination categories chart
+document.addEventListener('DOMContentLoaded', function() {
+    let categoryChart = null;
+    const destinations = {{ available_destinations|safe }};
+    const destinationSelector = document.getElementById('destinationSelector');
+    
+    // Populate destination selector
+    destinations.forEach(destination => {
+        if (destination) {  // Only add non-null destinations
+            const option = new Option(destination, destination);
+            destinationSelector.add(option);
+        }
+    });
 
+    // Function to create or update chart
+    function updateCategoryChart(data) {
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        
+        // Destroy existing chart if it exists
+        if (categoryChart) {
+            categoryChart.destroy();
+        }
+        
+        // Create new chart
+        categoryChart = new Chart(ctx, {
+            type: 'bar',  // You can change to 'doughnut' for a different view
+            data: {
+                labels: data.categories,
+                datasets: [{
+                    label: 'Number of Businesses',
+                    data: data.counts,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(153, 102, 255, 0.5)',
+                        'rgba(255, 159, 64, 0.5)',
+                        'rgba(199, 199, 199, 0.5)',
+                        'rgba(83, 102, 255, 0.5)',
+                        'rgba(40, 159, 64, 0.5)',
+                        'rgba(210, 199, 199, 0.5)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(199, 199, 199, 1)',
+                        'rgba(83, 102, 255, 1)',
+                        'rgba(40, 159, 64, 1)',
+                        'rgba(210, 199, 199, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false  // Hide legend for bar chart
+                    },
+                    title: {
+                        display: true,
+                        text: data.destination ? 
+                            `Business Categories in ${data.destination}` : 
+                            'Business Categories (All Destinations)'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Initial chart with all destinations
+    updateCategoryChart({{ destination_categories|safe }});
+
+    // Update chart when destination changes
+    destinationSelector.addEventListener('change', function() {
+        const selectedDestination = this.value;
+        
+        // Show loading state
+        const chartContainer = document.querySelector('.chart-container');
+        chartContainer.style.opacity = '0.5';
+        
+        // Fetch new data
+        fetch(`/api/destination-categories/?destination=${encodeURIComponent(selectedDestination)}`)
+            .then(response => response.json())
+            .then(data => {
+                updateCategoryChart(data);
+                chartContainer.style.opacity = '1';
+            })
+            .catch(error => {
+                console.error('Error fetching category data:', error);
+                chartContainer.style.opacity = '1';
+            });
+    });
+});
+
+</script>
 {% endblock %}

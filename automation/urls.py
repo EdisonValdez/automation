@@ -97,6 +97,8 @@ urlpatterns = [
     path('tasks/<int:task_id>/generate-descriptions/', views.generate_task_descriptions, name="generate_tasks_descriptions"),
     #path('api/categories/', views.get_categories, name='get_categories'),
     #path('api/subcategories/', views.get_subcategories, name='get_subcategories'),
+ 
+    path('api/destination-categories/', views.DestinationCategoriesView.as_view(), name='destination_categories'),
 
     path('task-status/<int:task_id>/', views.task_status, name='task_status'),
     path('tasks/', views.task_list, name='task_list'),
