@@ -94,7 +94,7 @@ urlpatterns = [
 
     path('enhance_translate_business/<int:business_id>/', views.enhance_translate_business, name='enhance_translate_business'),
 
-
+    path('tasks/<int:task_id>/generate-descriptions/', views.generate_task_descriptions, name="generate_tasks_descriptions"),
     #path('api/categories/', views.get_categories, name='get_categories'),
     #path('api/subcategories/', views.get_subcategories, name='get_subcategories'),
 

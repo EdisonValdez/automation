@@ -417,11 +417,11 @@
         </div>
              
         <div class="row">            
-            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
                 <!-- Description (Original) -->
                 <div class="left-dot">
                     <div class="card box-body translation">
-                        <div class="card-header business-title">Description <img src="{% static 'images/flags/us.jpg'%}" width="25px" />
+                        <div class="card-header business-title">American Eng <img src="{% static 'images/flags/us.jpg'%}" width="25px" />
                             <button type="button" class="btn btn-link" onclick="toggleEdit('description')">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
@@ -443,11 +443,11 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
             <!-- Description (UK) -->
             <div class="left-dot">
                     <div class="card box-body translation">
-                        <div class="card-header business-title">Description  <img src="{% static 'images/flags/uk.jpg'%}" width="25px" />
+                        <div class="card-header business-title">UK Eng  <img src="{% static 'images/flags/uk.jpg'%}" width="25px" />
                             <button type="button" class="btn btn-link" onclick="toggleEdit('description-eng')">
                                 <i id="description-eng-toggle-icon" class="fas fa-pencil-alt"></i>
                             </button>
@@ -459,11 +459,11 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12"> 
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12"> 
                 <!-- Description (Spanish) -->
                 <div class="left-dot">
                     <div class="card box-body translation">
-                        <div class="card-header business-title">Description  <img src="{% static 'images/flags/spain.jpg'%}" width="25px" />
+                        <div class="card-header business-title">Spanish  <img src="{% static 'images/flags/spain.jpg'%}" width="25px" />
                             <button type="button" class="btn btn-link" onclick="toggleEdit('description-esp')">
                                 <i id="description-esp-toggle-icon" class="fas fa-pencil-alt"></i>
                             </button>
@@ -474,7 +474,23 @@
                         </div>
                     </div>
                 </div>
-            </div>                 
+            </div>    
+            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12"> 
+                <!-- Description (French) -->
+                <div class="left-dot">
+                    <div class="card box-body translation">
+                        <div class="card-header business-title">French  <img src="{% static 'images/flags/fr.png'%}" width="25px" />
+                            <button type="button" class="btn btn-link" onclick="toggleEdit('description-fr')">
+                                <i id="description-fr-toggle-icon" class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                        <p id="description-fr-display" class="description-content">{{ business.description_fr|default:"No description available." }}</p>
+                        <textarea name="description_fr" id="description-fr-edit" class="form-control" style="display:none;">{{ business.description_fr }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>                
         </div>           
  
         <div class="box-body">
@@ -609,7 +625,7 @@
     
     // Status validation configurations
     const STATUS_VALIDATIONS = {
-        'IN_PRODUCTION': ['description', 'description_eng', 'description_esp'],
+        'IN_PRODUCTION': ['description', 'description_eng', 'description_esp', 'description_fr'],
         'REVIEWED': ['description'] // Only original description required for REVIEWED
     };
 
@@ -642,7 +658,8 @@
         const descriptions = {
             'description': document.querySelector('textarea[name="description"]')?.value,
             'description_eng': document.querySelector('textarea[name="description_eng"]')?.value,
-            'description_esp': document.querySelector('textarea[name="description_esp"]')?.value
+            'description_esp': document.querySelector('textarea[name="description_esp"]')?.value,
+            'description_fr': document.querySelector('textarea[name="description_fr"]')?.value
         };
 
         for (const field of requiredFields) {
@@ -650,6 +667,7 @@
                 missingDescriptions.push(
                     field === 'description' ? 'Original description' :
                     field === 'description_eng' ? 'English description' : 
+                    field === 'description_fr' ? 'French description' : 
                     'Spanish description'
                 );
             }
@@ -1067,7 +1085,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fields = [
         'title', 'website', 'status', 'city', 'price', 'phone', 'address',
         'postal_code', 'level_title', 'description', 'description-eng', 
-        'description-esp', 'categories', 'main_category',  'types', 
+        'description-esp','description-fr', 'categories', 'main_category',  'types', 
         'operating_hours', 'tailored_category'
     ];
     fields.forEach(field => {

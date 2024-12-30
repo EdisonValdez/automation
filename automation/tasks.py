@@ -285,7 +285,7 @@ def process_scraping_task(self, task_id, form_data=None):
         queries = []
 
         if form_data:
-            image_count = form_data.get('image_count', 3)
+            image_count = form_data.get('image_count', 5)
             logger.info(f"Using image count from form data: {image_count}")
         
 
@@ -302,7 +302,7 @@ def process_scraping_task(self, task_id, form_data=None):
             main_category = form_data.get('main_category', '')
             subcategory = form_data.get('subcategory', '')
             description = form_data.get('description', '')
-            image_count = form_data.get('image_count', 3)
+            image_count = form_data.get('image_count', 5)
 
             query = f"{country_name}, {destination_name}, {main_category} {subcategory} {description}".strip()
             if query:
@@ -438,7 +438,7 @@ def get_s3_client():
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
     )
  
-def download_images(business, local_result, image_count=3):
+def download_images(business, local_result, image_count=5):
     photos_link = local_result.get('photos_link')
     if not photos_link:
         logger.info(f"No photos link found for business {business.id}")
@@ -448,7 +448,7 @@ def download_images(business, local_result, image_count=3):
         image_count = int(image_count)
         logger.info(f"Processing download with image count: {image_count}")
     except (TypeError, ValueError):
-        image_count = 3
+        image_count = 5
         logger.warning(f"Invalid image count provided, using default: {image_count}")
     
     image_paths = []
@@ -600,7 +600,8 @@ def translate_text_openai(text, target_language):
 
     language_map = {
         "eng": "British English",
-        "spanish": "Spanish"
+        "spanish": "Spanish",
+        "fr": "French",
     }
 
     if target_language not in language_map:
@@ -652,6 +653,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                 Business: '{business.title}'
                 Category: '{business.category_name}'
                 Location: '{business.city}, {business.country}'
+                Google Types: '{business.types}'
 
                 Requirements:
                 - EXACTLY 220 words
@@ -726,6 +728,25 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
 
             spanish_description = spanish_response['choices'][0]['message']['content'].strip()
             business.description_esp = spanish_description
+        
+        if "fr" in languages:
+            fr_messages = [
+                {"role": "system", "content": "You are an expert French translator."},
+                {"role": "user", "content": f"""
+                    Translate this text to French, maintaining the formal tone and marketing style:
+                    {us_description}
+                """}
+            ]
+
+            fr_response = call_openai_with_retry(
+                messages=fr_messages,
+                model="gpt-3.5-turbo",
+                max_tokens=800,
+                temperature=0.3
+            )
+
+            fr_description = fr_response['choices'][0]['message']['content'].strip()
+            business.description_fr = fr_description
 
         business.save()
         logger.info(f"Successfully enhanced and translated descriptions for business {business.id}")
@@ -743,7 +764,7 @@ def generate_additional_sentences(business, word_deficit):
         prompt = (
             f"Generate additional content of about {word_deficit} words to describe:\n"
             f"'{business.title}', a '{business.category_name}' located in '{business.city}, {business.country}'.\n"
-            f"Focus on its unique features, offerings, and appeal to customers."
+            f"Focus on its unique features, offerings, {business.types}, and appeal to customers."
         )
 
         document = doctran.parse(content=prompt)
@@ -756,7 +777,7 @@ def generate_additional_sentences(business, word_deficit):
         logger.error(f"Error generating additional sentences: {str(e)}", exc_info=True)
         return ""
 
-def translate_business_info(business, languages=["spanish", "eng"]):
+def translate_business_info(business, languages=["spanish", "eng", "fr"]):
     """
     Handles the complete business translation process including validation and status updates.
     """
@@ -769,13 +790,21 @@ def translate_business_info(business, languages=["spanish", "eng"]):
             return False
 
         # Case 2: Process title translations if needed
-        if business.title and (not business.title_eng or not business.title_esp):
+        if business.title and (not business.title_eng or not business.title_esp or not business.title_fr):
             success = translate_business_titles(business, languages)
             if not success:
                 logger.error(f"Failed to translate titles for business {business.id}")
                 return False
+        
+        # Case 3: Process types translations if needed
+        if business.types and (not business.types_eng or not business.types_esp or not business.types_fr):
+            success = translate_business_types(business, languages)
+            if not success:
+                logger.error(f"Failed to translate titles for business {business.id}")
+                return False
+            
 
-        # Case 3: Process description translations
+        # Case 4: Process description translations
         if business.description:
             word_count = len(business.description.split())
             
@@ -812,8 +841,12 @@ def validate_business_content(business):
     if not business.title:
         logger.error(f"Business {business.id} missing title")
         return False
-
-    if not business.description and not business.description_eng and not business.description_esp:
+    
+    if not business.types:
+        logger.error(f"Business {business.id} missing tags or google types")
+        return False
+    
+    if not business.description and not business.description_eng and not business.description_esp and not business.description_fr:
         logger.error(f"Business {business.id} missing all descriptions")
         return False
 
@@ -834,12 +867,45 @@ def translate_business_titles(business, languages):
                 translated_title = translate_text_openai(business.title, "eng")
                 if translated_title:
                     business.title_eng = translated_title
+            
+            elif lang == "fr" and not business.title_fr:
+                translated_title = translate_text_openai(business.title, "fr")
+                if translated_title:
+                    business.title_fr = translated_title
 
-        business.save(update_fields=['title_esp', 'title_eng'])
+        business.save(update_fields=['title_esp', 'title_eng', 'title_fr'])
         return True
 
     except Exception as e:
         logger.error(f"Error translating titles for business {business.id}: {str(e)}", exc_info=True)
+        return False
+
+def translate_business_types(business, languages):
+    """
+    Handles the translation of business tags and types.
+    """
+    try:
+        for lang in languages:
+            if lang == "spanish" and not business.types_esp:
+                translated_types = translate_text_openai(business.types, "spanish")
+                if translated_types:
+                    business.types_esp = translated_types
+                    
+            elif lang == "eng" and not business.types_eng:
+                translated_types = translate_text_openai(business.types, "eng")
+                if translated_types:
+                    business.types_eng = translated_types
+            
+            elif lang == "fr" and not business.types_fr:
+                translated_types = translate_text_openai(business.types, "fr")
+                if translated_types:
+                    business.types_fr = translated_types
+
+        business.save(update_fields=['types_esp', 'types_eng', 'types_fr'])
+        return True
+
+    except Exception as e:
+        logger.error(f"Error translating types for business {business.id}: {str(e)}", exc_info=True)
         return False
 
 def process_business_translations(business, languages):
@@ -857,8 +923,12 @@ def process_business_translations(business, languages):
                 translated_desc = translate_text_openai(business.description, "eng")
                 if translated_desc:
                     business.description_eng = translated_desc
+            elif lang == "fr" and not business.description_fr:
+                translated_desc = translate_text_openai(business.description, "fr")
+                if translated_desc:
+                    business.description_fr = translated_desc
 
-        business.save(update_fields=['description_esp', 'description_eng'])
+        business.save(update_fields=['description_esp', 'description_eng', 'description_fr'])
         return True
 
     except Exception as e:
@@ -872,10 +942,16 @@ def validate_translations(business):
     required_fields = {
         'title': business.title,
         'description': business.description,
+        'types': business.types,
         'title_eng': business.title_eng,
         'title_esp': business.title_esp,
+        'title_fr': business.title_fr,
         'description_eng': business.description_eng,
-        'description_esp': business.description_esp
+        'description_esp': business.description_esp,
+        'description_fr': business.description_fr,
+        'types_eng': business.types_eng,
+        'types_esp': business.types_esp,
+        'types_fr': business.types_fr,
     }
 
     invalid_fields = []
@@ -889,7 +965,7 @@ def validate_translations(business):
 
     return True
 
-def enhance_translate_and_summarize_business(business_id, languages=["spanish", "eng"]):
+def enhance_translate_and_summarize_business(business_id, languages=["spanish", "eng", "fr"]):
     """
     Main function to coordinate the enhancement, translation, and summarization process.
     """
@@ -962,6 +1038,7 @@ def generate_new_description(business):
                 Create a comprehensive business description with EXACTLY 220 words.
                 Business: '{business.title}'
                 Category: '{business.category_name}'
+                Google Types or tags: '{business.types}'
                 Location: '{business.city}, {business.country}'
 
                 Requirements:
@@ -1005,11 +1082,12 @@ def monitor_translation_progress(business_id):
     """
     try:
         business = Business.objects.get(id=business_id)
-        total_fields = 6  # title, description in 3 languages
+        total_fields = 12  
         completed_fields = sum(1 for field in [
-            business.title, business.description,
-            business.title_eng, business.description_eng,
-            business.title_esp, business.description_esp
+            business.title, business.description, business.types,
+            business.title_eng, business.description_eng, business.types_eng,
+            business.title_esp, business.description_esp, business.types_esp,
+            business.title_fr, business.description_fr, business.types_fr,
         ] if field and field.strip())
 
         progress = (completed_fields / total_fields) * 100
@@ -1375,6 +1453,15 @@ def save_business(task, local_result, query, form_data=None):
         if 'gps_coordinates' in local_result:
             business_data['latitude'] = local_result['gps_coordinates'].get('latitude')
             business_data['longitude'] = local_result['gps_coordinates'].get('longitude')
+ 
+        US_COUNTRY_NAMES = {'united states', 'usa', 'u.s.', 'united states of america'}
+
+        # Check if the country is one of the acceptable variations
+        if business_data.get('country', '').strip().lower() in US_COUNTRY_NAMES:
+            phone = business_data.get('phone', '')
+            if phone and not phone.startswith('+1'):
+                business_data['phone'] = f'+1{phone.lstrip(" +")}'
+                logger.info(f"Updated phone with +1 prefix: {business_data['phone']}")
 
         if 'type' in local_result: 
             business_data['types'] = ', '.join(local_result['type'])

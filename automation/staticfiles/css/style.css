@@ -72,9 +72,9 @@ body {
     --body-bg: #1E1D2B;
     --box-bg: #252837;
     --border-color: #222028;
-    --text-color: #fff;
+    --text-color: #dbe0e5;
     --menu-item-active-bg: #212D94;
-    --main-color: #fff;
+    --main-color: #dbe0e5;
     --bs-light: #212431;
 }
 
@@ -85,11 +85,11 @@ body {
 }
 
 .dark a.btn.btn-light {
-    color: #fff;
+    color: #dbe0e5;
 }
 
 .dark a.btn.btn-light:hover {
-    color: #fff;
+    color: #dbe0e5;
 }
 
 .color-span {
@@ -101,7 +101,7 @@ body {
 }
 
 .dark .color-span {
-    color: #fff !important;
+    color: #dbe0e5 !important;
 }
 
 a {
@@ -113,7 +113,7 @@ a:hover {
     color: #212D94;
 }
 .dark a:hover {
-    color: #fff !important;
+    color: #dbe0e5 !important;
 }
 .dark option {
     background: #212529;

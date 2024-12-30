@@ -8,6 +8,8 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
 import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models.functions import TruncDate
 from django.views.decorators.http import require_http_methods
 from django.core.cache import cache
 from django.views.decorators.http import require_POST
@@ -88,7 +90,7 @@ class UploadFileView(View):
             'form': form,
             'page_obj': page_obj,
             'tasks': page_obj.object_list,
-            'default_image_count': 3
+            'default_image_count': 5
         }
 
         return render(request, 'automation/upload.html', context)
@@ -168,52 +170,71 @@ class TaskDetailView(View):
     def get(self, request, id):
         logger.info(f"Accessing TaskDetailView for task {id}")
         user = request.user
-        task = get_object_or_404(ScrapingTask.objects.prefetch_related(
-            Prefetch('businesses', queryset=Business.objects.filter(is_deleted=False))
-        ), id=id)
 
-        businesses = task.businesses.filter(is_deleted=False).prefetch_related(
-        Prefetch('images', queryset=Image.objects.filter(is_deleted=False).order_by('id'), to_attr='first_image')
-        )
- 
+        # Get base queryset for tasks based on user role
         if user.is_superuser or user.roles.filter(role='ADMIN').exists():
-            task_queryset = ScrapingTask.objects.filter(id=id)
+            base_task_queryset = ScrapingTask.objects.all()
         elif user.roles.filter(role='AMBASSADOR').exists():
             ambassador_destinations = user.destinations.all()
-            task_queryset = ScrapingTask.objects.filter(id=id, businesses__form_destination_id__in=ambassador_destinations)
+            base_task_queryset = ScrapingTask.objects.filter(
+                businesses__form_destination_id__in=ambassador_destinations
+            ).distinct()
         else:
-            return render(request, 'automation/error.html', {'error': 'You do not have permission to access this task.'}, status=403)
+            return render(request, 'automation/error.html', 
+                        {'error': 'You do not have permission to access this task.'}, 
+                        status=403)
 
-        if not task_queryset.exists():
-            return render(request, 'automation/error.html', {'error': 'Task not found.'}, status=404)
+        # Get the current task with prefetched businesses
+        task = get_object_or_404(
+            base_task_queryset.prefetch_related(
+                Prefetch('businesses', 
+                        queryset=Business.objects.filter(is_deleted=False))
+            ), 
+            id=id
+        )
 
-        task = task_queryset.first()  # Retrieve the first task that matches the query
+        # Get previous and next tasks from the base queryset
+        previous_task = base_task_queryset.filter(id__lt=task.id).order_by('-id').first()
+        next_task = base_task_queryset.filter(id__gt=task.id).order_by('id').first()
 
-        # Prefetch related businesses
-        businesses = task.businesses.prefetch_related(
-            Prefetch('images', queryset=Image.objects.order_by('id'), to_attr='first_image')
-        ).all()
+        # Prefetch businesses with images
+        businesses = task.businesses.filter(is_deleted=False).prefetch_related(
+            Prefetch('images', 
+                    queryset=Image.objects.filter(is_deleted=False).order_by('id'),
+                    to_attr='first_image')
+        )
 
-        # Count the number of businesses
-        business_count = businesses.count()
-
-        # Attach the first image if available
+        # Attach first image to each business
         for business in businesses:
             business.first_image = business.first_image[0] if business.first_image else None
 
+        # Check for empty descriptions
+        has_empty_descriptions = businesses.filter(
+            Q(description__isnull=True) | Q(description='')
+        ).exists()
+
+        # Build context
         context = {
             'task': task,
             'businesses': businesses,
-            'business_count': business_count,  # Add the business count to the context
+            'business_count': businesses.count(),
+            'has_empty_descriptions': has_empty_descriptions,
+            'previous_task': previous_task,   
+            'next_task': next_task,
+            'is_first_task': previous_task is None,
+            'is_last_task': next_task is None,
             'status_choices': Business.STATUS_CHOICES,
             'MEDIA_URL': settings.MEDIA_URL,
             'MEDIA_ROOT': settings.MEDIA_ROOT,
             'DEFAULT_IMAGE_URL': settings.DEFAULT_IMAGE_URL,
         }
 
-        logger.info(f"Retrieved task {id} with {business_count} businesses")
+        logger.info(f"Retrieved task {id} with {businesses.count()} businesses")
+        logger.debug(f"Previous task: {previous_task.id if previous_task else None}, "
+                    f"Next task: {next_task.id if next_task else None}")
+
         return render(request, 'automation/task_detail.html', context)
- 
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class TranslateBusinessesView(View):
@@ -376,7 +397,7 @@ class TranslateBusinessesView(View):
             
             response = requests.post(
                 translate_url,
-                json={'languages': ['spanish', 'eng']},
+                json={'languages': ['spanish', 'eng', 'fr']},
                 headers={'Content-Type': 'application/json'},
                 timeout=30
             )
@@ -502,7 +523,8 @@ class TranslateBusinessesView(View):
             return 'PARTIALLY_TRANSLATED'
         else:
             return 'TRANSLATION_FAILED'
- 
+
+""" 
 
 @login_required
 def task_detail(request, task_id):
@@ -512,17 +534,34 @@ def task_detail(request, task_id):
         task=task,
         status__in=[None, '', 'None']
     ).update(status='PENDING')
+ 
+    if request.user.is_superuser: 
+        task_queryset = ScrapingTask.objects.all()
+    else: 
+        task_queryset = ScrapingTask.objects.filter(ambassador=request.user)
+     
+    task_queryset = task_queryset.order_by('id') 
+    previous_task = task_queryset.filter(id__lt=task.id).last()
+    next_task = task_queryset.filter(id__gt=task.id).first()
 
     businesses = task.businesses.all()
     status_choices = Business.STATUS_CHOICES
+    has_empty_descriptions = task.businesses.filter(
+        Q(description__isnull=True) | Q(description='')
+    ).exists()
 
     context = {
         'task': task,
         'businesses': businesses,
         'status_choices': status_choices,
         'total_businesses': businesses.count(),
+        'has_empty_descriptions': has_empty_descriptions,
+        'next_task': next_task,
+        'is_first_task': previous_task is None,
+        'is_last_task': next_task is None,
     }
     return render(request, 'task_detail.html', context)
+"""
 
 @user_passes_test(is_admin)
 def admin_view(request):
@@ -610,7 +649,8 @@ def login_view(request):
         else:
             messages.error(request, "Invalid username or password.")
     return render(request, 'automation/login.html')
- 
+
+
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class DashboardView(View):
@@ -618,8 +658,7 @@ class DashboardView(View):
     def get(self, request):
         user = request.user
         context = self.get_common_context()
-
-
+ 
         # Determine user role
         is_admin = user.is_superuser or user.roles.filter(role='ADMIN').exists()
         is_ambassador = user.roles.filter(role='AMBASSADOR').exists()
@@ -661,66 +700,109 @@ class DashboardView(View):
         })
 
         return render(request, 'automation/dashboard.html', context)
-
-
+ 
     def get_common_context(self):
         context = {}
         try:
-            # Get total counts
-            context['total_projects'] = ScrapingTask.objects.count()
-            context['total_businesses'] = Business.objects.count()
+            # Get total counts with proper filtering
+            context['total_projects'] = ScrapingTask.objects.filter(
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+            ).count()
+            
+            context['total_businesses'] = Business.objects.filter(
+                status__in=['PENDING', 'REVIEWED', 'IN_PRODUCTION']
+            ).count()
 
-            # Get status counts
-            translation_status_counts = ScrapingTask.objects.values('translation_status').annotate(count=Count('id')).order_by()
-            status_counts = ScrapingTask.objects.values('status').annotate(count=Count('id')).order_by()
-            context['pending_projects'] = next((item['count'] for item in status_counts if item['status'] == 'PENDING'), 0)
-            context['ongoing_projects'] = next((item['count'] for item in status_counts if item['status'] == 'IN_PROGRESS'), 0)
-            context['completed_projects'] = next((item['count'] for item in status_counts if item['status'] == 'COMPLETED'), 0)
-            context['failed_projects'] = next((item['count'] for item in status_counts if item['status'] == 'FAILED'), 0)
-            context['translated_projects'] = next((item['count'] for item in translation_status_counts if item['translation_status'] == 'TRANSLATED'), 0)
+            # Get status counts with explicit filtering
+            status_counts = ScrapingTask.objects.values('status').annotate(
+                count=Count('id', distinct=True)  # Use distinct to avoid duplicates
+            ).filter(
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+            ).order_by()
 
-            # Get project statistics
-            context['projects'] = ScrapingTask.objects.all().order_by('-created_at')[:5]  # Recent projects
-            context['tasks'] = ScrapingTask.objects.all().order_by('-created_at')[:10]  # Recent tasks
+            # Debug logging
+            logger.debug(f"Raw status counts: {list(status_counts)}")
 
-            # Get status counts for chart
-            status_counts_chart = ScrapingTask.objects.values('status').annotate(count=Count('id')).order_by()
-            context['status_counts'] = {item['status']: item['count'] for item in status_counts_chart}
+            # Initialize counters
+            context['pending_projects'] = 0
+            context['ongoing_projects'] = 0
+            context['completed_projects'] = 0
+            context['failed_projects'] = 0
 
-            # Get category counts for chart
-            category_counts = ScrapingTask.objects.values('main_category').annotate(count=Count('id')).order_by()
-            for item in category_counts:
-                if item['main_category'] is None:
-                    item['main_category'] = "Uncategorized"  # Substitute None with a default label
+            # Assign counts with validation
+            for item in status_counts:
+                if item['status'] == 'PENDING':
+                    context['pending_projects'] = item['count']
+                elif item['status'] == 'IN_PROGRESS':
+                    context['ongoing_projects'] = item['count']
+                elif item['status'] == 'COMPLETED':
+                    context['completed_projects'] = item['count']
+                elif item['status'] == 'FAILED':
+                    context['failed_projects'] = item['count']
 
-            context['category_counts'] = list(category_counts)
+            # Verify total matches sum of individual counts
+            total_from_status = (
+                context['pending_projects'] +
+                context['ongoing_projects'] +
+                context['completed_projects'] +
+                context['failed_projects']
+            )
 
-            # Additional statistics
-            context['avg_businesses_per_task'] = (Business.objects.count() / context['total_projects']) if context['total_projects'] > 0 else 0
-            context['completion_rate'] = (context['completed_projects'] / context['total_projects'] * 100) if context['total_projects'] > 0 else 0
+            logger.debug(f"Total projects from sum: {total_from_status}")
+            logger.debug(f"Total projects from direct count: {context['total_projects']}")
 
-            # Recent tasks
+            if total_from_status != context['total_projects']:
+                logger.warning(
+                    f"Task count mismatch: sum({total_from_status}) != "
+                    f"total({context['total_projects']})"
+                )
+
+            # Get recent projects with proper ordering and limit
+            context['projects'] = ScrapingTask.objects.filter(
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+            ).order_by('-created_at')[:5]
+
+            # Add timeline data
+            context['timeline_data'] = json.dumps(self.get_timeline_data(), cls=DjangoJSONEncoder)
+
+            # Get status counts for chart with validation
+            status_counts_chart = ScrapingTask.objects.values('status').annotate(
+                count=Count('id', distinct=True)
+            ).filter(
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+            ).order_by()
+
+            context['status_counts'] = {
+                item['status']: item['count'] 
+                for item in status_counts_chart 
+                if item['status'] in ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+            }
+
+            # Additional statistics with validation
+            if context['total_projects'] > 0:
+                context['avg_businesses_per_task'] = round(
+                    context['total_businesses'] / context['total_projects'], 2
+                )
+                context['completion_rate'] = round(
+                    (context['completed_projects'] / context['total_projects'] * 100), 2
+                )
+            else:
+                context['avg_businesses_per_task'] = 0
+                context['completion_rate'] = 0
+
+            # Recent tasks count with proper date filtering
             seven_days_ago = timezone.now() - timezone.timedelta(days=7)
-            context['recent_tasks_count'] = ScrapingTask.objects.filter(created_at__gte=seven_days_ago).count()
+            context['recent_tasks_count'] = ScrapingTask.objects.filter(
+                created_at__gte=seven_days_ago,
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+            ).count()
+
+            # Debug logging
+            logger.debug(f"Final context counts: {context}")
 
         except DatabaseError as e:
             logger.error(f"Database error in get_common_context: {str(e)}")
-            context = {
-                'total_projects': 0,
-                'total_businesses': 0,
-                'pending_projects': 0,
-                'ongoing_projects': 0,
-                'completed_projects': 0,
-                'failed_projects': 0,
-                'translated_projects': 0,
-                'projects': [],
-                'tasks': [],
-                'status_counts': {},
-                'category_counts': [],
-                'avg_businesses_per_task': 0,
-                'completion_rate': 0,
-                'recent_tasks_count': 0,
-            }
+            # Your existing error handling...
         except Exception as e:
             logger.error(f"Unexpected error in get_common_context: {str(e)}")
             raise
@@ -750,6 +832,85 @@ class DashboardView(View):
             ),
             'ambassador_destinations': ambassador_destinations,
         }
+
+    def get_timeline_data(self):
+        """Get timeline data for tasks and businesses"""
+        try:
+            # Get data for the last 30 days
+            end_date = timezone.now()
+            start_date = end_date - timezone.timedelta(days=30)
+            
+            logger.debug(f"Fetching data from {start_date} to {end_date}")
+            
+            # Get daily task counts with proper status filtering
+            task_data = ScrapingTask.objects.filter(
+                created_at__gte=start_date,
+                created_at__lte=end_date,
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+            ).annotate(
+                date=TruncDate('created_at')
+            ).values('date').annotate(
+                task_count=Count('id', distinct=True),  # Add distinct=True
+                business_count=Count('businesses', distinct=True)  # Add distinct=True
+            ).order_by('date')
+            
+            # Convert query result to list for debugging
+            task_data_list = list(task_data)
+            logger.debug(f"Query result: {task_data_list}")
+
+            # Initialize data containers
+            dates = []
+            tasks = []
+            businesses = []
+
+            # Fill in data for each day
+            current_date = start_date.date()
+            while current_date <= end_date.date():
+                dates.append(current_date.strftime('%Y-%m-%d'))
+                
+                # Find data for current date
+                day_data = next(
+                    (item for item in task_data_list if item['date'] == current_date),
+                    {'task_count': 0, 'business_count': 0}
+                )
+                
+                # Add counts for the day
+                tasks.append(day_data['task_count'])
+                businesses.append(day_data['business_count'])
+                
+                current_date += timezone.timedelta(days=1)
+
+            # Verify data integrity
+            total_tasks = sum(tasks)
+            total_businesses = sum(businesses)
+            logger.debug(
+                f"Timeline totals - Tasks: {total_tasks}, "
+                f"Businesses: {total_businesses}"
+            )
+            
+            # Add verification against current counts
+            current_task_count = ScrapingTask.objects.filter(
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+            ).count()
+            
+            if total_tasks != current_task_count:
+                logger.warning(
+                    f"Timeline task count ({total_tasks}) doesn't match "
+                    f"current task count ({current_task_count})"
+                )
+
+            return {
+                'dates': dates,
+                'tasks': tasks,
+                'businesses': businesses
+            }
+        except Exception as e:
+            logger.error(f"Error generating timeline data: {str(e)}")
+            return {
+                'dates': [],
+                'tasks': [],
+                'businesses': []
+            }
 
     def get_user_context(self, user):
         return {}
@@ -1451,6 +1612,112 @@ def delete_business(request, business_id):
 
 
 ###########ENHANCE AND GENERATE DESCRIPTION##################
+
+class BusinessDescriptionGenerator:
+    """
+    Class to generate descriptions for businesses without original descriptions in a specific task
+    """
+    
+    def __init__(self, task_id):
+        self.task_id = task_id
+        self.task = None
+        self.businesses_updated = 0
+        self.businesses_skipped = 0
+        self.errors = []
+
+    def generate_description(self, business):
+        """
+        Generate a description based on business attributes
+        """
+        try:
+            # Template for description generation
+            description = (
+                f"Welcome to {business.title}, "
+                f"located in {business.city}, {business.country}. "
+            )
+
+            # Add category information if available
+            if business.main_category:
+                description += f"We specialize in {business.main_category}. "
+
+            # Add location context
+            if business.address:
+                description += f"You can find us at {business.address}. "
+
+            # Add contact information
+            if business.phone:
+                description += f"Contact us at {business.phone}. "
+
+            # Add website information
+            if business.website:
+                description += f"Visit our website at {business.website} for more information. "
+
+            return description.strip()
+
+        except Exception as e:
+            logger.error(f"Error generating description for business {business.id}: {e}")
+            self.errors.append(f"Business {business.id}: {str(e)}")
+            return None
+
+    def process_businesses(self):
+        """
+        Process all businesses in the task that don't have descriptions
+        """
+        try:
+            # Get the task
+            self.task = ScrapingTask.objects.get(id=self.task_id)
+            
+            # Get businesses without descriptions
+            businesses = Business.objects.filter(
+                task=self.task,
+                description__isnull=True
+            ).exclude(
+                status='DISCARDED'
+            )
+
+            logger.info(f"Found {businesses.count()} businesses without descriptions in task {self.task_id}")
+
+            with transaction.atomic():
+                for business in businesses:
+                    try:
+                        # Skip if business already has a description
+                        if business.description:
+                            self.businesses_skipped += 1
+                            logger.debug(f"Skipped business {business.id} - already has description")
+                            continue
+
+                        # Generate and save description
+                        description = self.generate_description(business)
+                        if description:
+                            business.description = description
+                            business.save(update_fields=['description'])
+                            self.businesses_updated += 1
+                            logger.info(f"Generated description for business {business.id}")
+                        else:
+                            self.businesses_skipped += 1
+                            logger.warning(f"Could not generate description for business {business.id}")
+
+                    except Exception as e:
+                        self.errors.append(f"Business {business.id}: {str(e)}")
+                        logger.error(f"Error processing business {business.id}: {e}")
+
+        except ScrapingTask.DoesNotExist:
+            logger.error(f"Task {self.task_id} not found")
+            self.errors.append(f"Task {self.task_id} not found")
+        except Exception as e:
+            logger.error(f"Error processing task {self.task_id}: {e}")
+            self.errors.append(str(e))
+
+    def get_results(self):
+        """
+        Return the results of the processing
+        """
+        return {
+            'task_id': self.task_id,
+            'businesses_updated': self.businesses_updated,
+            'businesses_skipped': self.businesses_skipped,
+            'errors': self.errors
+        }
  
 @csrf_exempt
 def generate_description(request):
@@ -1533,8 +1800,7 @@ def generate_description(request):
     else:
         logger.debug("Invalid request method. Only POST is allowed.")
         return JsonResponse({'success': False, 'error': 'Invalid request method.'})
-
-
+ 
 @csrf_exempt
 def enhance_translate_business(request, business_id):
     logger.debug("enhance_translate_business view called.")
@@ -1577,10 +1843,38 @@ def enhance_translate_business(request, business_id):
     else:
         logger.debug("Invalid request method in enhance_translate_business. Only POST is allowed.")
         return JsonResponse({'success': False, 'message': 'Invalid request method.'})
-    
+ 
+@login_required
+def generate_task_descriptions(request, task_id):
+    if request.method == 'POST':
+        task = get_object_or_404(ScrapingTask, id=task_id)
+        generator = BusinessDescriptionGenerator(task_id)
+        
+        try:
+            generator.process_businesses()
+            results = generator.get_results()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f"Generated {results['businesses_updated']} descriptions",
+                'businesses_updated': results['businesses_updated'],
+                'businesses_skipped': results['businesses_skipped'],
+                'has_empty_descriptions': task.businesses.filter(
+                    Q(description__isnull=True) | Q(description='')
+                ).exists()
+            })
+            
+        except Exception as e:
+            logger.error(f"Error generating descriptions for task {task_id}: {e}")
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+            
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
 ###########ENHANCE AND GENERATE DESCRIPTION##################
-
-
 
 @csrf_exempt
 def update_business_hours(request):
@@ -1615,8 +1909,7 @@ def update_business_hours(request):
         'status': 'error',
         'message': 'Invalid request method'
     })
-
-
+ 
 @require_POST
 @csrf_exempt  
 def update_image_status(request):
