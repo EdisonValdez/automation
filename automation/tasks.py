@@ -710,61 +710,110 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         uk_description = uk_response['choices'][0]['message']['content'].strip()
         business.description_eng = uk_description
  
+        translations_status = {
+            'spanish': False,
+            'fr': False
+        }
+
         if "spanish" in languages:
-            spanish_messages = [
-                {"role": "system", "content": "You are an expert Spanish translator."},
-                {"role": "user", "content": f"""
-                    Translate this text to Spanish, maintaining the formal tone and marketing style:
-                    {us_description}
-                """}
-            ]
+            try:
+                spanish_messages = [
+                    {"role": "system", "content": "You are an expert Spanish translator."},
+                    {"role": "user", "content": f"""
+                        Translate this text to Spanish, maintaining:
+                        1. Formal tone and marketing style
+                        2. Original text length and structure
+                        3. All business-specific terms
+                        4. SEO optimization
 
-            spanish_response = call_openai_with_retry(
-                messages=spanish_messages,
-                model="gpt-3.5-turbo",
-                max_tokens=800,
-                temperature=0.3
-            )
+                        Text to translate:
+                        {us_description}
+                    """}
+                ]
 
-            spanish_description = spanish_response['choices'][0]['message']['content'].strip()
-            business.description_esp = spanish_description
-        
+                spanish_response = call_openai_with_retry(
+                    messages=spanish_messages,
+                    model="gpt-3.5-turbo",
+                    max_tokens=800,
+                    temperature=0.3
+                )
+
+                spanish_description = spanish_response['choices'][0]['message']['content'].strip()
+                
+                # Validate translation
+                if len(spanish_description.split()) >= len(us_description.split()) * 0.8:
+                    business.description_esp = spanish_description
+                    translations_status['spanish'] = True
+                    logger.info(f"Successfully translated to Spanish for business {business.id}")
+                else:
+                    logger.warning(f"Spanish translation length validation failed for business {business.id}")
+                    
+            except Exception as e:
+                logger.error(f"Spanish translation failed for business {business.id}: {str(e)}", exc_info=True)
+
         if "fr" in languages:
-            fr_messages = [
-                {"role": "system", "content": "You are an expert French translator."},
-                {"role": "user", "content": f"""
-                    Translate this text to French, maintaining the formal tone and marketing style:
-                    {us_description}
-                """}
-            ]
+            try:
+                fr_messages = [
+                    {"role": "system", "content": "You are an expert French translator."},
+                    {"role": "user", "content": f"""
+                        Translate this text to French, maintaining:
+                        1. Formal tone and marketing style
+                        2. Original text length and structure
+                        3. All business-specific terms
+                        4. SEO optimization
 
-            fr_response = call_openai_with_retry(
-                messages=fr_messages,
-                model="gpt-3.5-turbo",
-                max_tokens=800,
-                temperature=0.3
-            )
+                        Text to translate:
+                        {us_description}
+                    """}
+                ]
 
-            fr_description = fr_response['choices'][0]['message']['content'].strip()
-            business.description_fr = fr_description
+                fr_response = call_openai_with_retry(
+                    messages=fr_messages,
+                    model="gpt-3.5-turbo",
+                    max_tokens=800,
+                    temperature=0.3
+                )
 
-        business.save()
-        logger.info(f"Successfully enhanced and translated descriptions for business {business.id}")
-        return True
+                fr_description = fr_response['choices'][0]['message']['content'].strip()
+                
+                # Validate translation
+                if len(fr_description.split()) >= len(us_description.split()) * 0.8:
+                    business.description_fr = fr_description
+                    translations_status['fr'] = True
+                    logger.info(f"Successfully translated to French for business {business.id}")
+                else:
+                    logger.warning(f"French translation length validation failed for business {business.id}")
+
+            except Exception as e:
+                logger.error(f"French translation failed for business {business.id}: {str(e)}", exc_info=True)
+
+        # Save only if at least one translation was successful
+        if any(translations_status.values()) or business.description_eng:
+            business.save()
+            logger.info(f"Successfully saved translations for business {business.id}")
+            return True
+        else:
+            logger.error(f"No successful translations for business {business.id}")
+            return False
 
     except Exception as e:
         logger.error(f"Error in enhance_and_translate_description for business {business.id}: {str(e)}", exc_info=True)
         return False
- 
+
 def generate_additional_sentences(business, word_deficit):
     """
     Generates additional sentences to meet the required word count.
     """
+    if word_deficit <= 0:
+        logger.debug(f"No additional words needed for business {business.id}")
+        return ""
+
     try:
         prompt = (
-            f"Generate additional content of about {word_deficit} words to describe:\n"
+            f"Generate additional content of exactly {word_deficit} words to describe:\n"
             f"'{business.title}', a '{business.category_name}' located in '{business.city}, {business.country}'.\n"
-            f"Focus on its unique features, offerings, {business.types}, and appeal to customers."
+            f"Focus on its unique features, offerings, {business.types}, and appeal to customers.\n"
+            f"Maintain the same tone and style as the existing description."
         )
 
         document = doctran.parse(content=prompt)
@@ -772,11 +821,17 @@ def generate_additional_sentences(business, word_deficit):
             token_limit=word_deficit * 2
         ).transformed_content.strip()
 
-        return additional_sentences
-    except Exception as e:
-        logger.error(f"Error generating additional sentences: {str(e)}", exc_info=True)
-        return ""
+        # Validate generated content
+        if additional_sentences and len(additional_sentences.split()) >= word_deficit * 0.8:
+            return additional_sentences
+        else:
+            logger.warning(f"Generated content too short for business {business.id}")
+            return ""
 
+    except Exception as e:
+        logger.error(f"Error generating additional sentences for business {business.id}: {str(e)}", exc_info=True)
+        return ""
+    
 def translate_business_info(business, languages=["spanish", "eng", "fr"]):
     """
     Handles the complete business translation process including validation and status updates.
@@ -941,14 +996,14 @@ def validate_translations(business):
     """
     required_fields = {
         'title': business.title,
-        'description': business.description,
-        'types': business.types,
         'title_eng': business.title_eng,
         'title_esp': business.title_esp,
         'title_fr': business.title_fr,
+        'description': business.description,
         'description_eng': business.description_eng,
         'description_esp': business.description_esp,
         'description_fr': business.description_fr,
+        'types': business.types,
         'types_eng': business.types_eng,
         'types_esp': business.types_esp,
         'types_fr': business.types_fr,
@@ -1058,6 +1113,7 @@ def generate_new_description(business):
         response = call_openai_with_retry(
             messages=messages,
             max_tokens=800,
+            model="gpt-3.5-turbo",
             temperature=0.3
         )
 
@@ -1260,7 +1316,7 @@ class TranslationMetrics(models.Model):
         indexes = [
             models.Index(fields=['business', 'timestamp'])
         ]
- 
+
 #####################DESCRIPTION TRANSLATE##################################
  
 def get_postal_code_pattern(country: str) -> Optional[str]:

@@ -84,7 +84,7 @@ async def generate_additional_sentences_openai(text: str, words_needed: int) -> 
         return text
 
 
-def enhance_and_translate_description(business, languages=["spanish", "eng"]):
+def enhance_and_translate_description(business, languages=["spanish", "eng", "fr"]):
     """
     Enhances the business description and translates it into specified languages.
     Uses a single prompt to get both Spanish and English translations at once.
@@ -137,6 +137,13 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                     business.description_esp = translations[0].strip()
                 if "eng" in languages:
                     business.description_eng = translations[1].strip()
+                if "fr" in languages:
+                    try:
+                        fr_translation = translate_text_openai(enhanced_description, 'French')
+                        business.description_fr = fr_translation
+                    except Exception as e:
+                        logger.error(f"French translation failed: {str(e)}", exc_info=True)
+
 
         business.save()
         logger.info(f"Enhanced and translated description for business {business.id} into {', '.join(languages)}")
@@ -163,11 +170,13 @@ async def translate_business_info(business) -> Dict:
             business.description = desc_results['original']
             business.description_esp = desc_results['translations'].get('description_esp')
             business.description_eng = desc_results['translations'].get('description_eng')
+            business.description_fr = desc_results['translations'].get('description_fr')
 
         # Translate title
         if business.title:
             business.title_esp = await translate_text_openai(business.title, 'Spanish')
             business.title_eng = await translate_text_openai(business.title, 'English')
+            business.title_fr = await translate_text_openai(business.title, 'French')
 
         await business.asave()
         logger.info(f"Translation completed for business {business.id}")

@@ -1964,8 +1964,8 @@ def enhance_translate_business(request, business_id):
                 'success': True,
                 'description': business.description,
                 'description_eng': business.description_eng,
-                'business_esp': business.description_esp,
-                'business_fr': business.description_fr
+                'description_esp': business.description_esp,
+                'description_fr': business.description_fr
             })
 
         except Business.DoesNotExist:

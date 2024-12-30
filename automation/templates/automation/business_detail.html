@@ -1380,7 +1380,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body: JSON.stringify({ languages: ['spanish', 'eng'] })
+                    body: JSON.stringify({ languages: ['spanish', 'eng', 'fr'] })
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -1520,5 +1520,4 @@ document.addEventListener('DOMContentLoaded', function () {
 
 {% endblock %}
 
-
-Full76+24=100!
+ 
