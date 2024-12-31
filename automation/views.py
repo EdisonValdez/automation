@@ -965,86 +965,208 @@ class DashboardView(View):
         }
 
     def get_timeline_data(self):
-        """Get timeline data for tasks and businesses"""
+        """Get accurate timeline data for tasks and businesses"""
         try:
             # Get data for the last 30 days
             end_date = timezone.now()
-            start_date = end_date - timezone.timedelta(days=30)
+            start_date = end_date - timezone.timedelta(days=60)
             
-            logger.debug(f"Fetching data from {start_date} to {end_date}")
-            
-            # Get daily task counts with proper status filtering
-            task_data = ScrapingTask.objects.filter(
-                created_at__gte=start_date,
-                created_at__lte=end_date,
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
-            ).annotate(
-                date=TruncDate('created_at')
-            ).values('date').annotate(
-                task_count=Count('id', distinct=True),  # Add distinct=True
-                business_count=Count('businesses', distinct=True)  # Add distinct=True
-            ).order_by('date')
-            
-            # Convert query result to list for debugging
-            task_data_list = list(task_data)
-            logger.debug(f"Query result: {task_data_list}")
+            # Get daily counts with proper aggregation
+            timeline_data = (
+                ScrapingTask.objects.filter(
+                    created_at__gte=start_date,
+                    created_at__lte=end_date
+                )
+                .annotate(
+                    date=TruncDate('created_at')
+                )
+                .values('date')
+                .annotate(
+                    task_count=Count('id', distinct=True),
+                    business_count=Count('businesses', distinct=True)
+                )
+                .order_by('date')
+            )
 
-            # Initialize data containers
+            # Verify specific date counts
+            specific_date = timezone.datetime(2024, 12, 30).date()
+            specific_date_data = (
+                ScrapingTask.objects.filter(
+                    created_at__date=specific_date
+                ).aggregate(
+                    task_count=Count('id', distinct=True),
+                    business_count=Count('businesses', distinct=True)
+                )
+            )
+            
+            logger.debug(f"Specific date (30-12-2024) counts: {specific_date_data}")
+            
+            # Get specific task details - using project_title instead of title
+            task_details = ScrapingTask.objects.filter(
+                id__in=[397, 398, 399]
+            ).annotate(
+                business_count=Count('businesses')
+            ).values('id', 'project_title', 'business_count', 'created_at')
+            
+            logger.debug(f"Specific task details: {task_details}")
+            
+            # Format data for chart
             dates = []
             tasks = []
             businesses = []
-
+            
             # Fill in data for each day
             current_date = start_date.date()
             while current_date <= end_date.date():
                 dates.append(current_date.strftime('%Y-%m-%d'))
                 
-                # Find data for current date
+                # Get data for current date
                 day_data = next(
-                    (item for item in task_data_list if item['date'] == current_date),
+                    (item for item in timeline_data if item['date'] == current_date),
                     {'task_count': 0, 'business_count': 0}
                 )
                 
-                # Add counts for the day
                 tasks.append(day_data['task_count'])
                 businesses.append(day_data['business_count'])
                 
                 current_date += timezone.timedelta(days=1)
 
-            # Verify data integrity
-            total_tasks = sum(tasks)
-            total_businesses = sum(businesses)
-            logger.debug(
-                f"Timeline totals - Tasks: {total_tasks}, "
-                f"Businesses: {total_businesses}"
+            # Log the final counts for verification
+            logger.debug(f"Timeline data summary:")
+            logger.debug(f"Date range: {start_date.date()} to {end_date.date()}")
+            logger.debug(f"Total tasks in period: {sum(tasks)}")
+            logger.debug(f"Total businesses in period: {sum(businesses)}")
+            
+            # Verify latest day's counts
+            latest_date = end_date.date()
+            latest_counts = ScrapingTask.objects.filter(
+                created_at__date=latest_date
+            ).aggregate(
+                task_count=Count('id', distinct=True),
+                business_count=Count('businesses', distinct=True)
             )
-            
-            # Add verification against current counts
-            current_task_count = ScrapingTask.objects.filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
-            ).count()
-            
-            if total_tasks != current_task_count:
-                logger.warning(
-                    f"Timeline task count ({total_tasks}) doesn't match "
-                    f"current task count ({current_task_count})"
-                )
+            logger.debug(f"Latest day ({latest_date}) counts: {latest_counts}")
 
             return {
                 'dates': dates,
                 'tasks': tasks,
                 'businesses': businesses
             }
+
         except Exception as e:
             logger.error(f"Error generating timeline data: {str(e)}")
-            return {
-                'dates': [],
-                'tasks': [],
+            logger.exception(e)  # This will log the full traceback
+            return {'dates': [], 'tasks': [], 'businesses': []}
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        try:
+            # Default to last 30 days
+            end_date = timezone.now().date()
+            start_date = end_date - timezone.timedelta(days=30)
+            
+            # Get timeline data
+            timeline_data = self.get_timeline_data(start_date, end_date)
+            
+            # Calculate totals
+            totals = ScrapingTask.objects.aggregate(
+                total_tasks=Count('id', distinct=True),
+                total_businesses=Count('businesses', distinct=True)
+            )
+            
+            context.update({
+                'timeline_data': json.dumps(timeline_data),
+                'default_start_date': start_date,
+                'default_end_date': end_date,
+                'total_tasks': totals['total_tasks'],
+                'total_businesses': totals['total_businesses']
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in get_context_data: {str(e)}")
+            context['timeline_data'] = json.dumps({
+                'dates': [], 
+                'tasks': [], 
                 'businesses': []
-            }
+            })
+        
+        return context
 
     def get_user_context(self, user):
         return {}
+
+class GetTimelineDataView(View):
+    def get(self, request):
+        try:
+            # Get date range from request
+            start_date = request.GET.get('start_date')
+            end_date = request.GET.get('end_date')
+            
+            # Convert strings to dates
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            
+            # Get timeline data
+            timeline_data = (
+                ScrapingTask.objects.filter(
+                    created_at__date__gte=start_date,
+                    created_at__date__lte=end_date
+                )
+                .annotate(
+                    date=TruncDate('created_at')
+                )
+                .values('date')
+                .annotate(
+                    task_count=Count('id', distinct=True),
+                    business_count=Count('businesses', distinct=True)
+                )
+                .order_by('date')
+            )
+            
+            # Calculate totals
+            totals = ScrapingTask.objects.filter(
+                created_at__date__gte=start_date,
+                created_at__date__lte=end_date
+            ).aggregate(
+                total_tasks=Count('id', distinct=True),
+                total_businesses=Count('businesses', distinct=True)
+            )
+            
+            # Format data for chart
+            dates = []
+            tasks = []
+            businesses = []
+            
+            current_date = start_date
+            while current_date <= end_date:
+                dates.append(current_date.strftime('%Y-%m-%d'))
+                
+                day_data = next(
+                    (item for item in timeline_data if item['date'] == current_date),
+                    {'task_count': 0, 'business_count': 0}
+                )
+                
+                tasks.append(day_data['task_count'])
+                businesses.append(day_data['business_count'])
+                
+                current_date += timezone.timedelta(days=1)
+            
+            return JsonResponse({
+                'dates': dates,
+                'tasks': tasks,
+                'businesses': businesses,
+                'total_tasks': totals['total_tasks'],
+                'total_businesses': totals['total_businesses']
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in GetTimelineDataView: {str(e)}")
+            return JsonResponse({
+                'error': 'Failed to fetch timeline data'
+            }, status=400)
+        
+
 
 #########USER###################USER###################USER###################USER##########
   

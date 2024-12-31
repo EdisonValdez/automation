@@ -86,6 +86,8 @@ urlpatterns = [
             views.delete_feedback, 
             name='delete_feedback'),
     path('tasks/<int:task_id>/translate/', views.TranslateBusinessesView.as_view(), name='translate_businesses'),
+ 
+    path('get-timeline-data/', views.GetTimelineDataView.as_view(), name='get-timeline-data'),
 
     path('ambassador-dashboard/', views.AmbassadorDashboardView.as_view(), name='ambassador_dashboard'),
     path('ambassador-businesses/', views.ambassador_businesses, name='ambassador_businesses'),

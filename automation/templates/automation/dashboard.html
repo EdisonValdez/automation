@@ -135,6 +135,177 @@
                             <canvas id="timelineChart" height="300"></canvas>
                         </div>
                     </div>
+                   <!-- Date Filter and Totals -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <!-- Date Filters -->
+                                <div class="col-md-6">
+                                    <div class="d-flex gap-3">
+                                        <div class="form-group">
+                                            <label for="start_date">Start Date:</label>
+                                            <input type="date" id="start_date" class="form-control" 
+                                                value="{{ default_start_date|date:'Y-m-d' }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="end_date">End Date:</label>
+                                            <input type="date" id="end_date" class="form-control" 
+                                                value="{{ default_end_date|date:'Y-m-d' }}">
+                                        </div>
+                                        <div class="form-group d-flex align-items-end">
+                                            <button id="filterDates" class="btn btn-primary">
+                                                <i class="fas fa-filter"></i> Filter
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Totals -->
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="icon-box bg-color-1 d-block" style=>
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title text-primary">
+                                                        <i class="fas fa-tasks"></i> Total Tasks Uploaded
+                                                    </h6>
+                                                    <h3 id="totalTasks" class="mb-0">{{ total_tasks }}</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="icon-box bg-color-1 d-block">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title text-warning">
+                                                        <i class="fas fa-building"></i> Total Businesses
+                                                    </h6>
+                                                    <h3 id="totalBusinesses" class="mb-0">{{ total_businesses }}</h3>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+ 
+
+        <!-- Timeline Chart Script -->
+        <script>
+        let timelineChart = null;
+
+        function initializeChart(data) {
+            const ctx = document.getElementById('timelineChart');
+            
+            if (timelineChart) {
+                timelineChart.destroy();
+            }
+
+            timelineChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.dates,
+                    datasets: [
+                        {
+                            label: 'Tasks Uploaded',
+                            data: data.tasks,
+                            borderColor: '#212D94',
+                            backgroundColor: 'rgba(33, 45, 148, 1)',
+                            borderWidth: 2,
+                            barPercentage: 0.9,
+                            categoryPercentage: 0.8,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Businesses Gathered',
+                            data: data.businesses,
+                            borderColor: '#F4C031',
+                            backgroundColor: 'rgba(244, 192, 49, 0.7)',
+                            borderWidth: 2,
+                            barPercentage: 0.9,
+                            categoryPercentage: 0.8,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed.y;
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Count'
+                            },
+                            ticks: {
+                                precision: 0,
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize with default data
+            initializeChart({{ timeline_data|safe }});
+            
+            // Date filter functionality
+            document.getElementById('filterDates').addEventListener('click', function() {
+                const startDate = document.getElementById('start_date').value;
+                const endDate = document.getElementById('end_date').value;
+                
+                fetch(`/get-timeline-data/?start_date=${startDate}&end_date=${endDate}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        initializeChart(data);
+                        // Update totals
+                        document.getElementById('totalTasks').textContent = data.total_tasks;
+                        document.getElementById('totalBusinesses').textContent = data.total_businesses;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching timeline data:', error);
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Failed to fetch timeline data',
+                            icon: 'error'
+                        });
+                    });
+            });
+        });
+        </script>
 
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -149,6 +320,7 @@
                             </div>
                         </div>
                     </div> 
+ 
                     <!-- Business Statistics Section 
                     <div class="card mb-4">
                         <div class="card-header">
@@ -216,8 +388,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
--->
+                    </div>-->
 
             </div>
             <div class="row"> 
