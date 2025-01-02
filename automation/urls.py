@@ -48,7 +48,8 @@ urlpatterns = [
     path('admin-view/', views.admin_view, name='admin_view'),
     
     path('dashboard', views.DashboardView.as_view(), name='dashboard'),     
- 
+    path('get-business-status-data/', views.BusinessStatusDataView.as_view(), name='business_status_data'),
+    
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
 

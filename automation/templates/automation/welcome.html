@@ -171,14 +171,23 @@
                     <div class="quick-links-grid">
                         {% if user.is_admin %}
                         <!-- Admin Links -->
+                        <a href="{% url 'dashboard' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Dashboard</h6>
+                                <p>Manage content stats</p>
+                            </div>
+                        </a>
  
-                        <a href="{% url 'upload_file' %}" class="quick-link-card">
+                        <a href="{% url 'upload_file' %}" class="quick-link-card admin">
                             <div class="card-icon">
                                 <i class="fas fa-spinner"></i>
                             </div>
                             <div class="card-info">
                                 <h6>Add New Content</h6>
-                                <p></p>
+                                <p>Business gathering tasks</p>
                             </div>
                         </a>
 
@@ -200,7 +209,7 @@
                                 <p>Monitor and manage tasks</p>
                             </div>
                         </a>
-                        <a href="{% url 'feedback_list' %}" class="quick-link-card ambassador">
+                        <a href="{% url 'feedback_list' %}" class="quick-link-card admin">
                             <div class="card-icon">
                                 <i class="fas fa-comments"></i>
                             </div>
@@ -209,6 +218,17 @@
                                 <p>Manage business feedback</p>
                             </div>
                         </a>
+                        <a href="{% url 'admin:index' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Django Backend</h6>
+                                <p>Manage backend operations</p>
+                            </div>
+                        </a>
+
+
                         {% endif %}
                 
                         {% if 'AMBASSADOR' in user.get_roles %}

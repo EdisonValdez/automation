@@ -152,7 +152,23 @@ class Category(models.Model):
     level = models.ForeignKey(Level, on_delete=models.CASCADE)  # Link to Level
     parent = models.ForeignKey('self', null=True, blank=True, related_name='subcategories', on_delete=models.CASCADE)  
     ls_id = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ['title', 'parent']  
+        indexes = [
+            models.Index(fields=['title']),
+            models.Index(fields=['parent', 'title']),
+        ]
     
+    def clean(self):
+        # Normalize the title
+        if self.title:
+            self.title = self.title.strip()
+    
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+            
     def __str__(self):
         return self.title
 

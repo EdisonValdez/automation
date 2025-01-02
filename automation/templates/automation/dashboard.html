@@ -8,438 +8,194 @@
 
 <div class="main-content project">   
     <div class="overlay" ></div>   
-    <!--Total Projects-->
+<!-- Dashboard Overview -->
+<div class="container-fluid">
+    <!-- Page Title -->
     <div class="row">
-        
-        <!-- Dashboard Page -->
-        <div class="page-title-wrapper">
-            <h1 class="page-title">
-                <span class="title-icon">
-                    <i class="fas fa-chart-line"></i>
-                </span>
-                <span class="title-text">Dashboard Overview</span>
-            </h1>
-        </div>
-    
-        {% if user.is_admin %} 
-        <div class="col-12 col-xl-12 col-md-12 col-sm-12">
- 
-        <div class="box card-box">
-            <div class="icon-box bg-color-6 d-block">
-                <div class="content text-center color-0">
-                    <a href=" {% url 'task_list' %}"> 
-                    <h5 class="title-box fs-17 font-w500">
-                        <i class="fas fa-tasks color-0"></i> Total Projects
-                    </h5>
-                    </a>
-                    <div class="themesflat-counter fs-14 font-wb">
-                        <span class="number" data-from="0" data-to="{{ total_projects }}" data-speed="2500" data-inviewport="yes">{{ tasks.count }} +</span>
-                    </div>
-                </div>
-            </div>
-        
-            <div class="icon-box bg-color-7 d-block">
-                <div class="content text-center color-0">
-                    <h5 class="title-box fs-17 font-w500">
-                        <i class="fas fa-language color-0"></i> Translated Projects
-                    </h5>
-                    <div class="themesflat-counter fs-14 font-wb">
-                        <span class="number" data-from="0" data-to="{{ translated_projects }}" data-speed="2500" data-inviewport="yes">{{ translated_projects }}</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="icon-box bg-color-8 d-block">
-               
-                <div class="content text-center color-0">
-                    <a href=" {% url 'business_list' %}"> 
-                    <h5 class="title-box fs-17 font-w500">
-                        <i class="fas fa-building color-0"></i> Total Businesses
-                    </h5>
-                    </a>
-                    <div class="themesflat-counter fs-14 font-wb">
-                        <span class="number" data-from="0" data-to="{{ total_businesses }}" data-speed="2500" data-inviewport="yes">{{ total_businesses }}</span>
-                    </div>
-                </div>
-       
-            </div>
-        
-            <div class="icon-box bg-color-1 d-block">
-                <div class="content text-center color-0">
-                    <a href=" {% url 'destination_management' %}"> 
-                    <h5 class="title-box fs-17 font-w500">
-                         Total Destinations
-                    </h5>
-                    </a>
-                    <div class="themesflat-counter fs-14 font-wb">
-                        <span class="number" data-from="0" data-to="" data-speed="2500" data-inviewport="yes">{{ total_destinations }} +</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="box card-box">
-          
- 
-            <div class="box">
-                <div class="box-body d-flex pb-0">
-                    <div class="me-auto">
-                        <h4 class="numb fs-30 font-wb">  {{ total_users }}  </h4>
-                        <h5 class="card-title fs-18 font-w400">Total Users</h5>
-                        <p class="fs-14 mb-0 mt-11"><span class="text-primary"></span>Please assign destinations</p>
-                    </div>
-                    <div id="total-revenue-chart" style="min-height: 40px;"><div id="apexchartsjtmqrjq6" class="apexcharts-canvas apexchartsjtmqrjq6 apexcharts-theme-light" style="width: 70px; height: 40px;"><svg id="SvgjsSvg1861" width="70" height="40" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev" class="apexcharts-svg" xmlns:data="ApexChartsNS" transform="translate(0, 0)" style="background: transparent;"><g id="SvgjsG1863" class="apexcharts-inner apexcharts-graphical" transform="translate(0, 0)"><defs id="SvgjsDefs1862"><clipPath id="gridRectMaskjtmqrjq6"><rect id="SvgjsRect1869" width="79" height="45" x="-4.5" y="-2.5" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="forecastMaskjtmqrjq6"></clipPath><clipPath id="nonForecastMaskjtmqrjq6"></clipPath><clipPath id="gridRectMarkerMaskjtmqrjq6"><rect id="SvgjsRect1870" width="74" height="44" x="-2" y="-2" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath></defs><line id="SvgjsLine1868" x1="0" y1="0" x2="0" y2="40" stroke="#b6b6b6" stroke-dasharray="3" stroke-linecap="butt" class="apexcharts-xcrosshairs" x="0" y="0" width="1" height="40" fill="#b1b9c4" filter="none" fill-opacity="0.9" stroke-width="1"></line><g id="SvgjsG1876" class="apexcharts-xaxis" transform="translate(0, 0)"><g id="SvgjsG1877" class="apexcharts-xaxis-texts-g" transform="translate(0, 4)"></g></g><g id="SvgjsG1890" class="apexcharts-grid"><g id="SvgjsG1891" class="apexcharts-gridlines-horizontal" style="display: none;"><line id="SvgjsLine1893" x1="0" y1="0" x2="70" y2="0" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1894" x1="0" y1="8" x2="70" y2="8" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1895" x1="0" y1="16" x2="70" y2="16" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1896" x1="0" y1="24" x2="70" y2="24" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1897" x1="0" y1="32" x2="70" y2="32" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1898" x1="0" y1="40" x2="70" y2="40" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line></g><g id="SvgjsG1892" class="apexcharts-gridlines-vertical" style="display: none;"></g><line id="SvgjsLine1900" x1="0" y1="40" x2="70" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line><line id="SvgjsLine1899" x1="0" y1="1" x2="0" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line></g><g id="SvgjsG1871" class="apexcharts-line-series apexcharts-plot-series"><g id="SvgjsG1872" class="apexcharts-series" seriesName="seriesx1" data:longestSeries="true" rel="1" data:realIndex="0"><path id="SvgjsPath1875" d="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" fill="none" fill-opacity="1" stroke="rgba(0,143,251,0.85)" stroke-opacity="1" stroke-linecap="butt" stroke-width="5" stroke-dasharray="0" class="apexcharts-line" index="0" clip-path="url(#gridRectMaskjtmqrjq6)" pathTo="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" pathFrom="M -1 40L -1 40L 7 40L 14 40L 21 40L 28 40L 35 40L 42 40L 49 40L 56 40L 63 40L 70 40"></path><g id="SvgjsG1873" class="apexcharts-series-markers-wrap" data:realIndex="0"><g class="apexcharts-series-markers"><circle id="SvgjsCircle1906" r="0" cx="0" cy="0" class="apexcharts-marker wwzmj5l52 no-pointer-events" stroke="#ffffff" fill="#008ffb" fill-opacity="1" stroke-width="2" stroke-opacity="0.9" default-marker-size="0"></circle></g></g></g><g id="SvgjsG1874" class="apexcharts-datalabels" data:realIndex="0"></g></g><line id="SvgjsLine1901" x1="0" y1="0" x2="70" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line><line id="SvgjsLine1902" x1="0" y1="0" x2="70" y2="0" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line><g id="SvgjsG1903" class="apexcharts-yaxis-annotations"></g><g id="SvgjsG1904" class="apexcharts-xaxis-annotations"></g><g id="SvgjsG1905" class="apexcharts-point-annotations"></g></g><rect id="SvgjsRect1867" width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe"></rect><g id="SvgjsG1889" class="apexcharts-yaxis" rel="0" transform="translate(-18, 0)"></g><g id="SvgjsG1864" class="apexcharts-annotations"></g></svg><div class="apexcharts-legend" style="max-height: 20px;"></div><div class="apexcharts-tooltip apexcharts-theme-light"><div class="apexcharts-tooltip-series-group" style="order: 1;"><span class="apexcharts-tooltip-marker" style="background-color: rgb(0, 143, 251);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div></div><div class="apexcharts-yaxistooltip apexcharts-yaxistooltip-0 apexcharts-yaxistooltip-left apexcharts-theme-light"><div class="apexcharts-yaxistooltip-text"></div></div></div></div>
-                <div class="resize-triggers"><div class="expand-trigger"><div style="width: 487px; height: 108px;"></div></div><div class="contract-trigger"></div></div></div>
-            </div>
-
- 
-                <div class="box">
-                    <div class="box-body d-flex pb-0">
-                        <div class="me-auto">
-                            <h4 class="numb fs-30 font-wb">{{ ambassador_count }}</h4>
-                            <h5 class="card-title fs-18 font-w400">Total Ambassadors</h5>
-                            <p class="fs-14 mb-0 mt-11"><span class="text-primary"></span>Please assign destinations</p>
-                        </div>
-                        <div id="total-revenue-chart" style="min-height: 40px;"><div id="apexchartsjtmqrjq6" class="apexcharts-canvas apexchartsjtmqrjq6 apexcharts-theme-light" style="width: 70px; height: 40px;"><svg id="SvgjsSvg1861" width="70" height="40" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev" class="apexcharts-svg" xmlns:data="ApexChartsNS" transform="translate(0, 0)" style="background: transparent;"><g id="SvgjsG1863" class="apexcharts-inner apexcharts-graphical" transform="translate(0, 0)"><defs id="SvgjsDefs1862"><clipPath id="gridRectMaskjtmqrjq6"><rect id="SvgjsRect1869" width="79" height="45" x="-4.5" y="-2.5" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath><clipPath id="forecastMaskjtmqrjq6"></clipPath><clipPath id="nonForecastMaskjtmqrjq6"></clipPath><clipPath id="gridRectMarkerMaskjtmqrjq6"><rect id="SvgjsRect1870" width="74" height="44" x="-2" y="-2" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fff"></rect></clipPath></defs><line id="SvgjsLine1868" x1="0" y1="0" x2="0" y2="40" stroke="#b6b6b6" stroke-dasharray="3" stroke-linecap="butt" class="apexcharts-xcrosshairs" x="0" y="0" width="1" height="40" fill="#b1b9c4" filter="none" fill-opacity="0.9" stroke-width="1"></line><g id="SvgjsG1876" class="apexcharts-xaxis" transform="translate(0, 0)"><g id="SvgjsG1877" class="apexcharts-xaxis-texts-g" transform="translate(0, 4)"></g></g><g id="SvgjsG1890" class="apexcharts-grid"><g id="SvgjsG1891" class="apexcharts-gridlines-horizontal" style="display: none;"><line id="SvgjsLine1893" x1="0" y1="0" x2="70" y2="0" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1894" x1="0" y1="8" x2="70" y2="8" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1895" x1="0" y1="16" x2="70" y2="16" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1896" x1="0" y1="24" x2="70" y2="24" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1897" x1="0" y1="32" x2="70" y2="32" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line><line id="SvgjsLine1898" x1="0" y1="40" x2="70" y2="40" stroke="#e0e0e0" stroke-dasharray="0" stroke-linecap="butt" class="apexcharts-gridline"></line></g><g id="SvgjsG1892" class="apexcharts-gridlines-vertical" style="display: none;"></g><line id="SvgjsLine1900" x1="0" y1="40" x2="70" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line><line id="SvgjsLine1899" x1="0" y1="1" x2="0" y2="40" stroke="transparent" stroke-dasharray="0" stroke-linecap="butt"></line></g><g id="SvgjsG1871" class="apexcharts-line-series apexcharts-plot-series"><g id="SvgjsG1872" class="apexcharts-series" seriesName="seriesx1" data:longestSeries="true" rel="1" data:realIndex="0"><path id="SvgjsPath1875" d="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" fill="none" fill-opacity="1" stroke="rgba(0,143,251,0.85)" stroke-opacity="1" stroke-linecap="butt" stroke-width="5" stroke-dasharray="0" class="apexcharts-line" index="0" clip-path="url(#gridRectMaskjtmqrjq6)" pathTo="M 0 30L 7 13.600000000000001L 14 23.6L 21 4.399999999999999L 28 14.8L 35 30L 42 22.4L 49 32L 56 25.6L 63 24L 70 18.4" pathFrom="M -1 40L -1 40L 7 40L 14 40L 21 40L 28 40L 35 40L 42 40L 49 40L 56 40L 63 40L 70 40"></path><g id="SvgjsG1873" class="apexcharts-series-markers-wrap" data:realIndex="0"><g class="apexcharts-series-markers"><circle id="SvgjsCircle1906" r="0" cx="0" cy="0" class="apexcharts-marker wwzmj5l52 no-pointer-events" stroke="#ffffff" fill="#008ffb" fill-opacity="1" stroke-width="2" stroke-opacity="0.9" default-marker-size="0"></circle></g></g></g><g id="SvgjsG1874" class="apexcharts-datalabels" data:realIndex="0"></g></g><line id="SvgjsLine1901" x1="0" y1="0" x2="70" y2="0" stroke="#b6b6b6" stroke-dasharray="0" stroke-width="1" stroke-linecap="butt" class="apexcharts-ycrosshairs"></line><line id="SvgjsLine1902" x1="0" y1="0" x2="70" y2="0" stroke-dasharray="0" stroke-width="0" stroke-linecap="butt" class="apexcharts-ycrosshairs-hidden"></line><g id="SvgjsG1903" class="apexcharts-yaxis-annotations"></g><g id="SvgjsG1904" class="apexcharts-xaxis-annotations"></g><g id="SvgjsG1905" class="apexcharts-point-annotations"></g></g><rect id="SvgjsRect1867" width="0" height="0" x="0" y="0" rx="0" ry="0" opacity="1" stroke-width="0" stroke="none" stroke-dasharray="0" fill="#fefefe"></rect><g id="SvgjsG1889" class="apexcharts-yaxis" rel="0" transform="translate(-18, 0)"></g><g id="SvgjsG1864" class="apexcharts-annotations"></g></svg><div class="apexcharts-legend" style="max-height: 20px;"></div><div class="apexcharts-tooltip apexcharts-theme-light"><div class="apexcharts-tooltip-series-group" style="order: 1;"><span class="apexcharts-tooltip-marker" style="background-color: rgb(0, 143, 251);"></span><div class="apexcharts-tooltip-text" style="font-family: Helvetica, Arial, sans-serif; font-size: 12px;"><div class="apexcharts-tooltip-y-group"><span class="apexcharts-tooltip-text-y-label"></span><span class="apexcharts-tooltip-text-y-value"></span></div><div class="apexcharts-tooltip-goals-group"><span class="apexcharts-tooltip-text-goals-label"></span><span class="apexcharts-tooltip-text-goals-value"></span></div><div class="apexcharts-tooltip-z-group"><span class="apexcharts-tooltip-text-z-label"></span><span class="apexcharts-tooltip-text-z-value"></span></div></div></div></div><div class="apexcharts-yaxistooltip apexcharts-yaxistooltip-0 apexcharts-yaxistooltip-left apexcharts-theme-light"><div class="apexcharts-yaxistooltip-text"></div></div></div></div>
-                    <div class="resize-triggers"><div class="expand-trigger"><div style="width: 487px; height: 108px;"></div></div><div class="contract-trigger"></div></div></div>
-                </div>
-  
-         <a class="create d-flex" href="{% url 'upload_file' %}">
-    
-            <div class="content d-flex align-items-center">
-                <h5 class="color-white">Create New Project</h5>
-            </div>
-        </a> 
- 
-        </div>
-        
-        </div>
-        {% endif %}
-
-    </div>
-    <!--Recent Business Update-->
-    <div class="row">
-        <div class="col-xl-12 col-lg-12 col-md-6 col-sm-12">
-            <div class="box-headerresponsive-header">
-                
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/moment"></script>
-            
-            <!-- Add the chart container -->
-   
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="card-title">Uploaded Content & Businesses Gathered</h5>
-                        </div>
-                        <div class="card-body">
-                            <canvas id="timelineChart" height="300"></canvas>
-                        </div>
-                    </div>
-                   <!-- Date Filter and Totals -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <!-- Date Filters -->
-                                <div class="col-md-6">
-                                    <div class="d-flex gap-3">
-                                        <div class="form-group">
-                                            <label for="start_date">Start Date:</label>
-                                            <input type="date" id="start_date" class="form-control" 
-                                                value="{{ default_start_date|date:'Y-m-d' }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="end_date">End Date:</label>
-                                            <input type="date" id="end_date" class="form-control" 
-                                                value="{{ default_end_date|date:'Y-m-d' }}">
-                                        </div>
-                                        <div class="form-group d-flex align-items-end">
-                                            <button id="filterDates" class="btn btn-primary">
-                                                <i class="fas fa-filter"></i> Filter
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Totals -->
-                                <div class="col-md-6">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="icon-box bg-color-1 d-block" style=>
-                                                <div class="card-body text-center">
-                                                    <h6 class="card-title text-primary">
-                                                        <i class="fas fa-tasks"></i> Total Tasks Uploaded
-                                                    </h6>
-                                                    <h3 id="totalTasks" class="mb-0">{{ total_tasks }}</h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="icon-box bg-color-1 d-block">
-                                                <div class="card-body text-center">
-                                                    <h6 class="card-title text-warning">
-                                                        <i class="fas fa-building"></i> Total Businesses
-                                                    </h6>
-                                                    <h3 id="totalBusinesses" class="mb-0">{{ total_businesses }}</h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
- 
-
-        <!-- Timeline Chart Script -->
-        <script>
-        let timelineChart = null;
-
-        function initializeChart(data) {
-            const ctx = document.getElementById('timelineChart');
-            
-            if (timelineChart) {
-                timelineChart.destroy();
-            }
-
-            timelineChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.dates,
-                    datasets: [
-                        {
-                            label: 'Tasks Uploaded',
-                            data: data.tasks,
-                            borderColor: '#212D94',
-                            backgroundColor: 'rgba(33, 45, 148, 1)',
-                            borderWidth: 2,
-                            barPercentage: 0.9,
-                            categoryPercentage: 0.8,
-                            fill: true,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Businesses Gathered',
-                            data: data.businesses,
-                            borderColor: '#F4C031',
-                            backgroundColor: 'rgba(244, 192, 49, 0.7)',
-                            borderWidth: 2,
-                            barPercentage: 0.9,
-                            categoryPercentage: 0.8,
-                            fill: true,
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    label += context.parsed.y;
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        },
-                        y: {
-                            display: true,
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Count'
-                            },
-                            ticks: {
-                                precision: 0,
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize with default data
-            initializeChart({{ timeline_data|safe }});
-            
-            // Date filter functionality
-            document.getElementById('filterDates').addEventListener('click', function() {
-                const startDate = document.getElementById('start_date').value;
-                const endDate = document.getElementById('end_date').value;
-                
-                fetch(`/get-timeline-data/?start_date=${startDate}&end_date=${endDate}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        initializeChart(data);
-                        // Update totals
-                        document.getElementById('totalTasks').textContent = data.total_tasks;
-                        document.getElementById('totalBusinesses').textContent = data.total_businesses;
-                    })
-                    .catch(error => {
-                        console.error('Error fetching timeline data:', error);
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Failed to fetch timeline data',
-                            icon: 'error'
-                        });
-                    });
-            });
-        });
-        </script>
-
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">Businesses by Category</h5>
-                            <select id="destinationSelector" class="form-select" style="width: 200px;">
-                                <option value="">Select Destination</option>
-                            </select>
-                        </div>
-                        <div class="card-body">
-                            <div class="chart-container" style="height: 400px;">
-                                <canvas id="categoryChart"></canvas>
-                            </div>
-                        </div>
-                    </div> 
- 
-                    <!-- Business Statistics Section 
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Business Statistics</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6>Total Counts</h6>
-                                    <ul class="list-group">
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            Total Businesses
-                                            <span class="badge bg-primary rounded-pill">{{ business_counts.total }}</span>
-                                        </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            Pending
-                                            <span class="badge bg-warning rounded-pill">{{ business_counts.pending }}</span>
-                                        </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            Reviewed
-                                            <span class="badge bg-success rounded-pill">{{ business_counts.reviewed }}</span>
-                                        </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            Discarded
-                                            <span class="badge bg-danger rounded-pill">{{ business_counts.discarded }}</span>
-                                        </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            In Production
-                                            <span class="badge bg-info rounded-pill">{{ business_counts.in_production }}</span>
-                                        </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            Empty Descriptions
-                                            <span class="badge bg-warning rounded-pill">{{ business_counts.empty_descriptions }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6>Progress</h6>
-                                    <div class="progress" style="height: 25px;">
-                                        {% if business_counts.percentages.pending > 0 %}
-                                        <div class="progress-bar bg-warning" 
-                                            role="progressbar" 
-                                            style="width: {{ business_counts.percentages.pending }}%" 
-                                            title="Pending: {{ business_counts.percentages.pending|floatformat:1 }}%">
-                                            {{ business_counts.pending }}
-                                        </div>
-                                        {% endif %}
-                                        {% if business_counts.percentages.reviewed > 0 %}
-                                        <div class="progress-bar bg-success" 
-                                            role="progressbar" 
-                                            style="width: {{ business_counts.percentages.reviewed }}%" 
-                                            title="Reviewed: {{ business_counts.percentages.reviewed|floatformat:1 }}%">
-                                            {{ business_counts.reviewed }}
-                                        </div>
-                                        {% endif %}
-                                        {% if business_counts.percentages.discarded > 0 %}
-                                        <div class="progress-bar bg-danger" 
-                                            role="progressbar" 
-                                            style="width: {{ business_counts.percentages.discarded }}%" 
-                                            title="Discarded: {{ business_counts.percentages.discarded|floatformat:1 }}%">
-                                            {{ business_counts.discarded }}
-                                        </div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>-->
-
-            </div>
-            <div class="row"> 
-                    <div class="col-12">
-                        <a href="{% url 'task_list' %}" class="btn bx-dots-horizontal-rounded" >View all tasks</a>
-                    </div>
-         
-                {% for task in tasks|slice:":8" %}
-                <div class="col-xl-3 col-xl-3 col-md-6 col-sm-12 float mt-11">            
-                        <div class="box left-dot">
-                            <div class="box-body">
-                                 
-                                        <div class="mt-0 text-start">
-                                            <a href="{% url 'task_detail' id=task.id %}" class="box-title mb-0 mt-1 mb-3 font-w600 fs-14">{{task.id}} - {{ task.project_title }} </a>
-                                            <p class="fs-14 font-w600 text-start"># Businesses: {{ task.businesses.count }}</p> 
-                                            <p class="fs-14 text-muted">User: {{ task.user }}</p> 
-                                            <p class="fs-12 text-muted">Created: {{ task.created_at }}</p>
-                                            <p class="fs-12 text-muted">Completed: {{ task.completed_at }}</p>
-                                         </div>                                     
-                            </div>                            
-                            <div class="box-footer">
-                                <div class="d-flex align-items-center">
-                                    <div class="d-flex mb-3 mb-md-0">
-                                        <div class="task-btn status-{{ task.status|lower }} text-muted fs-14" data-bs-toggle="tooltip" data-bs-placement="top" title="Project Status">
-                                            {{ task.status }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <div class="ms-auto mt-3 mt-sm-0">
-                                        {% if task.translation_status != 'TRANSLATED' %}
-                                        <button class="btn btn-outline-light text-muted pd-1 fs-14 start-translating-btn"
-                                                data-task-id="{{ task.id }}">
-                                            <i class="fas fa-sync"></i> Start Translating 
-                                        </button>
-                                        {% else %}                                   
-                                        <button class="btn btn-outline-light text-muted pd-1 fs-14 disabled">
-                                            <i class="fas fa-check"></i> Translation Completed
-                                        </button>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    
-                </div>
-                {% endfor %}                
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </span>
+                    <span class="title-text">Dashboard Overview</span>
+                </h1>
             </div>
         </div>
     </div>
-    <!--Recent Business Update-->
+    {% if user.is_admin %}
+<!-- Business Status Bar Chart -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Business Status Distribution
+                </h5>
+                <div class="date-range d-flex gap-2">
+                    <input type="date" id="startDate" class="form-control form-control-sm" placeholder="Start Date">
+                    <input type="date" id="endDate" class="form-control form-control-sm" placeholder="End Date">
+                    <button onclick="fetchAndUpdateData()" class="btn btn-sm btn-primary">
+                        Update
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="businessStatusBarChart"></canvas>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="row text-center">
+                    <div class="col">
+                        <small class="text-muted">Pending</small>
+                        <h6 id="pendingCount" class="mb-0 fw-bold text-warning">0</h6>
+                    </div>
+                    <div class="col">
+                        <small class="text-muted">Reviewed</small>
+                        <h6 id="reviewedCount" class="mb-0 fw-bold text-success">0</h6>
+                    </div>
+                    <div class="col">
+                        <small class="text-muted">In Production</small>
+                        <h6 id="productionCount" class="mb-0 fw-bold text-info">0</h6>
+                    </div>
+                    <div class="col">
+                        <small class="text-muted">Discarded</small>
+                        <h6 id="discardedCount" class="mb-0 fw-bold text-danger">0</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+
+    <!-- Recent Business Updates -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Uploaded Content & Businesses Gathered</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="timelineChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Filters and Totals -->
+    <div class="row">
+        <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex ">
+                        <div class="form-group">
+                            <label for="start_date">Start Date:</label>
+                            <input type="date" id="start_date" class="form-control" value="{{ default_start_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="end_date">End Date:</label>
+                            <input type="date" id="end_date" class="form-control" value="{{ default_end_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="form-group d-flex">
+                        <button id="filterDates" class="btn btn-primary align-self-end">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6 col-lg-12 col-md-12 col-sm-12">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-primary">
+                                <i class="fas fa-tasks"></i> Total Tasks Uploaded
+                            </h6>
+                            <h3 id="totalTasks" class="mb-0">{{ total_tasks }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-warning">
+                                <i class="fas fa-building"></i> Total Businesses
+                            </h6>
+                            <h3 id="totalBusinesses" class="mb-0">{{ total_businesses }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Businesses by Category -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Businesses by Category</h5>
+                    <select id="destinationSelector" class="form-select" style="width: 200px;">
+                        <option value="">Select Destination</option>
+                    </select>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task List -->
+    <div class="row">
+        <div class="col-12">
+            <a href="{% url 'task_list' %}" class="btn btn-secondary mb-3">View all tasks</a>
+        </div>
+        {% for task in tasks|slice:":8" %}
+        <div class="col-lg-3 col-md-6 col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <a href="{% url 'task_detail' id=task.id %}" class="card-title d-block mb-2">
+                        {{ task.id }} - {{ task.project_title |truncatechars:50 }}
+                    </a>
+                    <p># of Businesses: {{ task.businesses.count }}</p>
+                    <p>User: {{ task.user }}</p>
+                    <p>Created: {{ task.created_at }}</p>
+                    <p>Completed: {{ task.completed_at }}</p>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex mb-3 mb-md-0">
+                            <div class="task-btn status-{{ task.status|lower }} text-muted fs-14" data-bs-toggle="tooltip" data-bs-placement="top" title="Project Status">
+                                {{ task.status }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="ms-auto mt-3 mt-sm-0">
+                            {% if task.translation_status != 'TRANSLATED' %}
+                            <button class="btn btn-outline-light text-muted pd-1 fs-14 start-translating-btn"
+                                    data-task-id="{{ task.id }}">
+                                <i class="fas fa-sync"></i> Start Translating 
+                            </button>
+                            {% else %}                                   
+                            <button class="btn btn-outline-light text-muted pd-1 fs-14 disabled">
+                                <i class="fas fa-check"></i> Translation Completed
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
     <!--Recent Activity-->
     <div class="box">
@@ -448,7 +204,7 @@
             <h4 class="card-title mb-0 fs-22" id="scraped-list">Recent Activity</h4>
         </div>
 
-    </div>
+    </div> 
     <div class="box-body pb-0 table-responsive activity mt-18">
         <div class="box-body pb-0 table-responsive activity mt-18">
         <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-activity" role="grid">
@@ -528,274 +284,7 @@
                 {% endfor %}
             </tbody> 
         </table>
-
-    <!--Translate Tasks-->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const translatingButtons = document.querySelectorAll('.start-translating-btn');
-
-        translatingButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-
-            if (this.classList.contains('disabled')) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Process in Progress',
-                    text: 'Please wait for the current operation to complete.'
-                });
-                return;
-            }
-
-            const taskId = this.getAttribute('data-task-id');
-            const originalText = this.innerHTML;
-            handleTranslation(this, taskId, originalText);
-        });
-    });
-
-        async function handleTranslation(button, taskId, originalText) {
-            try {
-                // Show loading state
-                Swal.fire({
-                    title: 'Translation in Progress',
-                    html: 'Please wait while we process your request...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Disable button
-                button.classList.add('disabled');
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
-
-                const response = await fetch(`/tasks/${taskId}/translate/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                // Close loading dialog
-                Swal.close();
-
-                if (!response.ok) {
-                    throw new Error(data.message || 'Translation process failed');
-                }
-
-                handleTranslationResponse(data, button, originalText);
-
-            } catch (error) {
-                console.error('Translation error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Translation Failed',
-                    text: error.message || 'An unexpected error occurred'
-                });
-                resetButton(button, originalText);
-            }
-        }
-        function handleTranslationResponse(response) {
-            const data = response.details || {};
-            
-            let message = `
-                <div class="translation-status">
-                    <p>${response.message}</p>
-                    ${data.reason ? `<p class="reason">${data.reason}</p>` : ''}
-                    
-                    <div class="stats">
-                        <p>Total businesses: ${data.total || 0}</p>
-                        <p>Pending: ${data.pending || 0}</p>
-                        <p>Reviewed: ${data.reviewed || 0}</p>
-                        <p>Discarded: ${data.discarded || 0}</p>
-                    </div>
-
-                    ${data.error_details && data.error_details.length > 0 ? `
-                        <div class="errors">
-                            <h4>Issues Found:</h4>
-                            <ul>
-                                ${data.error_details.map(error => 
-                                    `<li>Business ${error.business_id}: ${error.issue}</li>`
-                                ).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-
-            Swal.fire({
-                icon: response.status === 'success' ? 'success' : 
-                    response.status === 'warning' ? 'warning' : 'error',
-                title: response.status === 'success' ? 'Translation Complete' : 
-                    response.status === 'warning' ? 'Warning' : 'Translation Failed',
-                html: message,
-                confirmButtonText: 'OK'
-            });
-        }
-            
-        function handleSuccess(data, button) {
-            button.innerHTML = '<i class="fas fa-check"></i> Translation Complete';
-            
-            const taskId = button.getAttribute('data-task-id');
-            const taskUrl = `/tasks/${taskId}/details/`; // Adjust this URL according to your routing
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Translation Successful',
-                html: `
-                    <div class="translation-summary">
-                        ${createSuccessMessage(data)}
-                        <div class="mt-3">
-                            <a href="${taskUrl}" class="btn btn-info btn-sm">
-                                <i class="fas fa-eye"></i> View Task Details
-                            </a>
-                        </div>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Refresh Page',
-                cancelButtonText: 'View Task',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    location.reload();
-                } else {
-                    window.location.href = taskUrl;
-                }
-            });
-        }
-
-        function handleWarning(data, button, originalText) {
-            button.innerHTML = originalText;
-            button.classList.remove('disabled');
-
-            Swal.fire({
-                icon: 'warning',
-                title: 'Cannot Proceed',
-                html: createWarningMessage(data),
-                confirmButtonText: 'OK'
-            });
-        }
-
-        function handleError(data, button, originalText) {
-            button.innerHTML = originalText;
-            button.classList.remove('disabled');
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Translation Error',
-                html: createErrorMessage(data),
-                confirmButtonText: 'OK',
-                showCancelButton: true,
-                cancelButtonText: 'Report Issue'
-            }).then((result) => {
-                if (!result.isConfirmed) {
-                    reportIssue(data);
-                }
-            });
-        }
-
-        function handleUnknownStatus(data, button, originalText) {
-            button.innerHTML = originalText;
-            button.classList.remove('disabled');
-
-            Swal.fire({
-                icon: 'question',
-                title: 'Unexpected Response',
-                text: 'Received an unexpected response from the server.',
-                confirmButtonText: 'OK'
-            });
-        }
-
-        function createSuccessMessage(data) {
-            return `
-                <div class="translation-results">
-                    <p>${data.message || 'Translation completed successfully'}</p>
-                    ${data.details ? `
-                        <div class="translation-details">
-                            <p>Successfully processed: ${data.details.success || 0}</p>
-                            <p>Failed: ${data.details.failed || 0}</p>
-                            <p>Total: ${data.details.total || 0}</p>
-                            ${data.details.status_updates?.pending_to_reviewed > 0 ? 
-                                `<p>Updated from pending: ${data.details.status_updates.pending_to_reviewed}</p>` : ''}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        function createWarningMessage(data) {
-            return `
-                <div class="warning-message">
-                    <p>${data.message}</p>
-                    ${data.details ? `
-                        <div class="status-breakdown">
-                            <p>Current Status: ${data.details.current_status || 'Unknown'}</p>
-                            ${data.details.suggestion ? `<p>Suggestion: ${data.details.suggestion}</p>` : ''}
-                            <div class="business-stats">
-                                <p>Total Businesses: ${data.details.total || 0}</p>
-                                <p>Pending: ${data.details.pending || 0}</p>
-                                <p>Reviewed: ${data.details.reviewed || 0}</p>
-                            </div>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        function createErrorMessage(data) {
-            return `
-                <div class="error-message">
-                    <p>${data.message}</p>
-                    ${data.details ? `
-                        <div class="business-stats">
-                            ${data.details.total ? `<p>Total Businesses: ${data.details.total}</p>` : ''}
-                            ${data.details.pending ? `<p>Pending Review: ${data.details.pending}</p>` : ''}
-                            ${data.details.reviewed ? `<p>Reviewed: ${data.details.reviewed}</p>` : ''}
-                            ${data.details.discarded ? `<p>Discarded: ${data.details.discarded}</p>` : ''}
-                        </div>
-                    ` : ''}
-                    ${data.suggestion ? `
-                        <p class="suggestion">${data.suggestion}</p>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        function reportIssue(errorData) {
-            console.log('Reporting issue:', errorData);
-            // Implement your issue reporting logic here
-            Swal.fire({
-                icon: 'info',
-                title: 'Issue Reported',
-                text: 'The issue has been logged for investigation.',
-                confirmButtonText: 'OK'
-            });
-        }
-    });
-    </script>
-    <!--Translate Tasks-->
-    
-    <!-- Paginator with Custom Styling -->
+       <!-- Paginator with Custom Styling -->
     <div class="pagination">
     <span class="step-links">
         {% if page_obj.has_previous %}
@@ -842,11 +331,280 @@
 
     </div>
     <!--Recent Activity-->
-
-
+ 
 </div>
 <!--Total Projects-->
- 
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment"></script>
+
+<!--Translate Tasks-->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const translatingButtons = document.querySelectorAll('.start-translating-btn');
+
+translatingButtons.forEach(button => {
+button.addEventListener('click', function(e) {
+e.preventDefault();
+
+if (this.classList.contains('disabled')) {
+    Swal.fire({
+        icon: 'info',
+        title: 'Process in Progress',
+        text: 'Please wait for the current operation to complete.'
+    });
+    return;
+}
+
+const taskId = this.getAttribute('data-task-id');
+const originalText = this.innerHTML;
+handleTranslation(this, taskId, originalText);
+});
+});
+
+async function handleTranslation(button, taskId, originalText) {
+try {
+    // Show loading state
+    Swal.fire({
+        title: 'Translation in Progress',
+        html: 'Please wait while we process your request...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Disable button
+    button.classList.add('disabled');
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+
+    const response = await fetch(`/tasks/${taskId}/translate/`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    });
+
+    const data = await response.json();
+
+    // Close loading dialog
+    Swal.close();
+
+    if (!response.ok) {
+        throw new Error(data.message || 'Translation process failed');
+    }
+
+    handleTranslationResponse(data, button, originalText);
+
+} catch (error) {
+    console.error('Translation error:', error);
+    Swal.fire({
+        icon: 'error',
+        title: 'Translation Failed',
+        text: error.message || 'An unexpected error occurred'
+    });
+    resetButton(button, originalText);
+}
+}
+function handleTranslationResponse(response) {
+const data = response.details || {};
+
+let message = `
+    <div class="translation-status">
+        <p>${response.message}</p>
+        ${data.reason ? `<p class="reason">${data.reason}</p>` : ''}
+        
+        <div class="stats">
+            <p>Total businesses: ${data.total || 0}</p>
+            <p>Pending: ${data.pending || 0}</p>
+            <p>Reviewed: ${data.reviewed || 0}</p>
+            <p>Discarded: ${data.discarded || 0}</p>
+        </div>
+
+        ${data.error_details && data.error_details.length > 0 ? `
+            <div class="errors">
+                <h4>Issues Found:</h4>
+                <ul>
+                    ${data.error_details.map(error => 
+                        `<li>Business ${error.business_id}: ${error.issue}</li>`
+                    ).join('')}
+                </ul>
+            </div>
+        ` : ''}
+    </div>
+`;
+
+Swal.fire({
+    icon: response.status === 'success' ? 'success' : 
+        response.status === 'warning' ? 'warning' : 'error',
+    title: response.status === 'success' ? 'Translation Complete' : 
+        response.status === 'warning' ? 'Warning' : 'Translation Failed',
+    html: message,
+    confirmButtonText: 'OK'
+});
+}
+
+function handleSuccess(data, button) {
+button.innerHTML = '<i class="fas fa-check"></i> Translation Complete';
+
+const taskId = button.getAttribute('data-task-id');
+const taskUrl = `/tasks/${taskId}/details/`; // Adjust this URL according to your routing
+
+Swal.fire({
+    icon: 'success',
+    title: 'Translation Successful',
+    html: `
+        <div class="translation-summary">
+            ${createSuccessMessage(data)}
+            <div class="mt-3">
+                <a href="${taskUrl}" class="btn btn-info btn-sm">
+                    <i class="fas fa-eye"></i> View Task Details
+                </a>
+            </div>
+        </div>
+    `,
+    showCancelButton: true,
+    confirmButtonText: 'Refresh Page',
+    cancelButtonText: 'View Task',
+    reverseButtons: true
+}).then((result) => {
+    if (result.isConfirmed) {
+        location.reload();
+    } else {
+        window.location.href = taskUrl;
+    }
+});
+}
+
+function handleWarning(data, button, originalText) {
+button.innerHTML = originalText;
+button.classList.remove('disabled');
+
+Swal.fire({
+    icon: 'warning',
+    title: 'Cannot Proceed',
+    html: createWarningMessage(data),
+    confirmButtonText: 'OK'
+});
+}
+
+function handleError(data, button, originalText) {
+button.innerHTML = originalText;
+button.classList.remove('disabled');
+
+Swal.fire({
+    icon: 'error',
+    title: 'Translation Error',
+    html: createErrorMessage(data),
+    confirmButtonText: 'OK',
+    showCancelButton: true,
+    cancelButtonText: 'Report Issue'
+}).then((result) => {
+    if (!result.isConfirmed) {
+        reportIssue(data);
+    }
+});
+}
+
+function handleUnknownStatus(data, button, originalText) {
+button.innerHTML = originalText;
+button.classList.remove('disabled');
+
+Swal.fire({
+    icon: 'question',
+    title: 'Unexpected Response',
+    text: 'Received an unexpected response from the server.',
+    confirmButtonText: 'OK'
+});
+}
+
+function createSuccessMessage(data) {
+return `
+    <div class="translation-results">
+        <p>${data.message || 'Translation completed successfully'}</p>
+        ${data.details ? `
+            <div class="translation-details">
+                <p>Successfully processed: ${data.details.success || 0}</p>
+                <p>Failed: ${data.details.failed || 0}</p>
+                <p>Total: ${data.details.total || 0}</p>
+                ${data.details.status_updates?.pending_to_reviewed > 0 ? 
+                    `<p>Updated from pending: ${data.details.status_updates.pending_to_reviewed}</p>` : ''}
+            </div>
+        ` : ''}
+    </div>
+`;
+}
+
+function createWarningMessage(data) {
+return `
+    <div class="warning-message">
+        <p>${data.message}</p>
+        ${data.details ? `
+            <div class="status-breakdown">
+                <p>Current Status: ${data.details.current_status || 'Unknown'}</p>
+                ${data.details.suggestion ? `<p>Suggestion: ${data.details.suggestion}</p>` : ''}
+                <div class="business-stats">
+                    <p>Total Businesses: ${data.details.total || 0}</p>
+                    <p>Pending: ${data.details.pending || 0}</p>
+                    <p>Reviewed: ${data.details.reviewed || 0}</p>
+                </div>
+            </div>
+        ` : ''}
+    </div>
+`;
+}
+
+function createErrorMessage(data) {
+return `
+    <div class="error-message">
+        <p>${data.message}</p>
+        ${data.details ? `
+            <div class="business-stats">
+                ${data.details.total ? `<p>Total Businesses: ${data.details.total}</p>` : ''}
+                ${data.details.pending ? `<p>Pending Review: ${data.details.pending}</p>` : ''}
+                ${data.details.reviewed ? `<p>Reviewed: ${data.details.reviewed}</p>` : ''}
+                ${data.details.discarded ? `<p>Discarded: ${data.details.discarded}</p>` : ''}
+            </div>
+        ` : ''}
+        ${data.suggestion ? `
+            <p class="suggestion">${data.suggestion}</p>
+        ` : ''}
+    </div>
+`;
+}
+
+function getCookie(name) {
+let cookieValue = null;
+if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+        }
+    }
+}
+return cookieValue;
+}
+
+function reportIssue(errorData) {
+console.log('Reporting issue:', errorData);
+// Implement your issue reporting logic here
+Swal.fire({
+    icon: 'info',
+    title: 'Issue Reported',
+    text: 'The issue has been logged for investigation.',
+    confirmButtonText: 'OK'
+});
+}
+});
+</script>
+<!--Translate Tasks-->
+
 <script>
 $(document).ready(function() {
     // Setup - add a text input to each footer cell
@@ -964,7 +722,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 </script>
-
+<!-- Chart -->
  
 <!--Delete tasks-->
 <script>
@@ -1030,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <!--Delete tasks-->
 
-<!--Char Destination by categories-->
+<!--CharT Destination by categories-->
 <script>
     // Initialize destination categories chart
 document.addEventListener('DOMContentLoaded', function() {
@@ -1142,4 +900,297 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
+<!--CharT Destination by categories-->
+ 
+<!--Businesses STATUS--> 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let businessStatusChart = null;
+    const DEBUG = true;
+    function debugLog(message, data = null) {
+        if (DEBUG) {
+            console.log(`DEBUG: ${message}`, data || '');
+        }
+    }
+
+    function initializeChart() {
+        const ctx = document.getElementById('businessStatusBarChart');
+        if (!ctx) {
+            debugLog('Canvas element not found!');
+            return null;
+        }
+
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Reviewed', 'In Production', 'Discarded'],
+                datasets: [{
+                    label: 'Number of Businesses',
+                    data: [0, 0, 0, 0],
+                    backgroundColor: [
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(0, 123, 255, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 193, 7)',
+                        'rgb(40, 167, 69)',
+                        'rgb(0, 123, 255)',
+                        'rgb(220, 53, 69)'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 5,
+                    maxBarThickness: 50
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: context => {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const value = context.raw;
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `Count: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    }
+
+ 
+    function updateChart(chart, data) {
+        debugLog('Chart data before update:', chart.data.datasets[0].data);
+        debugLog('New data:', data);
+
+        chart.data.datasets[0].data = [
+            data.pending || 0,
+            data.reviewed || 0,
+            data.in_production || 0,
+            data.discarded || 0,
+        ];
+        chart.update();
+        debugLog('Chart data after update:', chart.data.datasets[0].data);
+    }
+
+    function updateStatusCounts(data) {
+        debugLog('Updating status counts:', data);
+
+        document.getElementById('pendingCount').textContent = data.pending || 0;
+        document.getElementById('reviewedCount').textContent = data.reviewed || 0;
+        document.getElementById('productionCount').textContent = data.in_production || 0;
+        document.getElementById('discardedCount').textContent = data.discarded || 0;
+    }
+
+    async function fetchAndUpdateData() {
+    const startDate = document.getElementById('startDate').value || '';
+    const endDate = document.getElementById('endDate').value || '';
+
+    debugLog('Fetching data with dates:', { startDate, endDate });
+
+    if (!startDate || !endDate) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Please select both start and end dates.'
+        });
+        return;
+    }
+
+    try {
+        const response = await fetch(`/get-business-status-data/?start_date=${startDate}&end_date=${endDate}`);
+        debugLog('Fetch response:', response);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        debugLog('Fetched data:', data);
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        // Update chart and counts
+        if (data.datasets && data.datasets[0] && Array.isArray(data.datasets[0].data)) {
+            updateChart(businessStatusChart, {
+                pending: data.datasets[0].data[1],
+                reviewed: data.datasets[0].data[3],
+                in_production: data.datasets[0].data[2],
+                discarded: data.datasets[0].data[0]
+            });
+            updateStatusCounts({
+                pending: data.datasets[0].data[1],
+                reviewed: data.datasets[0].data[3],
+                in_production: data.datasets[0].data[2],
+                discarded: data.datasets[0].data[0]
+            });
+        } else {
+            debugLog('Invalid data structure received from API:', data);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Received invalid data format from server.'
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching business status data:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to fetch business status data. Please try again.'
+        });
+    }
+}
+
+
+    function initializePage() {
+        businessStatusChart = initializeChart();
+
+        const initialData = {
+            pending: {{ pending_count_business|default:0 }},
+            reviewed: {{ reviewed_count_business|default:0 }},
+            in_production: {{ production_count_business|default:0 }},
+            discarded: {{ discarded_count_business|default:0 }}
+        };
+
+        debugLog('Initializing with data:', initialData);
+        updateChart(businessStatusChart, initialData);
+        updateStatusCounts(initialData);
+
+        document.getElementById('startDate').addEventListener('change', fetchAndUpdateData);
+        document.getElementById('endDate').addEventListener('change', fetchAndUpdateData);
+    }
+
+    initializePage();
+});
+</script>
+
+<!-- Timeline Chart Script -->
+<script>
+let timelineChart = null;
+
+function initializeChart(data) {
+    const ctx = document.getElementById('timelineChart');
+    
+    if (timelineChart) {
+        timelineChart.destroy();
+    }
+
+    timelineChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.dates,
+            datasets: [
+                {
+                    label: 'Tasks Uploaded',
+                    data: data.tasks,
+                    borderColor: '#212D94',
+                    backgroundColor: 'rgba(33, 45, 148, 1)',
+                    borderWidth: 2,
+                    barPercentage: 0.9,
+                    categoryPercentage: 0.8,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Businesses Gathered',
+                    data: data.businesses,
+                    borderColor: '#F4C031',
+                    backgroundColor: 'rgba(244, 192, 49, 0.7)',
+                    borderWidth: 2,
+                    barPercentage: 0.9,
+                    categoryPercentage: 0.8,
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.y;
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    display: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Count'
+                    },
+                    ticks: {
+                        precision: 0,
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize with default data
+    initializeChart({{ timeline_data|safe }});
+    
+    // Date filter functionality
+    document.getElementById('filterDates').addEventListener('click', function() {
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        
+        fetch(`/get-timeline-data/?start_date=${startDate}&end_date=${endDate}`)
+            .then(response => response.json())
+            .then(data => {
+                initializeChart(data);
+                // Update totals
+                document.getElementById('totalTasks').textContent = data.total_tasks;
+                document.getElementById('totalBusinesses').textContent = data.total_businesses;
+            })
+            .catch(error => {
+                console.error('Error fetching timeline data:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to fetch timeline data',
+                    icon: 'error'
+                });
+            });
+    });
+});
+</script>
+    
 {% endblock %}

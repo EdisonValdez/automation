@@ -7,6 +7,8 @@ from django.http import FileResponse, Http404, HttpResponseForbidden, JsonRespon
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
+from django.core.exceptions import ValidationError
+
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import TruncDate
@@ -717,6 +719,68 @@ class DestinationCategoriesView(View):
         data = dashboard_view.get_destination_categories(destination)
         return JsonResponse(data)
 
+from datetime import datetime
+
+class BusinessStatusDataView(View):
+    """
+    API View to fetch business status data for a given date range.
+    """
+    @method_decorator(login_required(login_url='/login/'))
+    @method_decorator(user_passes_test(lambda u: u.is_superuser or u.groups.filter(name='Admin').exists()))
+    def get(self, request):
+        try:
+            # Parse query parameters
+            start_date_str = request.GET.get('start_date')
+            end_date_str = request.GET.get('end_date')
+
+            if not start_date_str or not end_date_str:
+                return JsonResponse({'error': 'Start and end dates are required.'}, status=400)
+
+            try:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return JsonResponse({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+
+            if start_date > end_date:
+                return JsonResponse({'error': 'Start date cannot be after end date.'}, status=400)
+
+            # Fetch status counts
+            status_counts = Business.objects.filter(
+                scraped_at__date__range=[start_date, end_date]
+            ).values('status').annotate(count=Count('id'))
+
+            print(f"Filtered Status Counts: {list(status_counts)}")
+
+
+            print(Business._meta.get_field('scraped_at').get_internal_type())
+
+
+            # Initialize response structure
+            response_data = {
+                'labels': [status[1] for status in Business.STATUS_CHOICES],
+                'datasets': [{
+                    'data': [0] * len(Business.STATUS_CHOICES),
+                    'backgroundColor': [
+                        '#ffc107',  # Pending
+                        '#17a2b8',  # Reviewed
+                        '#28a745',  # In Production
+                        '#dc3545',  # Discarded
+                    ]
+                }]
+            }
+
+            # Map fetched counts to corresponding statuses
+            status_dict = {item['status']: item['count'] for item in status_counts}
+            for i, (status, _) in enumerate(Business.STATUS_CHOICES):
+                response_data['datasets'][0]['data'][i] = status_dict.get(status, 0)
+
+            return JsonResponse(response_data)
+
+        except Exception as e:
+            logger.error(f"Error fetching business status data: {e}")
+            return JsonResponse({'error': 'Internal server error'}, status=500)
+        
 
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
@@ -743,32 +807,48 @@ class DashboardView(View):
         # Fetch and paginate tasks, with ambassador-specific filtering
         if is_admin:
             tasks = ScrapingTask.objects.all().order_by('-created_at')
+            businesses = Business.objects.all()
         elif is_ambassador:
             ambassador_destinations = user.destinations.all()
             ambassador_city_names = ambassador_destinations.values_list('name', flat=True)
             tasks = ScrapingTask.objects.filter(
                 Q(destination__in=ambassador_destinations) | Q(destination_name__in=ambassador_city_names)
             ).order_by('-created_at')
+            businesses = Business.objects.filter(
+                Q(form_destination_id__in=ambassador_destinations) |
+                Q(city__in=ambassador_city_names)
+            )
         else:
             tasks = ScrapingTask.objects.none()
+            businesses = Business.objects.none()
 
-        paginator = Paginator(tasks, 1000000)  # Show 6 tasks per page
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-
-        
+       # Get task counts and percentages
         completed_count = tasks.filter(status='COMPLETED').count()
         in_progress_count = tasks.filter(status='IN_PROGRESS').count()
         pending_count = tasks.filter(status='PENDING').count()
         total_count = tasks.count()
         
+        # Calculate task percentages
         if total_count > 0:
             completed_percentage = (completed_count / total_count) * 100
             in_progress_percentage = (in_progress_count / total_count) * 100
         else:
             completed_percentage = in_progress_percentage = 0
 
-        # Add role flags and other data to context
+        # Get business status counts
+        business_status_counts = {
+            'pending': businesses.filter(status='PENDING').count(),
+            'reviewed': businesses.filter(status='REVIEWED').count(),
+            'in_production': businesses.filter(status='IN_PRODUCTION').count(),
+            'discarded': businesses.filter(status='DISCARDED').count()
+        }
+
+        # Paginate tasks
+        paginator = Paginator(tasks, 1000000)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        # Update context with all data
         context.update({
             'tasks': page_obj.object_list,
             'page_obj': page_obj,
@@ -781,6 +861,12 @@ class DashboardView(View):
             'pending_count': pending_count,
             'completed_percentage': completed_percentage,
             'in_progress_percentage': in_progress_percentage,
+            'business_status_data': json.dumps(business_status_counts),
+            'discarded_count_business': business_status_counts['discarded'],
+            'pending_count_business': business_status_counts['pending'],
+            'reviewed_count_business': business_status_counts['reviewed'],
+            'production_count_business': business_status_counts['in_production'],
+
         })
 
         return render(request, 'automation/dashboard.html', context)
@@ -1075,20 +1161,47 @@ class DashboardView(View):
                 total_businesses=Count('businesses', distinct=True)
             )
             
+            # Get business status counts
+            business_status_counts = Business.objects.values('status').annotate(
+                count=Count('id')
+            ).order_by('status')
+
+            status_data = {
+                'pending': 0,
+                'reviewed': 0,
+                'in_production': 0,
+                'discarded': 0
+            }
+
+            for item in business_status_counts:
+                if item['status'] == 'PENDING':
+                    status_data['pending'] = item['count']
+                elif item['status'] == 'REVIEWED':
+                    status_data['reviewed'] = item['count']
+                elif item['status'] == 'IN_PRODUCTION':
+                    status_data['in_production'] = item['count']
+                elif item['status'] == 'DISCARDED':
+                    status_data['discarded'] = item['count']
+
             context.update({
                 'timeline_data': json.dumps(timeline_data),
-                'default_start_date': start_date,
-                'default_end_date': end_date,
-                'total_tasks': totals['total_tasks'],
-                'total_businesses': totals['total_businesses']
+                'business_status_data': json.dumps(status_data),
+                'pending_count': status_data['pending'],
+                'reviewed_count': status_data['reviewed'],
+                'production_count': status_data['in_production'],
+                'discarded_count': status_data['discarded']
             })
-            
+
         except Exception as e:
             logger.error(f"Error in get_context_data: {str(e)}")
-            context['timeline_data'] = json.dumps({
-                'dates': [], 
-                'tasks': [], 
-                'businesses': []
+            context.update({
+                'timeline_data': json.dumps({'dates': [], 'tasks': [], 'businesses': []}),
+                'business_status_data': json.dumps({
+                    'pending': 0,
+                    'reviewed': 0,
+                    'in_production': 0,
+                    'discarded': 0
+                })
             })
         
         return context
@@ -1459,6 +1572,31 @@ def change_business_status(request, business_id):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
+def get_category_by_title(title, level=None, parent=None):
+    """
+    Helper function to get category with proper filtering
+    """
+    try:
+        filters = {
+            'title__iexact': title.strip(),
+        }
+        
+        if level:
+            filters['level'] = level
+            
+        if parent is not None:  # Include None check for main categories
+            filters['parent'] = parent
+            
+        category = Category.objects.filter(**filters).first()
+        
+        if not category:
+            logger.warning(f"Category not found: {title} (Level: {level}, Parent: {parent})")
+            
+        return category
+        
+    except Exception as e:
+        logger.error(f"Error getting category {title}: {str(e)}")
+        return None
 
 ##consolidated function update+change
 @require_POST
@@ -1537,10 +1675,46 @@ def update_business_status(request, business_id):
                 category_obj = get_object_or_404(Category, title=business.main_category)
                 business_data["category_id"] = category_obj.ls_id
 
-                # Subcategory handling
-                if business.tailored_category:
-                    sub_category_obj = get_object_or_404(Category, title=business.tailored_category, parent=category_obj)
-                    business_data["sub_category_id"] = sub_category_obj.ls_id
+                try:
+                    # Get the level from the task
+                    task_level = business.task.level
+                    
+                    # Handle main category
+                    main_category = get_category_by_title(
+                        title=business.main_category,
+                        level=task_level
+                    )
+                    
+                    if not main_category:
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f"Main category not found: {business.main_category}"
+                        }, status=400)
+                        
+                    business_data["category_id"] = main_category.ls_id
+                    
+                    # Handle tailored category (subcategory)
+                    if business.tailored_category:
+                        sub_category = get_category_by_title(
+                            title=business.tailored_category,
+                            level=task_level,
+                            parent=main_category
+                        )
+                        
+                        if sub_category:
+                            business_data["sub_category_id"] = sub_category.ls_id
+                        else:
+                            logger.warning(
+                                f"Subcategory not found: {business.tailored_category} "
+                                f"(Parent: {main_category.title})"
+                            )
+
+                except Exception as e:
+                    logger.error(f"Error processing categories for business {business_id}: {str(e)}")
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f"Error processing categories: {str(e)}"
+                    }, status=400)
 
                 # City and Country handling
                 business_data["city_id"] = get_object_or_404(Destination, name__iexact=business.city).ls_id
@@ -1603,6 +1777,8 @@ def update_business_status(request, business_id):
             debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
             logger.error(f"Traceback Error: {debugger}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
 
 
 ########CHANGE STATUS#############################
