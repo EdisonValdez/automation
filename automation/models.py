@@ -387,6 +387,14 @@ class Business(models.Model):
         """Retrieve the type of the associated Level."""
         return self.task.level.site_types if self.task and self.task.level else None
         
+    def clean_types(self):
+        """Clean types field before saving"""
+        if self.types:
+            # Split, clean and deduplicate types
+            types_list = [t.strip() for t in self.types.split(',') if t.strip()]
+            unique_types = list(dict.fromkeys(types_list))
+            self.types = ','.join(unique_types)
+ 
 
     def delete(self, *args, **kwargs):
         self.is_deleted = True
@@ -397,6 +405,7 @@ class Business(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        self.clean_types()        
         if self.operating_hours:
             ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
             

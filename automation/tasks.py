@@ -68,6 +68,7 @@ import backoff
 import time
 from requests.exceptions import RequestException
 from django.utils.text import slugify
+from .utils import process_scraped_types
 import csv
 import pandas as pd
 from django.contrib import messages
@@ -1512,6 +1513,18 @@ def save_business(task, local_result, query, form_data=None):
             business_data['latitude'] = local_result['gps_coordinates'].get('latitude')
             business_data['longitude'] = local_result['gps_coordinates'].get('longitude')
  
+        scraped_types = None
+        if 'type' in local_result:
+            scraped_types = local_result['type']
+        elif 'types' in local_result:
+            scraped_types = local_result['types']
+
+        if scraped_types:
+            # Process the types using the utility function
+            processed_types = process_scraped_types(scraped_types)
+            logger.info(f"Processed business types: {processed_types}")
+            business_data['types'] = processed_types
+        
         US_COUNTRY_NAMES = {'united states', 'usa', 'u.s.', 'united states of america'}
 
         # Check if the country is one of the acceptable variations
@@ -1520,11 +1533,7 @@ def save_business(task, local_result, query, form_data=None):
             if phone and not phone.startswith('+1'):
                 business_data['phone'] = f'+1{phone.lstrip(" +")}'
                 logger.info(f"Updated phone with +1 prefix: {business_data['phone']}")
-
-        if 'type' in local_result: 
-            business_data['types'] = ', '.join(local_result['type'])
-        elif 'types' in local_result: 
-            business_data['types'] = ', '.join(local_result['types'])
+ 
  
        
         ordered_days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']

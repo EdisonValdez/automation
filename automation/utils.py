@@ -167,3 +167,24 @@ def translate_location(city, country):
     translated_city = city_name_mapping.get(city, city)  # Default to original name if no mapping found
     translated_country = country_name_mapping.get(country, country)  # Default to original name if no mapping found
     return translated_city, translated_country
+ 
+ 
+def process_scraped_types(scraped_types):
+    """
+    Process types from scraping before saving to Business model
+    Args:
+        scraped_types: Can be a list, tuple, or comma-separated string of types
+    Returns:
+        str: Cleaned, deduplicated, comma-separated string of types
+    """
+    if isinstance(scraped_types, (list, tuple)):
+        types_list = [str(t).strip() for t in scraped_types if str(t).strip()]
+    elif isinstance(scraped_types, str):
+        types_list = [t.strip() for t in scraped_types.split(',') if t.strip()]
+    else:
+        types_list = []
+    
+    # Remove duplicates while preserving order
+    unique_types = list(dict.fromkeys(types_list))
+    return ', '.join(unique_types)  # Note: Consistent spacing after comma
+
