@@ -317,7 +317,7 @@ class BusinessForm(forms.ModelForm):
         fields = [
             'status', 'title', 'level_title', 'level_type', 'city',
             'price', 'phone', 'website', 'main_category',
-            'tailored_category', 'categories', 'description',
+            'tailored_category', 'categories', 'description', 'types',
             'description_esp', 'description_eng', 'description_fr', 'operating_hours',
             'category_name', 'service_options'
         ]
