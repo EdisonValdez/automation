@@ -1607,6 +1607,27 @@ def update_business_status(request, business_id):
         new_status = data.get('status', '').strip()
         user_id = data.get('userId')
 
+        types_sources = [
+            business.types,
+            getattr(business, 'types_eng', None),
+            getattr(business, 'types_esp', None),
+            getattr(business, 'types_fr', None)
+        ]
+        
+        # Combine all types
+        all_types = []
+        for types_str in types_sources:
+            if types_str:
+                types_list = [t.strip() for t in types_str.split(',')]
+                all_types.extend(types_list)
+
+        processed_types = process_scraped_types(all_types, business.main_category)
+
+        business_data = model_to_dict(business)
+        business_data['types'] = processed_types
+        
+        logger.info(f"Processed types for business {business_id}: {processed_types}")
+
         # Description validation logic
         missing_descriptions = []
 
@@ -1640,7 +1661,7 @@ def update_business_status(request, business_id):
                 'status': 'error',
                 'message': f"Cannot move to {new_status}: {', '.join(missing_descriptions)} is missing."
             }, status=400)
-
+ 
         # Proceed with status change if validations pass
         if new_status in dict(Business.STATUS_CHOICES):
             old_status = business.status
@@ -1650,7 +1671,7 @@ def update_business_status(request, business_id):
             # Handle IN_PRODUCTION specific logic
             if new_status == 'IN_PRODUCTION':
                 business_data = model_to_dict(business)
-
+                
                 # Format operating hours
                 try:
                     if business_data.get('operating_hours'):
@@ -1668,11 +1689,8 @@ def update_business_status(request, business_id):
                 # Add required IDs and relationships
                 task_obj = business.task
                 business_data["level_id"] = task_obj.level.ls_id
-                
-                # Category handling
-                category_obj = get_object_or_404(Category, title=business.main_category)
-                business_data["category_id"] = category_obj.ls_id
 
+                # Category handling
                 try:
                     # Get the level from the task
                     task_level = business.task.level
@@ -1706,7 +1724,6 @@ def update_business_status(request, business_id):
                                 f"Subcategory not found: {business.tailored_category} "
                                 f"(Parent: {main_category.title})"
                             )
-
                 except Exception as e:
                     logger.error(f"Error processing categories for business {business_id}: {str(e)}")
                     return JsonResponse({
@@ -1739,20 +1756,53 @@ def update_business_status(request, business_id):
 
                 app_data = json.dumps(result_data, default=datetime_serializer)
                 logger.info(f"Preparing to move business {business_id} to app with data: {app_data}")
-
+                
+                # Store original types before attempts
+                original_types = business_data.get('types', '')
+                
+                # First attempt - with types
                 try:
+                    logger.info(f"First attempt to move business {business_id} with types: {original_types}")
                     RequestClient().request('move-to-app', app_data)
-                except Exception as e:
-                    logger.error(f"Failed to move business {business_id} to app: {str(e)}")
+                    
                     return JsonResponse({
-                        'status': 'move-to-app-error',
-                        'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(e)}"
-                    }, status=400)
+                        'status': 'success',
+                        'message': 'Business successfully moved to LS'
+                    })
+                    
+                except Exception as first_error:
+                    logger.warning(f"First attempt failed with types: {str(first_error)}")
+                    
+                    # Second attempt - without types
+                    try:
+                        # Remove types from data
+                        result_data_without_types = result_data.copy()
+                        removed_types = result_data_without_types.pop('types', '')
+                        
+                        app_data_without_types = json.dumps(result_data_without_types, default=datetime_serializer)
+                        logger.info(f"Second attempt to move business {business_id} without types")
+                        
+                        RequestClient().request('move-to-app', app_data_without_types)
+                        
+                        return JsonResponse({
+                            'status': 'success-with-warning',
+                            'message': 'Business moved to LS successfully, but without types',
+                            'removed_types': removed_types,
+                            'warning': ('The following types were removed to complete the move: '
+                                    f'{removed_types}. Please add them manually in the LS backend.')
+                        })
+                        
+                    except Exception as second_error:
+                        logger.error(f"Both attempts failed. Second error: {str(second_error)}")
+                        return JsonResponse({
+                            'status': 'error',
+                            'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(second_error)}"
+                        }, status=400)
 
-            # Update status counts
+            # Update status counts (outside the IN_PRODUCTION block)
             old_status_count = Business.objects.filter(status=old_status).count()
             new_status_count = Business.objects.filter(status=new_status).count()
-
+            
             return JsonResponse({
                 'status': 'success',
                 'new_status': new_status,
@@ -1763,7 +1813,10 @@ def update_business_status(request, business_id):
 
         else:
             logger.error(f"Invalid status attempted: {new_status}")
-            return JsonResponse({'status': 'error', 'message': 'Invalid status'}, status=400)
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid status'
+            }, status=400)
 
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {str(e)}")

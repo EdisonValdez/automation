@@ -169,14 +169,16 @@ def translate_location(city, country):
     return translated_city, translated_country
  
  
-def process_scraped_types(scraped_types):
+def process_scraped_types(scraped_types, main_category=None):
     """
     Process types from scraping before saving to Business model
     Args:
         scraped_types: Can be a list, tuple, or comma-separated string of types
+        main_category: Optional main category to ensure it's included
     Returns:
         str: Cleaned, deduplicated, comma-separated string of types
     """
+    # Convert input to list of types
     if isinstance(scraped_types, (list, tuple)):
         types_list = [str(t).strip() for t in scraped_types if str(t).strip()]
     elif isinstance(scraped_types, str):
@@ -184,7 +186,13 @@ def process_scraped_types(scraped_types):
     else:
         types_list = []
     
+    # Add main category if provided
+    if main_category:
+        # Convert plural category to singular for type
+        singular_category = main_category.rstrip('s')  # Simple conversion, adjust if needed
+        types_list.append(singular_category)
+    
     # Remove duplicates while preserving order
     unique_types = list(dict.fromkeys(types_list))
-    return ', '.join(unique_types)  # Note: Consistent spacing after comma
+    return ', '.join(unique_types)
 
