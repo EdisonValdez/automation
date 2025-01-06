@@ -223,53 +223,19 @@
  
 <!--API Loading Cats and countries -->
 <script>
-$(document).ready(function() {
-    // Initial load for top-level categories
-    loadTopLevelCategories();
-
-    // Function to load top-level categories
-    function loadTopLevelCategories() {
-        $.ajax({
-            url: '/load-categories/', // New endpoint to load top-level categories
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            success: function(response) {
-                const mainCategories = response.main_categories; // Adapt if response structure changes
-                $('#id_main_category').empty().append('<option value="">Select a category</option>');
-                if (mainCategories.length > 0) {
-                    mainCategories.forEach(function(category) {
-                        $('#id_main_category').append(
-                            $('<option></option>')
-                            .attr('value', category.id)
-                            .text(category.title)
-                        );
-                    });
-                } else {
-                    $('#id_main_category').append('<option value="">No categories available</option>');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading top-level categories:', error);
-                $('#id_main_category').append('<option value="">Error loading categories</option>');
-            }
-        });
-    }
-
-    // Handle Level changes to load categories if applicable
-    $('#id_level').change(function() {
-        var levelId = $(this).val();
-        $('#id_main_category').empty().append('<option value="">Select a category</option>');
-        $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
-        if (levelId) {
-            // Adjust based on whether you still need to call get_categories
+    $(document).ready(function() {
+        // Function to load top-level categories
+        function loadTopLevelCategories() {
             $.ajax({
-                url: '/api/categories/', // Keep for fetching categories based on level
-                data: { 'level_id': levelId },
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                url: '/api/load-categories/', // Updated endpoint for loading top-level categories
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
                 success: function(response) {
-                    if (Array.isArray(response) && response.length) {
-                        response.forEach(function(category) {
+                    const mainCategories = response.main_categories; // Adjust according to your API response
+                    $('#id_main_category').empty().append('<option value="">Select a category</option>');
+                    if (mainCategories.length > 0) {
+                        mainCategories.forEach(function(category) {
                             $('#id_main_category').append(
                                 $('<option></option>')
                                 .attr('value', category.id)
@@ -281,75 +247,109 @@ $(document).ready(function() {
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error fetching categories:', error);
+                    console.error('Error loading top-level categories:', error);
                     $('#id_main_category').append('<option value="">Error loading categories</option>');
                 }
             });
         }
-    });
-
-    // Handle Main Category and Subcategory changes
-    $('#id_main_category').change(function() {
-        var categoryId = $(this).val();
-        $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
-        if (categoryId) {
-            $.ajax({
-                url: '/api/subcategories/',
-                data: { 'category_id': categoryId },
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                success: function(response) {
-                    if (Array.isArray(response) && response.length) {
-                        response.forEach(function(subcategory) {
-                            $('#id_subcategory').append(
-                                $('<option></option>')
-                                .attr('value', subcategory.id)
-                                .text(subcategory.title)
-                            );
-                        });
-                    } else {
-                        $('#id_subcategory').append('<option value="">No subcategories available</option>');
+    
+        // Initial load for top-level categories
+        loadTopLevelCategories();
+    
+        // Handle Level changes to load categories if applicable
+        $('#id_level').change(function() {
+            var levelId = $(this).val();
+            $('#id_main_category').empty().append('<option value="">Select a category</option>');
+            $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+            if (levelId) {
+                $.ajax({
+                    url: '/api/categories/', // This should be kept for fetching categories based on level
+                    data: { 'level_id': levelId },
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function(response) {
+                        if (Array.isArray(response) && response.length) {
+                            response.forEach(function(category) {
+                                $('#id_main_category').append(
+                                    $('<option></option>')
+                                    .attr('value', category.id)
+                                    .text(category.title)
+                                );
+                            });
+                        } else {
+                            $('#id_main_category').append('<option value="">No categories available</option>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching categories:', error);
+                        $('#id_main_category').append('<option value="">Error loading categories</option>');
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching subcategories:', error);
-                    $('#id_subcategory').append('<option value="">Error loading subcategories</option>');
-                }
-            });
-        }
-    });
-
-    // Handle Country and Destination changes
-    $('#id_country').change(function() {
-        var countryId = $(this).val();
-        $('#id_destination').empty().append('<option value="">Select a destination</option>');
-        if (countryId) {
-            $.ajax({
-                url: '/api/cities/',
-                data: { 'country_id': countryId },
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                success: function(response) {
-                    const cities = response.results; // Adjust based on actual response
-                    if (Array.isArray(cities) && cities.length) {
-                        cities.forEach(function(city) {
-                            $('#id_destination').append(
-                                $('<option></option>')
-                                .attr('value', city.id)
-                                .text(city.name)
-                            );
-                        });
-                    } else {
-                        $('#id_destination').append('<option value="">No destinations found</option>');
+                });
+            }
+        });
+    
+        // Handle Main Category and Subcategory changes
+        $('#id_main_category').change(function() {
+            var categoryId = $(this).val();
+            $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+            if (categoryId) {
+                $.ajax({
+                    url: '/api/subcategories/',
+                    data: { 'category_id': categoryId }, // Ensure you are sending the correct parameter
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function(response) {
+                        if (Array.isArray(response) && response.length) {
+                            response.forEach(function(subcategory) {
+                                $('#id_subcategory').append(
+                                    $('<option></option>')
+                                    .attr('value', subcategory.id)
+                                    .text(subcategory.title)
+                                );
+                            });
+                        } else {
+                            $('#id_subcategory').append('<option value="">No subcategories available</option>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching subcategories:', error);
+                        $('#id_subcategory').append('<option value="">Error loading subcategories</option>');
                     }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching destinations:', error);
-                    $('#id_destination').append('<option value="">Error loading destinations</option>');
-                }
-            });
-        }
-    });
+                });
+            }
+        });
+    
+        // Handle Country and Destination changes
+        $('#id_country').change(function() {
+            var countryId = $(this).val();
+            $('#id_destination').empty().append('<option value="">Select a destination</option>');
+            if (countryId) {
+                $.ajax({
+                    url: '/api/cities/', // Ensure the URL matches your API endpoint
+                    data: { 'country_id': countryId },
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(response) {
+                        const cities = response.results; // Adjust according to your API response structure
+                        if (Array.isArray(cities) && cities.length) {
+                            cities.forEach(function(city) {
+                                $('#id_destination').append(
+                                    $('<option></option>')
+                                    .attr('value', city.id)
+                                    .text(city.name)
+                                );
+                            });
+                        } else {
+                            $('#id_destination').append('<option value="">No destinations found</option>');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching destinations:', error);
+                        $('#id_destination').append('<option value="">Error loading destinations</option>');
+                    }
+                });
+            }
+        });
+ 
 
     // Add loading indicators
     function showLoading(elementId) {
