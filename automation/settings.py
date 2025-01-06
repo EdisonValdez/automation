@@ -273,3 +273,17 @@ AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL')
  
 LOCAL_SECRET_BASE_URL = os.environ.get('LOCAL_SECRET_BASE_URL')
 SIGATURE_SECRET = os.environ.get('SIGATURE_SECRET')
+LS_BACKEND_API_KEY = SIGATURE_SECRET
+
+if not LS_BACKEND_API_KEY:
+    from django.core.management.utils import get_random_secret_key
+    LS_BACKEND_API_KEY = get_random_secret_key()
+    print("Warning: Using randomly generated LS_BACKEND_API_KEY for development")
+ 
+LS_BACKEND_SETTINGS = {
+    'URL': LOCAL_SECRET_BASE_URL,
+    'TIMEOUT': 30,  # seconds
+    'RETRY_ATTEMPTS': 3,
+    'CACHE_ENABLED': True,
+    'DEFAULT_LANGUAGE': 'en',
+}

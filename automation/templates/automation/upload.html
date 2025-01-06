@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Upload File{% endblock %}
-
 {% block content %}
 <style> .image-count-selection {margin-top: 10px;}.form-check-inline {margin-right: 20px;}.form-check-input:checked {background-color: #F4C031;border-color: #F4C031;}.form-check-label {cursor: pointer;}.sidebar-expand.active .sidebar {transition: transform 0.3s ease-in-out;max-width: 100%;z-index: 1111;}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.loader {border: 5px solid #f3f3f3;border-top: 5px solid #3498db;border-radius: 50%;width: 50px;height: 50px;animation: spin 1s linear infinite;display: none;}@keyframes spin {0% {transform: rotate(0deg);}100% {transform: rotate(360deg);}}.overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background-color: rgba(0, 0, 0, 0.5);z-index: 1000;display: none;}#loading-spinner {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index: 1001;display: none;}</style>
  
@@ -202,6 +201,7 @@
         }
     });
 </script>
+
 <!-- JavaScript to toggle the images field -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -220,32 +220,69 @@
         });
     });
 </script>
-
-                    
  
+<!--API Loading Cats and countries -->
 <script>
 $(document).ready(function() {
-    // Handle Level and Main Category changes
+    // Initial load for top-level categories
+    loadTopLevelCategories();
+
+    // Function to load top-level categories
+    function loadTopLevelCategories() {
+        $.ajax({
+            url: '/load-categories/', // New endpoint to load top-level categories
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            success: function(response) {
+                const mainCategories = response.main_categories; // Adapt if response structure changes
+                $('#id_main_category').empty().append('<option value="">Select a category</option>');
+                if (mainCategories.length > 0) {
+                    mainCategories.forEach(function(category) {
+                        $('#id_main_category').append(
+                            $('<option></option>')
+                            .attr('value', category.id)
+                            .text(category.title)
+                        );
+                    });
+                } else {
+                    $('#id_main_category').append('<option value="">No categories available</option>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading top-level categories:', error);
+                $('#id_main_category').append('<option value="">Error loading categories</option>');
+            }
+        });
+    }
+
+    // Handle Level changes to load categories if applicable
     $('#id_level').change(function() {
         var levelId = $(this).val();
         $('#id_main_category').empty().append('<option value="">Select a category</option>');
         $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
-
         if (levelId) {
+            // Adjust based on whether you still need to call get_categories
             $.ajax({
-                url: '{% url "get_categories" %}',
+                url: '/api/categories/', // Keep for fetching categories based on level
                 data: { 'level_id': levelId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(category) {
-                            $('#id_main_category').append($('<option></option>').attr('value', category.id).text(category.title));
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function(response) {
+                    if (Array.isArray(response) && response.length) {
+                        response.forEach(function(category) {
+                            $('#id_main_category').append(
+                                $('<option></option>')
+                                .attr('value', category.id)
+                                .text(category.title)
+                            );
                         });
                     } else {
                         $('#id_main_category').append('<option value="">No categories available</option>');
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error fetching categories: ' + error);
+                    console.error('Error fetching categories:', error);
+                    $('#id_main_category').append('<option value="">Error loading categories</option>');
                 }
             });
         }
@@ -255,109 +292,101 @@ $(document).ready(function() {
     $('#id_main_category').change(function() {
         var categoryId = $(this).val();
         $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
-
         if (categoryId) {
             $.ajax({
-                url: '{% url "get_subcategories" %}',
+                url: '/api/subcategories/',
                 data: { 'category_id': categoryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(subcategory) {
-                            $('#id_subcategory').append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                success: function(response) {
+                    if (Array.isArray(response) && response.length) {
+                        response.forEach(function(subcategory) {
+                            $('#id_subcategory').append(
+                                $('<option></option>')
+                                .attr('value', subcategory.id)
+                                .text(subcategory.title)
+                            );
                         });
                     } else {
                         $('#id_subcategory').append('<option value="">No subcategories available</option>');
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error fetching subcategories: ' + error);
+                    console.error('Error fetching subcategories:', error);
+                    $('#id_subcategory').append('<option value="">Error loading subcategories</option>');
                 }
             });
         }
     });
 
-    
     // Handle Country and Destination changes
     $('#id_country').change(function() {
         var countryId = $(this).val();
         $('#id_destination').empty().append('<option value="">Select a destination</option>');
-
         if (countryId) {
             $.ajax({
-                url: '{% url "get_destinations_by_country" %}',
+                url: '/api/cities/',
                 data: { 'country_id': countryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(destination) {
-                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(response) {
+                    const cities = response.results; // Adjust based on actual response
+                    if (Array.isArray(cities) && cities.length) {
+                        cities.forEach(function(city) {
+                            $('#id_destination').append(
+                                $('<option></option>')
+                                .attr('value', city.id)
+                                .text(city.name)
+                            );
                         });
                     } else {
-                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
+                        $('#id_destination').append('<option value="">No destinations found</option>');
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error fetching destinations: ' + error);
+                    console.error('Error fetching destinations:', error);
+                    $('#id_destination').append('<option value="">Error loading destinations</option>');
                 }
             });
         }
     });
+
+    // Add loading indicators
+    function showLoading(elementId) {
+        $(elementId).prop('disabled', true);
+        $(elementId).parent().append('<span class="loading-spinner ml-2"></span>');
+    }
+
+    function hideLoading(elementId) {
+        $(elementId).prop('disabled', false);
+        $(elementId).parent().find('.loading-spinner').remove();
+    }
+
+    // Add error handling utility
+    function handleAjaxError(elementId, error) {
+        console.error('Ajax error:', error);
+        $(elementId).empty().append('<option value="">Error loading data</option>');
+        hideLoading(elementId);
+        
+        // Show error message to user
+        const errorDiv = $('<div>')
+            .addClass('alert alert-danger mt-2')
+            .text('Error loading data. Please try again.');
+        $(elementId).parent().append(errorDiv);
+        setTimeout(() => errorDiv.fadeOut('slow', function() { $(this).remove(); }), 5000);
+    }
 });
 
-
-$(document).ready(function() {
-    // Load countries when the page loads
-    $.ajax({
-        url: '{% url "get_countries" %}',
-        method: 'GET',
-        success: function(data) {
-            $('#id_country').empty().append('<option value="">Select a country</option>');
-            if (data.length > 0) {
-                data.forEach(function(country) {
-                    $('#id_country').append($('<option></option>').attr('value', country.id).text(country.name));
-                });
-            } else {
-                $('#id_country').append('<option value="">No countries available</option>');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error fetching countries: ' + error);
-        }
-    });
-
-    // Handle country and destination changes
-    $('#id_country').change(function() {
-        var countryId = $(this).val();
-        $('#id_destination').empty().append('<option value="">Select a destination</option>');
-
-        if (countryId) {
-            $.ajax({
-                url: '{% url "get_destinations_by_country" %}',
-                data: { 'country_id': countryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(destination) {
-                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
-                        });
-                    } else {
-                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching destinations: ' + error);
-                }
-            });
-        }
-    });
-});
 </script>
+ <!--API Loading Cats and countries -->
+
 <div class="overlay" ></div>                 
 
 <div id="log-container"></div>
 
 <hr />
- 
-    <!--Recent Activity-->
-    <div class="box">
+<!--Recent Activity-->
+<div class="box">
         <div class="box-header pt-0">
             <div class="me-auto">
                 <h4 class="card-title mb-0 fs-22" id="scraped-list">Recent Activity</h4>

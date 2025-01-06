@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
 from django.core.exceptions import ValidationError
-
+from .services.ls_backend import LSBackendClient
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import TruncDate
@@ -70,6 +70,73 @@ def welcome_view(request):
 
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
+
+#LSBACKEND API
+
+def load_categories(request):
+    client = LSBackendClient()
+    levels = client.get_levels()
+
+    return render(request, 'automation/upload.html', {
+        'levels': levels
+    })
+
+def get_categories(request):
+    level_id = request.GET.get('level_id')
+    if not level_id:
+        return JsonResponse({'error': 'Level ID is required'}, status=400)
+    
+    client = LSBackendClient()
+    categories = client.get_categories(level_id)
+
+    return JsonResponse(categories, safe=False)
+
+def get_subcategories(request):
+    category_id = request.GET.get('category_id')
+    if not category_id:
+        return JsonResponse({'error': 'Category ID is required'}, status=400)
+    
+    client = LSBackendClient()
+    subcategories = client.get_categories(category_id)
+
+    return JsonResponse(subcategories, safe=False)
+ 
+def get_countries(request):
+    """
+    Fetch countries from LS Backend with optional search
+    """
+    try:
+        client = LSBackendClient()
+        search = request.GET.get('search')
+        language = request.headers.get('language', 'en')
+        
+        countries = client.get_countries(language=language, search=search)
+        return JsonResponse({'results': countries}, safe=False)
+    except Exception as e:
+        logger.error(f"Error fetching countries: {str(e)}")
+        return JsonResponse({'error': 'Failed to fetch countries'}, status=500)
+
+def get_cities(request):
+    """
+    Fetch cities from LS Backend with filtering options
+    """
+    try:
+        client = LSBackendClient()
+        country_id = request.GET.get('country_id')
+        search = request.GET.get('search')
+        language = request.headers.get('language', 'en')
+        
+        cities = client.get_cities(
+            country_id=country_id,
+            language=language,
+            search=search
+        )
+        return JsonResponse({'results': cities}, safe=False)
+    except Exception as e:
+        logger.error(f"Error fetching cities: {str(e)}")
+        return JsonResponse({'error': 'Failed to fetch cities'}, status=500)
+
+#LSBACKEND API
 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
@@ -1828,9 +1895,7 @@ def update_business_status(request, business_id):
             debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
             logger.error(f"Traceback Error: {debugger}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-
-
+ 
 
 ########CHANGE STATUS#############################
  
@@ -2264,7 +2329,7 @@ def generate_description(request):
                 messages=messages,
                 #model="gpt-3.5-turbo",
                 model="gpt-4",
-                max_tokens=900,
+                max_tokens=1000,
                 temperature=0.3,
                 presence_penalty=0.0,
                 frequency_penalty=0.0
@@ -2856,8 +2921,7 @@ def get_destinations_by_country(request):
     else:
         return JsonResponse({'error': 'No country_id provided'}, status=400)
  
-def parse_address(address):
-    # This is a simplified address parser. You might want to use a more robust solution.
+def parse_address(address): 
     components = address.split(',')
     parsed = {
         'street': components[0].strip() if len(components) > 0 else '',

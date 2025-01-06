@@ -4,6 +4,7 @@ import random
 import shutil
 import string
 from typing import Optional
+import urllib.parse
 import uuid
 from celery import shared_task
 from django.urls import reverse
@@ -87,7 +88,7 @@ doctran = Doctran(openai_api_key=OPENAI_API_KEY)
 
 def read_queries(file_path):
     """
-    Modified to handle Google Maps URLs and extract business names
+    Modified to handle personal URLS Google Maps URLs and extract business names
     """
     logger.info(f"Reading queries from file: {file_path}")
     try:
@@ -97,13 +98,20 @@ def read_queries(file_path):
         if file_extension in ['.txt']:
             with open(file_path, 'r', encoding='utf-8') as file:
                 for line in file:
-                    # New parsing logic for Google Maps URLs
+                    # Parsing logic for Google Maps URLs / Google Place
                     if 'google.com/maps/place' in line or 'google.es/maps/place' in line:
                         # Extract business name from URL
                         business_name = extract_business_name(line)
                         # Extract coordinates if available
                         coords = extract_coordinates(line)
                         
+                        if business_name:
+                            query_data = {'query': business_name, 'll': coords}
+                            queries.append(query_data)
+                    # Handling the new google maprs url format
+                    elif 'https://www.google.com/maps/search/?api=1&query=' in line:
+                        business_name = extract_business_name_from_search(line)
+                        coords = extract_coordinates(line)
                         if business_name:
                             query_data = {'query': business_name, 'll': coords}
                             queries.append(query_data)
@@ -138,6 +146,20 @@ def extract_business_name(url):
         return None
     except Exception as e:
         logger.error(f"Error extracting business name: {str(e)}")
+        return None
+
+def extract_business_name_from_search(url):
+    """Extract the business name from the new google maps search url"""
+    try:
+        query_param = re.search(r'query=([^&]+)', url)
+        if query_param:
+            business_name = query_param.group(1)
+            business_name = business_name.replace('+', ' ')
+            business_name = urllib.parse.unquote(business_name)
+            return business_name
+        return None
+    except Exception as e:
+        logger.error(f"Error extracting business name from search URL: {str(e)}")
         return None
 
 def extract_coordinates(url):
@@ -572,7 +594,7 @@ def save_results(task, results, query):
 #####################DESCRIPTION TRANSLATE##################################
 
 
-def call_openai_with_retry(messages, model="gpt-3.5-turbo", temperature=0.3, max_tokens=800, presence_penalty=0.0, frequency_penalty=0.0, retries=2, delay=1):
+def call_openai_with_retry(messages, model="gpt-3.5-turbo", temperature=0.3, max_tokens=1000, presence_penalty=0.0, frequency_penalty=0.0, retries=2, delay=1):
     for attempt in range(retries):
         try:
             return openai.ChatCompletion.create(
@@ -672,7 +694,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
             messages=enhance_messages,
             #model="gpt-3.5-turbo",
             model="gpt-4",
-            max_tokens=800,
+            max_tokens=1000,
             temperature=0.7
         )
 
@@ -705,7 +727,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
         uk_response = call_openai_with_retry(
             messages=uk_messages,
             model="gpt-3.5-turbo",
-            max_tokens=800,
+            max_tokens=1000,
             temperature=0.3
         )
 
@@ -736,7 +758,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                 spanish_response = call_openai_with_retry(
                     messages=spanish_messages,
                     model="gpt-3.5-turbo",
-                    max_tokens=800,
+                    max_tokens=1000,
                     temperature=0.3
                 )
 
@@ -772,7 +794,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                 fr_response = call_openai_with_retry(
                     messages=fr_messages,
                     model="gpt-3.5-turbo",
-                    max_tokens=800,
+                    max_tokens=1000,
                     temperature=0.3
                 )
 
@@ -1114,7 +1136,7 @@ def generate_new_description(business):
 
         response = call_openai_with_retry(
             messages=messages,
-            max_tokens=800,
+            max_tokens=1000,
             #model="gpt-3.5-turbo",
             model="gpt-4",
             temperature=0.3

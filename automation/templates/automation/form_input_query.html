@@ -193,4 +193,66 @@ function loadSubcategories(categoryId) {
     }
 }
 </script>
+
+<!-- API LOAD 
+// templates/automation/upload.html
+function loadCountries() {
+    $.ajax({
+        url: '/api/countries/',
+        method: 'GET',
+        headers: {
+            'language': 'en' // Or get from user preferences
+        },
+        success: function(response) {
+            const select = $('#country_select');
+            select.empty();
+            select.append('<option value="">Select Country</option>');
+            
+            response.results.forEach(function(country) {
+                select.append(`<option value="${country.id}">${country.name}</option>`);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading countries:', error);
+        }
+    });
+}
+
+function loadCities(countryId) {
+    if (!countryId) return;
+    
+    $.ajax({
+        url: '/api/cities/',
+        method: 'GET',
+        data: {
+            country_id: countryId
+        },
+        headers: {
+            'language': 'en' // Or get from user preferences
+        },
+        success: function(response) {
+            const select = $('#city_select');
+            select.empty();
+            select.append('<option value="">Select City</option>');
+            
+            response.results.forEach(function(city) {
+                select.append(`<option value="${city.id}">${city.name}</option>`);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading cities:', error);
+        }
+    });
+}
+
+// Event listeners
+$(document).ready(function() {
+    loadCountries();
+    
+    $('#country_select').change(function() {
+        loadCities($(this).val());
+    });
+});
+
+-->
 {% endblock %}
