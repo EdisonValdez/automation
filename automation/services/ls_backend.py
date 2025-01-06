@@ -34,12 +34,14 @@ class LSBackendClient:
     def _make_request(self, endpoint: str, params: Dict = None) -> Dict:
         """Make HTTP request with retry logic"""
         try:
+            logger.debug(f"Making request to {endpoint} with params: {params}")
             response = requests.get(
                 f"{self.base_url}{endpoint}",
                 headers=self.headers,
                 params=params,
                 timeout=10
             )
+            logger.debug(f"Response status code: {response.status_code}, Response: {response.text}")
             return self.handle_response(response, endpoint.strip('/').split('/')[-1])
         except RequestException as e:
             logger.error(f"Request failed for {endpoint}: {str(e)}")
@@ -164,3 +166,5 @@ class LSBackendClient:
         except Exception as e:
             logger.error(f"Error bulk fetching cities: {str(e)}")
             return []
+
+
