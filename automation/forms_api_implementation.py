@@ -2,6 +2,8 @@
 import logging
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+
+from automation.services.ls_backend import LSBackendClient, LSBackendException
 from .models import Country, CustomUser, Business, Destination, Feedback, ScrapingTask, UserRole, Category, Level
 from django.contrib.auth import get_user_model
 import json
@@ -154,51 +156,52 @@ class DestinationForm(forms.ModelForm):
         super(DestinationForm, self).__init__(*args, **kwargs)
         self.fields['ambassador'].required = False  
  
+
 class ScrapingTaskForm(forms.ModelForm):
     file = forms.FileField(
-        required=False,  # Mark the file field as optional
+        required=False,
         help_text="Upload a file containing search queries (one per line)",
         widget=forms.FileInput(attrs={'class': 'btn text-primary border-primary d-flex align-items-center mr-5'})
     )
 
-    level = forms.ModelChoiceField(
-        queryset=Level.objects.all(),
+    level = forms.ChoiceField(
+        choices=[],  # Will be populated from LS Backend
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Select a level",
+        required=True,
         error_messages={'required': 'Please select a level.'}
     )
 
-    main_category = forms.ModelChoiceField(
-        queryset=Category.objects.none(),
+    main_category = forms.ChoiceField(
+        choices=[],  # Will be populated based on selected level
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Select a category",
+        required=True,
         error_messages={'required': 'Please select a main category.'}
     )
 
-    subcategory = forms.ModelChoiceField(
-        queryset=Category.objects.none(),
+    subcategory = forms.ChoiceField(
+        choices=[],  # Will be populated based on selected main category
         widget=forms.Select(attrs={'class': 'form-control'}),
         required=False,
-        empty_label="Select a subcategory (optional)"
     )
 
-    country = forms.ModelChoiceField(
-        queryset=Country.objects.all(),
+    country = forms.ChoiceField(
+        choices=[],  # Will be populated from LS Backend
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Select a country",
+        required=True,
         error_messages={'required': 'Please select a country.'}
     )
 
-    destination = forms.ModelChoiceField(
-        queryset=Destination.objects.none(),
+    destination = forms.ChoiceField(
+        choices=[],  # Will be populated based on selected country
         widget=forms.Select(attrs={'class': 'form-control'}),
-        empty_label="Select a destination",
+        required=True,
         error_messages={'required': 'Please select a destination.'}
     )
 
     class Meta:
         model = ScrapingTask
-        fields = ['project_title', 'level', 'main_category', 'subcategory', 'country', 'destination', 'description', 'file']
+        fields = ['project_title', 'level', 'main_category', 'subcategory', 
+                 'country', 'destination', 'description', 'file']
         widgets = {
             'project_title': forms.TextInput(attrs={'class': 'form-control', 'readonly': True}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
@@ -206,37 +209,101 @@ class ScrapingTaskForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        ls_client = LSBackendClient()
 
-        # Initialize main category queryset to top-level categories
-        self.fields['main_category'].queryset = Category.objects.filter(parent__isnull=True)
+        empty_choice = [('', '---------')]
 
-        # Set main category queryset based on level if available
-        if self.instance.pk and self.instance.level:
-            self.fields['main_category'].queryset = Category.objects.filter(level=self.instance.level, parent__isnull=True)
+        # Initialize levels from LS Backend
+        try:
+            levels = ls_client.get_levels()
+            self.fields['level'].choices = empty_choice + [
+                (level['id'], level['title']) for level in levels
+            ]
+        except LSBackendException as e:
+            logger.error(f"Failed to fetch levels: {e}")
+            self.fields['level'].choices = empty_choice
 
-        # Handle main category-subcategory dependency in POST data
+        # Initialize countries from LS Backend
+        try:
+            countries = ls_client.get_countries()
+            self.fields['country'].choices = empty_choice + [
+                (country['id'], country['name']) for country in countries
+            ]
+        except LSBackendException as e:
+            logger.error(f"Failed to fetch countries: {e}")
+            self.fields['country'].choices = empty_choice
+
+        # Initialize other fields with empty choices
+        self.fields['main_category'].choices = empty_choice
+        self.fields['subcategory'].choices = empty_choice
+        self.fields['destination'].choices = empty_choice
+
+        # Handle main category population based on level
+        if 'level' in self.data:
+            try:
+                level_id = self.data.get('level')
+                categories = ls_client.get_categories(level_id=level_id)
+                self.fields['main_category'].choices = [
+                    (cat['id'], cat['title']) for cat in categories 
+                    if not cat.get('parent_id')
+                ]
+            except (LSBackendException, ValueError) as e:
+                logger.error(f"Failed to fetch categories: {e}")
+                self.fields['main_category'].choices = []
+
+        # Handle subcategory population based on main category
         if 'main_category' in self.data:
             try:
-                main_category_id = int(self.data.get('main_category'))
-                self.fields['subcategory'].queryset = Category.objects.filter(parent_id=main_category_id)
-            except (ValueError, TypeError):
-                pass  # Fallback to empty queryset if invalid
+                main_category_id = self.data.get('main_category')
+                categories = ls_client.get_categories(category_id=main_category_id)
+                self.fields['subcategory'].choices = [
+                    (cat['id'], cat['title']) for cat in categories
+                ]
+            except (LSBackendException, ValueError) as e:
+                logger.error(f"Failed to fetch subcategories: {e}")
+                self.fields['subcategory'].choices = []
 
-        # Populate subcategory queryset if editing an existing instance
-        elif self.instance.pk and self.instance.main_category:
-            self.fields['subcategory'].queryset = Category.objects.filter(parent=self.instance.main_category)
-
-        # Handle country-destination dependency in POST data
+        # Handle destination population based on country
         if 'country' in self.data:
             try:
-                country_id = int(self.data.get('country'))
-                self.fields['destination'].queryset = Destination.objects.filter(country_id=country_id)
-            except (ValueError, TypeError):
-                pass  # Fallback to empty queryset if invalid
+                country_id = self.data.get('country')
+                cities = ls_client.get_cities(country_id=country_id)
+                self.fields['destination'].choices = [
+                    (city['id'], city['name']) for city in cities
+                ]
+            except (LSBackendException, ValueError) as e:
+                logger.error(f"Failed to fetch destinations: {e}")
+                self.fields['destination'].choices = []
 
-        # Populate destination queryset if editing an existing instance
-        elif self.instance.pk and self.instance.country:
-            self.fields['destination'].queryset = Destination.objects.filter(country=self.instance.country)
+        # Populate fields if editing existing instance
+        if self.instance.pk:
+            if self.instance.level:
+                try:
+                    categories = ls_client.get_categories(level_id=self.instance.level)
+                    self.fields['main_category'].choices = [
+                        (cat['id'], cat['title']) for cat in categories 
+                        if not cat.get('parent_id')
+                    ]
+                except LSBackendException as e:
+                    logger.error(f"Failed to fetch categories for existing instance: {e}")
+
+            if self.instance.main_category:
+                try:
+                    subcategories = ls_client.get_categories(category_id=self.instance.main_category)
+                    self.fields['subcategory'].choices = [
+                        (cat['id'], cat['title']) for cat in subcategories
+                    ]
+                except LSBackendException as e:
+                    logger.error(f"Failed to fetch subcategories for existing instance: {e}")
+
+            if self.instance.country:
+                try:
+                    cities = ls_client.get_cities(country_id=self.instance.country)
+                    self.fields['destination'].choices = [
+                        (city['id'], city['name']) for city in cities
+                    ]
+                except LSBackendException as e:
+                    logger.error(f"Failed to fetch destinations for existing instance: {e}")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -248,35 +315,132 @@ class ScrapingTaskForm(forms.ModelForm):
 
         logger.debug(f"Cleaning form data: level={level}, main_category={main_category}, subcategory={subcategory}, country={country}, destination={destination}")
 
-        # Validate that main_category belongs to the selected level
-        if main_category and level and main_category.level != level:
-            self.add_error('main_category', 'The selected category does not belong to the selected level.')
+        ls_client = LSBackendClient()
 
-        # Validate that subcategory belongs to the selected main category
-        if subcategory and main_category and subcategory.parent != main_category:
-            self.add_error('subcategory', 'The selected subcategory does not belong to the selected main category.')
+        try:
+            # Validate that main_category belongs to the selected level
+            if main_category and level:
+                categories = ls_client.get_categories(level_id=level)
+                valid_categories = [str(cat['id']) for cat in categories if not cat.get('parent_id')]
+                if main_category not in valid_categories:
+                    self.add_error('main_category', 
+                        'The selected category does not belong to the selected level.')
 
-        # Validate that destination belongs to the selected country
-        if destination and country and destination.country != country:
-            self.add_error('destination', 'The selected destination does not belong to the selected country.')
+            # Validate that subcategory belongs to the selected main category
+            if subcategory and main_category:
+                subcategories = ls_client.get_categories(category_id=main_category)
+                valid_subcategories = [str(cat['id']) for cat in subcategories]
+                if subcategory not in valid_subcategories:
+                    self.add_error('subcategory', 
+                        'The selected subcategory does not belong to the selected main category.')
+
+            # Validate that destination belongs to the selected country
+            if destination and country:
+                cities = ls_client.get_cities(country_id=country)
+                valid_destinations = [str(city['id']) for city in cities]
+                if destination not in valid_destinations:
+                    self.add_error('destination', 
+                        'The selected destination does not belong to the selected country.')
+
+        except LSBackendException as e:
+            logger.error(f"Error validating form data with LS Backend: {e}")
+            raise forms.ValidationError(
+                "Unable to validate form data. Please try again later."
+            )
 
         return cleaned_data
 
     def clean_file(self):
+        """
+        Validate the uploaded file if provided.
+        """
         file = self.cleaned_data.get('file')
-        # Validate file type only if a file is provided
         if file:
+            # Validate file type
             if file.content_type not in ['text/plain']:
                 raise forms.ValidationError("Only text files are allowed.")
+            
+            # Validate file size (optional, adjust size as needed)
+            if file.size > 5 * 1024 * 1024:  # 5MB limit
+                raise forms.ValidationError("File size must be under 5MB.")
+            
+            # Validate file content (optional)
+            try:
+                content = file.read().decode('utf-8')
+                lines = [line.strip() for line in content.split('\n') if line.strip()]
+                if not lines:
+                    raise forms.ValidationError("File appears to be empty.")
+                if len(lines) > 1000:  # Adjust limit as needed
+                    raise forms.ValidationError("Too many queries in file. Maximum is 1000.")
+                file.seek(0)  # Reset file pointer
+            except UnicodeDecodeError:
+                raise forms.ValidationError("File must be a valid text file with UTF-8 encoding.")
+            
         return file
 
     def save(self, commit=True):
+        """
+        Save the form and create a new ScrapingTask instance.
+        """
         instance = super().save(commit=False)
+        
+        # Set status to PENDING
         instance.status = 'PENDING'
+        
+        # Store LS Backend IDs
+        instance.level_id = self.cleaned_data.get('level')
+        instance.main_category_id = self.cleaned_data.get('main_category')
+        instance.subcategory_id = self.cleaned_data.get('subcategory')
+        instance.country_id = self.cleaned_data.get('country')
+        instance.destination_id = self.cleaned_data.get('destination')
+        
+        # Get and store names/titles from LS Backend for reference
+        try:
+            ls_client = LSBackendClient()
+            
+            # Store level title
+            levels = ls_client.get_levels()
+            level_data = next((level for level in levels if str(level['id']) == instance.level_id), None)
+            if level_data:
+                instance.level_title = level_data['title']
+            
+            # Store category titles
+            if instance.main_category_id:
+                categories = ls_client.get_categories(level_id=instance.level_id)
+                category_data = next((cat for cat in categories if str(cat['id']) == instance.main_category_id), None)
+                if category_data:
+                    instance.main_category_title = category_data['title']
+            
+            # Store country and destination names
+            if instance.country_id:
+                countries = ls_client.get_countries()
+                country_data = next((country for country in countries if str(country['id']) == instance.country_id), None)
+                if country_data:
+                    instance.country_name = country_data['name']
+            
+            if instance.destination_id:
+                cities = ls_client.get_cities(country_id=instance.country_id)
+                city_data = next((city for city in cities if str(city['id']) == instance.destination_id), None)
+                if city_data:
+                    instance.destination_name = city_data['name']
+                    
+        except LSBackendException as e:
+            logger.error(f"Error fetching additional data from LS Backend during save: {e}")
+            # Continue with save even if additional data fetch fails
+        
         if commit:
             instance.save()
             logger.info(f"Created new Gathering Project Task with id: {instance.id}")
+            
+            # Create associated task in task queue if needed
+            try:
+                # Implement your task creation logic here
+                pass
+            except Exception as e:
+                logger.error(f"Error creating associated task: {e}")
+                
         return instance
+
  
 class CsvImportForm(forms.Form):
     csv_upload = forms.FileField(label='Select a CSV file')

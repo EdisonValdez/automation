@@ -9,14 +9,13 @@ import backoff
  
 
 logger = logging.getLogger(__name__)
-
 class LSBackendException(Exception):
     """Custom exception for LS Backend related errors"""
     pass
-
+ 
 class LSBackendClient:
     """Client for interacting with LS Backend API"""
-    
+
     def __init__(self):
         self.base_url = settings.LOCAL_SECRET_BASE_URL
         self.headers = {
@@ -25,16 +24,11 @@ class LSBackendClient:
         }
         self.cache_timeout = getattr(settings, 'LS_CACHE_TIMEOUT', 3600)
 
-    def _get_cache_key(self, resource: str, **params) -> str:
-        """Generate cache key based on resource and parameters"""
-        param_str = '_'.join(f"{k}_{v}" for k, v in sorted(params.items()) if v)
-        return f'ls_{resource}_{param_str}'
-
     @backoff.on_exception(backoff.expo, RequestException, max_tries=3)
     def _make_request(self, endpoint: str, params: Dict = None) -> Dict:
-        """Make HTTP request with retry logic"""
+        """Make HTTP requests with retry logic"""
         try:
-            logger.debug(f"Making request to {endpoint} with params: {params}")
+            logger.debug(f"Making request to {self.base_url}{endpoint} with params: {params}")
             response = requests.get(
                 f"{self.base_url}{endpoint}",
                 headers=self.headers,
@@ -46,9 +40,14 @@ class LSBackendClient:
         except RequestException as e:
             logger.error(f"Request failed for {endpoint}: {str(e)}")
             raise
-
+ 
+    def _get_cache_key(self, resource: str, **params) -> str:
+        """Generate cache key based on resource and parameters"""
+        param_str = '_'.join(f"{k}_{v}" for k, v in sorted(params.items()) if v)
+        return f'ls_{resource}_{param_str}'
+ 
     def handle_response(self, response: requests.Response, resource_type: str) -> List[Dict]:
-        """Handle API response and errors"""
+        """Handle API response and check for errors"""
         if response.status_code == 200:
             return response.json()
         elif response.status_code == 404:
@@ -59,19 +58,11 @@ class LSBackendClient:
             logger.error(f"{error_msg}. Response: {response.text}")
             raise LSBackendException(error_msg)
 
-    def get_levels(self, site_type: Optional[str] = None) -> List[Dict]:
-        """Fetch levels from LS Backend"""
-        cache_key = self._get_cache_key('levels', site_type=site_type)
-        cached_data = cache.get(cache_key)
-        
-        if cached_data:
-            return cached_data
-
+    def get_levels(self) -> List[Dict]:
+        """Fetch the levels from LS Backend"""
         try:
-            params = {'type': site_type} if site_type else {}
-            data = self._make_request('/api/categories/', params)
-            cache.set(cache_key, data, timeout=self.cache_timeout)
-            return data
+            data = self._make_request('/api/levels/')  # Ensure this endpoint is correct
+            return data  # Expecting a list of levels
         except Exception as e:
             logger.error(f"Error fetching levels: {str(e)}")
             return []
@@ -94,23 +85,12 @@ class LSBackendClient:
         except Exception as e:
             logger.error(f"Error fetching categories: {str(e)}")
             return []
-
-    def get_countries(self, language: str = 'en', search: Optional[str] = None) -> List[Dict]:
-        """Fetch countries with optional search"""
-        cache_key = self._get_cache_key('countries', language=language, search=search)
-        cached_data = cache.get(cache_key)
-        
-        if cached_data:
-            return cached_data
-
-        params = {'language': language}
-        if search:
-            params['name'] = search.strip()
-
+ 
+    def get_countries(self) -> List[Dict]:
+        """Fetch countries from LS Backend"""
         try:
-            data = self._make_request('/api/countries/', params)
-            cache.set(cache_key, data, timeout=self.cache_timeout)
-            return data
+            data = self._make_request('/api/countries/')  # Ensure this endpoint is correct
+            return data  # Expecting a list of countries
         except Exception as e:
             logger.error(f"Error fetching countries: {str(e)}")
             return []
@@ -166,5 +146,4 @@ class LSBackendClient:
         except Exception as e:
             logger.error(f"Error bulk fetching cities: {str(e)}")
             return []
-
-
+ 

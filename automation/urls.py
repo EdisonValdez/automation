@@ -105,7 +105,7 @@ urlpatterns = [
     path('api/categories/', views.get_categories, name='get_categories'),
     path('api/subcategories/', views.get_subcategories, name='get_subcategories'),
     path('api/load-categories/', views.load_categories, name='load_categories'),
- 
+    path('api/levels/', views.get_levels, name='get_levels'),
 
     path('api/destination-categories/', views.DestinationCategoriesView.as_view(), name='destination_categories'),
 

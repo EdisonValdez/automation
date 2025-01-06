@@ -7,8 +7,7 @@ from django.http import FileResponse, Http404, HttpResponseForbidden, JsonRespon
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.db import transaction
 import logging
-from django.core.exceptions import ValidationError
-from .services.ls_backend import LSBackendClient
+from django.core.exceptions import ValidationError 
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import TruncDate
@@ -51,6 +50,8 @@ from automation import constants as const
 from automation.helper import datetime_serializer
 from django.views.generic import ListView 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from automation.services.ls_backend import LSBackendClient   
+
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -72,6 +73,15 @@ def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
 
 #LSBACKEND API
+ 
+def get_levels(request):
+    client = LSBackendClient()
+    try:
+        levels = client.get_levels()  # Fetch levels from LS Backend
+        return JsonResponse(levels, safe=False)
+    except Exception as e:
+        logger.error(f"Error fetching levels: {str(e)}")
+        return JsonResponse({'error': 'Failed to fetch levels'}, status=500)
 
 def load_categories(request):
     client = LSBackendClient()
