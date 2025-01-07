@@ -4,7 +4,6 @@ import random
 import shutil
 import string
 from typing import Optional
-import urllib.parse
 import uuid
 from celery import shared_task
 from django.urls import reverse
@@ -88,7 +87,7 @@ doctran = Doctran(openai_api_key=OPENAI_API_KEY)
 
 def read_queries(file_path):
     """
-    Modified to handle personal URLS Google Maps URLs and extract business names
+    Modified to handle Google Maps URLs and extract business names
     """
     logger.info(f"Reading queries from file: {file_path}")
     try:
@@ -98,20 +97,13 @@ def read_queries(file_path):
         if file_extension in ['.txt']:
             with open(file_path, 'r', encoding='utf-8') as file:
                 for line in file:
-                    # Parsing logic for Google Maps URLs / Google Place
+                    # New parsing logic for Google Maps URLs
                     if 'google.com/maps/place' in line or 'google.es/maps/place' in line:
                         # Extract business name from URL
                         business_name = extract_business_name(line)
                         # Extract coordinates if available
                         coords = extract_coordinates(line)
                         
-                        if business_name:
-                            query_data = {'query': business_name, 'll': coords}
-                            queries.append(query_data)
-                    # Handling the new google maprs url format
-                    elif 'https://www.google.com/maps/search/?api=1&query=' in line:
-                        business_name = extract_business_name_from_search(line)
-                        coords = extract_coordinates(line)
                         if business_name:
                             query_data = {'query': business_name, 'll': coords}
                             queries.append(query_data)
@@ -146,20 +138,6 @@ def extract_business_name(url):
         return None
     except Exception as e:
         logger.error(f"Error extracting business name: {str(e)}")
-        return None
-
-def extract_business_name_from_search(url):
-    """Extract the business name from the new google maps search url"""
-    try:
-        query_param = re.search(r'query=([^&]+)', url)
-        if query_param:
-            business_name = query_param.group(1)
-            business_name = business_name.replace('+', ' ')
-            business_name = urllib.parse.unquote(business_name)
-            return business_name
-        return None
-    except Exception as e:
-        logger.error(f"Error extracting business name from search URL: {str(e)}")
         return None
 
 def extract_coordinates(url):
@@ -279,7 +257,7 @@ def read_queries_from_content(file_content):
     except Exception as e:
         logger.error(f"Error reading queries from content: {str(e)}", exc_info=True)
         return []
-
+    
 @backoff.on_exception(backoff.expo, RequestException, max_tries=5)
 @rate_limiter(max_calls=10, period=60)  
 def fetch_search_results(params):
@@ -1345,7 +1323,7 @@ class TranslationMetrics(models.Model):
 #####################DESCRIPTION TRANSLATE##################################
  
 def get_postal_code_pattern(country: str) -> Optional[str]:
-        patterns = {
+    patterns = {
         'spain': r'\b\d{5}\b',
         'portugal': r'\b\d{4}(?:-\d{3})?\b',
         'france': r'\b\d{5}\b',
@@ -1367,10 +1345,24 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'india': r'\b\d{6}\b',
         'singapore': r'\b\d{6}\b',
         'belgium': r'\b\d{4}\b',
+        
+        'morocco': r'\b\d{5}\b',  
+        'south africa': r'\b\d{4}\b',   
+        'brazil': r'\b\d{5}-?\d{3}\b',  
+        'argentina': r'\b[ABCEGHJLNPQRSTVWXY]\d{4}[A-Z]{3}\b',   
+        'mexico': r'\b\d{5}\b',  
+        'russia': r'\b\d{6}\b',   
+        'switzerland': r'\b\d{4}\b',  
+        'netherlands': r'\b\d{4} ?[A-Z]{2}\b',  
+        'denmark': r'\b\d{4}\b',  
+        'sweden': r'\b\d{3} ?\d{2}\b',  
+        'norway': r'\b\d{4}\b',  
+        'finland': r'\b\d{5}\b', 
 
         'default': r'\b\d{5}\b'
     }
-        return patterns.get(country.lower(), patterns['default'])
+    
+    return patterns.get(country.lower(), patterns['default'])
  
 def extract_address_components(address_string: string, country: str = None):
     """

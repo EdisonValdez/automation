@@ -75,14 +75,26 @@ def is_admin(user):
 #LSBACKEND API
  
 def get_levels(request):
+    """Fetch levels from LS Backend API."""
     client = LSBackendClient()
     try:
-        levels = client.get_levels()  # Fetch levels from LS Backend
-        return JsonResponse(levels, safe=False)
+        levels = client.get_levels()  # Call the method to fetch levels
+        if not levels:
+            logger.warning("No levels retrieved from LS Backend.")
+        return JsonResponse(levels, safe=False)  # Return the fetched levels as JSON
     except Exception as e:
         logger.error(f"Error fetching levels: {str(e)}")
         return JsonResponse({'error': 'Failed to fetch levels'}, status=500)
 
+def load_levels(request):
+    client = LSBackendClient()
+    try:
+        levels = client.get_levels()
+        return render(request, 'automation/upload.html', {'levels': levels})
+    except Exception as e:
+        logger.error(f"Error loading levels: {str(e)}")
+        return render(request, 'automation/upload.html', {'error': 'Failed to load levels'})
+ 
 def load_categories(request):
     client = LSBackendClient()
     levels = client.get_levels()
@@ -145,7 +157,35 @@ def get_cities(request):
     except Exception as e:
         logger.error(f"Error fetching cities: {str(e)}")
         return JsonResponse({'error': 'Failed to fetch cities'}, status=500)
+ 
+def get_hacked_levels(request):
+    """
+    HACK: Use the LSBackendClient to fetch 'levels'
+    via /api/categories/ in the LS Backend.
+    """
+    client = LSBackendClient()
+    try:
+        levels = client.get_levels_via_categories()
 
+        if not levels:
+            logger.warning("No levels retrieved (via categories) from LS Backend.")
+        return JsonResponse(levels, safe=False)
+
+    except Exception as e:
+        logger.error(f"Error fetching hacked levels: {str(e)}")
+        return JsonResponse({'error': 'Failed to fetch levels via categories'}, status=500)
+ 
+def load_levels_hacked(request):
+    """
+    Renders a template with the 'levels' using the categories hack.
+    """
+    client = LSBackendClient()
+    try:
+        levels = client.get_levels_via_categories()
+        return render(request, 'automation/upload.html', {'levels': levels})
+    except Exception as e:
+        logger.error(f"Error loading levels via categories: {str(e)}")
+        return render(request, 'automation/upload.html', {'error': 'Failed to load levels'})
 #LSBACKEND API
 
 @method_decorator(login_required, name='dispatch')
