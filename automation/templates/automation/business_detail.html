@@ -139,7 +139,7 @@
                                 <i class="fas fa-globe me-2"></i> Website</label>
                             <div class="card-body d-flex align-items-center">
                                 {% if business.website %}
-                                <span id="website-display">{{ business.website|truncatechars:20  }}</span>
+                                <span id="website-display">{{ business.website|truncatechars:30  }}</span>
                                 <input type="text" name="website" id="website-edit" class="form-control ms-2" value="{{ business.website }}" style="display:none;">
                                 <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('website')">
                                     <i class="fas fa-pencil-alt"></i>

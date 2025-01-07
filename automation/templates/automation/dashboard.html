@@ -161,7 +161,7 @@
             <div class="card">
                 <div class="card-body">
                     <a href="{% url 'task_detail' id=task.id %}" class="card-title d-block mb-2">
-                        {{ task.id }} - {{ task.project_title |truncatechars:50 }}
+                        {{ task.id }} - {{ task.project_title }}
                     </a>
                     <p># of Businesses: {{ task.businesses.count }}</p>
                     <p>User: {{ task.user }}</p>
@@ -234,7 +234,7 @@
                 <tr>
                     <td>
                         <a href="{% url 'task_detail' task.id %}" class="d-flex">
-                            <span>{{ task.id }} - {{ task.project_title|truncatechars:30 }} {{ task.created_at|date:"d-m-Y" }}</span>
+                            <span>{{ task.id }} - {{ task.project_title }} {{ task.created_at|date:"d-m-Y" }}</span>
                         </a>
                     </td>
                     

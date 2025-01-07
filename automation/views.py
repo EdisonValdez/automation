@@ -2377,8 +2377,7 @@ def generate_description(request):
             logger.debug("Sending request to OpenAI...")
             response = call_openai_with_retry(
                 messages=messages,
-                #model="gpt-3.5-turbo",
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 max_tokens=1000,
                 temperature=0.3,
                 presence_penalty=0.0,

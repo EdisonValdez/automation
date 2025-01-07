@@ -670,8 +670,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
  
         response = call_openai_with_retry(
             messages=enhance_messages,
-            #model="gpt-3.5-turbo",
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             max_tokens=1000,
             temperature=0.7
         )
@@ -1115,8 +1114,7 @@ def generate_new_description(business):
         response = call_openai_with_retry(
             messages=messages,
             max_tokens=1000,
-            #model="gpt-3.5-turbo",
-            model="gpt-4",
+            model="gpt-3.5-turbo",
             temperature=0.3
         )
 
