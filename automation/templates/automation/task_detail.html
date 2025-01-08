@@ -3,7 +3,10 @@
 {% load static %}
 {% block title %}{{ task.project_title }}{% endblock %}
 {% block content %}
-<style> .task-navigation {background-color: #f8f9fa;padding: 20px 0;border-top: 1px solid #dee2e6;border-bottom: 1px solid #dee2e6;bottom: 0;left: 0;right: 0;z-index: 1000;}.task-nav-btn {min-width: 150px;text-align: center;position: relative;padding: 10px 15px;}.task-nav-btn small {font-size: 0.75rem;opacity: 0.8;}.task-navigation-info {padding: 0 20px;}.current-task-label {font-size: 0.8rem;text-transform: uppercase;color: #6c757d;display: block;margin-bottom: 5px;}main {margin-bottom: 100px;}@media (max-width: 768px) {.task-nav-btn small {display: none !important;}.task-navigation-info h5 {font-size: 1rem;}.task-navigation-info small {font-size: 0.7rem;}}.btn.disabled {opacity: 0.65;cursor: not-allowed; pointer-events: none;}.business-title {font-size: 1em;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin: 0;}.business-link {display: block;color: inherit;text-decoration: none;padding: 5px 0;width: 100%;}.business-link:hover {color: #F4C031;text-decoration: underline;}small {font-size: 10px;}#taskDetailsContainer {transition: all 0.3s ease-in-out;}.kanban-cont {display: flex;overflow-x: auto;padding-bottom: 10px;gap: 10px;}.kanban-list {flex: 1 1 30%;min-width: 250px;max-width: 100%;background-color: #f4f5f7;border-radius: 5px;margin: 5px;}.kanban-box {border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);display: flex;flex-direction: column;cursor: move;}.image-container {position: relative;overflow: hidden;width: 100%;height: auto;}.thumbnail-image {width: 100%;height: auto;max-height: 200px;object-fit: cover;}.image-overlay {position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: 0.5s ease;}.image-container:hover .image-overlay {height: 100%;}.overlay-title {color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%;}.business-stats {display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px;background-color:#f4c031;}.kanban-header {margin-bottom: 10px;padding: 10px;background-color: #e4e6e9;border-radius: 5px;}.kanban-wrap {max-height: 800px;overflow-y: auto;}.load-more {width: 100%;margin-top: 10px;}@media (max-width: 768px) {.kanban-list {flex-basis: 100%;min-width: 100%;margin-right: 0;}.kanban-header, .kanban-box {padding: 8px;}.overlay-title {font-size: 14px;}}@media (max-width: 576px) {.kanban-cont {padding: 0;gap: 5px;}.kanban-box {padding: 5px;}.thumbnail-image {max-height: 150px;}.business-stats {font-size: 8px;}.overlay-title {font-size: 12px;}}</style>
+<style> .task-navigation {background-color: #f8f9fa;padding: 20px 0;border-top: 1px solid #dee2e6;border-bottom: 1px solid #dee2e6;bottom: 0;left: 0;right: 0;z-index: 1000;}.task-nav-btn {min-width: 150px;text-align: center;position: relative;padding: 10px 15px;}.task-nav-btn small {font-size: 0.75rem;opacity: 0.8;}.task-navigation-info {padding: 0 20px;}.current-task-label {font-size: 0.8rem;text-transform: uppercase;color: #6c757d;display: block;margin-bottom: 5px;}main {margin-bottom: 100px;}@media (max-width: 768px) {.task-nav-btn small {display: none !important;}.task-navigation-info h5 {font-size: 1rem;}.task-navigation-info small {font-size: 0.7rem;}}.btn.disabled {opacity: 0.65;cursor: not-allowed; pointer-events: none;}.business-title {font-size: 1em;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin: 0;}.business-link {display: block;color: inherit;text-decoration: none;padding: 5px 0;width: 100%;}.business-link:hover {color: #F4C031;text-decoration: underline;}small {font-size: 10px;}#taskDetailsContainer {transition: all 0.3s ease-in-out;}.kanban-cont {display: flex;overflow-x: auto;padding-bottom: 10px;gap: 10px;}.kanban-list {flex: 1 1 30%;min-width: 250px;max-width: 100%;background-color: #f4f5f7;border-radius: 5px;margin: 5px;}.kanban-box {border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);display: flex;flex-direction: column;cursor: move;}.image-container {position: relative;overflow: hidden;width: 100%;height: auto;}.thumbnail-image {width: 100%;height: auto;max-height: 200px;object-fit: cover;}.image-overlay {position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: 0.5s ease;}.image-container:hover .image-overlay {height: 100%;}.overlay-title {color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%;}.business-stats {display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px;background-color:#f4c031;}.kanban-header {background-color:#e4e6e9;border-bottom: 2px solid #ccc;padding: 10px;display: flex;justify-content: space-between;align-items: center;}.kanban-wrap {max-height: 800px;overflow-y: auto;}.load-more {width: 100%;margin-top: 10px;}@media (max-width: 768px) {.kanban-list {flex-basis: 100%;min-width: 100%;margin-right: 0;}.kanban-header, .kanban-box {padding: 8px;}.overlay-title {font-size: 14px;}}@media (max-width: 576px) {.kanban-cont {padding: 0;gap: 5px;}.kanban-box {padding: 5px;}.thumbnail-image {max-height: 150px;}.business-stats {font-size: 8px;}.overlay-title {font-size: 12px;}}
+.card-title {font-weight: bold;font-size: 1.2rem;}.bulk-move-dropdown {margin-left: 10px;padding: 5px 10px; width: 50%;
+    border-radius: 4px;border: 1px solid #007bff; background-color: #ffffff;cursor: pointer;}
+.bulk-move-dropdown:hover {border-color: #0056b3;}.bulk-move-dropdown:focus {outline: none;border-color: #0056b3;}</style>
 <div id="loading-spinner" style="display: none;">
     <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
@@ -79,74 +82,108 @@
         </div>
         
     </div>
-    <div class="kanban-board card mb-0 pd-0">
-        <div class="box-body pd-0">
-            <div class="kanban-cont">
-                {% for status, status_name in status_choices %}
-                {% if status != 'IN_PRODUCTION' or user.is_admin %}
-                <div class="kanban-list {% if status == 'DISCARDED' %} kanban-list-discarded {% else %} {% if user.is_admin %}narrow{% else %}wide{% endif %} {% endif %}" id="{{ status }}">
-                    <div id="{{status}}" class="kanban-header">
-                        <h6 id="{{ status }}" class="card-title {% if status == 'DISCARDED' %} text-danger {% endif %}">
-                            {% if status == 'IN_PRODUCTION' %}
-                            Move To APP
-                            {% else %}
-                            {{ status_name }} (<span class="status-count" data-status="{{ status }}">{{ businesses|filter_by_status:status|length }}</span>)
+<!--KANBAN-->
+<div class="kanban-board card mb-0 pd-0">
+    <div class="box-body pd-0">
+        <div class="kanban-cont">
+            {% for status, status_name in status_choices %}
+            {% if status != 'IN_PRODUCTION' or user.is_admin %}
+            <div class="kanban-list {% if status == 'DISCARDED' %} kanban-list-discarded {% else %} {% if user.is_admin %}narrow{% else %}wide{% endif %} {% endif %}" id="{{ status }}">
+                <div id="{{status}}" class="kanban-header">
+                    <h6 id="{{ status }}" class="card-title {% if status == 'DISCARDED' %} text-danger {% endif %}">
+                        {% if status == 'IN_PRODUCTION' %}
+                        Move To APP
+                        {% else %}
+                        {{ status_name }}  (<span class="status-count" data-status="{{ status }}">{{ businesses|filter_by_status:status|length }}</span>)
+                     {% endif %}
+                    </h6> 
+                    <select class="bulk-move-dropdown" onchange="moveBulkBusinesses(this, '{{ status }}')">
+                        <option value="">Move All to...</option>
+                        {% for target_status, target_name in status_choices %}
+                            {% if target_status != status %}
+                                <option value="{{ target_status }}">{{ target_name }}</option>
                             {% endif %}
- 
-                        </h6>
-                    </div>
-                    <div class="kanban-wrap" id="kanban-wrap-{{ status }}">
-                        {% for business in businesses|filter_by_status:status %}
-                        {% if business.status == status %}
-                        <div class="panel" data-id="{{ business.id }}" data-status="{{ business.status }}">
-                            <div class="kanban-box item-box">
-                                <!-- <div class="dropdown edit">
-                                    <a href="#" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right">
-                                        <a class="dropdown-item" href="{% url 'business_detail' business.id %}">
-                                            <i class="bx bx-show mr-5"></i>View
-                                        </a>
-                                       <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_card_modal">
-                                            <i class="bx bx-edit mr-5"></i>Edit
-                                        </a>
-                                    </div>
-                                </div>-->
-    
-                                <!-- Title Box -->
+                        {% endfor %}
+                    </select> 
+                </div>
+                <div class="kanban-wrap" id="kanban-wrap-{{ status }}">
+                    {% for business in businesses|filter_by_status:status %}
+                    {% if business.status == status %}
+                    <div class="panel" data-id="{{ business.id }}" data-status="{{ business.status }}">
+                        <div class="kanban-box item-box">     
                             <div class="title-box">
                                 <h6 class="business-title text-truncate">
                                     <a href="{% url 'business_detail' business.id %}" class="business-link" title="{{ business.title }}">
                                         {{ business.title }}
                                     </a>
-                                </h6>   
+                                </h6> 
                             </div>
-    
                             <div class="content-box">
                                 <small class="">
                                     <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" class="" target="_blank">
                                         <i class="bx bx-pin font-size-16 align-middle me-1"></i>{{ business.address|truncatechars:50 }}
                                     </a>
-                                </small>                                     
-                                    <div class="business-stats">
-                                        <span class="rank">Rank: {{ business.rank|default:"N/A" }}</span>
-                                        <span class="total-score">Total Score: {{ business.reviews_count|default:"N/A" }}</span>
-                                        <span class="total-score">Avg: {{ business.rating|default:"N/A" }}</span>
-                                    </div>
+                                </small>                                                                
+                                <div class="business-stats">
+                                    <span class="rank">Rank: {{ business.rank|default:"N/A" }}</span>
+                                    <span class="total-score">Total Score: {{ business.reviews_count|default:"N/A" }}</span>
+                                    <span class="total-score">Avg: {{ business.rating|default:"N/A" }}</span>
                                 </div>
                             </div>
                         </div>
-                        {% endif %}
-                        {% endfor %}
-                        </div>
                     </div>
                     {% endif %}
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
+            {% endif %}
+            {% endfor %}
         </div>
     </div>
-   
+</div>
+
+<script>
+function moveBulkBusinesses(selectElement, currentStatus) {
+    const newStatus = selectElement.value;
+    if (newStatus) {
+        const businessElements = document.querySelectorAll(`#kanban-wrap-${currentStatus} .panel`);
+        const businessIds = Array.from(businessElements).map(el => el.getAttribute('data-id'));
+
+        // Send the AJAX request to update the status of the dragged businesses
+        fetch('/update_business_statuses/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFTOKEN': '{{ csrf_token }}'  // Ensure CSRF token is included
+            },
+            body: JSON.stringify({ business_ids: businessIds, new_status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Move each business to the new status
+                businessIds.forEach(id => {
+                    const businessElement = document.querySelector(`[data-id='${id}']`);
+                    if (businessElement) {
+                        // Append the business element to the new status's wrap
+                        document.getElementById(`kanban-wrap-${newStatus}`).appendChild(businessElement);
+                        businessElement.setAttribute('data-status', newStatus);  // Update the status attribute
+                    }
+                });
+                selectElement.value = ""; // Reset the dropdown
+            } else {
+                alert('Error updating status: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while updating the status.');
+        });
+    }
+}
+</script>
+
+<!--KANBAN-->
 </div>
  
 {% if not businesses %}
@@ -285,6 +322,78 @@ function updateBusinessStatus(businessId, newStatus, oldStatus) {
             });
             revertToOldColumn(businessId, oldStatus);
         });
+}
+
+function moveBulkBusinesses(selectElement, currentStatus) {
+    const newStatus = selectElement.value;
+
+    if (newStatus) {
+        const businessElements = document.querySelectorAll(`#kanban-wrap-${currentStatus} .panel`);
+        const businessIds = Array.from(businessElements).map(el => el.getAttribute('data-id'));
+
+        // Create a fetch request for each business to update their status
+        const updateRequests = businessIds.map(businessId =>
+            fetch(`/update-business-status/${businessId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    status: newStatus,
+                    userId: userId  // Assuming userId is defined in your context
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Successfully updated, update the UI
+                    updateStatusCount(currentStatus, -1); // Decrease old status count
+                    updateStatusCount(newStatus, 1);      // Increase new status count
+                    document.querySelector(`.panel[data-id="${businessId}"]`).dataset.status = newStatus; 
+                } else {
+                    // Handle errors
+                    if (data.status === 'move-to-app-error') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message,
+                            confirmButtonText: 'OK'
+                        });
+                        revertToOldColumn(businessId, currentStatus);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Cannot move to the next column. Business description is missing.',
+                            confirmButtonText: 'OK'
+                        });
+                        revertToOldColumn(businessId, currentStatus);
+                    }
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unable to validate business details. Please try again.',
+                    confirmButtonText: 'OK'
+                });
+                revertToOldColumn(businessId, currentStatus);
+            })
+        );
+
+        // Wait for all requests to complete
+        Promise.all(updateRequests)
+            .then(() => {
+                // After all requests, refresh the page or provide additional UI feedback
+                selectElement.value = "";  // Reset the dropdown
+                location.reload(); // Optional: refresh to show updates
+            })
+            .catch(err => {
+                console.error('Error with bulk update:', err);
+            });
+    }
 }
 
 function revertToOldColumn(businessId, oldStatus) {

@@ -71,6 +71,29 @@ def welcome_view(request):
 
 def is_admin(user):
     return user.is_superuser or user.roles.filter(role='ADMIN').exists()
+ 
+OPENAI_API_KEY = settings.TRANSLATION_OPENAI_API_KEY
+FALLBACK_1_OPENAI_API_KEY = settings.FALLBACK_1_OPENAI_API_KEY 
+FALLBACK_2_OPENAI_API_KEY = settings.FALLBACK_2_OPENAI_API_KEY 
+
+def get_available_openai_key():
+    keys = [
+        settings.OPENAI_API_KEY,
+        settings.FALLBACK_1_OPENAI_API_KEY,
+        settings.FALLBACK_2_OPENAI_API_KEY,
+    ]
+    for key in keys:
+        try:
+            openai.api_key = key
+            openai.Model.list()
+            logger.debug(f"Using OpenAI API Key: {key} - views")
+            return key
+        except Exception as e:
+            logger.error(f"API key {key} failed with error: {e}")
+            continue
+    logger.error("All OpenAI API keys failed.")
+    return None
+
 
 #LSBACKEND API
  
@@ -1873,11 +1896,8 @@ def update_business_status(request, business_id):
 
                 app_data = json.dumps(result_data, default=datetime_serializer)
                 logger.info(f"Preparing to move business {business_id} to app with data: {app_data}")
-                
-                # Store original types before attempts
+
                 original_types = business_data.get('types', '')
-                
-                # First attempt - with types
                 try:
                     logger.info(f"First attempt to move business {business_id} with types: {original_types}")
                     RequestClient().request('move-to-app', app_data)
@@ -1885,14 +1905,10 @@ def update_business_status(request, business_id):
                     return JsonResponse({
                         'status': 'success',
                         'message': 'Business successfully moved to LS'
-                    })
-                    
+                    })                    
                 except Exception as first_error:
                     logger.warning(f"First attempt failed with types: {str(first_error)}")
-                    
-                    # Second attempt - without types
                     try:
-                        # Remove types from data
                         result_data_without_types = result_data.copy()
                         removed_types = result_data_without_types.pop('types', '')
                         
@@ -1945,7 +1961,26 @@ def update_business_status(request, business_id):
             debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
             logger.error(f"Traceback Error: {debugger}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
- 
+
+@csrf_exempt
+def update_business_statuses(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            business_ids = data.get('business_ids', [])
+            new_status = data.get('new_status')
+
+            # Update the status for each business
+            for business_id in business_ids:
+                business = get_object_or_404(Business, id=business_id)
+                business.status = new_status
+                business.save()
+
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
 ########CHANGE STATUS#############################
  
@@ -2351,7 +2386,6 @@ def generate_description(request):
                 "You are a helpful assistant that writes formal business descriptions. "
                 "You must ALWAYS generate no less than the requested number of words."
             )
-
             user_prompt = (
                 f"Write a 220 words description\n"
                 f"About: '{title}' that is a : '{category}' and '{sub_category}', in '{country}', '{city}'\n"
@@ -2366,9 +2400,15 @@ def generate_description(request):
 
             logger.debug("Constructed system and user prompts for OpenAI request.")
 
-            openai.api_key = settings.OPENAI_API_KEY
-            logger.debug(f"OpenAI API Key set? {'Yes' if settings.OPENAI_API_KEY else 'No'}")
+            valid_openai_key = get_available_openai_key()
 
+            if valid_openai_key:
+                openai.api_key = valid_openai_key
+                logger.debug(f"OpenAI API Key set? {'Yes' if openai.api_key else 'No'}")
+            else:
+                logger.critical("Failed to access OpenAI API due to no available API keys.")
+                return JsonResponse({'success': False, 'error': 'No available OpenAI API keys.'})
+            
             messages = [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}

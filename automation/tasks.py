@@ -72,18 +72,40 @@ from .utils import process_scraped_types
 import csv
 import pandas as pd
 from django.contrib import messages
+logger = logging.getLogger(__name__)
+User = get_user_model()
 
 SERPAPI_KEY = settings.SERPAPI_KEY  
 DEFAULT_IMAGES = settings.DEFAULT_IMAGES
+
 OPENAI_API_KEY = settings.TRANSLATION_OPENAI_API_KEY
-openai.api_key = OPENAI_API_KEY   
+FALLBACK_1_OPENAI_API_KEY = settings.FALLBACK_1_OPENAI_API_KEY 
+FALLBACK_2_OPENAI_API_KEY = settings.FALLBACK_2_OPENAI_API_KEY 
 
+def get_available_openai_key():
+    keys = [
+        settings.OPENAI_API_KEY,
+        settings.FALLBACK_1_OPENAI_API_KEY,
+        settings.FALLBACK_2_OPENAI_API_KEY,
+    ]
+    for key in keys:
+        try:
+            openai.api_key = key
+            openai.Model.list()
+            logger.debug(f"Using OpenAI API Key: {key} - tasks")
+            return key
+        except Exception as e:
+            logger.error(f"API key {key} failed with error: {e}")
+            continue
+    logger.error("All OpenAI API keys failed.")
+    return None
 
-User = get_user_model()
+valid_openai_key = get_available_openai_key()
 
-logger = logging.getLogger(__name__)
-
-doctran = Doctran(openai_api_key=OPENAI_API_KEY)
+if valid_openai_key:
+    doctran = Doctran(openai_api_key=valid_openai_key)
+else:
+    logger.critical("Failed to initialize Doctran due to no available OpenAI API keys.")
 
 def read_queries(file_path):
     """
@@ -637,11 +659,28 @@ def translate_text_openai(text, target_language):
         logger.error(f"Translation error for {target_language}: {str(e)}", exc_info=True)
         return ""
 
-def enhance_and_translate_description(business, languages=["spanish", "eng"]):
+def enhance_and_translate_description(business, languages=["spanish", "eng", "fr"]):
     """
-    Enhances the business description and translates it into specified languages.
-    Ensures proper distinction between US and UK English.
+    Enhances the business description in American English (US) 
+    and translates it into British English (if 'eng' in languages),
+    Spanish (if 'spanish' in languages),
+    and French (if 'fr' in languages).
+
+    Requirements for the US English text:
+      - EXACTLY 220 words
+      - American English spelling
+      - Use 'rental', 'center', etc.
+      - SEO style, formal tone
+      - Avoid certain words ('vibrant', etc.)
+
+    The British English text keeps the same length & structure,
+    changing US spellings and terms to UK usage.
+
+    For Spanish and French, keep a formal marketing style,
+    SEO approach, and ensure the translations 
+    don't shorten drastically (validate length ~80% of original).
     """
+
     if not business.description or not business.description.strip():
         logger.info(f"No base description available for business {business.id}")
         return False
@@ -659,63 +698,73 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                 Requirements:
                 - EXACTLY 220 words
                 - Use American English spelling and terms (e.g., 'rental', 'center', 'customize')
-                - Include '{business.title}' in first paragraph
+                - Include '{business.title}' in the first paragraph
                 - Use '{business.title}' exactly twice
-                - 80% sentences under 20 words
+                - 80% of sentences under 20 words
                 - Formal American tone
                 - SEO optimized
                 - Avoid: 'vibrant', 'in the heart of', 'in summary'
             """}
         ]
- 
+
         response = call_openai_with_retry(
             messages=enhance_messages,
             model="gpt-3.5-turbo",
             max_tokens=1000,
             temperature=0.7
         )
-
         us_description = response['choices'][0]['message']['content'].strip()
         business.description = us_description
  
-        uk_messages = [
-            {"role": "system", "content": "You are an expert translator specializing in British English adaptations."},
-            {"role": "user", "content": f"""
-                Convert the following American English text to British English.
-                Make sure to:
-                1. Change spellings (e.g., 'color' to 'colour', 'customize' to 'customise')
-                2. Change terms:
-                   - 'rental' to 'hire'
-                   - 'center' to 'centre'
-                   - 'apartment' to 'flat'
-                   - 'vacation' to 'holiday'
-                   - 'downtown' to 'city centre'
-                   - 'parking lot' to 'car park'
-                   - 'elevator' to 'lift'
-                   - 'store' to 'shop'
-                3. Adjust phrases to British usage
-                4. Maintain the exact same length and structure
-                
-                Text to convert:
-                {us_description}
-            """}
-        ]
- 
-        uk_response = call_openai_with_retry(
-            messages=uk_messages,
-            model="gpt-3.5-turbo",
-            max_tokens=1000,
-            temperature=0.3
-        )
+        uk_description = None
+        if "eng" in languages:
+            uk_messages = [
+                {
+                    "role": "system", 
+                    "content": "You are an expert translator specializing in British English adaptations."
+                },
+                {
+                    "role": "user", 
+                    "content": f"""
+                        Convert the following American English text to British English.
+                        Make sure to:
+                        1. Change spellings (e.g., 'color' to 'colour', 'customize' to 'customise')
+                        2. Change terms:
+                           - 'rental' to 'hire'
+                           - 'center' to 'centre'
+                           - 'apartment' to 'flat'
+                           - 'vacation' to 'holiday'
+                           - 'downtown' to 'city centre'
+                           - 'parking lot' to 'car park'
+                           - 'elevator' to 'lift'
+                           - 'store' to 'shop'
+                        3. Adjust phrases to British usage
+                        4. Maintain the EXACT same length and structure (220 words)
 
-        uk_description = uk_response['choices'][0]['message']['content'].strip()
-        business.description_eng = uk_description
- 
+                        Text to convert:
+                        {us_description}
+                    """
+                }
+            ]
+
+            uk_response = call_openai_with_retry(
+                messages=uk_messages,
+                model="gpt-3.5-turbo",
+                max_tokens=1000,
+                temperature=0.3
+            )
+            uk_description = uk_response['choices'][0]['message']['content'].strip()
+
+            business.description_eng = uk_description
+            logger.info(f"Successfully created British English version for business {business.id}")
+
+        # Track success statuses
         translations_status = {
+            'eng': bool(uk_description),  
             'spanish': False,
             'fr': False
         }
-
+ 
         if "spanish" in languages:
             try:
                 spanish_messages = [
@@ -723,7 +772,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                     {"role": "user", "content": f"""
                         Translate this text to Spanish, maintaining:
                         1. Formal tone and marketing style
-                        2. Original text length and structure
+                        2. Original text length and structure (220 words)
                         3. All business-specific terms
                         4. SEO optimization
 
@@ -740,18 +789,18 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                 )
 
                 spanish_description = spanish_response['choices'][0]['message']['content'].strip()
-                
-                # Validate translation
+
+                # Validate translation length ~80% of original
                 if len(spanish_description.split()) >= len(us_description.split()) * 0.8:
                     business.description_esp = spanish_description
                     translations_status['spanish'] = True
                     logger.info(f"Successfully translated to Spanish for business {business.id}")
                 else:
                     logger.warning(f"Spanish translation length validation failed for business {business.id}")
-                    
+
             except Exception as e:
                 logger.error(f"Spanish translation failed for business {business.id}: {str(e)}", exc_info=True)
-
+ 
         if "fr" in languages:
             try:
                 fr_messages = [
@@ -759,7 +808,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                     {"role": "user", "content": f"""
                         Translate this text to French, maintaining:
                         1. Formal tone and marketing style
-                        2. Original text length and structure
+                        2. Original text length and structure (220 words)
                         3. All business-specific terms
                         4. SEO optimization
 
@@ -776,8 +825,7 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
                 )
 
                 fr_description = fr_response['choices'][0]['message']['content'].strip()
-                
-                # Validate translation
+
                 if len(fr_description.split()) >= len(us_description.split()) * 0.8:
                     business.description_fr = fr_description
                     translations_status['fr'] = True
@@ -787,20 +835,19 @@ def enhance_and_translate_description(business, languages=["spanish", "eng"]):
 
             except Exception as e:
                 logger.error(f"French translation failed for business {business.id}: {str(e)}", exc_info=True)
-
-        # Save only if at least one translation was successful
-        if any(translations_status.values()) or business.description_eng:
+ 
+        if any(translations_status.values()) or business.description:
             business.save()
             logger.info(f"Successfully saved translations for business {business.id}")
             return True
         else:
-            logger.error(f"No successful translations for business {business.id}")
+            logger.error(f"No successful translations or enhancements for business {business.id}")
             return False
 
     except Exception as e:
         logger.error(f"Error in enhance_and_translate_description for business {business.id}: {str(e)}", exc_info=True)
         return False
-
+ 
 def generate_additional_sentences(business, word_deficit):
     """
     Generates additional sentences to meet the required word count.

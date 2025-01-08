@@ -45,6 +45,8 @@ urlpatterns = [
     path('update-image-order/<int:business_id>/', views.update_image_order, name='update_image_order'),
     path('change-business-status/<int:business_id>/', views.change_business_status, name='change_business_status'),
     path('update-business-status/<int:business_id>/', views.update_business_status, name='update_business_status'),
+    path('update_business_statuses/', views.update_business_statuses, name='update_business_statuses'),
+  
     path('admin-view/', views.admin_view, name='admin_view'),
     
     path('dashboard', views.DashboardView.as_view(), name='dashboard'),     
