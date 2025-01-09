@@ -107,11 +107,7 @@ urlpatterns = [
     path('api/categories/', views.get_categories, name='get_categories'),
     path('api/subcategories/', views.get_subcategories, name='get_subcategories'),
     path('api/load-categories/', views.load_categories, name='load_categories'),
-    path('api/levels/', views.get_levels, name='get_levels'),
-    path('api/levels-hacked/', views.get_hacked_levels, name='get_levels_hacked'),
-    path('api/load-levels-hacked/', views.load_levels_hacked, name='load_levels_hacked'),
-
-    #path('api/levels/', views.load_levels, name='load_levels'),
+    path('api/levels/', views.get_levels, name='get_levels'), 
     path('api/destination-categories/', views.DestinationCategoriesView.as_view(), name='destination_categories'),
 
     path('task-status/<int:task_id>/', views.task_status, name='task_status'),

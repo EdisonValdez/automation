@@ -97,6 +97,7 @@
                         {{ status_name }}  (<span class="status-count" data-status="{{ status }}">{{ businesses|filter_by_status:status|length }}</span>)
                      {% endif %}
                     </h6> 
+                    {% if user.is_admin %}
                     <select class="bulk-move-dropdown" onchange="moveBulkBusinesses(this, '{{ status }}')">
                         <option value="">Move All to...</option>
                         {% for target_status, target_name in status_choices %}
@@ -105,6 +106,7 @@
                             {% endif %}
                         {% endfor %}
                     </select> 
+                    {% endif %}
                 </div>
                 <div class="kanban-wrap" id="kanban-wrap-{{ status }}">
                     {% for business in businesses|filter_by_status:status %}
@@ -193,11 +195,9 @@ function moveBulkBusinesses(selectElement, currentStatus) {
     {% if not businesses %}
         <p>No businesses found for this project.</p>
     {% endif %}
-   {% if user.is_admin %} 
-    <a href="{% url 'upload_file' %}" class="btn btn-secondary mt-3 mb-4">Back to Projects</a>
- {% else %}
+ 
  <a href="{% url 'task_list' %}" class="btn btn-secondary mt-3 mb-4">Go To Task List</a>
-{% endif %}
+ 
 
     <button id="scroll-to-top" class="btn btn-primary" style="display: none; position: fixed; bottom: 20px; right: 30px; z-index: 99;">
         <i class="fas fa-arrow-up"></i>
@@ -1013,8 +1013,7 @@ $(document).ready(function() {
     });
 </script>
 <!--Translate Tasks-->
-        
-
+ 
 <!-- Based description task-->
 <script>
 document.addEventListener('DOMContentLoaded', function() {

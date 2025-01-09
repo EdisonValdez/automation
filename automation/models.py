@@ -122,6 +122,11 @@ class UserRole(models.Model):
 
     class Meta:
         unique_together = ('user', 'role')
+        indexes = [
+            models.Index(fields=['role']),  
+            models.Index(fields=['user']),   
+        ]
+
 
     def __str__(self):
         return f"{self.user.username} - {self.role}"
@@ -223,6 +228,11 @@ class ScrapingTask(models.Model):
     class Meta:
         verbose_name = "Sites Gathering"
         verbose_name_plural = "Sites Gatherings"
+        indexes = [
+            models.Index(fields=['status']),  
+            models.Index(fields=['created_at']),   
+            models.Index(fields=['destination']),  
+        ]
 
     def __str__(self):
         project = self.project_title or 'Untitled Task'
@@ -395,7 +405,6 @@ class Business(models.Model):
             unique_types = list(dict.fromkeys(types_list))
             self.types = ','.join(unique_types)
  
-
     def delete(self, *args, **kwargs):
         self.is_deleted = True
         self.save()
@@ -436,6 +445,14 @@ class Business(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
+        indexes = [
+            models.Index(fields=['status']),  
+            models.Index(fields=['title']),  
+            models.Index(fields=['scraped_at']),    
+            models.Index(fields=['form_destination_id']),   
+            models.Index(fields=['main_category']),   
+            models.Index(fields=['city']),   
+        ]
         verbose_name_plural = "Businesses"
 
 class BusinessCategory(models.Model):
@@ -578,6 +595,12 @@ class Feedback(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['business']),  
+            models.Index(fields=['status']),  
+        ]
 
     def can_delete(self, user):
         """

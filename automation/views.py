@@ -93,22 +93,33 @@ def get_available_openai_key():
             continue
     logger.error("All OpenAI API keys failed.")
     return None
-
-
-#LSBACKEND API
  
-def get_levels(request):
-    """Fetch levels from LS Backend API."""
-    client = LSBackendClient()
-    try:
-        levels = client.get_levels()  # Call the method to fetch levels
-        if not levels:
-            logger.warning("No levels retrieved from LS Backend.")
-        return JsonResponse(levels, safe=False)  # Return the fetched levels as JSON
-    except Exception as e:
-        logger.error(f"Error fetching levels: {str(e)}")
-        return JsonResponse({'error': 'Failed to fetch levels'}, status=500)
+#LSBACKEND API
 
+def get_levels(request):
+    """
+    Fetch levels from the local automation Level model,
+    returning them as JSON or an error if something fails.
+    """
+    from .models import Level
+    
+    try:
+        levels_qs = Level.objects.all().order_by('title')
+        if not levels_qs.exists():
+            logger.warning("No local levels found.")
+        levels_data = []
+        for lvl in levels_qs:
+            levels_data.append({
+                'id': lvl.id,
+                'title': lvl.title,
+                'ls_id': lvl.ls_id,  
+            })
+        return JsonResponse(levels_data, safe=False)
+
+    except Exception as e:
+        logger.error(f"Error fetching local levels: {e}", exc_info=True)
+        return JsonResponse({'error': 'Error fetching local levels'}, status=500)
+ 
 def load_levels(request):
     client = LSBackendClient()
     try:
@@ -162,53 +173,14 @@ def get_countries(request):
         return JsonResponse({'error': 'Failed to fetch countries'}, status=500)
 
 def get_cities(request):
-    """
-    Fetch cities from LS Backend with filtering options
-    """
-    try:
-        client = LSBackendClient()
-        country_id = request.GET.get('country_id')
-        search = request.GET.get('search')
-        language = request.headers.get('language', 'en')
-        
-        cities = client.get_cities(
-            country_id=country_id,
-            language=language,
-            search=search
-        )
-        return JsonResponse({'results': cities}, safe=False)
-    except Exception as e:
-        logger.error(f"Error fetching cities: {str(e)}")
-        return JsonResponse({'error': 'Failed to fetch cities'}, status=500)
- 
-def get_hacked_levels(request):
-    """
-    HACK: Use the LSBackendClient to fetch 'levels'
-    via /api/categories/ in the LS Backend.
-    """
     client = LSBackendClient()
-    try:
-        levels = client.get_levels_via_categories()
+    country_id = request.GET.get('country_id')
+    search = request.GET.get('search', '')
+    language = request.headers.get('language', 'en')
 
-        if not levels:
-            logger.warning("No levels retrieved (via categories) from LS Backend.")
-        return JsonResponse(levels, safe=False)
+    cities = client.get_cities(country_id=country_id, language=language, search=search)
+    return JsonResponse({'results': cities}, safe=False)
 
-    except Exception as e:
-        logger.error(f"Error fetching hacked levels: {str(e)}")
-        return JsonResponse({'error': 'Failed to fetch levels via categories'}, status=500)
- 
-def load_levels_hacked(request):
-    """
-    Renders a template with the 'levels' using the categories hack.
-    """
-    client = LSBackendClient()
-    try:
-        levels = client.get_levels_via_categories()
-        return render(request, 'automation/upload.html', {'levels': levels})
-    except Exception as e:
-        logger.error(f"Error loading levels via categories: {str(e)}")
-        return render(request, 'automation/upload.html', {'error': 'Failed to load levels'})
 #LSBACKEND API
 
 @method_decorator(login_required, name='dispatch')
@@ -265,9 +237,7 @@ class UploadFileView(View):
                 file=form.cleaned_data['file'],
                 project_title=project_title,
             )
-            task.save()
-
-            # Extract form data to pass to the scraping task
+            task.save() 
             form_data = {
                 'country_id': task.country.id if task.country else None,
                 'country_name': task.country_name,
@@ -404,8 +374,7 @@ class TaskDetailView(View):
                     f"Next task: {next_task.id if next_task else None}")
 
         return render(request, 'automation/task_detail.html', context)
-
-
+ 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class TranslateBusinessesView(View):
@@ -694,46 +663,7 @@ class TranslateBusinessesView(View):
             return 'PARTIALLY_TRANSLATED'
         else:
             return 'TRANSLATION_FAILED'
-
-""" 
-
-@login_required
-def task_detail(request, task_id):
-    task = get_object_or_404(ScrapingTask, id=task_id)
-
-    Business.objects.filter(
-        task=task,
-        status__in=[None, '', 'None']
-    ).update(status='PENDING')
  
-    if request.user.is_superuser: 
-        task_queryset = ScrapingTask.objects.all()
-    else: 
-        task_queryset = ScrapingTask.objects.filter(ambassador=request.user)
-     
-    task_queryset = task_queryset.order_by('id') 
-    previous_task = task_queryset.filter(id__lt=task.id).last()
-    next_task = task_queryset.filter(id__gt=task.id).first()
-
-    businesses = task.businesses.all()
-    status_choices = Business.STATUS_CHOICES
-    has_empty_descriptions = task.businesses.filter(
-        Q(description__isnull=True) | Q(description='')
-    ).exists()
-
-    context = {
-        'task': task,
-        'businesses': businesses,
-        'status_choices': status_choices,
-        'total_businesses': businesses.count(),
-        'has_empty_descriptions': has_empty_descriptions,
-        'next_task': next_task,
-        'is_first_task': previous_task is None,
-        'is_last_task': next_task is None,
-    }
-    return render(request, 'task_detail.html', context)
-"""
-
 @user_passes_test(is_admin)
 def admin_view(request):
     # Admin-only view
@@ -782,7 +712,7 @@ class AmbassadorDashboardView(View):
         }
 
         # Paginate tasks
-        paginator = Paginator(tasks, 5)
+        paginator = Paginator(tasks, 100)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -802,7 +732,6 @@ class AmbassadorDashboardView(View):
         }
 
         return render(request, 'automation/ambassador_dashboard.html', context)
-
 
 ###Not using this one
 # it will be removed in the furure    
@@ -918,7 +847,6 @@ class BusinessStatusDataView(View):
         except Exception as e:
             logger.error(f"Error fetching business status data: {e}")
             return JsonResponse({'error': 'Internal server error'}, status=500)
-        
 
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
@@ -1416,8 +1344,6 @@ class GetTimelineDataView(View):
             return JsonResponse({
                 'error': 'Failed to fetch timeline data'
             }, status=400)
-        
-
 
 #########USER###################USER###################USER###################USER##########
   
@@ -1460,7 +1386,7 @@ def user_profile(request):
 def user_management(request):
     logger.info("Accessing user_management view")
     users = CustomUser.objects.all()
-    paginator = Paginator(users, 12)
+    paginator = Paginator(users, 100)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     logger.info(f"Retrieved {len(users)} users")
@@ -1629,7 +1555,6 @@ def task_list(request):
 
 
 #########BUSINESS#########################BUSINESS#########################BUSINESS#########################BUSINESS################
-
 
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = Business.objects.all()
@@ -2246,8 +2171,6 @@ def delete_business(request, business_id):
         logger.error(f"Error deleting business {business_id}: {str(e)}", exc_info=True)
         messages.error(request, "An error occurred while deleting the business.")
     return redirect('business_list')
-
-
 
 ###########ENHANCE AND GENERATE DESCRIPTION##################
 

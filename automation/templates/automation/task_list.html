@@ -43,8 +43,7 @@
                         <tr>
                             <td>
                                 <a href="{% url 'task_detail' task.id %}" class="d-flex">
-                                    <span>{{ task.id }} - {{ task.project_title }}</span>
-                                    {{ task.created_at|date:"d-m-Y" }}
+                                    <span>{{ task.id }} - {{ task.project_title }}  - {{ task.created_at|date:"d-m-Y" }}</span>       
                                 </a>
                             </td> 
                             <td>  {{ task.businesses.count }} </td>
@@ -450,7 +449,7 @@ $(document).ready(function() {
 
     // Initialize DataTable
     var table = $('#task-activity').DataTable({
-        "pageLength": 24,
+        "pageLength": 12,
         "lengthChange": true,
         "searching": true,
         "ordering": true,
@@ -527,8 +526,7 @@ $(document).ready(function() {
     });
 </script>
 <!--Delete tasks-->
-
-
+ 
 <!-- Based description task-->
 <script>
  

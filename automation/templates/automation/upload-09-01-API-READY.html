@@ -18,8 +18,7 @@
             </div>
         </div>
     </div>
-
-
+ 
 <div class="row">
 <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
     <div class="box">
@@ -38,15 +37,15 @@
             {% endif %}
         <form id="upload-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="row">
-
+            <div class="row"> 
                 <!-- Country Dropdown -->
                 <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
                         <label for="id_country" class="form-label mt-1 fs-18 font-w500 color-primary">Country</label>
                         <select name="country" class="form-control" id="id_country">
                             <option value="">Select a country</option>
-                        </select>
+                          </select>
+                          
                     </div>
                 </div>
         
@@ -56,7 +55,7 @@
                         <label for="id_destination" class="form-label mt-1 fs-18 font-w500 color-primary">Destination</label>
                         <select name="destination" class="form-control" id="id_destination">
                             <option value="">Select a destination</option>
-                        </select>
+                          </select>
                     </div>
                 </div>
 
@@ -68,9 +67,7 @@
                 </div>
             </div>
         
-            <div class="row">
-                
-        
+            <div class="row"> 
                 <!-- Main Category Dropdown -->
                 <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
@@ -135,21 +132,8 @@
                 </div>
             </div>
             </div>
-        
-            <!-- Toggleable Description Field
-            <div class="form-group mb-24">
-                <label class="form-label mt-1 fs-18 font-w500 color-primary">
-                    <a href="#" id="toggle-description" class="text-primary">+ Add Description (optional)</a>
-                </label>
-                <div id="description-container" style="display: none;">
-                    <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description</label>
-                    {{ form.description }}
-                </div>
-            </div> -->
-            
-        <!-- images Count Selection --> 
-        
-
+ 
+        <!-- images Count Selection -->  
             <div class="row mb-3">
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                     <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
@@ -158,10 +142,7 @@
                     </div>
                     <div class="form-text">{{ form.file.help_text }}</div>
                 </div>
-            </div>  
-
-
-                                
+            </div>    
             <div class="row">
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12"> 
                     <div class="input-group file-browser">
@@ -171,192 +152,494 @@
             
             </div>
         </form>
-                    
-<!-- JavaScript to toggle the description field 
-<script>
-    document.getElementById("toggle-description").addEventListener("click", function(event) {
-        event.preventDefault();
-        var descriptionContainer = document.getElementById("description-container");
-        if (descriptionContainer.style.display === "none") {
-            descriptionContainer.style.display = "block";
-            this.textContent = "- Hide Description";
-        } else {
-            descriptionContainer.style.display = "none";
-            this.textContent = "+ Add Description (optional)";
-        }
-    });
-</script>-->
 
-                        
-<!-- JavaScript to toggle the images field -->
-<script>
-    document.getElementById("toggle-images").addEventListener("click", function(event) {
-        event.preventDefault();
-        var imagesContainer = document.getElementById("images-container");
-        if (imagesContainer.style.display === "none") {
-            imagesContainer.style.display = "block";
-            this.textContent = "- Hide images";
-        } else {
-            imagesContainer.style.display = "none";
-            this.textContent = "+ Add images (optional)";
-        }
-    });
-</script>
-<!-- JavaScript to toggle the images field -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggleFileUploadButton = document.getElementById('toggle-file-upload');
-        const fileUploadSection = document.getElementById('file-upload-section');
-        
-        toggleFileUploadButton.addEventListener('click', function () {
-            // Toggle visibility
-            if (fileUploadSection.classList.contains('d-none')) {
-                fileUploadSection.classList.remove('d-none');
-                toggleFileUploadButton.textContent = 'Hide File Upload';
-            } else {
-                fileUploadSection.classList.add('d-none');
-                toggleFileUploadButton.textContent = 'Show File Upload';
-            }
-        });
-    });
-</script>
-
-                    
- 
-<script>
-$(document).ready(function() {
-    // Handle Level and Main Category changes
-    $('#id_level').change(function() {
-        var levelId = $(this).val();
-        $('#id_main_category').empty().append('<option value="">Select a category</option>');
-        $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
-
-        if (levelId) {
-            $.ajax({
-                url: '{% url "get_categories" %}',
-                data: { 'level_id': levelId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(category) {
-                            $('#id_main_category').append($('<option></option>').attr('value', category.id).text(category.title));
-                        });
-                    } else {
-                        $('#id_main_category').append('<option value="">No categories available</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching categories: ' + error);
-                }
-            });
-        }
-    });
-
-    // Handle Main Category and Subcategory changes
-    $('#id_main_category').change(function() {
-        var categoryId = $(this).val();
-        $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
-
-        if (categoryId) {
-            $.ajax({
-                url: '{% url "get_subcategories" %}',
-                data: { 'category_id': categoryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(subcategory) {
-                            $('#id_subcategory').append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
-                        });
-                    } else {
-                        $('#id_subcategory').append('<option value="">No subcategories available</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching subcategories: ' + error);
-                }
-            });
-        }
-    });
-
-    
-    // Handle Country and Destination changes
-    $('#id_country').change(function() {
-        var countryId = $(this).val();
-        $('#id_destination').empty().append('<option value="">Select a destination</option>');
-
-        if (countryId) {
-            $.ajax({
-                url: '{% url "get_destinations_by_country" %}',
-                data: { 'country_id': countryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(destination) {
-                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
-                        });
-                    } else {
-                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching destinations: ' + error);
-                }
-            });
-        }
-    });
-});
-
-
-$(document).ready(function() {
-    // Load countries when the page loads
-    $.ajax({
-        url: '{% url "get_countries" %}',
-        method: 'GET',
-        success: function(data) {
-            $('#id_country').empty().append('<option value="">Select a country</option>');
-            if (data.length > 0) {
-                data.forEach(function(country) {
-                    $('#id_country').append($('<option></option>').attr('value', country.id).text(country.name));
-                });
-            } else {
-                $('#id_country').append('<option value="">No countries available</option>');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error fetching countries: ' + error);
-        }
-    });
-
-    // Handle country and destination changes
-    $('#id_country').change(function() {
-        var countryId = $(this).val();
-        $('#id_destination').empty().append('<option value="">Select a destination</option>');
-
-        if (countryId) {
-            $.ajax({
-                url: '{% url "get_destinations_by_country" %}',
-                data: { 'country_id': countryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(destination) {
-                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
-                        });
-                    } else {
-                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching destinations: ' + error);
-                }
-            });
-        }
-    });
-});
-</script>
 <div class="overlay" ></div>                 
 
 <div id="log-container"></div>
 
+<hr />
  
+<!--Recent Activity-->
+<div class="box">
+<div class="box-header pt-0">
+    <div class="me-auto">
+        <h4 class="card-title mb-0 fs-22" id="scraped-list">Recent Activity</h4>
+    </div>
+
+</div>
+<div class="box-body pb-0 table-responsive activity mt-18">
+<div class="box-body pb-0 table-responsive activity mt-18">
+    <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-activity" role="grid">
+        
+    <thead>
+        <tr class="top">
+            <th>Project</th>
+            <th>Start</th>
+            <th>Business(es)</th> 
+            <th>Work Status</th>
+            <th>Translated Status</th>
+            <th>Action</th>
+        </tr>
+        <tr> 
+            <th><input type="text" placeholder="Search Project" /></th>
+            <th><input type="text" placeholder="Search Start Date" /></th>
+            <th><input type="text" placeholder="Search Businesses" /></th>
+            <th><input type="text" placeholder="Search Work Status" /></th>
+            <th><input type="text" placeholder="Search Translated Status" /></th>
+            <th></th>
+        </tr>
+    </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>
+                    <a href="{% url 'task_detail' task.id %}" class="d-flex">
+                        <span>{{ task.project_title }}</span>
+                    </a>
+                </td>
+                <td>{{ task.created_at|date:"d-m-Y" }}</td>
+                <td>  {{ task.businesses.count }} </td>
+                <td>
+                    <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% endif %}">
+                        {{ task.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge {% if task.translation_status == 'PENDING_TRANSLATION' %} badge-warning {% elif task.translation_status == 'TRANSLATION_FAILED' %} badge-danger {% elif task.translation_status == 'TRANSLATED' %} badge-success {% endif %}">
+                        {{ task.translation_status }}
+                    </span>
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <a href="#" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bx bx-dots-horizontal-rounded"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            {% if task.translation_status != 'TRANSLATED' %}
+                            <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                                <i class="fas fa-sync"></i> Translate and Enhance
+                            </a>
+                            {% elif task.translation_status == 'PENDING_TRANSLATION' %}
+                            <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                                <i class="fas fa-sync danger"></i> Translate and Enhance
+                            </a>
+                            {% endif %}
+                            <a class="dropdown-item" href="{% url 'task_detail' task.id %}">
+                                <i class="bx bx-info-circle font-size-16 align-middle me-1"></i>View
+                            </a>
+                            <!-- Add Delete action -->
+                            <a class="dropdown-item delete-task-btn" href="#" data-task-id="{{ task.id }}">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                </td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No tasks found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        
+        
+    </table>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const translatingButtons = document.querySelectorAll('.start-translating-btn');
+// Handle Delete Task
+const deleteButtons = document.querySelectorAll('.delete-task-btn');
+
+deleteButtons.forEach(button => {
+button.addEventListener('click', function(e) {
+    e.preventDefault();
+    const taskId = this.getAttribute('data-task-id');
+    const row = this.closest('tr');
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "Do you really want to delete this task?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/tasks/${taskId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Remove the row from the table
+                    row.remove();
+                    Swal.fire('Deleted!', 'The task has been deleted.', 'success');
+                } else {
+                    Swal.fire('Error!', 'An error occurred while deleting the task.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error!', 'An error occurred while deleting the task.', 'error');
+            });
+        }
+    });
+});
+});
+
+translatingButtons.forEach(button => {
+button.addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    if (this.classList.contains('disabled')) {
+        return;
+    }
+    
+    this.classList.add('disabled');
+    this.textContent = 'Translating and Enhancing...';
+    
+    const taskId = this.getAttribute('data-task-id');
+    
+    fetch(`/tasks/${taskId}/translate/`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            this.textContent = 'Translation and Enhancement Complete';
+        } else {
+            this.textContent = 'Error Translating and Enhancing';
+            this.classList.remove('disabled');
+        }
+        console.log(data.message);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        this.textContent = 'Error Translating and Enhancing';
+        this.classList.remove('disabled');
+    });
+});
+});
+
+function getCookie(name) {
+let cookieValue = null;
+if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+        }
+    }
+}
+return cookieValue;
+}
+});
+</script>
+    
+<!-- Paginator with Custom Styling -->
+<div class="pagination">
+<span class="step-links">
+    {% if page_obj.has_previous %}
+        <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+    {% endif %}
+
+    <span class="current">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+    </span>
+
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+    {% endif %}
+</span>
+</div>
+<!-- Paginator with Custom Styling -->
+</div>
+</div>
+
+<div class="modal custom-modal fade" id="delete_project" role="dialog">
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-body">
+            <div class="form-header">
+                <h3>Delete Project</h3>
+                <p>Are you sure you want to delete this project?</p>
+            </div>
+            <div class="modal-btn delete-action">
+                <div class="row">
+                    <div class="col-6 mb-0">
+                        <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                    </div>
+                    <div class="col-6 mb-0">
+                        <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+</div>
+<!--Recent Activity-->
+
 {% include 'automation/modals.html' %}
  
+<!--API Loading Levels,Cats and countries Cities -->
+<script>
+$(document).ready(function() {
+
+  /////////////////////////////////////////////////////////////
+  // 1) HELPER FUNCTIONS for showing/hiding loading spinners //
+  /////////////////////////////////////////////////////////////
+
+  /**
+   * showLoading(elementId)
+   * Adds a small spinner next to the given select element, and disables it.
+   */
+  function showLoading(elementId) {
+    // Disable the select so user can’t change it while loading
+    $(elementId).prop('disabled', true);
+
+    // If there's already a spinner, remove it (prevent duplicates)
+    const existingSpinner = $('#spinner-for-' + elementId);
+    if (existingSpinner.length) {
+      existingSpinner.remove();
+    }
+
+    // Insert a spinner icon right after the select
+    $(elementId).after(
+      `<span id="spinner-for-${elementId.replace('#','')}" 
+         class="spinner-border spinner-border-sm text-primary ml-2" 
+         role="status" aria-hidden="true"
+         style="vertical-align: middle;"></span>`
+    );
+  }
+
+  /**
+   * hideLoading(elementId)
+   * Removes the spinner added by showLoading and re-enables the select.
+   */
+  function hideLoading(elementId) {
+    $(elementId).prop('disabled', false);
+
+    // Remove the spinner
+    $('#spinner-for-' + elementId.replace('#','')).remove();
+  }
+
+  /**
+   * handleAjaxError(elementId, error)
+   * Called in the error callback of the AJAX. Clears the <select> and displays a quick message.
+   */
+  function handleAjaxError(elementId, error) {
+    console.error('Ajax error:', error);
+
+    // Re-enable the select and remove spinner
+    hideLoading(elementId);
+
+    // Provide feedback in the dropdown
+    $(elementId).empty().append('<option value="">Error loading data</option>');
+
+    // Optionally show a red alert message below the dropdown
+    const errorDiv = $('<div>')
+      .addClass('alert alert-danger mt-2')
+      .text('Error loading data. Please try again.');
+    $(elementId).parent().append(errorDiv);
+
+    setTimeout(() => {
+      errorDiv.fadeOut('slow', function() { $(this).remove(); });
+    }, 5000);
+  }
+
+
+  /////////////////////////////////////////////////////////////
+  // 2) LEVELS LOGIC (Local)
+  /////////////////////////////////////////////////////////////
+
+  function loadLocalLevels() {
+    // We can show a spinner if you want, e.g. showLoading('#id_level');
+    $.ajax({
+      url: '/api/levels/',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      success: function(response) {
+        // hideLoading('#id_level'); // if you used showLoading
+        $('#id_level').empty().append('<option value="">Select a level</option>');
+        if (Array.isArray(response) && response.length > 0) {
+          response.forEach(function(lvl) {
+            // Store 'ls_id' in the <option> so we can pass it to get_categories
+            $('#id_level').append(
+              $('<option></option>')
+                .attr('value', lvl.ls_id)
+                .text(lvl.title)
+            );
+          });
+        } else {
+          $('#id_level').append('<option value="">No levels available</option>');
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('Error loading local levels:', error);
+        // hideLoading('#id_level'); // if you used showLoading
+        $('#id_level').append('<option value="">Error loading levels</option>');
+      }
+    });
+  }
+
+  // Call once on DOM ready
+  loadLocalLevels();
+
+  // On change => fetch categories
+  $('#id_level').change(function() {
+    var levelLsId = $(this).val(); // 'ls_id' from the local DB
+    $('#id_main_category').empty().append('<option value="">Select a category</option>');
+    $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+
+    if (levelLsId) {
+      // Optionally show spinner
+      showLoading('#id_main_category');
+      $.ajax({
+        url: '/api/categories/',
+        data: { 'level_id': levelLsId },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        success: function(response) {
+          hideLoading('#id_main_category');
+          if (Array.isArray(response) && response.length) {
+            response.forEach(function(category) {
+              $('#id_main_category').append(
+                $('<option></option>')
+                  .attr('value', category.id)
+                  .text(category.title)
+              );
+            });
+          } else {
+            $('#id_main_category').append('<option value="">No categories available</option>');
+          }
+        },
+        error: function(xhr, status, error) {
+          handleAjaxError('#id_main_category', error);
+        }
+      });
+    }
+  });
+
+  // Main Category => Subcategories
+  $('#id_main_category').change(function() {
+    var categoryId = $(this).val();
+    $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+    if (categoryId) {
+      showLoading('#id_subcategory');
+      $.ajax({
+        url: '/api/subcategories/',
+        data: { 'category_id': categoryId },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        success: function(response) {
+          hideLoading('#id_subcategory');
+          if (Array.isArray(response) && response.length) {
+            response.forEach(function(subcategory) {
+              $('#id_subcategory').append(
+                $('<option></option>')
+                  .attr('value', subcategory.id)
+                  .text(subcategory.title)
+              );
+            });
+          } else {
+            $('#id_subcategory').append('<option value="">No subcategories available</option>');
+          }
+        },
+        error: function(xhr, status, error) {
+          handleAjaxError('#id_subcategory', error);
+        }
+      });
+    }
+  });
+
+
+  /////////////////////////////////////////////////////////////
+  // 3) COUNTRIES LOGIC (LS Backend)
+  /////////////////////////////////////////////////////////////
+
+  function loadCountries() {
+    showLoading('#id_country');
+    $.ajax({
+      url: '/api/countries/',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      success: function(response) {
+        hideLoading('#id_country');
+        $('#id_country').empty().append('<option value="">Select a country</option>');
+
+        // If 'response' is an array, just do 'Array.isArray(response)'
+        if (Array.isArray(response) && response.length) {
+            response.forEach(function(country) {
+            $('#id_country').append(
+                $('<option></option>').attr('value', country.id).text(country.name)
+            );
+            });
+        } else {
+            $('#id_country').append('<option value="">No countries found</option>');
+        }
+        },
+      error: function(xhr, status, error) {
+        handleAjaxError('#id_country', error);
+      }
+    });
+  }
+
+  // Load countries on DOM ready
+  loadCountries();
+
+  // On change => load cities
+  $('#id_country').change(function() {
+    var countryId = $(this).val();
+    $('#id_destination').empty().append('<option value="">Select a destination</option>');
+    if (countryId) {
+      showLoading('#id_destination');
+      $.ajax({
+        url: '/api/cities/',
+        data: { 'country_id': countryId },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        success: function(response) {
+          hideLoading('#id_destination');
+
+          // Expect { results: [ {id: x, name: 'some city'}, ... ] }
+          const cities = response.results;
+          if (Array.isArray(cities) && cities.length) {
+            cities.forEach(function(city) {
+              $('#id_destination').append(
+                $('<option></option>')
+                  .attr('value', city.id)
+                  .text(city.name)
+              );
+            });
+          } else {
+            $('#id_destination').append('<option value="">No destinations found</option>');
+          }
+        },
+        error: function(xhr, status, error) {
+          handleAjaxError('#id_destination', error);
+        }
+      });
+    }
+  });
+
+});
+</script>
+<!--API Loading Levels,Cats and countries Cities -->
+
+   
 <script>
     $(document).ready(function() {
         $('#upload-form').on('submit', function(e) {
@@ -729,8 +1012,41 @@ $(document).ready(function() {
     });
 </script>
 <!--Translate Tasks-->
- 
+        
+<script>
+$(document).ready(function() {
+    // Setup - add a text input to each footer cell
+    $('#task-activity thead tr:eq(1) th').each(function (i) {
+        var title = $(this).text();
+        if (title !== 'Select' && title !== 'Action') {
+            $('input', this).on('keyup change', function () {
+                if (table.column(i).search() !== this.value) {
+                    table
+                        .column(i)
+                        .search(this.value)
+                        .draw();
+                }
+            });
+        }
+    });
+
+    // Initialize DataTable
+    var table = $('#task-activity').DataTable({
+        "pageLength": 12,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        orderCellsTop: true,
+        fixedHeader: true
+    });
+});
+
+</script>
 {% endblock %}
 
  
+
+
  
