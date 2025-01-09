@@ -1,6 +1,39 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+<style>
+    /* Custom Search Input Styles */
+.input-group-text {
+    background-color: #f8f9fa; /* Light background for the input group */
+    border: 1px solid #ced4da; /* Match border color */
+    border-radius: 0.5rem 0 0 0.5rem; /* Rounded corners */
+    box-shadow: none; /* Remove shadow */
+    height: auto;
+}
+
+.form-control {
+    border: 1px solid #ced4da; /* Match border color */
+    border-radius: 0 0.5rem 0.5rem 0; /* Rounded corners */
+    box-shadow: none; /* Remove shadow */
+}
+
+.form-control:focus {
+    border-color: #007bff; /* Bootstrap primary color on focus */
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); /* Add subtle shadow effect */
+}
+
+/* Button Styles */
+.btn-primary {
+    border-radius: 0 0.5rem 0.5rem 0; /* Rounded corners on the right side */
+    transition: background-color 0.2s; /* Smooth transition for hover effects */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Darker primary color on hover */
+    border-color: #0056b3; /* Match border color on hover */
+}
+
+</style>
 <div class="main-content project"> 
     <div class="row">
         <div class="col-12">
@@ -9,92 +42,129 @@
                     <span class="title-icon">
                         <i class="fas fa-building"></i>
                     </span>
-                    <span class="title-text">Places Directory</span>
+                    <span class="title-text">Search Places</span>
                 </h1>
             </div> 
-                <div class="box-body pb-0 table-responsive "> 
-                        <table class="table table-vcenter table-bordered dataTable" id="task-profile">
-                           
-                            <thead>
-                                <tr class="top">
-                                   
-                                    <th>Business Name</th>
-                                    <th>Category</th> 
-                                    <th>Address</th>
-                                    <th>City</th>
-                                    <th>Destination</th>
-                                    <th>Progress</th>
-                                    <th>Action</th>
-                                </tr>
-                                <tr> 
-                             
-                                    <th><input type="text" placeholder="Search Business Name" /></th>
-                                    <th><input type="text" placeholder="Search Category" /></th>
-                                    <th><input type="text" placeholder="Search Address" /></th>
-                                    <th><input type="text" placeholder="Search City" /></th>
-                                    <th><input type="text" placeholder="Search Destination" /></th>
-                                    <th><input type="text" placeholder="Search Progress" /></th>
-                                   
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for business in businesses %}
-                                <tr class="{% if forloop.counter0|divisibleby:2 %}even{% else %}odd{% endif %}">
-                       
-                                    <td><a href="{% url 'business_detail' business.id %}">({{ business.id }}) - {{ business.title }}</a></td>
-                                    <td>{{ business.category_name }}</td>
-                                    <td>{{ business.address|truncatechars:20 }}</td>
-                                    <td>{{ business.destination }} </td>
-                                    <td>{{ business.city }} </td>
-                                    <td>
-                                        <p class="{% if business.get_status_display == 'Discarded' %} color-9 {% elif business.get_status_display == 'Pending' %} color-1 {% elif business.get_status_display == 'Completed' %} color-3 {% else %} color-4 {% endif %}">
-                                        {{ business.get_status_display }}
-                                        </p>
-                                    </td> 
-                                    <td>
-                                        <div class="dropdown">
-                                            <a href="#" class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                                <i class="bx bx-dots-horizontal-rounded"></i>
-                                            </a>
-                                            <div class="dropdown-menu dropdown-menu-end">
-                                                <a class="dropdown-item" href="{% url 'business_detail' business.id %}">View</a>
-                                                <a class="dropdown-item" href="{% url 'edit_business' business.id %}">Edit</a>
-                                                <a class="dropdown-item" href="{% url 'delete_business' business.id %}" data-bs-toggle="modal" data-bs-target="#deleteBusinessModal_{{ business.id }}">Delete</a>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="6">No businesses found.</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-
-                        <div class="pagination">
-                            <span class="step-links">
-                                {% if page_obj.has_previous %}
-                                    <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
-                                    <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
-                                {% endif %}
-                                <span class="current">
-                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                                </span>
-                                {% if page_obj.has_next %}
-                                    <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
-                                    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
-                                {% endif %}
+                <div class="box-body pb-0 table-responsive">  
+                  <div class="box">
+                  <!-- Search Form -->
+                    <form method="get" class="d-flex align-items-center mb-24 mt-11">
+                        <div class="input-group" style="max-width: 600px; margin: 0 auto;">
+                            <span class="input-group-text bg-light border-end-0" id="search-icon"
+                                style="border-radius: 0.5rem 0 0 0.5rem; border: 1px solid #ced4da; box-shadow: none;">
+                                <i class="fas fa-search" style="color: #888;"></i>
                             </span>
+                            <input
+                                type="text"
+                                name="search"
+                                class="form-control border-start-0" 
+                                aria-label="Search"
+                                aria-describedby="search-icon"
+                                value="{{ search_query|default_if_none:'' }}"
+                                placeholder="Search sites by name, category, address or city.."
+                                style="border: 1px solid #ced4da; box-shadow: none;"
+                            />
+                            <button class="btn btn-primary" type="submit" style="border-radius: 0 0.5rem 0.5rem 0;">
+                                Search
+                            </button>
                         </div>
+                    </form>
+
+                    <br/>
+
+                    <!-- Table -->
+                    <table class="table table-vcenter table-bordered mt-11" id="task-profile">
+                        <thead>
+                        <tr class="top">
+                            <th>Business Name</th>
+                            <th>Category</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th>Destination</th>
+                            <th>Progress</th>
+                            <th>Action</th>
+                        </tr>
+                        <tr> 
+                            <th><input type="text" placeholder="Search Business Name" class="form-control form-control-sm" /></th>
+                            <th><input type="text" placeholder="Search Category" class="form-control form-control-sm" /></th>
+                            <th><input type="text" placeholder="Search Address" class="form-control form-control-sm" /></th>
+                            <th><input type="text" placeholder="Search City" class="form-control form-control-sm" /></th>
+                            <th><input type="text" placeholder="Search Destination" class="form-control form-control-sm" /></th>
+                            <th><input type="text" placeholder="Search Progress" class="form-control form-control-sm" /></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for business in businesses %}
+                        <tr class="{% if forloop.counter0|divisibleby:2 %}even{% else %}odd{% endif %}">
+                            <td>
+                            <a href="{% url 'business_detail' business.id %}">
+                                ({{ business.id }}) - {{ business.title }}
+                            </a>
+                            </td>
+                            <td>{{ business.category_name }}</td>
+                            <td>{{ business.address|truncatechars:20 }}</td>
+                            <td>{{ business.city }}</td>
+                            <td>{{ business.destination }}</td>
+                            <td>
+                            <p class="{% if business.get_status_display == 'Discarded' %} color-9 
+                                        {% elif business.get_status_display == 'Pending' %} color-1 
+                                        {% elif business.get_status_display == 'Completed' %} color-3 
+                                        {% else %} color-4 {% endif %}">
+                                {{ business.get_status_display }}
+                            </p>
+                            </td>
+                            <td>
+                            <div class="dropdown">
+                                <a href="#" class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bx bx-dots-horizontal-rounded"></i>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                <a class="dropdown-item" href="{% url 'business_detail' business.id %}">View</a>
+                                <a class="dropdown-item" href="{% url 'edit_business' business.id %}">Edit</a>
+                                <a class="dropdown-item" href="{% url 'delete_business' business.id %}"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#deleteBusinessModal_{{ business.id }}">
+                                    Delete
+                                </a>
+                                </div>
+                            </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">
+                            No businesses found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table> 
+
+                    <!-- Paginator with Custom Styling -->
+                    <div class="pagination">
+                        <span class="step-links">
+                            {% if page_obj.has_previous %}
+                                <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+                                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+                            {% endif %}
+                            <span class="current">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                            </span>
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <!-- Paginator with Custom Styling -->
                     
                 </div>
            
         </div>
     </div>
 </div>
-
+</div>
 
 <script>
     $(document).ready(function() {
@@ -127,5 +197,7 @@
     });
     
     </script>
+
+
 
 {% endblock %}

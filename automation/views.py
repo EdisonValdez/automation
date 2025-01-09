@@ -1499,59 +1499,52 @@ def is_admin_or_ambassador(user):
   
 @login_required
 def task_list(request):
-    search_destination = request.GET.get('destination')
-    search_country = request.GET.get('country')
-    search_status = request.GET.get('status')
+    """
+    Shows only the latest 50 tasks if no search param is provided,
+    or the fully filtered results if a search param is present.
+    Also applies role-based constraints for ADMIN, AMBASSADOR, etc.
+    """
 
-    # Fetch available countries and destinations for the search form
-    countries = Country.objects.all()
-    destinations = Destination.objects.exclude(name__isnull=True).exclude(name='')
+    user = request.user
 
-    # Fetch tasks based on user role
-    if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
-        tasks = ScrapingTask.objects.all()
-    elif request.user.roles.filter(role='AMBASSADOR').exists():
-        ambassador_destinations = request.user.destinations.all()
-        tasks = ScrapingTask.objects.filter(destination__in=ambassador_destinations)
+    # 1) Base queryset according to user role
+    if user.is_superuser or user.roles.filter(role='ADMIN').exists():
+        queryset = ScrapingTask.objects.all()
+    elif user.roles.filter(role='AMBASSADOR').exists():
+        ambassador_destinations = user.destinations.all()
+        queryset = ScrapingTask.objects.filter(destination__in=ambassador_destinations)
     else:
-        tasks = ScrapingTask.objects.none()
+        queryset = ScrapingTask.objects.none()
 
-    # Apply search filters
-    if search_destination:
-        tasks = tasks.filter(destination_name__icontains=search_destination)
-    if search_country:
-        tasks = tasks.filter(country_name__icontains=search_country)
-    if search_status:
-        tasks = tasks.filter(status__iexact=search_status)
+    # 2) Check for search parameters
+    search_destination = request.GET.get('destination', '').strip()
+    search_country = request.GET.get('country', '').strip()
+    search_status = request.GET.get('status', '').strip()
 
-    # Annotate tasks with empty descriptions count
-    tasks = tasks.annotate(
-        empty_descriptions_count=Count(
-            'businesses',
-            filter=Q(businesses__description__isnull=True) | Q(businesses__description='')
-        )
-    )
+    # If user provided search terms, filter the queryset
+    if search_destination or search_country or search_status:
+        if search_destination:
+            queryset = queryset.filter(destination_name__icontains=search_destination)
+        if search_country:
+            queryset = queryset.filter(country_name__icontains=search_country)
+        if search_status:
+            queryset = queryset.filter(status__iexact=search_status)
+    else:
+        # No search => only show the latest 50 tasks for minimal initial load time
+        queryset = queryset.order_by('-id')[:50]
 
-    # For each task, add the has_empty_descriptions property
-    for task in tasks:
-        task.has_empty_descriptions = task.empty_descriptions_count > 0
-
-    # Apply pagination
-    paginator = Paginator(tasks, 10000000)
+    # 3) Paginate the results
+    paginator = Paginator(queryset, 100000)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = {
+    return render(request, 'automation/task_list.html', {
         'tasks': page_obj.object_list,
         'page_obj': page_obj,
         'search_destination': search_destination,
         'search_country': search_country,
         'search_status': search_status,
-        'countries': countries,
-        'destinations': destinations,
-    }
-
-    return render(request, 'automation/task_list.html', context)
+    })
 
 
 #########BUSINESS#########################BUSINESS#########################BUSINESS#########################BUSINESS################
@@ -1940,27 +1933,55 @@ def submit_feedback(request, business_id):
  
 @login_required
 def business_list(request):
-    if request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists():
-        businesses = Business.objects.all()
-    elif request.user.roles.filter(role='AMBASSADOR').exists():
-        ambassador_destinations = request.user.destinations.all()
-        ambassador_city_names = ambassador_destinations.values_list('name', flat=True)
+    """
+    Shows only the latest 50 businesses if no search param is provided,
+    or the fully filtered results if a search param is present.
+    Also applies role-based constraints for ADMIN, AMBASSADOR, etc.
+    """
 
-        businesses = Business.objects.filter(
+    # 1) Base queryset according to user role
+    user = request.user
+    if user.is_superuser or user.roles.filter(role='ADMIN').exists():
+        queryset = Business.objects.all()
+    elif user.roles.filter(role='AMBASSADOR').exists():
+        ambassador_destinations = user.destinations.all()
+        ambassador_city_names = ambassador_destinations.values_list('name', flat=True)
+        queryset = Business.objects.filter(
             Q(form_destination_id__in=ambassador_destinations) | Q(city__in=ambassador_city_names)
         )
     else:
-        businesses = Business.objects.none()
+        queryset = Business.objects.none()
 
-    paginator = Paginator(businesses, 100000)  # High limit for "unlimited" pagination
+    # 2) Check if there is a search param
+    search_query = request.GET.get('search', '').strip()
+
+    # If user provided a search term, filter the entire queryset
+    if search_query:
+        queryset = queryset.filter(
+            Q(title__icontains=search_query)
+            | Q(category_name__icontains=search_query)
+            | Q(address__icontains=search_query)
+            | Q(city__icontains=search_query) 
+        )
+    else:
+        # No search => only show, say, the latest 50 (or any custom subset)
+        # for a minimal initial load time.
+        # You can pick any ordering or limit you prefer:
+        queryset = queryset.order_by('-id')[:50]
+
+    # 3) Paginate
+    # Keep the high limit 100000 if you want, or a smaller chunk, as you prefer
+    paginator = Paginator(queryset, 100000)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     return render(request, 'automation/business_list.html', {
         'businesses': page_obj.object_list,
         'page_obj': page_obj,
+        'search_query': search_query,  # so we can preserve it in the template if needed
     })
- 
+
+
 @login_required
 def business_detail(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -2171,7 +2192,7 @@ def delete_business(request, business_id):
         logger.error(f"Error deleting business {business_id}: {str(e)}", exc_info=True)
         messages.error(request, "An error occurred while deleting the business.")
     return redirect('business_list')
-
+ 
 ###########ENHANCE AND GENERATE DESCRIPTION##################
 
 class BusinessDescriptionGenerator:
