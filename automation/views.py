@@ -384,6 +384,8 @@ class TranslateBusinessesView(View):
 
     def post(self, request, task_id):
         logger.info(f"Received request to translate businesses for task {task_id}")
+        logger.info(f"Headers: {request.headers}")
+        logger.info(f"Body: {request.body}")
         
         try:
             task = get_object_or_404(ScrapingTask, id=task_id)
@@ -425,7 +427,7 @@ class TranslateBusinessesView(View):
                 task.save(update_fields=['translation_status'])
             return JsonResponse({
                 'status': 'error',
-                'message': f'Translation failed: {str(e)}',
+                'message': f'Translation failed: (post method) {str(e)}',
                 'details': self.get_business_stats(task) if 'task' in locals() else None
             }, status=500)
 
@@ -552,7 +554,7 @@ class TranslateBusinessesView(View):
                     logger.info(f"Translation successful for business {business.id}")
                     return True
                 else:
-                    logger.error(f"Translation failed: {response_data.get('message')}")
+                    logger.error(f"Translation failed: (translate_business method) {response_data.get('message')}")
                     return False
             
             logger.error(f"Translation failed for business {business.id}. Status code: {response.status_code}")

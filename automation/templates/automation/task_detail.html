@@ -144,47 +144,6 @@
     </div>
 </div>
 
-<script>
-function moveBulkBusinesses(selectElement, currentStatus) {
-    const newStatus = selectElement.value;
-    if (newStatus) {
-        const businessElements = document.querySelectorAll(`#kanban-wrap-${currentStatus} .panel`);
-        const businessIds = Array.from(businessElements).map(el => el.getAttribute('data-id'));
-
-        // Send the AJAX request to update the status of the dragged businesses
-        fetch('/update_business_statuses/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFTOKEN': '{{ csrf_token }}'  // Ensure CSRF token is included
-            },
-            body: JSON.stringify({ business_ids: businessIds, new_status: newStatus })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Move each business to the new status
-                businessIds.forEach(id => {
-                    const businessElement = document.querySelector(`[data-id='${id}']`);
-                    if (businessElement) {
-                        // Append the business element to the new status's wrap
-                        document.getElementById(`kanban-wrap-${newStatus}`).appendChild(businessElement);
-                        businessElement.setAttribute('data-status', newStatus);  // Update the status attribute
-                    }
-                });
-                selectElement.value = ""; // Reset the dropdown
-            } else {
-                alert('Error updating status: ' + data.error);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while updating the status.');
-        });
-    }
-}
-</script>
-
 <!--KANBAN-->
 </div>
  
@@ -249,6 +208,7 @@ function moveBulkBusinesses(selectElement, currentStatus) {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 
+<!-- updateBusinessStatus - moveBulkBusinesses - revertToOldColumn - updateStatusCount -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var containers = document.querySelectorAll('.kanban-wrap');
@@ -404,7 +364,6 @@ function revertToOldColumn(businessId, oldStatus) {
     }
 }
  
-
 function updateStatusCount(status, change) {
     var countElement = document.querySelector(`.status-count[data-status="${status}"]`);
     if (countElement) {
@@ -412,8 +371,7 @@ function updateStatusCount(status, change) {
         countElement.textContent = currentCount + change;
     }
 }
-
-
+ 
 // Función para obtener el token CSRF
 function getCookie(name) {
     let cookieValue = null;
@@ -430,7 +388,9 @@ function getCookie(name) {
     return cookieValue;
 }
 </script>
+<!-- updateBusinessStatus - moveBulkBusinesses - revertToOldColumn - updateStatusCount -->
  
+<!-- updateBusinessStatus -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var kanbanLists = document.querySelectorAll('.kanban-wrap');
@@ -489,7 +449,8 @@ function getCookie(name) {
     }
 });
 </script>
-
+<!-- updateBusinessStatus -->
+ 
 <!--Detail-->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -520,7 +481,9 @@ function getCookie(name) {
         });
     });
 </script>
+<!--Detail-->
 
+<!-- Sorting functionality -->
 <script>
     $(document).ready(function() {
         // Existing functionalities...
@@ -550,7 +513,8 @@ function getCookie(name) {
         });
     });
 </script>
- 
+<!-- Sorting functionality -->
+
 <!--loading-->
 <script>
     $(document).ready(function() {
@@ -585,6 +549,7 @@ function getCookie(name) {
         });
     });
 </script>
+<!--loading-->
 
 <!--Scroll to top functionality-->
 <script>
