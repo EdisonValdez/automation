@@ -825,10 +825,7 @@ class BusinessStatusDataView(View):
             ).values('status').annotate(count=Count('id'))
 
             print(f"Filtered Status Counts: {list(status_counts)}")
-
-
             print(Business._meta.get_field('scraped_at').get_internal_type())
-
 
             # Initialize response structure
             response_data = {
@@ -1479,7 +1476,6 @@ def edit_user(request, user_id):
     
     return render(request, 'automation/edit_user.html', context)
 
-
 @user_passes_test(is_admin)
 def delete_user(request, user_id):
     logger.info(f"Accessing delete_user view for user_id: {user_id}")
@@ -1988,7 +1984,6 @@ def business_list(request):
         'search_query': search_query,
     })
 
-
 @login_required
 def business_detail(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -1996,43 +1991,44 @@ def business_detail(request, business_id):
     # Get the status filter from the request (defaults to ALL)
     status_filter = request.GET.get('status', 'ALL')
 
-    # Fetch all businesses related to the current task
     task_businesses = list(business.task.businesses.all()) if business.task else []
 
-    # Count businesses in the same task
-    business_count = len(task_businesses)  # or use business.task.businesses.count() if not converting to a list
+    business_count = len(task_businesses) 
+    # If the filter is not 'ALL', check if the status exists in the task businesses
+    if status_filter != 'ALL':
+        valid_statuses = {b.status for b in task_businesses}  # Extract valid statuses for the task
+        if status_filter not in valid_statuses:
+            # Redirect to same business detail with 'ALL' status if the given status doesn't exist
+            return redirect('business_detail', business_id=business_id)
 
-    # Filter businesses based on the selected status
+    # Proceed with filtering or processing based on the valid status
     if status_filter != 'ALL':
         task_businesses = [b for b in task_businesses if b.status == status_filter]
 
+    # If filtering by status leads to no businesses, redirect to ALL again
+    if not task_businesses and status_filter != 'ALL':
+        return redirect('business_detail', business_id=business_id)
+
+    # If the business status does not match the filter, select the first matching business
     if status_filter != 'ALL' and business.status != status_filter:
         task_businesses = [b for b in task_businesses if b.id != business.id]
-
         if not task_businesses:
-            messages.error(request, "No businesses available for the selected status.")
-            return redirect('business_detail', business_id=business.id, status='ALL')
-
-        # If there are other businesses, update to the first one found
+            return redirect('business_detail', business_id=business_id, status='ALL')
         business = task_businesses[0]
 
+    # Other view logic remains unchanged
     current_index = task_businesses.index(business)
-
     feedback_formset = FeedbackFormSet(instance=business)
-
     prev_business = task_businesses[current_index - 1] if current_index > 0 else None
     next_business = task_businesses[current_index + 1] if current_index < len(task_businesses) - 1 else None
 
     prev_url = reverse('business_detail', args=[prev_business.id]) + f"?status={status_filter}" if prev_business else None
     next_url = reverse('business_detail', args=[next_business.id]) + f"?status={status_filter}" if next_business else None
 
-    available_statuses = Business.STATUS_CHOICES  
+    available_statuses = Business.STATUS_CHOICES 
     available_statuses_dict = {status[0]: status[1] for status in available_statuses}
 
-    status_availability = {}
-    for status_key in available_statuses_dict.keys():
-        status_availability[status_key] = any(b.status == status_key for b in task_businesses)
-
+    status_availability = {status_key: any(b.status == status_key for b in task_businesses) for status_key in available_statuses_dict.keys()}
 
     is_admin = request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists()
 
@@ -2106,11 +2102,10 @@ def business_detail(request, business_id):
         'main_categories': main_categories,
         'subcategories': subcategories,
         'feedback_formset': feedback_formset,
-        # Add existing categories for JavaScript handling
         'existing_main_categories': business.main_category.split(',') if business.main_category else [],
         'existing_tailored_categories': business.tailored_category.split(',') if business.tailored_category else [],
         'status_filter': status_filter, 
-        'business_count': business_count,
+        'business_count':  business_count,
         'available_statuses': available_statuses_dict,
         'status_availability': status_availability,  
     }
