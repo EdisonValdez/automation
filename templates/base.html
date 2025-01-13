@@ -308,13 +308,16 @@ Local Secrets - Content Curation Management Admin Dashboard
     <!-- MAIN CONTENT -->
     <div class="main">
         {% block content %}
-                {% if messages %}
-                    <div class="alert alert-info">
-                        {% for message in messages %}
-                            <p>{{ message }}</p>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+        <div class="col-12">
+            {% if messages %}
+                <div class="alert alert-danger">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </div>
 
         {% endblock %} 
     </div>
