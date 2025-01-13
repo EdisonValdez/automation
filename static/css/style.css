@@ -32,7 +32,7 @@
 ***/
 
 :root {
-    --body-bg: #F9FAFE;
+    --body-bg: #FFFFFF;
     --box-bg: #ffffff;
     --main-color: #F4C031;
     --text-color: #222943;
@@ -2688,7 +2688,7 @@ select.select {
 ***/
 /* 
 .search-form {
-    background: #F9FAFE;
+    background: #FFFFFF;
     border-radius: 5px;
     padding: 16px 14px 6px 14px;
 } */

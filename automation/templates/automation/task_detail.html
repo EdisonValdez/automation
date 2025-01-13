@@ -115,7 +115,7 @@
                         <div class="kanban-box item-box">     
                             <div class="title-box">
                                 <h6 class="business-title text-truncate">
-                                    <a href="{% url 'business_detail' business.id %}" class="business-link" title="{{ business.title }}">
+                                    <a href="{% url 'business_detail' business.id %}?status={{ status }}" class="business-link" title="{{ business.title }}">
                                         {{ business.title }}
                                     </a>
                                 </h6> 
@@ -737,52 +737,64 @@ $(document).ready(function() {
         });
     });
     
+
         async function handleTranslation(button, taskId, originalText) {
-        try {
-            // Show loading state
-            Swal.fire({
-                title: 'Translation in Progress',
-                html: 'Please wait while we process your request...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
+            try {
+                Swal.fire({
+                    title: 'Translation in Progress',
+                    html: 'Please wait while we process your request...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                button.classList.add('disabled');
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+
+                const response = await fetch(`/tasks/${taskId}/translate/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.warn('Unexpected response received. Translation is continuing in the background.');
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Translation in Progress',
+                        text: 'The process is running in the background. You will be notified once completed.',
+                        timer: 5000
+                    });
+                    return;
                 }
-            });
-    
-            // Disable button
-            button.classList.add('disabled');
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
-    
-            const response = await fetch(`/tasks/${taskId}/translate/`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Translation process failed');
                 }
-            });
-    
-            const data = await response.json();
-    
-            // Close loading dialog
-            Swal.close();
-    
-            if (!response.ok) {
-                throw new Error(data.message || 'Translation process failed');
+
+                handleTranslationResponse(data, button, originalText);
+
+            } catch (error) {
+                console.error('Translation error:', error);
+
+                // Show a generic message to the user
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Translation Running',
+                    text: 'Translation is still running in the background. Please check back later for updates.'
+                });
+
+                resetButton(button, originalText);
             }
-    
-            handleTranslationResponse(data, button, originalText);
-    
-        } catch (error) {
-            console.error('Translation error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Translation Failed',
-                text: error.message || 'An unexpected error occurred'
-            });
-            resetButton(button, originalText);
         }
-    }
+
         function handleTranslationResponse(response) {
         const data = response.details || {};
         
@@ -949,14 +961,19 @@ $(document).ready(function() {
                 </div>
             `;
         }
-    
+
+        function resetButton(button, originalText) {
+            button.classList.remove('disabled');
+            button.innerHTML = originalText;
+        }
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
                 const cookies = document.cookie.split(';');
                 for (let i = 0; i < cookies.length; i++) {
                     const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    if (cookie.startsWith(name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                         break;
                     }
@@ -964,8 +981,8 @@ $(document).ready(function() {
             }
             return cookieValue;
         }
-    
-        function reportIssue(errorData) {
+
+    function reportIssue(errorData) {
             console.log('Reporting issue:', errorData);
             // Implement your issue reporting logic here
             Swal.fire({

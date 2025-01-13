@@ -29,7 +29,7 @@ urlpatterns = [
     path('generate-description', views.generate_description, name="generate_description"),
     path('update-image-order/', views.update_image_order, name='update_image_order'),
     path('update-image-approval/', views.update_image_approval, name='update_image_approval'),
-
+    path('update-businesses/', views.update_businesses, name='update_businesses'),            
     path('update-business-hours/', views.update_business_hours, name='update_business_hours'),
 
     path('tasks/<int:id>/delete/', views.delete_task, name='delete_task'),

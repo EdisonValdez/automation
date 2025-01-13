@@ -408,7 +408,7 @@ class TranslateBusinessesView(View):
             task.save(update_fields=['translation_status'])
 
             # Process translations
-            results = self.process_translations(businesses)
+            results = self.process_translations(businesses, request.user)
             
             # Update final status
             task.translation_status = self.determine_final_status(results)
@@ -431,8 +431,9 @@ class TranslateBusinessesView(View):
                 'details': self.get_business_stats(task) if 'task' in locals() else None
             }, status=500)
 
-    def process_translations(self, businesses):
+    def process_translations(self, businesses, user):
         """Process translations for businesses"""
+
         results = {
             'total': businesses.count(),
             'success': 0,
@@ -467,7 +468,6 @@ class TranslateBusinessesView(View):
                         'status': 'error',
                         'message': 'Translation failed'
                     })
-
             except Exception as e:
                 results['failed'] += 1
                 results['details'].append({
@@ -477,7 +477,12 @@ class TranslateBusinessesView(View):
                 })
                 logger.error(f"Failed to process business {business.id}: {str(e)}")
 
+        # Notify the user about the translation completion
+        message = f"Translation process completed: {results['success']} succeeded, {results['failed']} failed."
+        messages.success(user, message)
+
         return results
+
 
     def generate_description(self, business):
         """Generate description for a business"""
@@ -1980,35 +1985,62 @@ def business_list(request):
     return render(request, 'automation/business_list.html', {
         'businesses': page_obj.object_list,
         'page_obj': page_obj,
-        'search_query': search_query,  # so we can preserve it in the template if needed
+        'search_query': search_query,
     })
 
 
 @login_required
 def business_detail(request, business_id):
     business = get_object_or_404(Business, id=business_id)
-    task_businesses = list(business.task.businesses.order_by('id'))
+
+    # Get the status filter from the request (defaults to ALL)
+    status_filter = request.GET.get('status', 'ALL')
+
+    # Fetch all businesses related to the current task
+    task_businesses = list(business.task.businesses.all()) if business.task else []
+
+    # Count businesses in the same task
+    business_count = len(task_businesses)  # or use business.task.businesses.count() if not converting to a list
+
+    # Filter businesses based on the selected status
+    if status_filter != 'ALL':
+        task_businesses = [b for b in task_businesses if b.status == status_filter]
+
+    if status_filter != 'ALL' and business.status != status_filter:
+        task_businesses = [b for b in task_businesses if b.id != business.id]
+
+        if not task_businesses:
+            messages.error(request, "No businesses available for the selected status.")
+            return redirect('business_detail', business_id=business.id, status='ALL')
+
+        # If there are other businesses, update to the first one found
+        business = task_businesses[0]
+
     current_index = task_businesses.index(business)
+
     feedback_formset = FeedbackFormSet(instance=business)
 
-    # Determine previous and next businesses
     prev_business = task_businesses[current_index - 1] if current_index > 0 else None
     next_business = task_businesses[current_index + 1] if current_index < len(task_businesses) - 1 else None
 
-    # Define URLs for navigation buttons
-    prev_url = reverse('business_detail', args=[prev_business.id]) if prev_business else None
-    next_url = reverse('business_detail', args=[next_business.id]) if next_business else None
+    prev_url = reverse('business_detail', args=[prev_business.id]) + f"?status={status_filter}" if prev_business else None
+    next_url = reverse('business_detail', args=[next_business.id]) + f"?status={status_filter}" if next_business else None
+
+    available_statuses = Business.STATUS_CHOICES  
+    available_statuses_dict = {status[0]: status[1] for status in available_statuses}
+
+    status_availability = {}
+    for status_key in available_statuses_dict.keys():
+        status_availability[status_key] = any(b.status == status_key for b in task_businesses)
+
 
     is_admin = request.user.is_superuser or request.user.roles.filter(role='ADMIN').exists()
 
-    # Fetch main categories and subcategories
     main_categories = Category.objects.filter(parent__isnull=True)
     subcategories = Category.objects.filter(parent__isnull=False)
 
     if request.method == 'POST':
         post_data = request.POST.copy()
-
-        # Validate description
         description = post_data.get('description', '').strip()
         if not description:
             logger.error("Cannot update business %s: description is blank or None", business.project_title)
@@ -2016,20 +2048,13 @@ def business_detail(request, business_id):
                 'success': False,
                 'errors': {'description': 'Description cannot be blank or None'}
             })
-
-        # Get existing categories
         existing_main = set(cat.strip() for cat in (business.main_category or '').split(',') if cat.strip())
         existing_tailored = set(cat.strip() for cat in (business.tailored_category or '').split(',') if cat.strip())
-
-        # Get new categories from POST data
         new_main = set(cat.strip() for cat in post_data.getlist('main_category') if cat.strip())
         new_tailored = set(cat.strip() for cat in post_data.getlist('tailored_category') if cat.strip())
 
-        # Check for removals
         removed_main = existing_main - new_main
         removed_tailored = existing_tailored - new_tailored
-
-        # If there are removals and no confirmation, return error
         if (removed_main or removed_tailored) and not post_data.get('confirm_removal'):
             return JsonResponse({
                 'success': False,
@@ -2040,21 +2065,17 @@ def business_detail(request, business_id):
                 }
             })
 
-        # Combine categories (if confirmed or no removals)
         final_main = new_main if post_data.get('confirm_removal') else (existing_main | new_main)
         final_tailored = new_tailored if post_data.get('confirm_removal') else (existing_tailored | new_tailored)
 
-        # Update post_data with final categories
         post_data['main_category'] = ', '.join(final_main)
         post_data['tailored_category'] = ', '.join(final_tailored)
 
-        # Log category changes
         logger.debug("Previous main categories: %s", existing_main)
         logger.debug("New main categories: %s", final_main)
         logger.debug("Previous tailored categories: %s", existing_tailored)
         logger.debug("New tailored categories: %s", final_tailored)
 
-        # Initialize the form with updated post_data
         form = BusinessForm(post_data, instance=business)
         feedback_formset = FeedbackFormSet(post_data, instance=business)
 
@@ -2087,7 +2108,11 @@ def business_detail(request, business_id):
         'feedback_formset': feedback_formset,
         # Add existing categories for JavaScript handling
         'existing_main_categories': business.main_category.split(',') if business.main_category else [],
-        'existing_tailored_categories': business.tailored_category.split(',') if business.tailored_category else []
+        'existing_tailored_categories': business.tailored_category.split(',') if business.tailored_category else [],
+        'status_filter': status_filter, 
+        'business_count': business_count,
+        'available_statuses': available_statuses_dict,
+        'status_availability': status_availability,  
     }
 
     return render(request, 'automation/business_detail.html', context)
@@ -2157,6 +2182,25 @@ def update_business(request, business_id):
  
     return redirect('business_detail', business_id=business.id)
 
+@login_required
+def update_businesses(request):
+    if request.method == 'GET':
+        status_filter = request.GET.get('status', 'ALL')
+        task_id = request.GET.get('task_id')  # Make sure to get the task ID
+
+        # Fetching businesses based on selected status
+        if status_filter != 'ALL':
+            businesses = Business.objects.filter(task_id=task_id, status=status_filter).values('id', 'project_title', 'status')
+        else:
+            businesses = Business.objects.filter(task_id=task_id).values('id', 'project_title', 'status')
+
+        response_data = {
+            'businesses': list(businesses),
+            'available_statuses': Business.STATUS_CHOICES, 
+        }
+
+        return JsonResponse(response_data)
+    
 @login_required
 @user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists())
 def edit_business(request, business_id):

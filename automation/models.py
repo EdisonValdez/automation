@@ -287,7 +287,7 @@ class ActiveBusinessManager(models.Manager):
         return super().get_queryset().filter(is_deleted=False)
  
 class Business(models.Model):
-    STATUS_CHOICES = [
+    STATUS_CHOICES = [ 
         ('DISCARDED', 'Discarded'),
         ('PENDING', 'Pending'),
         ('REVIEWED', 'Reviewed'),

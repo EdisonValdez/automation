@@ -39,4 +39,9 @@ def divided_by(value, arg):
         result = int(12 / int(arg))
         return result
     except (ValueError, ZeroDivisionError):
-        return 4  
+        return 4   
+    
+    
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
