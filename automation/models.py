@@ -288,7 +288,7 @@ class ActiveBusinessManager(models.Manager):
  
 class Business(models.Model):
     STATUS_CHOICES = [ 
-        ('ALL', 'ALL'),
+
         ('DISCARDED', 'Discarded'),
         ('PENDING', 'Pending'),
         ('REVIEWED', 'Reviewed'),
