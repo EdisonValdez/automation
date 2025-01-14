@@ -206,9 +206,10 @@ class ScrapingTask(models.Model):
         ('QUEUED', 'QUEUED'),
         ('PENDING', 'PENDING'),
         ('IN_PROGRESS', 'IN PROGRESS'),
-        ('COMPLETED', 'COMPLETED'),
+        ('COMPLETED', 'READY TO REVIEW'),
         ('FAILED', 'FAILED'),
-        ('DONE', 'DONE'),
+        ('DONE', 'REVIEWED'),
+        ('TASK_DONE', 'LIVE'),
     ]
     TRANSLATION_STATUS_CHOICES = [
         ('PENDING_TRANSLATION', 'Pending Translation'),
@@ -368,9 +369,9 @@ class Business(models.Model):
     description_eng = models.TextField(blank=True, null=True)
     description_fr = models.TextField(blank=True, null=True)
 
-    types_esp = models.TextField(blank=True, null=True) #Translate types provided by google
-    types_eng = models.TextField(blank=True, null=True) #Translate types provided by google
-    types_fr = models.TextField(blank=True, null=True) #Translate types provided by google
+    types_esp = models.TextField(blank=True, null=True)  
+    types_eng = models.TextField(blank=True, null=True)  
+    types_fr = models.TextField(blank=True, null=True)  
 
     #comments = models.TextField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)

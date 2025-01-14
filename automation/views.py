@@ -786,13 +786,83 @@ def login_view(request):
             messages.error(request, "Invalid username or password.")
     return render(request, 'automation/login.html')
 
+
+
 class DestinationCategoriesView(View):
     def get(self, request):
-        destination = request.GET.get('destination')
-        dashboard_view = DashboardView()
-        data = dashboard_view.get_destination_categories(destination)
-        return JsonResponse(data)
+        try:
+            destination_id = request.GET.get('destination')
+            
+            if not destination_id:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Destination ID is required'
+                }, status=400)
 
+            try:
+                destination_id = int(destination_id)
+            except ValueError:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid destination ID format'
+                }, status=400)
+
+            # Get businesses for the destination
+            businesses = Business.objects.filter(form_destination_id=destination_id)
+
+            # Get main category counts
+            main_categories = dict(
+                businesses.values('main_category')
+                .annotate(count=Count('id'))
+                .values_list('main_category', 'count')
+            )
+
+            # Get tailored category counts
+            tailored_categories = dict(
+                businesses.values('tailored_category')
+                .annotate(count=Count('id'))
+                .values_list('tailored_category', 'count')
+            )
+
+            # Get status counts with the correct status choices
+            status_counts = dict(
+                businesses.values('status')
+                .annotate(count=Count('id'))
+                .values_list('status', 'count')
+            )
+
+            # Prepare response data
+            data = {
+                'status': 'success',
+                'destination_id': destination_id,
+                'categories': {
+                    'main': main_categories,
+                    'tailored': tailored_categories
+                },
+                'status_details': {
+                    'DISCARDED': status_counts.get('DISCARDED', 0),
+                    'PENDING': status_counts.get('PENDING', 0),
+                    'REVIEWED': status_counts.get('REVIEWED', 0),
+                    'IN_PRODUCTION': status_counts.get('IN_PRODUCTION', 0)
+                },
+                'total_businesses': businesses.count()
+            }
+
+            # Add destination name if available
+            try:
+                destination = Destination.objects.get(id=destination_id)
+                data['destination_name'] = destination.name
+            except Destination.DoesNotExist:
+                data['destination_name'] = 'Unknown Destination'
+
+            return JsonResponse(data)
+
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=500)
+               
 from datetime import datetime
 
 class BusinessStatusDataView(View):
@@ -825,9 +895,7 @@ class BusinessStatusDataView(View):
             ).values('status').annotate(count=Count('id'))
 
             print(f"Filtered Status Counts: {list(status_counts)}")
-            print(Business._meta.get_field('scraped_at').get_internal_type())
-
-            # Initialize response structure
+            print(Business._meta.get_field('scraped_at').get_internal_type()) 
             response_data = {
                 'labels': [status[1] for status in Business.STATUS_CHOICES],
                 'datasets': [{
@@ -839,9 +907,7 @@ class BusinessStatusDataView(View):
                         '#dc3545',  # Discarded
                     ]
                 }]
-            }
-
-            # Map fetched counts to corresponding statuses
+            } 
             status_dict = {item['status']: item['count'] for item in status_counts}
             for i, (status, _) in enumerate(Business.STATUS_CHOICES):
                 response_data['datasets'][0]['data'][i] = status_dict.get(status, 0)
@@ -851,7 +917,7 @@ class BusinessStatusDataView(View):
         except Exception as e:
             logger.error(f"Error fetching business status data: {e}")
             return JsonResponse({'error': 'Internal server error'}, status=500)
-
+ 
 @method_decorator(login_required(login_url='/login/'), name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class DashboardView(View):
@@ -986,18 +1052,21 @@ class DashboardView(View):
                 status__in=['PENDING', 'REVIEWED', 'IN_PRODUCTION']
             ).count()
             
-            context['destination_categories'] = json.dumps(
-                self.get_destination_categories(), 
-                cls=DjangoJSONEncoder
-            )
-
-            context['available_destinations'] = json.dumps(
-                list(Business.objects.values_list(
-                    'form_destination_name', flat=True
-                ).distinct().exclude(
-                    form_destination_name__isnull=True
-                ).order_by('form_destination_name'))
-            )         
+            context['available_destinations'] = list(Destination.objects.values('id', 'name'))
+            context['destination_categories'] = {
+                'status': 'success',
+                'categories': {
+                    'main': {},  # This will be populated with initial data
+                    'tailored': {}
+                },
+                'status_details': {
+                    'DISCARDED': 0,
+                    'PENDING': 0,
+                    'REVIEWED': 0,
+                    'IN_PRODUCTION': 0
+                },
+                'total_businesses': 0
+            }   
             # Get status counts with explicit filtering
             status_counts = ScrapingTask.objects.values('status').annotate(
                 count=Count('id', distinct=True)  # Use distinct to avoid duplicates

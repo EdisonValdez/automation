@@ -3,10 +3,7 @@
 {% load static %}
 {% block title %}{{ task.project_title }}{% endblock %}
 {% block content %}
-<style> .task-navigation {background-color: #f8f9fa;padding: 20px 0;border-top: 1px solid #dee2e6;border-bottom: 1px solid #dee2e6;bottom: 0;left: 0;right: 0;z-index: 1000;}.task-nav-btn {min-width: 150px;text-align: center;position: relative;padding: 10px 15px;}.task-nav-btn small {font-size: 0.75rem;opacity: 0.8;}.task-navigation-info {padding: 0 20px;}.current-task-label {font-size: 0.8rem;text-transform: uppercase;color: #6c757d;display: block;margin-bottom: 5px;}main {margin-bottom: 100px;}@media (max-width: 768px) {.task-nav-btn small {display: none !important;}.task-navigation-info h5 {font-size: 1rem;}.task-navigation-info small {font-size: 0.7rem;}}.btn.disabled {opacity: 0.65;cursor: not-allowed; pointer-events: none;}.business-title {font-size: 1em;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin: 0;}.business-link {display: block;color: inherit;text-decoration: none;padding: 5px 0;width: 100%;}.business-link:hover {color: #F4C031;text-decoration: underline;}small {font-size: 10px;}#taskDetailsContainer {transition: all 0.3s ease-in-out;}.kanban-cont {display: flex;overflow-x: auto;padding-bottom: 10px;gap: 10px;}.kanban-list {flex: 1 1 30%;min-width: 250px;max-width: 100%;background-color: #f4f5f7;border-radius: 5px;margin: 5px;}.kanban-box {border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);display: flex;flex-direction: column;cursor: move;}.image-container {position: relative;overflow: hidden;width: 100%;height: auto;}.thumbnail-image {width: 100%;height: auto;max-height: 200px;object-fit: cover;}.image-overlay {position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: 0.5s ease;}.image-container:hover .image-overlay {height: 100%;}.overlay-title {color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%;}.business-stats {display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px;background-color:#f4c031;}.kanban-header {background-color:#e4e6e9;border-bottom: 2px solid #ccc;padding: 10px;display: flex;justify-content: space-between;align-items: center;}.kanban-wrap {max-height: 800px;overflow-y: auto;}.load-more {width: 100%;margin-top: 10px;}@media (max-width: 768px) {.kanban-list {flex-basis: 100%;min-width: 100%;margin-right: 0;}.kanban-header, .kanban-box {padding: 8px;}.overlay-title {font-size: 14px;}}@media (max-width: 576px) {.kanban-cont {padding: 0;gap: 5px;}.kanban-box {padding: 5px;}.thumbnail-image {max-height: 150px;}.business-stats {font-size: 8px;}.overlay-title {font-size: 12px;}}
-.card-title {font-weight: bold;font-size: 1.2rem;}.bulk-move-dropdown {margin-left: 10px;padding: 5px 10px; width: 50%;
-    border-radius: 4px;border: 1px solid #007bff; background-color: #ffffff;cursor: pointer;}
-.bulk-move-dropdown:hover {border-color: #0056b3;}.bulk-move-dropdown:focus {outline: none;border-color: #0056b3;}</style>
+<style>.status-legend{background:#fff;border:1px solid #e9ecef;border-radius:6px;padding:.75rem;margin-bottom:1.5rem}.legend-container{display:flex;align-items:center;flex-wrap:wrap;gap:1.5rem}.legend-section{display:flex;align-items:center;gap:1rem}.legend-title{font-weight:600;color:#495057;font-size:.9rem}.legend-item{display:flex;align-items:center;gap:.5rem;padding:.25rem .75rem;background:#f8f9fa;border-radius:4px}.legend-item i{font-size:1rem}.legend-item span{font-size:.875rem;color:#6c757d}.legend-divider{width:1px;height:24px;background:#dee2e6}@media (max-width:768px){.legend-container{flex-direction:column;align-items:flex-start;gap:1rem}.legend-divider{width:100%;height:1px}.legend-section{flex-wrap:wrap}}.business-title .bx{font-size:16px}.business-title{gap:4px}.task-navigation{background-color:#f8f9fa;padding:20px 0;border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;bottom:0;left:0;right:0;z-index:1000}.task-nav-btn{min-width:150px;text-align:center;position:relative;padding:10px 15px}.task-nav-btn small{font-size:.75rem;opacity:.8}.task-navigation-info{padding:0 20px}.current-task-label{font-size:.8rem;text-transform:uppercase;color:#6c757d;display:block;margin-bottom:5px}main{margin-bottom:100px}@media (max-width:768px){.task-nav-btn small{display:none!important}.task-navigation-info h5{font-size:1rem}.task-navigation-info small{font-size:.7rem}}.btn.disabled{opacity:.65;cursor:not-allowed;pointer-events:none}.business-title{font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}.business-link{display:block;color:inherit;text-decoration:none;padding:5px 0;width:100%}.business-link:hover{color:#F4C031;text-decoration:underline}small{font-size:10px}#taskDetailsContainer{transition:all 0.3s ease-in-out}.kanban-cont{display:flex;overflow-x:auto;padding-bottom:10px;gap:10px}.kanban-list{flex:1 1 30%;min-width:250px;max-width:100%;background-color:#f4f5f7;border-radius:5px;margin:5px}.kanban-box{border-radius:5px;padding:10px;box-shadow:0 1px 3px rgb(0 0 0 / .12),0 1px 2px rgb(0 0 0 / .24);display:flex;flex-direction:column;cursor:move}.image-container{position:relative;overflow:hidden;width:100%;height:auto}.thumbnail-image{width:100%;height:auto;max-height:200px;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:0.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:16px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%}.business-stats{display:flex;justify-content:space-between;margin-top:10px;font-size:10px;background-color:#f4c031}.kanban-header{background-color:#e4e6e9;border-bottom:2px solid #ccc;padding:10px;display:flex;justify-content:space-between;align-items:center}.kanban-wrap{max-height:800px;overflow-y:auto}.load-more{width:100%;margin-top:10px}@media (max-width:768px){.kanban-list{flex-basis:100%;min-width:100%;margin-right:0}.kanban-header,.kanban-box{padding:8px}.overlay-title{font-size:14px}}@media (max-width:576px){.kanban-cont{padding:0;gap:5px}.kanban-box{padding:5px}.thumbnail-image{max-height:150px}.business-stats{font-size:8px}.overlay-title{font-size:12px}}.card-title{font-weight:700;font-size:1.2rem}.bulk-move-dropdown{margin-left:10px;padding:5px 10px;width:50%;border-radius:4px;border:1px solid #007bff;background-color:#fff;cursor:pointer}.bulk-move-dropdown:hover{border-color:#0056b3}.bulk-move-dropdown:focus{outline:none;border-color:#0056b3}</style>
 <div id="loading-spinner" style="display: none;">
     <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
@@ -85,6 +82,43 @@
 <!--KANBAN-->
 <div class="kanban-board card mb-0 pd-0">
     <div class="box-body pd-0">
+        <!-- Add this before the kanban-wrap div -->
+<div class="status-legend mb-3">
+    <div class="legend-container">
+        <div class="legend-section">
+            <span class="legend-title">DESCRIPTIONS:</span>
+            <div class="legend-item">
+                <i class="bx bxs-file-doc text-primary"></i>
+                <span>Has main description</span>
+            </div>
+            <div class="legend-item">
+                <i class="bx bxs-file text-danger"></i>
+                <span>No description</span>
+            </div>
+        </div>
+
+        <div class="legend-divider"></div>
+        <div class="legend-divider"></div>
+
+        <div class="legend-section">
+            <span class="legend-title">TRANSLATIONS:</span>
+            <div class="legend-item">
+                <i class="fas fa-language text-primary"></i>
+                <span>All languages translated</span>
+            </div>
+            <div class="legend-item">
+                <i class="fas fa-language text-secondary"></i>
+                <span>Partially translated</span>
+            </div>
+            <div class="legend-item">
+                <i class="fas fa-language text-danger"></i>
+                <span>None</span>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+
         <div class="kanban-cont">
             {% for status, status_name in status_choices %}
             {% if status != 'IN_PRODUCTION' or user.is_admin %}
@@ -108,24 +142,52 @@
                     </select> 
                     {% endif %}
                 </div>
+                
                 <div class="kanban-wrap" id="kanban-wrap-{{ status }}">
                     {% for business in businesses|filter_by_status:status %}
                     {% if business.status == status %}
                     <div class="panel" data-id="{{ business.id }}" data-status="{{ business.status }}">
-                        <div class="kanban-box item-box">     
+                        <div class="kanban-box item-box">    
                             <div class="title-box">
-                                <h6 class="business-title text-truncate">
-                                    <a href="{% url 'business_detail' business.id %}?status={{ status }}" class="business-link" title="{{ business.title }}">
-                                        {{ business.title }}
+                                <h6 class="business-title text-truncate d-flex align-items-center">
+                                    <a href="{% url 'business_detail' business.id %}?status={{ status }}" 
+                                       class="business-link me-2" 
+                                       title="{{ business.title }}">
+                                        {{ business.title | truncatechars:20 }}
                                     </a>
-                                </h6> 
+                                    
+                                    <!-- Description Status Icon -->
+                                    {% if business.description and business.description|length > 0 %}
+                                        <i class="bx bxs-file-doc text-primary" 
+                                           title="Has main description"></i>
+                                    {% else %}
+                                        <i class="bx bxs-file text-danger" 
+                                           title="Missing main description"></i>
+                                    {% endif %}
+                
+                                    <!-- Translation Status Icon -->
+                                    {% if business.description and business.description_eng and business.description_esp and business.description_fr%}
+                                    <i class="fas fa-language  text-primary  ms-1" title="Fully translated"></i>
+                                     
+                                    {% elif business.description_eng or business.description_esp %}
+                                    <i class="fas fa-language  text-secondary  ms-1" title="Partially translated"></i>
+ 
+                                    {% else %}
+                                    <i class="fas fa-language  text-danger  ms-1" title="Not translated"></i>
+                                         
+                                    {% endif %}
+                                </h6>
                             </div>
+                
                             <div class="content-box">
-                                <small class="">
-                                    <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" class="" target="_blank">
-                                        <i class="bx bx-pin font-size-16 align-middle me-1"></i>{{ business.address|truncatechars:50 }}
+                                <small>
+                                    <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" 
+                                       target="_blank">
+                                        <i class="bx bx-pin font-size-16 align-middle me-1"></i>
+                                        {{ business.address|truncatechars:50 }}
                                     </a>
                                 </small>                                                                
+                                
                                 <div class="business-stats">
                                     <span class="rank">Rank: {{ business.rank|default:"N/A" }}</span>
                                     <span class="total-score">Total Score: {{ business.reviews_count|default:"N/A" }}</span>
@@ -137,6 +199,7 @@
                     {% endif %}
                     {% endfor %}
                 </div>
+                
             </div>
             {% endif %}
             {% endfor %}
@@ -148,12 +211,16 @@
 </div>
  
 {% if not businesses %}
-    <p>No businesses found for this project.</p>
+<div class="text-center mt-4">
+    <i class="bx bxs-notification-off bold text-muted title-display" style="font-size:xx-large;" ></i>
+  
+    <p class="text-muted mt-3 bold">
+        <i class="fas fa-info-circle me-2"></i>
+        No businesses found for this project.
+    </p>
+</div>
 {% endif %}
 
-    {% if not businesses %}
-        <p>No businesses found for this project.</p>
-    {% endif %}
  
  <a href="{% url 'task_list' %}" class="btn btn-secondary mt-3 mb-4">Go To Task List</a>
  
