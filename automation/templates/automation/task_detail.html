@@ -3,7 +3,14 @@
 {% load static %}
 {% block title %}{{ task.project_title }}{% endblock %}
 {% block content %}
-<style>/* Title box fixes */
+<style>
+    .main-content{
+    height: 100%;
+    margin: 0;
+    overflow-y: hidden;
+    overflow-x: visible;
+} 
+
     .title-box {
         margin-bottom: 0.5rem;
     }
