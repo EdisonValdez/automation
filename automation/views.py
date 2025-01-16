@@ -314,6 +314,7 @@ class TaskDetailView(View):
                     to_attr='first_image')
         )
 
+
         # Get business counts by status
         business_counts = {
             'total': businesses.count(),
@@ -324,13 +325,24 @@ class TaskDetailView(View):
             'reviewed': businesses.filter(status='REVIEWED').count(),
             'discarded': businesses.filter(status='DISCARDED').count(),
             'in_production': businesses.filter(status='IN_PRODUCTION').count(),
-            'empty_descriptions': businesses.filter(
-                Q(description__isnull=True) | Q(description='')
-            ).count(),
         }
+
+
+        # Calculate empty descriptions count - EXCLUDING DISCARDED businesses
+        empty_descriptions_count = businesses.exclude(
+            status='DISCARDED'
+        ).filter(
+            Q(description__isnull=True) |
+            Q(description='None') |
+            Q(description='') |
+            Q(description__exact='No description Available')
+        ).count() 
+
+        business_counts['empty_descriptions'] = empty_descriptions_count
 
         # Add percentage calculations
         total_count = business_counts['total']
+
         if total_count > 0:
             business_counts['percentages'] = {
                 'pending': (business_counts['pending'] / total_count) * 100,
@@ -348,9 +360,7 @@ class TaskDetailView(View):
             business.first_image = business.first_image[0] if business.first_image else None
 
         # Check for empty descriptions
-        has_empty_descriptions = businesses.filter(
-            Q(description__isnull=True) | Q(description='')
-        ).exists()
+        has_empty_descriptions = empty_descriptions_count > 0
 
         # Build context
         context = {
@@ -358,6 +368,7 @@ class TaskDetailView(View):
             'businesses': businesses,
             'business_counts': business_counts,
             'has_empty_descriptions': has_empty_descriptions,
+            'empty_descriptions_count': empty_descriptions_count,
             'previous_task': previous_task,
             'next_task': next_task,
             'is_first_task': previous_task is None,
@@ -369,11 +380,14 @@ class TaskDetailView(View):
         }
 
         logger.info(f"Retrieved task {id} with {business_counts['total']} businesses")
-        logger.debug(f"Business counts: {business_counts}")
-        logger.debug(f"Previous task: {previous_task.id if previous_task else None}, "
-                    f"Next task: {next_task.id if next_task else None}")
+        logger.info(f"Empty descriptions (excluding DISCARDED): {empty_descriptions_count}")
+        logger.debug(f"Business counts breakdown: "
+                    f"Total: {business_counts['total']}, "
+                    f"Non-discarded needing descriptions: {empty_descriptions_count}, "
+                    f"Discarded: {business_counts['discarded']}")
 
         return render(request, 'automation/task_detail.html', context)
+    
  
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
@@ -2315,12 +2329,10 @@ def delete_business(request, business_id):
     return redirect('business_list')
  
 ###########ENHANCE AND GENERATE DESCRIPTION##################
-
 class BusinessDescriptionGenerator:
     """
     Class to generate descriptions for businesses without original descriptions in a specific task
-    """
-    
+    """    
     def __init__(self, task_id):
         self.task_id = task_id
         self.task = None
@@ -2333,30 +2345,43 @@ class BusinessDescriptionGenerator:
         Generate a description based on business attributes
         """
         try:
-            # Template for description generation
-            description = (
-                f"Welcome to {business.title}, "
-                f"located in {business.city}, {business.country}. "
-            )
+            # Basic validation
+            if not business.title:
+                raise ValueError("Business title is required")
 
+            # Template for description generation
+            parts = []
+            
+            # Add welcome and location
+            parts.append(f"Welcome to {business.title}")
+            if business.city and business.country:
+                parts.append(f"located in {business.city}, {business.country}")
+            
             # Add category information if available
             if business.main_category:
-                description += f"We specialize in {business.main_category}. "
-
+                parts.append(f"We specialize in {business.main_category}")
+            
             # Add location context
             if business.address:
-                description += f"You can find us at {business.address}. "
-
+                parts.append(f"You can find us at {business.address}")
+            
             # Add contact information
             if business.phone:
-                description += f"Contact us at {business.phone}. "
-
+                parts.append(f"Contact us at {business.phone}")
+            
             # Add website information
             if business.website:
-                description += f"Visit our website at {business.website} for more information. "
-
+                parts.append(f"Visit our website at {business.website} for more information")
+            
+            # Join all parts with proper punctuation
+            description = '. '.join(parts) + '.'
+            
+            # Validate final description
+            if len(description.strip()) < 10:  # Minimum length check
+                raise ValueError("Generated description is too short")
+                
             return description.strip()
-
+            
         except Exception as e:
             logger.error(f"Error generating description for business {business.id}: {e}")
             self.errors.append(f"Business {business.id}: {str(e)}")
@@ -2367,38 +2392,31 @@ class BusinessDescriptionGenerator:
         Process all businesses in the task that don't have descriptions
         """
         try:
-            # Get the task
             self.task = ScrapingTask.objects.get(id=self.task_id)
-            
-            # Get businesses without descriptions
             businesses = Business.objects.filter(
-                task=self.task,
-                description__isnull=True
+                task=self.task
             ).exclude(
-                status='DISCARDED'
+                status='DISCARDED'   
+            ).filter(
+                Q(description__isnull=True) |    
+                Q(description='None') |      
+                Q(description='') |        
+                Q(description__exact='No description Available')
             )
-
-            logger.info(f"Found {businesses.count()} businesses without descriptions in task {self.task_id}")
-
+            logger.info(f"Found {businesses.count()} businesses without descriptions (excluding DISCARDED) in task {self.task_id}")
             with transaction.atomic():
                 for business in businesses:
                     try:
-                        # Skip if business already has a description
-                        if business.description:
-                            self.businesses_skipped += 1
-                            logger.debug(f"Skipped business {business.id} - already has description")
-                            continue
-
-                        # Generate and save description
-                        description = self.generate_description(business)
+                        description = self.generate_description(business)                        
                         if description:
                             business.description = description
-                            business.save(update_fields=['description'])
+                            business.save(update_fields=['description']) 
+                            
                             self.businesses_updated += 1
-                            logger.info(f"Generated description for business {business.id}")
+                            logger.info(f"Generated main description for business {business.id}")
                         else:
                             self.businesses_skipped += 1
-                            logger.warning(f"Could not generate description for business {business.id}")
+                            logger.warning(f"Could not generate main description for business {business.id}")
 
                     except Exception as e:
                         self.errors.append(f"Business {business.id}: {str(e)}")
@@ -2552,7 +2570,10 @@ def enhance_translate_business(request, business_id):
     else:
         logger.debug("Invalid request method in enhance_translate_business. Only POST is allowed.")
         return JsonResponse({'success': False, 'message': 'Invalid request method.'})
- 
+
+#--Generate the based main description when businesses have empty the main description, 
+# then the translator enhance that main description and translate it to the other
+# languages 
 @login_required
 def generate_task_descriptions(request, task_id):
     if request.method == 'POST':
@@ -2560,28 +2581,69 @@ def generate_task_descriptions(request, task_id):
         generator = BusinessDescriptionGenerator(task_id)
         
         try:
+            # First, let's check if there are any businesses needing descriptions
+            needs_description = task.businesses.filter(
+                Q(description__isnull=True) |  # Handles None values in database
+                Q(description='None') |        # Handles string 'None'
+                Q(description='') |            # Handles empty strings
+                Q(description__exact='No description Available')
+            ).exists()
+
+            if not needs_description:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'No businesses need descriptions',
+                    'needs_description': False
+                })
+
             generator.process_businesses()
             results = generator.get_results()
-            
+
+            # After processing, recheck the status
+            remaining_empty = task.businesses.filter(
+                Q(description__isnull=True) |
+                Q(description='None') |
+                Q(description='') |
+                Q(description__exact='No description Available')
+            ).count()
+
             return JsonResponse({
                 'success': True,
                 'message': f"Generated {results['businesses_updated']} descriptions",
                 'businesses_updated': results['businesses_updated'],
                 'businesses_skipped': results['businesses_skipped'],
-                'has_empty_descriptions': task.businesses.filter(
-                    Q(description__isnull=True) | Q(description='')
-                ).exists()
+                'remaining_empty': remaining_empty,
+                'needs_description': remaining_empty > 0
             })
-            
+
         except Exception as e:
-            logger.error(f"Error generating descriptions for task {task_id}: {e}")
+            logger.error(f"Error generating descriptions for task {task_id}: {e}", exc_info=True)
             return JsonResponse({
                 'success': False,
                 'error': str(e)
             })
-            
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
+    # Add an endpoint to check status without processing
+    elif request.method == 'GET':
+        task = get_object_or_404(ScrapingTask, id=task_id)
+        needs_description = task.businesses.filter(
+            Q(description__isnull=True) |
+            Q(description='None') |
+            Q(description='') |
+            Q(description__exact='No description Available')
+        ).exists()
+
+        return JsonResponse({
+            'needs_description': needs_description,
+            'empty_count': task.businesses.filter(
+                Q(description__isnull=True) |
+                Q(description='None') |
+                Q(description='') |
+                Q(description__exact='No description Available')
+            ).count()
+        })
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 ###########ENHANCE AND GENERATE DESCRIPTION##################
 

@@ -118,15 +118,20 @@
             </div>
         </div>
         <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-            <button id="generateDescriptionsBtn" 
-                class="btn btn-primary {% if not has_empty_descriptions %}disabled{% endif %}"
-                {% if not has_empty_descriptions %}disabled{% endif %}
-                data-task-id="{{ task.id }}">
-                <i class="fas fa-language"></i> Descriptions
-                {% if task.empty_descriptions_count > 0 %}
-                <span class="badge bg-warning">{{ task.empty_descriptions_count }}</span>
+            <button id="generateDescriptionsBtn"
+            class="btn btn-primary {% if empty_descriptions_count == 0 %}disabled{% endif %}"
+            {% if empty_descriptions_count == 0 %}disabled{% endif %}
+            data-task-id="{{ task.id }}"
+            data-bs-toggle="tooltip"
+            title="Generate descriptions for {{ empty_descriptions_count }} business{{ empty_descriptions_count|pluralize:'es' }}"
+        >
+            <i class="fas fa-language"></i> 
+            Descriptions 
+            {% if empty_descriptions_count > 0 %}
+                <span class="badge badge-secondary">{{ empty_descriptions_count }} </span>
             {% endif %}
-             </button>
+        </button>
+         
  
             {% if task.translation_status != 'TRANSLATED' %}
             <a class="btn btn-outline-primary start-translating-btn" href="#" data-task-id="{{ task.id }}">
@@ -233,6 +238,7 @@
                                             <i class="fas fa-language text-danger" title="Not translated"></i>
                                         {% endif %}
                                     </span>
+
                                 </h6>
                             </div>
                             
@@ -1123,95 +1129,141 @@ $(document).ready(function() {
 <!-- Based description task-->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const generateBtn = document.getElementById('generateDescriptionsBtn'); 
+    // Constants and Elements
+    const generateBtn = document.getElementById('generateDescriptionsBtn');
+    if (!generateBtn) return; // Exit if button not found
     
-    generateBtn.addEventListener('click', function(e) {
+    // Event Listeners
+    generateBtn.addEventListener('click', handleGenerateDescriptions);
+    
+    // Main handler function
+    async function handleGenerateDescriptions(e) {
         e.preventDefault();
         
+        // Check if button is disabled
         if (this.classList.contains('disabled')) {
             return;
         }
         
         const taskId = this.getAttribute('data-task-id');
+        if (!taskId) {
+            showError('Task ID not found');
+            return;
+        }
         
-        // Show loading state
+        try {
+            // Show loading state
+            showLoadingState();
+            
+            // Make API call
+            const response = await makeApiCall(taskId);
+            
+            // Handle response
+            handleApiResponse(response, this);
+            
+        } catch (error) {
+            console.error('Error in description generation:', error);
+            showError('An error occurred while generating descriptions');
+        }
+    }
+    
+    // Helper Functions
+    function showLoadingState() {
         Swal.fire({
             title: 'Generating Descriptions',
-            html: 'Please wait while we generate descriptions...',
+            html: `
+                <div class="d-flex flex-column align-items-center">
+                    <p>Please wait while we generate descriptions...</p>
+                    <p class="text-muted small">This may take a few minutes</p>
+                </div>
+            `,
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
             }
         });
-        
-        // Make the API call
-        fetch(`/tasks/${taskId}/generate-descriptions/`, {
+    }
+    
+    async function makeApiCall(taskId) {
+        const response = await fetch(`/tasks/${taskId}/generate-descriptions/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json'
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            Swal.close();
-            
-            if (data.success) {
-                let message = data.message;
-                
-                // Add warnings if any
-                if (data.warnings && data.warnings.length > 0) {
-                    message += '\n\n' + data.warnings.join('\n');
-                }
-                
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success!',
-                    html: message.replace(/\n/g, '<br>'),
-                    confirmButtonText: 'OK'
-                }).then((result) => {
-                    // Reload the page only after user clicks OK
-                    window.location.reload();
-                });
-                
-                // Update button state based on remaining empty descriptions
-                if (!data.has_empty_descriptions) {
-                    generateBtn.classList.add('disabled');
-                    generateBtn.disabled = true;
-                }
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.error || 'An error occurred while generating descriptions'
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'An error occurred while generating descriptions'
-            });
         });
-    });
-});
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+    }
+    
+    function handleApiResponse(data, button) {
+        Swal.close();
+        
+        if (data.success) {
+            // Prepare success message
+            let message = data.message;
+            if (data.warnings?.length > 0) {
+                message += '<br><br><strong>Warnings:</strong><br>' + 
+                          data.warnings.join('<br>');
             }
+            
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                html: message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.reload();
+            });
+            
+            // Update button state
+            updateButtonState(button, data.has_empty_descriptions);
+            
+        } else {
+            showError(data.error || 'An error occurred while generating descriptions');
         }
     }
-    return cookieValue;
-}
+    
+    function updateButtonState(button, hasEmptyDescriptions) {
+        if (!hasEmptyDescriptions) {
+            button.classList.add('disabled');
+            button.disabled = true;
+            // Update badge if exists
+            const badge = button.querySelector('.badge');
+            if (badge) badge.remove();
+        }
+    }
+    
+    function showError(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: message,
+            confirmButtonText: 'Close'
+        });
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
 </script>
  
 <!-- Previous - NEXT buttons -->
