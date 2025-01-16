@@ -4,7 +4,6 @@
 
 {% block content %}
 <style> .image-count-selection {margin-top: 10px;}.form-check-inline {margin-right: 20px;}.form-check-input:checked {background-color: #F4C031;border-color: #F4C031;}.form-check-label {cursor: pointer;}.sidebar-expand.active .sidebar {transition: transform 0.3s ease-in-out;max-width: 100%;z-index: 1111;}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.loader {border: 5px solid #f3f3f3;border-top: 5px solid #3498db;border-radius: 50%;width: 50px;height: 50px;animation: spin 1s linear infinite;display: none;}@keyframes spin {0% {transform: rotate(0deg);}100% {transform: rotate(360deg);}}.overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background-color: rgba(0, 0, 0, 0.5);z-index: 1000;display: none;}#loading-spinner {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index: 1001;display: none;}</style>
- 
 <div class="main-content project"> 
     <div class="row">
         <div class="col-12">
@@ -17,29 +16,154 @@
                 </h1>
             </div>
         </div>
-    </div>
-
-
+    </div> 
 <div class="row">
 <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
     <div class="box">
         <div class="box-body">
             {% if messages %}
-            <ul class="messages">
+            <div class="messages-container">
                 {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
                 {% endfor %}
-            </ul>
-            {% endif %}
-            {% if error %}
-            <div class="icon-box bg-color-9" role="alert">
-                {{ error }}
             </div>
             {% endif %}
+
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="icon-box">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ error }}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <style>
+            .messages-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1050;
+                max-width: 350px;
+            }
+
+            .alert {
+                margin-bottom: 1rem;
+                padding: 1rem;
+                border: none;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            }
+
+            .alert-success {
+                background-color: #d4edda;
+                color: #155724;
+                border-left: 4px solid #28a745;
+            }
+
+            .alert-warning {
+                background-color: #fff3cd;
+                color: #856404;
+                border-left: 4px solid #ffc107;
+            }
+
+            .alert-error,
+            .alert-danger {
+                background-color: #f8d7da;
+                color: #721c24;
+                border-left: 4px solid #dc3545;
+            }
+
+            .alert-info {
+                background-color: #d1ecf1;
+                color: #0c5460;
+                border-left: 4px solid #17a2b8;
+            }
+
+            .btn-close {
+                padding: 0.5rem;
+                margin: -0.5rem -0.5rem -0.5rem auto;
+                background: transparent;
+                border: 0;
+                float: right;
+                font-size: 1.5rem;
+                font-weight: 700;
+                line-height: 1;
+                color: inherit;
+                opacity: .5;
+                cursor: pointer;
+            }
+
+            .btn-close:hover {
+                opacity: 1;
+            }
+
+            .icon-box {
+                display: flex;
+                align-items: center;
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+
+            .alert.fade-out {
+                animation: fadeOut 0.3s ease-out forwards;
+            }
+            </style>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Auto-dismiss messages after 5 seconds
+                const messages = document.querySelectorAll('.alert');
+                messages.forEach(message => {
+                    setTimeout(() => {
+                        message.classList.add('fade-out');
+                        setTimeout(() => {
+                            message.remove();
+                        }, 300);
+                    }, 5000);
+                });
+
+                // Click to dismiss
+                document.querySelectorAll('.btn-close').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const alert = this.closest('.alert');
+                        alert.classList.add('fade-out');
+                        setTimeout(() => {
+                            alert.remove();
+                        }, 300);
+                    });
+                });
+            });
+            </script>
+
         <form id="upload-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row">
-
                 <!-- Country Dropdown -->
                 <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
@@ -134,22 +258,29 @@
                     </div>
                 </div>
             </div>
-            </div>
-        
-            <!-- Toggleable Description Field
+            </div>        
+            <!-- Toggleable Description Field-->
             <div class="form-group mb-24">
                 <label class="form-label mt-1 fs-18 font-w500 color-primary">
-                    <a href="#" id="toggle-description" class="text-primary">+ Add Description (optional)</a>
+                    <a href="#" id="toggle-description" class="btn btn-outline-primary">+ Add Google Maps URLs (optional)</a>
                 </label>
                 <div id="description-container" style="display: none;">
-                    <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description</label>
-                    {{ form.description }}
+                    <div class="form-group">
+                        <label for="id_description">Description or URLs</label>
+                        <textarea 
+                            id="id_description" 
+                            name="description" 
+                            class="form-control" 
+                            rows="4"
+                            placeholder="Enter description or paste Google Maps URLs (one per line)"></textarea>
+                        <small class="form-text text-muted">
+                            You can either enter a description or paste Google Maps URLs (one per line)
+                        </small>
+                    </div>
                 </div>
-            </div> -->
+            </div> 
             
-        <!-- images Count Selection --> 
-        
-
+        <!-- images Count Selection -->  
             <div class="row mb-3">
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                     <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
@@ -158,34 +289,31 @@
                     </div>
                     <div class="form-text">{{ form.file.help_text }}</div>
                 </div>
-            </div>  
-
-
-                                
+            </div>                                  
             <div class="row">
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12"> 
                     <div class="input-group file-browser">
-                        <button type="submit" class="btn btn-primary">Start Businesses Acquisition <i class="fas fa-rocket"></i></button>
+                        <button type="submit" class="btn btn-primary btn-lg">Start Businesses Acquisition <i class="fas fa-rocket"></i></button>
                     </div>
                 </div>
             
             </div>
         </form>
-                    
-<!-- JavaScript to toggle the description field 
+                
+<!-- JavaScript to toggle the description field -->
 <script>
     document.getElementById("toggle-description").addEventListener("click", function(event) {
         event.preventDefault();
         var descriptionContainer = document.getElementById("description-container");
         if (descriptionContainer.style.display === "none") {
             descriptionContainer.style.display = "block";
-            this.textContent = "- Hide Description";
+            this.textContent = "- Google Maps URLs";
         } else {
             descriptionContainer.style.display = "none";
-            this.textContent = "+ Add Description (optional)";
+            this.textContent = "+ Google Maps URLs (optional)";
         }
     });
-</script>-->
+</script>
 
                         
 <!-- JavaScript to toggle the images field -->
