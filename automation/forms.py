@@ -211,7 +211,7 @@ class ScrapingTaskForm(forms.ModelForm):
             'description': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 4,
-                'placeholder': 'Enter description or paste Google Maps URLs (one per line)'
+                'placeholder': 'Enter description or paste Google Maps URL (one url)'
             }),
         }
 
@@ -311,7 +311,7 @@ class ScrapingTaskForm(forms.ModelForm):
         if not (file or description):
             self.add_error(
                 None,
-                'Please either upload a file, enter a description, or paste URLs.'
+                'Please either upload a file, enter a description, or paste URL.'
             )
 
         return cleaned_data

@@ -400,12 +400,12 @@ document.addEventListener('DOMContentLoaded', function() {
 <!--Delete tasks-->
 
 <!--CharT Destination by categories-->
-<script> document.addEventListener('DOMContentLoaded', function() {
+<script> 
+document.addEventListener('DOMContentLoaded', function() {
     let categoryChart = null;
     const destinations = {{ available_destinations|safe }};
     const destinationSelector = document.getElementById('destinationSelector');
 
-    // Populate destination selector with ID and name
     destinations.forEach(destination => {
         if (destination && destination.id) {  // Make sure we have valid destination data
             const option = document.createElement('option');
@@ -551,16 +551,12 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 }
-
-    // Initial chart update
+ 
     updateCategoryChart({{ destination_categories|safe }});
-
-    // Handle destination changes
+ 
     destinationSelector.addEventListener('change', function() {
-        const selectedDestinationId = this.value;  // This will now be the numeric ID
-        
-        if (!selectedDestinationId) return;  // Don't proceed if no selection
-        
+        const selectedDestinationId = this.value;   
+        if (!selectedDestinationId) return;  
         const chartContainer = document.querySelector('.chart-container');
         chartContainer.style.opacity = '0.5';
 
@@ -581,9 +577,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-</script>
- 
-
+</script> 
 <!--CharT Destination by categories-->
  
 <!--Businesses STATUS--> 
