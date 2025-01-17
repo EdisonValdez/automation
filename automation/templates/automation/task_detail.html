@@ -384,6 +384,7 @@ function updateBusinessStatus(businessId, newStatus, oldStatus) {
             updateStatusCount(newStatus, 1);
             // Actualizar el atributo data-status del elemento movido
             document.querySelector(`.panel[data-id="${businessId}"]`).dataset.status = newStatus;
+            location.reload();
         } else if (data.status === 'move-to-app-error'){
             Swal.fire({
                     icon: 'error',
