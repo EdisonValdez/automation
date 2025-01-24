@@ -102,7 +102,7 @@ urlpatterns = [
     path('tasks/<int:task_id>/generate-descriptions/', views.generate_task_descriptions, name="generate_tasks_descriptions"),
  
     # LS Backend API endpoints
-    path('api/countries/', views.get_countries, name='get_countries'),
+    path('api/countries/', views.get_ls_countries, name='get_countries'),
     path('api/cities/', views.get_cities, name='get_cities'),
     path('api/categories/', views.get_categories, name='get_categories'),
     path('api/subcategories/', views.get_subcategories, name='get_subcategories'),

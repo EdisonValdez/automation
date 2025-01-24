@@ -96,29 +96,44 @@ def get_available_openai_key():
  
 #LSBACKEND API
 
+# def get_levels(request):
+#     """
+#     Fetch levels from the local automation Level model,
+#     returning them as JSON or an error if something fails.
+#     """
+#     from .models import Level
+    
+#     try:
+#         levels_qs = Level.objects.all().order_by('title')
+#         if not levels_qs.exists():
+#             logger.warning("No local levels found.")
+#         levels_data = []
+#         for lvl in levels_qs:
+#             levels_data.append({
+#                 'id': lvl.id,
+#                 'title': lvl.title,
+#                 'ls_id': lvl.ls_id,  
+#             })
+#         return JsonResponse(levels_data, safe=False)
+
+#     except Exception as e:
+#         logger.error(f"Error fetching local levels: {e}", exc_info=True)
+#         return JsonResponse({'error': 'Error fetching local levels'}, status=500)
+    
+
 def get_levels(request):
     """
     Fetch levels from the local automation Level model,
     returning them as JSON or an error if something fails.
     """
-    from .models import Level
-    
+    client = LSBackendClient()
     try:
-        levels_qs = Level.objects.all().order_by('title')
-        if not levels_qs.exists():
-            logger.warning("No local levels found.")
-        levels_data = []
-        for lvl in levels_qs:
-            levels_data.append({
-                'id': lvl.id,
-                'title': lvl.title,
-                'ls_id': lvl.ls_id,  
-            })
-        return JsonResponse(levels_data, safe=False)
-
+        levels = client.get_levels()
+        return JsonResponse(levels, safe=False)
     except Exception as e:
-        logger.error(f"Error fetching local levels: {e}", exc_info=True)
-        return JsonResponse({'error': 'Error fetching local levels'}, status=500)
+        logger.error(f"Error fetching ls levels: {e}", exc_info=True)
+        return JsonResponse({'error': 'Error fetching ls levels'}, status=500)
+    
  
 def load_levels(request):
     client = LSBackendClient()
@@ -128,6 +143,8 @@ def load_levels(request):
     except Exception as e:
         logger.error(f"Error loading levels: {str(e)}")
         return render(request, 'automation/upload.html', {'error': 'Failed to load levels'})
+    
+
  
 def load_categories(request):
     client = LSBackendClient()
@@ -143,7 +160,7 @@ def get_categories(request):
         return JsonResponse({'error': 'Level ID is required'}, status=400)
     
     client = LSBackendClient()
-    categories = client.get_categories(level_id)
+    categories = client.get_categories(level_id=level_id)
 
     return JsonResponse(categories, safe=False)
 
@@ -153,11 +170,11 @@ def get_subcategories(request):
         return JsonResponse({'error': 'Category ID is required'}, status=400)
     
     client = LSBackendClient()
-    subcategories = client.get_categories(category_id)
+    subcategories = client.get_sub_categories(category_id=category_id)
 
     return JsonResponse(subcategories, safe=False)
  
-def get_countries(request):
+def get_ls_countries(request):
     """
     Fetch countries from LS Backend with optional search
     """
@@ -3085,45 +3102,45 @@ def save_business_from_results(task, results, query):
         business = save_business(task, local_result, query)
         download_images(business, local_result)
 
-def load_categories(request):
-    # Fetch only top-level categories (those with no parent)
-    top_level_categories = Category.objects.filter(parent__isnull=True)
+# def load_categories(request):
+#     # Fetch only top-level categories (those with no parent)
+#     top_level_categories = Category.objects.filter(parent__isnull=True)
 
-    # Render the form with only the top-level categories
-    return render(request, 'automation/upload.html', {
-        'main_categories': top_level_categories,
-    })
+#     # Render the form with only the top-level categories
+#     return render(request, 'automation/upload.html', {
+#         'main_categories': top_level_categories,
+#     })
  
-def get_categories(request):
-    """
-    Fetch categories based on the specified level.
-    """
-    level_id = request.GET.get('level_id')
+# def get_categories(request):
+#     """
+#     Fetch categories based on the specified level.
+#     """
+#     level_id = request.GET.get('level_id')
 
-    if not level_id:
-        return JsonResponse({'error': 'Level ID is required'}, status=400)
+#     if not level_id:
+#         return JsonResponse({'error': 'Level ID is required'}, status=400)
 
-    # Fetch categories that belong to the selected level and have no parent (top-level categories)
-    categories = Category.objects.filter(level_id=level_id, parent__isnull=True).values('id', 'title')
+#     # Fetch categories that belong to the selected level and have no parent (top-level categories)
+#     categories = Category.objects.filter(level_id=level_id, parent__isnull=True).values('id', 'title')
 
-    if not categories:
-        return JsonResponse({'error': 'No categories found for this level'}, status=404)
+#     if not categories:
+#         return JsonResponse({'error': 'No categories found for this level'}, status=404)
 
-    return JsonResponse(list(categories), safe=False)
+#     return JsonResponse(list(categories), safe=False)
  
-def get_subcategories(request):
-    """
-    Fetch subcategories based on the selected main category.
-    """
-    category_id = request.GET.get('category_id')
+# def get_subcategories(request):
+#     """
+#     Fetch subcategories based on the selected main category.
+#     """
+#     category_id = request.GET.get('category_id')
 
-    if not category_id:
-        return JsonResponse({'error': 'Category ID is required'}, status=400)
+#     if not category_id:
+#         return JsonResponse({'error': 'Category ID is required'}, status=400)
 
-    # Fetch subcategories where the parent is the selected category
-    subcategories = Category.objects.filter(parent_id=category_id).values('id', 'title')
+#     # Fetch subcategories where the parent is the selected category
+#     subcategories = Category.objects.filter(parent_id=category_id).values('id', 'title')
 
-    return JsonResponse(list(subcategories), safe=False)
+#     return JsonResponse(list(subcategories), safe=False)
 
 def get_countries(request):
     countries = Country.objects.all().values('id', 'name')   
