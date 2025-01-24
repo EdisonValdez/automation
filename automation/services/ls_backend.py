@@ -93,7 +93,7 @@ class LSBackendClient:
                 full_url,
                 headers=self.headers,
                 params=params,
-                timeout=10
+                timeout=20
             )
             logger.debug(f"Response status code: {response.status_code}, Response: {response.text}")
             return self.handle_response(response, endpoint.strip('/').split('/')[-1])
@@ -169,7 +169,7 @@ class LSBackendClient:
     ) -> List[Dict]:
         """
         Fetches cities with optional filtering by country_id and search name.
-        The LS Backend expects ?country_id=<...> for filtering by country.
+        The LS Backend expects ?country_id=<...> for filtering by city.
         """
         cache_key = self._get_cache_key(
             'cities',
