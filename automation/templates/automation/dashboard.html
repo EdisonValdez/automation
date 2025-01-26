@@ -4,7 +4,7 @@
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <style>
-.chart-summary-container{margin-top:2rem;padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgb(0 0 0 / .08)}.summary-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgb(0 0 0 / .1)}.summary-title{font-size:1.1rem;font-weight:600;color:#333;margin:0}.total-count{display:flex;flex-direction:column;align-items:flex-end}.total-label{font-size:.875rem;color:#666;margin-bottom:.25rem}.total-number{font-size:1.25rem;font-weight:600;color:#333}.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}.status-card{padding:1rem;background:rgb(0 0 0 / .02);border-radius:6px;transition:transform 0.2s ease,box-shadow 0.2s ease}.status-card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgb(0 0 0 / .05)}.status-info{display:flex;align-items:center;margin-bottom:.75rem}.status-dot{width:10px;height:10px;border-radius:50%;margin-right:8px}.status-label{font-size:.9rem;color:#555}.status-numbers{display:flex;justify-content:space-between;align-items:baseline}.status-count{font-size:1.25rem;font-weight:600;color:#333}.status-percentage{font-size:.875rem;color:#666}@media (max-width:768px){.status-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.summary-header{flex-direction:column;align-items:flex-start}.total-count{margin-top:1rem;align-items:flex-start}}
+ .modern-card {background: white;border-radius: 0.5rem;border: 1px solid rgba(0, 0, 0, 0.1);transition: all 0.2s ease;height: 100%;}.modern-card:hover {transform: translateY(-2px);box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);}.card-content {padding: 0.75rem;}.card-header-flex {display: flex;justify-content: space-between;align-items: center;margin-bottom: 0.5rem;}.task-id {font-size: 0.75rem;color: #6b7280;}.status-badge {font-size: 0.65rem;padding: 0.25rem 0.5rem;border-radius: 9999px;font-weight: 500;}.status-live {background-color: #ecfdf5;color: #059669;border: 1px solid #34d399;}.status-review {background-color: #fffbeb;color: #d97706;border: 1px solid #fbbf24;}.status-active {background-color: #eff6ff;color: #2563eb;border: 1px solid #60a5fa;}.status-pending {background-color: #f3f4f6;color: #4b5563;border: 1px solid #9ca3af;}.status-failed {background-color: #fef2f2;color: #dc2626;border: 1px solid #f87171;}.task-title {display: block;font-size: 0.875rem;font-weight: 500;color: #111827;text-decoration: none;margin-bottom: 0.75rem;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;line-height: 1.25;}.task-title:hover {color: #2563eb;}.info-grid {display: grid;gap: 0.25rem;font-size: 0.75rem;}.info-row {display: grid;grid-template-columns: 1fr 1fr;gap: 0.5rem;}.info-label {color: #6b7280;}.info-value {text-align: right;color: #111827;font-weight: 500;}@media (prefers-color-scheme: dark) {.modern-card {background: #1f2937;border-color: rgba(255, 255, 255, 0.1);}.task-id {color: #9ca3af;}.task-title {color: #f3f4f6;}.task-title:hover {color: #60a5fa;}.info-label {color: #9ca3af;}.info-value {color: #f3f4f6;}}.chart-summary-container{margin-top:2rem;padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgb(0 0 0 / .08)}.summary-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgb(0 0 0 / .1)}.summary-title{font-size:1.1rem;font-weight:600;color:#333;margin:0}.total-count{display:flex;flex-direction:column;align-items:flex-end}.total-label{font-size:.875rem;color:#666;margin-bottom:.25rem}.total-number{font-size:1.25rem;font-weight:600;color:#333}.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}.status-card{padding:1rem;background:rgb(0 0 0 / .02);border-radius:6px;transition:transform 0.2s ease,box-shadow 0.2s ease}.status-card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgb(0 0 0 / .05)}.status-info{display:flex;align-items:center;margin-bottom:.75rem}.status-dot{width:10px;height:10px;border-radius:50%;margin-right:8px}.status-label{font-size:.9rem;color:#555}.status-numbers{display:flex;justify-content:space-between;align-items:baseline}.status-count{font-size:1.25rem;font-weight:600;color:#333}.status-percentage{font-size:.875rem;color:#666}@media (max-width:768px){.status-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.summary-header{flex-direction:column;align-items:flex-start}.total-count{margin-top:1rem;align-items:flex-start}}
 </style>
 <div class="main-content project">   
     <div class="overlay" ></div>   
@@ -168,38 +168,70 @@
             </div>
         </div>
     </div>
- 
-    <!-- Task List -->
-    <div class="row">
-        <div class="col-12">
-            <a href="{% url 'task_list' %}" class="btn btn-secondary mb-3">View all tasks</a>
-        </div>
-        {% for task in tasks|slice:":12" %}
-        <div class="col-lg-3 col-md-6 col-sm-12">
-            <div class="card">
-                <div class="card-body">
-                    <a title="{{ task.project_title }}" href="{% url 'task_detail' id=task.id %}" class="card-title d-block mb-2">
-                        {{ task.id }} - {{ task.project_title|truncatechars:40 }}
-                    </a>
-                    <p># of Businesses: {{ task.businesses.count }}</p>
-                    <p>User: {{ task.user }}</p>
-                    <p>Created: {{ task.created_at }}</p>
-                    <p>Completed: {{ task.completed_at }}</p>
+
+<!-- Task List -->
+<div class="row g-3 mt-18">
+    <div class="col-12 mb-2">
+        <a href="{% url 'task_list' %}" class="btn btn-secondary btn-sm">View all tasks</a> <br />
+    </div>
+
+    {% for task in tasks|slice:":12" %}
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="modern-card">
+            <div class="card-content">
+                <!-- Header: ID and Status -->
+                <div class="card-header-flex">
+                    <span class="task-id">#{{ task.id }}</span>
+                    {% if task.status == 'DONE' %}
+                        <span class="status-badge status-live">LIVE</span>
+                    {% elif task.status == 'COMPLETED' %}
+                        <span class="status-badge status-review">REVIEW</span>
+                    {% elif task.status == 'IN_PROGRESS' %}
+                        <span class="status-badge status-active">ACTIVE</span>
+                    {% elif task.status == 'FAILED' %}
+                        <span class="status-badge status-failed">FAILED</span>
+                    {% else %}
+                        <span class="status-badge status-pending">PENDING</span>
+                    {% endif %}
                 </div>
-                <div class="card-footer">
-                    <div class="d-flex align-items-center">
-                        <div class="d-flex mb-3 mb-md-0">
-                            <div class="task-btn status-{{ task.status|lower }} text-muted fs-14" data-bs-toggle="tooltip" data-bs-placement="top" title="Project Status">
-                                {{ task.status }}
-                            </div>
-                        </div>
+
+                <!-- Title -->
+                <a href="{% url 'task_detail' id=task.id %}" 
+                   class="task-title" 
+                   title="{{ task.project_title }}">
+                    {{ task.project_title }}
+                </a>
+
+                <!-- Info Grid -->
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="info-label">Businesses:</span>
+                        <span class="info-value">{{ task.businesses.count }}</span>
                     </div>
                     
+                    <div class="info-row">
+                        <span class="info-label">Created:</span>
+                        <span class="info-value">{{ task.created_at|date:"d/m/y" }}</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">Completed:</span>
+                        <span class="info-value">{{ task.completed_at|date:"d/m/y"|default:"-" }}</span>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="info-label">User:</span>
+                        <span class="info-value text-truncate" title="{{ task.user }}">{{ task.user }}</span>
+                    </div>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
+    {% endfor %}
+</div>
+
+ 
+
 </div> 
  
 </div>

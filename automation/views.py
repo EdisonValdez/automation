@@ -1009,6 +1009,7 @@ class DashboardView(View):
         completed_count = tasks.filter(status='COMPLETED').count()
         in_progress_count = tasks.filter(status='IN_PROGRESS').count()
         pending_count = tasks.filter(status='PENDING').count()
+        task_done_count = tasks.filter(status='TASK_DONE').count()
         total_count = tasks.count()
         
         # Calculate task percentages
@@ -1042,6 +1043,7 @@ class DashboardView(View):
             'completed_count': completed_count,
             'in_progress_count': in_progress_count,
             'pending_count': pending_count,
+            'task_done_count': task_done_count,
             'completed_percentage': completed_percentage,
             'in_progress_percentage': in_progress_percentage,
             'business_status_data': json.dumps(business_status_counts),
@@ -1092,7 +1094,7 @@ class DashboardView(View):
 
             # Get total counts with proper filtering
             context['total_projects'] = ScrapingTask.objects.filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'TASK_DONE']
             ).count()
             
             context['total_businesses'] = Business.objects.filter(
@@ -1110,7 +1112,7 @@ class DashboardView(View):
                     'DISCARDED': 0,
                     'PENDING': 0,
                     'REVIEWED': 0,
-                    'IN_PRODUCTION': 0
+                    'IN_PRODUCTION': 0,
                 },
                 'total_businesses': 0
             }   
@@ -1118,7 +1120,7 @@ class DashboardView(View):
             status_counts = ScrapingTask.objects.values('status').annotate(
                 count=Count('id', distinct=True)  # Use distinct to avoid duplicates
             ).filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'TASK_DONE']
             ).order_by()
 
             # Debug logging
@@ -1129,6 +1131,7 @@ class DashboardView(View):
             context['ongoing_projects'] = 0
             context['completed_projects'] = 0
             context['failed_projects'] = 0
+            context['task_done'] = 0
             context['translated_projects'] = next((item['count'] for item in translation_status_counts if item['translation_status'] == 'TRANSLATED'), 0)
             
 
@@ -1148,6 +1151,7 @@ class DashboardView(View):
                 context['pending_projects'] +
                 context['ongoing_projects'] +
                 context['completed_projects'] +
+                context['task_done'] +
                 context['failed_projects']
             )
 
@@ -1162,7 +1166,7 @@ class DashboardView(View):
 
             # Get recent projects with proper ordering and limit
             context['projects'] = ScrapingTask.objects.filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED','TASK_DONE']
             ).order_by('-created_at')[:5]
 
             # Add timeline data
@@ -1172,13 +1176,13 @@ class DashboardView(View):
             status_counts_chart = ScrapingTask.objects.values('status').annotate(
                 count=Count('id', distinct=True)
             ).filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED','TASK_DONE']
             ).order_by()
 
             context['status_counts'] = {
                 item['status']: item['count'] 
                 for item in status_counts_chart 
-                if item['status'] in ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+                if item['status'] in ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED','TASK_DONE']
             }
 
             # Additional statistics with validation
@@ -1197,7 +1201,7 @@ class DashboardView(View):
             seven_days_ago = timezone.now() - timezone.timedelta(days=7)
             context['recent_tasks_count'] = ScrapingTask.objects.filter(
                 created_at__gte=seven_days_ago,
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED','TASK_DONE']
             ).count()
 
             # Debug logging
