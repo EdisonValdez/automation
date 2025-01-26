@@ -289,7 +289,6 @@ class ActiveBusinessManager(models.Manager):
  
 class Business(models.Model):
     STATUS_CHOICES = [ 
-
         ('DISCARDED', 'Discarded'),
         ('PENDING', 'Pending'),
         ('REVIEWED', 'Reviewed'),
@@ -676,3 +675,20 @@ class HourlyBusyness(models.Model):
 
     def __str__(self):
         return f"{self.popular_times.business.title} - {self.popular_times.day} - {self.time}"
+    
+
+class UserPreference(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    last_country = models.ForeignKey('Country', null=True, blank=True, on_delete=models.SET_NULL)
+    last_destination = models.ForeignKey('Destination', null=True, blank=True, on_delete=models.SET_NULL)
+    last_level = models.ForeignKey('Level', null=True, blank=True, on_delete=models.SET_NULL)
+    last_main_category = models.ForeignKey('Category', null=True, blank=True, 
+                                         on_delete=models.SET_NULL, related_name='main_category_prefs')
+    last_subcategory = models.ForeignKey('Category', null=True, blank=True, 
+                                        on_delete=models.SET_NULL, related_name='subcategory_prefs')
+    last_image_count = models.IntegerField(default=5)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Preferences for {self.user.username}"
+

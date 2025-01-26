@@ -229,14 +229,16 @@
                                             <i class="bx bxs-file text-danger" title="Missing main description"></i>
                                         {% endif %}
                             
-                                        <!-- Translation Status Icon -->
-                                        {% if business.description and business.description_eng and business.description_esp and business.description_fr %}
+                                        <!-- Translation Status Icon --> 
+                                        {% with eng=business.description_eng|default_if_none:'' esp=business.description_esp|default_if_none:'' fr=business.description_fr|default_if_none:'' %}
+                                        {% if business.description and eng|length > 0 and eng != 'None' and esp|length > 0 and esp != 'None' and fr|length > 0 and fr != 'None' %}
                                             <i class="fas fa-language text-primary" title="Fully translated"></i>
-                                        {% elif business.description_eng or business.description_esp %}
+                                        {% elif eng|length > 0 and eng != 'None' or esp|length > 0 and esp != 'None' or fr|length > 0 and fr != 'None' %}
                                             <i class="fas fa-language text-secondary" title="Partially translated"></i>
                                         {% else %}
                                             <i class="fas fa-language text-danger" title="Not translated"></i>
                                         {% endif %}
+                                    {% endwith %} 
                                     </span>
 
                                 </h6>
@@ -437,11 +439,11 @@ function moveBulkBusinesses(selectElement, currentStatus) {
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
-                    // Successfully updated, update the UI
+                if (data.status === 'success') { 
                     updateStatusCount(currentStatus, -1); // Decrease old status count
                     updateStatusCount(newStatus, 1);      // Increase new status count
                     document.querySelector(`.panel[data-id="${businessId}"]`).dataset.status = newStatus; 
+                    location.reload(); 
                 } else {
                     // Handle errors
                     if (data.status === 'move-to-app-error') {
@@ -477,9 +479,8 @@ function moveBulkBusinesses(selectElement, currentStatus) {
         // Wait for all requests to complete
         Promise.all(updateRequests)
             .then(() => {
-                // After all requests, refresh the page or provide additional UI feedback
-                selectElement.value = "";  // Reset the dropdown
-                location.reload(); // Optional: refresh to show updates
+                selectElement.value = "";  
+                location.reload(); 
             })
             .catch(err => {
                 console.error('Error with bulk update:', err);

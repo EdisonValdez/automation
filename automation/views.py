@@ -36,7 +36,7 @@ from django.template.loader import render_to_string
 from .tasks import *
 from .serializers import BusinessSerializer
 from .permissions import IsAdminOrAmbassadorForDestination
-from .models import CustomUser, Destination, Feedback, HourlyBusyness, Level, PopularTimes, ScrapingTask, Image, Business,  UserRole, Country
+from .models import CustomUser, Destination, Feedback, HourlyBusyness, Level, PopularTimes, ScrapingTask, Image, Business, UserPreference,  UserRole, Country
 from .forms import FeedbackFormSet, DestinationForm, UserProfileForm, CustomUserCreationForm, CustomUserChangeForm, ScrapingTaskForm, BusinessForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
@@ -51,7 +51,7 @@ from automation.helper import datetime_serializer
 from django.views.generic import ListView 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from automation.services.ls_backend import LSBackendClient   
-
+from automation.signals import update_task_status_signal
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -186,95 +186,93 @@ def get_cities(request):
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
+    template_name = 'automation/upload.html'
+
+    def get_user_preferences(self, user):
+        """Get or create user preferences"""
+        pref, created = UserPreference.objects.get_or_create(user=user)
+        return pref
+
+    def get_initial_data(self, user_pref):
+        """Get initial form data from user preferences"""
+        return {
+            'country': user_pref.last_country.id if user_pref.last_country else None,
+            'destination': user_pref.last_destination.id if user_pref.last_destination else None,
+            'level': user_pref.last_level.id if user_pref.last_level else None,
+            'main_category': user_pref.last_main_category.id if user_pref.last_main_category else None,
+            'subcategory': user_pref.last_subcategory.id if user_pref.last_subcategory else None,
+        }
 
     def get(self, request):
-        logger.info("Accessing UploadFileView GET")
+        user_pref = self.get_user_preferences(request.user)
+        initial_data = self.get_initial_data(user_pref)
         
-        form = ScrapingTaskForm()
-
-        # Fetch tasks with pagination
-        tasks = ScrapingTask.objects.all().order_by('-created_at')
-        paginator = Paginator(tasks, 15)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        form = ScrapingTaskForm(initial=initial_data)
+        
+        # Update querysets based on saved preferences
+        if user_pref.last_country:
+            form.fields['destination'].queryset = Destination.objects.filter(
+                country=user_pref.last_country
+            )
+        if user_pref.last_level:
+            form.fields['main_category'].queryset = Category.objects.filter(
+                level=user_pref.last_level,
+                parent__isnull=True
+            )
+        if user_pref.last_main_category:
+            form.fields['subcategory'].queryset = Category.objects.filter(
+                parent=user_pref.last_main_category
+            )
 
         context = {
             'form': form,
-            'page_obj': page_obj,
-            'tasks': page_obj.object_list,
-            'default_image_count': 5
+            'last_image_count': user_pref.last_image_count,
+            'user_preferences': user_pref,
         }
+        return render(request, self.template_name, context)
 
-        return render(request, 'automation/upload.html', context)
-
-
-    @transaction.atomic
     def post(self, request):
-        logger.info("Received file upload POST request")
         form = ScrapingTaskForm(request.POST, request.FILES)
-
+        
         if form.is_valid():
-            # Generate the project_title dynamically
-            project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
-            if form.cleaned_data['subcategory']:
-                project_title += f" - {form.cleaned_data['subcategory'].title}"
-
-            # Set the project_title in the form
-            form.initial['project_title'] = project_title
-            image_count = request.POST.get('image_count', '3')
-
-            task = ScrapingTask(
-                user=request.user,
-                status='QUEUED',
-                country=form.cleaned_data['country'],
-                country_name=form.cleaned_data['country'].name,
-                destination=form.cleaned_data['destination'],
-                destination_name=form.cleaned_data['destination'].name,
-                level=form.cleaned_data['level'],
-                main_category=form.cleaned_data['main_category'],
-                subcategory=form.cleaned_data['subcategory'],
-                description=form.cleaned_data['description'],
-                file=form.cleaned_data['file'],
-                project_title=project_title,
-            )
-            task.save() 
-            form_data = {
-                'country_id': task.country.id if task.country else None,
-                'country_name': task.country_name,
-                'destination_id': task.destination.id if task.destination else None,
-                'destination_name': task.destination_name,
-                'level': task.level.ls_id if task.level else None,
-                'main_category': task.main_category.title if task.main_category else '',
-                'subcategory': task.subcategory.title if task.subcategory else '',
-                'image_count': int(image_count),
-            }
             try:
-                # asynchronous task processing Celery, use delay()
-                # process_scraping_task.delay(task.id, form_data=form_data)
-                
-                # For synchronous processing
-                process_scraping_task(task_id=task.id, form_data=form_data)
-                
-                logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
-                return JsonResponse({
-                    'status': 'success',
-                    'message': "File uploaded successfully and task queued.",
-                    'redirect_url': reverse('dashboard')
-                })
-            except Exception as e:
-                logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
-                return JsonResponse({
-                    'status': 'error',
-                    'message': "Failed to start the Sites Gathering task. Please try again.",
-                })
-        else:
-            logger.warning(f"Form validation failed: {form.errors}")
-            return JsonResponse({
-                'status': 'error',
-                'message': "There was an error with your submission. Please check the form.",
-                'errors': form.errors  # Return form errors to the frontend
-            })
+                with transaction.atomic():
+                    # Save form data
+                    task = form.save(commit=False)
+                    task.user = request.user
+                    task.save()
 
+                    # Update user preferences
+                    user_pref = self.get_user_preferences(request.user)
+                    
+                    # Get the actual model instances from form's cleaned data
+                    user_pref.last_country = form.cleaned_data.get('country')
+                    user_pref.last_destination = form.cleaned_data.get('destination')
+                    user_pref.last_level = form.cleaned_data.get('level')
+                    user_pref.last_main_category = form.cleaned_data.get('main_category')
+                    user_pref.last_subcategory = form.cleaned_data.get('subcategory')
+                    user_pref.last_image_count = request.POST.get('image_count', 5)
+                    
+                    # Debug logging
+                    logger.info(f"Saving preferences for user {request.user.username}")
+                    logger.info(f"Country: {user_pref.last_country}")
+                    logger.info(f"Destination: {user_pref.last_destination}")
+                    logger.info(f"Level: {user_pref.last_level}")
+                    logger.info(f"Main Category: {user_pref.last_main_category}")
+                    logger.info(f"Subcategory: {user_pref.last_subcategory}")
+                    
+                    user_pref.save()
+
+                    messages.success(request, 'Task created successfully!')
+                    return redirect('task_list')
+
+            except Exception as e:
+                logger.error(f"Error saving preferences: {str(e)}")
+                messages.error(request, f"Error creating task: {str(e)}")
+                
+        return render(request, self.template_name, {'form': form})
+    
+    
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
     def get(self, request, id):
@@ -387,8 +385,42 @@ class TaskDetailView(View):
                     f"Discarded: {business_counts['discarded']}")
 
         return render(request, 'automation/task_detail.html', context)
+
+def update_main_task_status(task):
+    """Update the main task status based on business statuses"""
+    businesses = task.businesses.exclude(status='DISCARDED')
+    total_count = businesses.count()
     
- 
+    if total_count == 0:
+        return
+
+    status_counts = {
+        'in_production': businesses.filter(status='IN_PRODUCTION').count(),
+        'pending': businesses.filter(status='PENDING').count(),
+        'reviewed': businesses.filter(status='REVIEWED').count()
+    }
+    if (status_counts['in_production'] == total_count and 
+        status_counts['pending'] == 0 and 
+        status_counts['reviewed'] == 0):
+        new_status = 'TASK_DONE'
+        logger.info(f"Task {task.id} marked as LIVE - All businesses in production")
+    else:
+        if status_counts['pending'] > 0:
+            new_status = 'IN_PROGRESS'
+        elif businesses.exclude(status='IN_PRODUCTION').filter(status='COMPLETED').count() == businesses.exclude(status='IN_PRODUCTION').count():
+            new_status = 'DONE'
+        else:
+            new_status = task.status
+
+    if new_status != task.status:
+        task.status = new_status
+        if new_status in ['DONE', 'TASK_DONE']:
+            task.completed_at = timezone.now()
+        task.save(update_fields=['status', 'completed_at'])
+        logger.info(f"Task ID {task.id} status updated to '{new_status}'")
+
+    return new_status
+
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class TranslateBusinessesView(View):
@@ -720,7 +752,8 @@ class AmbassadorDashboardView(View):
             'completed': tasks.filter(status='COMPLETED').count(),
             'in_progress': tasks.filter(status='IN_PROGRESS').count(),
             'pending': tasks.filter(status='PENDING').count(),
-            'done': tasks.filter(status='DONE').count()
+            'done': tasks.filter(status='DONE').count(),
+           # 'task_done': tasks.filter(status='TASK_DONE').count(),
         }
 
         # Calculate percentages
@@ -729,7 +762,9 @@ class AmbassadorDashboardView(View):
             'completed': (status_counts['completed'] / total * 100) if total > 0 else 0,
             'in_progress': (status_counts['in_progress'] / total * 100) if total > 0 else 0,
             'pending': (status_counts['pending'] / total * 100) if total > 0 else 0,
-            'done': (status_counts['done'] / total * 100) if total > 0 else 0
+            'done': (status_counts['done'] / total * 100) if total > 0 else 0,
+           # 'task_done': (status_counts['task_done'] / total * 100) if total > 0 else 0,
+            
         }
 
         # Paginate tasks
@@ -741,17 +776,17 @@ class AmbassadorDashboardView(View):
         businesses = Business.objects.filter(
             form_destination_id__in=destination_ids
         ).order_by('-scraped_at')[:10]
-
+ 
         context = {
             'page_obj': page_obj,
             'tasks': page_obj.object_list,
-            'all_tasks': tasks,  # Keep the full queryset for counts
+            'all_tasks': tasks,
             'businesses': businesses,
             'ambassador_destinations': ambassador_destinations,
             'status_counts': status_counts,
             'status_percentages': status_percentages,
         }
-
+ 
         return render(request, 'automation/ambassador_dashboard.html', context)
 
 ###Not using this one
@@ -799,9 +834,7 @@ def login_view(request):
         else:
             messages.error(request, "Invalid username or password.")
     return render(request, 'automation/login.html')
-
-
-
+ 
 class DestinationCategoriesView(View):
     def get(self, request):
         try:
@@ -1812,6 +1845,13 @@ def update_business_status(request, business_id):
             business.status = new_status
             business.save()
 
+            try:
+                if business.task:
+                    update_task_status_signal(business.task, business)
+                    logger.info(f"Task status updated for business {business_id} status change")
+            except Exception as e:
+                    logger.error(f"Error updating task status for business {business_id}: {str(e)}", exc_info=True)
+ 
             # Handle IN_PRODUCTION specific logic
             if new_status == 'IN_PRODUCTION':
                 business_data = model_to_dict(business)
@@ -1935,8 +1975,7 @@ def update_business_status(request, business_id):
                             'status': 'error',
                             'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(second_error)}"
                         }, status=400)
-
-            # Update status counts (outside the IN_PRODUCTION block)
+ 
             old_status_count = Business.objects.filter(status=old_status).count()
             new_status_count = Business.objects.filter(status=new_status).count()
             
@@ -1954,7 +1993,7 @@ def update_business_status(request, business_id):
                 'status': 'error',
                 'message': 'Invalid status'
             }, status=400)
-
+         
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {str(e)}")
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
@@ -1973,18 +2012,148 @@ def update_business_statuses(request):
             data = json.loads(request.body)
             business_ids = data.get('business_ids', [])
             new_status = data.get('new_status')
+ 
+            if not business_ids:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No business IDs provided'
+                }, status=400)
 
-            # Update the status for each business
-            for business_id in business_ids:
-                business = get_object_or_404(Business, id=business_id)
-                business.status = new_status
-                business.save()
+            if not new_status:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'New status not provided'
+                }, status=400)
+ 
+            affected_tasks = set()
+            updated_businesses = []
+            errors = [] 
+            with transaction.atomic():
+                for business_id in business_ids:
+                    try:
+                        business = get_object_or_404(Business, id=business_id) 
+                        old_status = business.status 
+                        business.status = new_status
+                        business.save() 
+                        if business.task:
+                            affected_tasks.add(business.task)
+                        
+                        updated_businesses.append({
+                            'id': business.id,
+                            'old_status': old_status,
+                            'new_status': new_status
+                        })
+                        
+                        logger.info(
+                            f"Business {business_id} status updated: "
+                            f"{old_status} -> {new_status}"
+                        )
+                    
+                    except Business.DoesNotExist:
+                        error_msg = f"Business {business_id} not found"
+                        errors.append(error_msg)
+                        logger.error(error_msg)
+                    except Exception as e:
+                        error_msg = f"Error updating business {business_id}: {str(e)}"
+                        errors.append(error_msg)
+                        logger.error(error_msg, exc_info=True)
+ 
+            for task in affected_tasks:
+                try:
+                    update_task_status_signal(task, None) 
+                except Exception as e:
+                    error_msg = f"Error updating task {task.id} status: {str(e)}"
+                    errors.append(error_msg)
+                    logger.error(error_msg, exc_info=True)
+ 
+            response_data = {
+                'success': len(updated_businesses) > 0,
+                'updated_count': len(updated_businesses),
+                'updated_businesses': updated_businesses,
+                'affected_tasks': list(task.id for task in affected_tasks),
+            }
 
-            return JsonResponse({'success': True})
+            if errors:
+                response_data['errors'] = errors
+                response_data['partial_success'] = True 
+
+            logger.info(
+                f"Bulk status update completed: "
+                f"{len(updated_businesses)} businesses updated, "
+                f"{len(errors)} errors occurred"
+            )
+
+            return JsonResponse(response_data)
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid JSON in request body'
+            }, status=400)
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            logger.error(f"Bulk update failed: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=500)
 
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
+    return JsonResponse({
+        'success': False,
+        'error': 'Invalid request method.'
+    }, status=405)
+ 
+def update_task_status(task, instance):
+    """Update the task status based on its businesses' statuses"""
+    logger.info(f"Updating task status for Task ID: {task.id}")
+    
+    # Get all businesses excluding DISCARDED
+    businesses = task.businesses.exclude(status='DISCARDED')
+    total_count = businesses.count()
+    
+    if total_count == 0:
+        return task.status
+
+    # Get status counts
+    status_counts = {
+        'in_production': businesses.filter(status='IN_PRODUCTION').count(),
+        'pending': businesses.filter(status='PENDING').count(),
+        'reviewed': businesses.filter(status='REVIEWED').count()
+    }
+
+    logger.info(f"Pending businesses exist: {status_counts['pending'] > 0}")
+
+    # Determine new status
+    new_status = None
+
+    try:
+        # Check if all non-discarded businesses are in production
+        if (status_counts['in_production'] == total_count and 
+            status_counts['pending'] == 0 and 
+            status_counts['reviewed'] == 0):
+            new_status = 'TASK_DONE'  # Project LIVE
+            logger.info(f"Task {task.id} marked as LIVE - All businesses in production")
+        
+        # Other status checks
+        elif status_counts['pending'] > 0:
+            new_status = 'IN_PROGRESS'
+        elif businesses.exclude(status='IN_PRODUCTION').filter(status='COMPLETED').count() == businesses.exclude(status='IN_PRODUCTION').count():
+            new_status = 'DONE'
+        else:
+            new_status = task.status
+
+        # Update task if status changed
+        if new_status and new_status != task.status:
+            task.status = new_status
+            if new_status in ['DONE', 'TASK_DONE']:
+                task.completed_at = timezone.now()
+            task.save(update_fields=['status', 'completed_at'])
+            logger.info(f"Task ID {task.id} status updated to '{new_status}'")
+
+        return new_status
+
+    except Exception as e:
+        logger.error(f"Error updating status for task {task.id}: {str(e)}", exc_info=True)
+        raise
 
 ########CHANGE STATUS#############################
  
@@ -2067,8 +2236,6 @@ def business_list(request):
         'search_query': search_query,
     })
  
- 
-
 @login_required
 def business_detail(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -2898,8 +3065,7 @@ def destination_detail(request, destination_id):
     }
 
     return render(request, 'automation/destination_detail.html', context)
-
-
+ 
 @login_required
 def ambassador_profile(request, ambassador_id):
     ambassador = get_object_or_404(UserRole, id=ambassador_id, role='AMBASSADOR')
@@ -3154,7 +3320,6 @@ def parse_address(address):
             break
     
     return parsed
- 
  
 @transaction.atomic
 def save_business_from_json(task, business_data, query, form_data=None):
