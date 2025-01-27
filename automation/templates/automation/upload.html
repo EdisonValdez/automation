@@ -287,7 +287,7 @@
             </div>
             </div>
                 <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
-        
+                    {% if user.is_admin %}
                 <div class="row mb-3">
                     <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
                         <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
@@ -296,7 +296,9 @@
                         </div>
                         <div class="form-text">{{ form.file.help_text }}</div>
                     </div>
-                </div>     
+                </div>    
+                {% endif %} 
+                
             </div>
              </div>  
             

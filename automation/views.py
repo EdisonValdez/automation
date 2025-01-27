@@ -184,7 +184,7 @@ def get_cities(request):
 #LSBACKEND API
 
 @method_decorator(login_required, name='dispatch')
-@method_decorator(user_passes_test(is_admin), name='dispatch')
+#@method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
     template_name = 'automation/upload.html'
 
