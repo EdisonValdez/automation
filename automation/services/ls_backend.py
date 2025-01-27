@@ -10,21 +10,24 @@ import backoff
 
 logger = logging.getLogger(__name__)
 
+
 class LSBackendException(Exception):
     """Custom exception for LS Backend related errors."""
     pass
+
 
 class LSBackendClient:
     """Client for interacting with the LS Backend API."""
 
     def __init__(self):
-        
+
         # Ensure LOCAL_SECRET_BASE_URL and LS_BACKEND_API_KEY are set in Django settings
         self.base_url = settings.LOCAL_SECRET_BASE_URL
         self.headers = {
             'Content-Type': 'application/json'
         }
-        self.auth_needed = True # flag to decide is authentication is needed or not for the url to access
+        # flag to decide is authentication is needed or not for the url to access
+        self.auth_needed = True
         self.cache_timeout = getattr(settings, 'LS_CACHE_TIMEOUT', 3600)
 
     def _generate_token(self):
@@ -41,7 +44,7 @@ class LSBackendClient:
         - The generated OAuth token or an error if the process fails.
         """
         cache_key = "ls_access_token"
-        
+
         # Check for token existance in cache,
         if token := cache.get(cache_key):
             return token
@@ -49,7 +52,7 @@ class LSBackendClient:
         # Generate and validate access signature for the request
         rs = ResourceAccessSignature()
         timestamp, signature = rs.generate_signature(topic="token")
-        
+
         endpoint = "/auth/token"
         header = {
             "X-Signature": signature,
@@ -67,16 +70,17 @@ class LSBackendClient:
                 headers=header,
                 timeout=10
             )
-            response = self.handle_response(response, endpoint.strip('/').split('/')[-1])
+            response = self.handle_response(
+                response, endpoint.strip('/').split('/')[-1])
             if token := response.get("access_token") if response else None:
                 cache.set(cache_key, token, timeout=response.get("expires_in"))
                 return token
             else:
                 raise LSBackendException("Invalid token.")
-            
+
         except requests.exceptions.HTTPError as e:
-            raise 
-        
+            raise
+
     @backoff.on_exception(backoff.expo, RequestException, max_tries=3)
     def _make_request(self, endpoint: str, params: Dict = None) -> Dict:
         """
@@ -88,15 +92,17 @@ class LSBackendClient:
         try:
             if self.auth_needed:
                 self.headers["Authorization"] = f'Bearer {self._generate_token()}'
-            
+
             response = requests.get(
                 full_url,
                 headers=self.headers,
                 params=params,
                 timeout=20
             )
-            logger.debug(f"Response status code: {response.status_code}, Response: {response.text}")
-            return self.handle_response(response, endpoint.strip('/').split('/')[-1])
+            logger.debug(
+                f"Response status code: {response.status_code}, Response: {response.text}")
+            return self.handle_response(
+                response, endpoint.strip('/').split('/')[-1])
         except RequestException as e:
             logger.error(f"Request failed for {endpoint}: {str(e)}")
             raise
@@ -106,7 +112,8 @@ class LSBackendClient:
         Generate a cache key based on resource name and sorted param key-value pairs.
         Example: _get_cache_key('cities', country_id='47', language='en') => 'ls_cities_country_id_47_language_en'
         """
-        param_str = '_'.join(f"{k}_{v}" for k, v in sorted(params.items()) if v)
+        param_str = '_'.join(
+            f"{k}_{v}" for k, v in sorted(params.items()) if v)
         return f'ls_{resource}_{param_str}'
 
     def handle_response(self, response: requests.Response, resource_type: str) -> List[Dict]:
@@ -116,7 +123,7 @@ class LSBackendClient:
         If 404, returns an empty list. Otherwise raises LSBackendException on non-200 responses.
         """
         if response.status_code == 200:
-            
+
             # Might be a list or dict; the calling method decides how to use it.
             return response.json()
         elif response.status_code == 404:
@@ -145,20 +152,20 @@ class LSBackendClient:
         cached_data = cache.get(cache_key)
         if cached_data:
             return cached_data
-        
+
         params = {'language': language}
         if search:
             params['name'] = search.strip()
 
         try:
             data = self._make_request('/cities/countries', params)
-    
-            # Typically data is a list of {id: int, name: str}, but it could differ 
+
+            # Typically data is a list of {id: int, name: str}, but it could differ
             # if the backend returns an object
             cache.set(cache_key, data, timeout=self.cache_timeout)
         except Exception as e:
             logger.error(f"Error fetching countries: {str(e)}")
-            
+
         return data
 
     def get_cities(
@@ -182,7 +189,7 @@ class LSBackendClient:
             return cached_data
 
         params = {'language': language}
-        
+
         # IMPORTANT: LS Backend expects 'country_id' (not just 'country')
         if country_id:
             params['country_id'] = country_id
@@ -196,7 +203,7 @@ class LSBackendClient:
         except Exception as e:
             logger.error(f"Error fetching cities: {str(e)}")
             return []
-        
+
     def get_levels(
         self,
         language: str = 'en',
@@ -205,6 +212,7 @@ class LSBackendClient:
         """
         Fetches Levels.
         """
+        print("languagggee", language)
         data = []
         cache_key = self._get_cache_key(
             'levels',
@@ -226,7 +234,7 @@ class LSBackendClient:
 
         self.headers["X-Signature"] = signature
         self.headers["X-Timestamp"] = str(timestamp)
-        self.auth_needed = False # no need for token based authentication
+        self.auth_needed = False  # no need for token based authentication
         try:
             data = self._make_request('/api/custom-request/load_level', params)
 
@@ -236,9 +244,9 @@ class LSBackendClient:
         except Exception as e:
             logger.error(f"Error fetching levels: {str(e)}")
 
-        self.auth_needed = True # after use then revert to locked state 
+        self.auth_needed = True  # after use then revert to locked state
         return data
-        
+
     def get_categories(
         self,
         language: str = 'en',
@@ -272,18 +280,19 @@ class LSBackendClient:
 
         self.headers["X-Signature"] = signature
         self.headers["X-Timestamp"] = str(timestamp)
-        self.auth_needed = False # no need for token based authentication
+        self.auth_needed = False  # no need for token based authentication
         try:
-            data = self._make_request('/api/custom-request/load_category', params)
+            data = self._make_request(
+                '/api/custom-request/load_category', params)
 
             # Response data format:-
             cache.set(cache_key, data, timeout=self.cache_timeout)
         except Exception as e:
             logger.error(f"Error fetching categories: {str(e)}")
-            
-        self.auth_needed = True # after use then revert to locked state
+
+        self.auth_needed = True  # after use then revert to locked state
         return data
-        
+
     def get_sub_categories(
         self,
         language: str = 'en',
@@ -317,16 +326,16 @@ class LSBackendClient:
 
         self.headers["X-Signature"] = signature
         self.headers["X-Timestamp"] = str(timestamp)
-        self.auth_needed = False # no need for token based authentication
+        self.auth_needed = False  # no need for token based authentication
         try:
-            data = self._make_request('/api/custom-request/load_sub_category', params)
+            data = self._make_request(
+                '/api/custom-request/load_sub_category', params)
 
             # Response data format:-
             # [{"id":121,"title":"Hoteles baratos","type":"place","order":0}]
-            cache.set(cache_key, data, timeout=self.cache_timeout) 
+            cache.set(cache_key, data, timeout=self.cache_timeout)
         except Exception as e:
             logger.error(f"Error fetching sub categories: {str(e)}")
 
-        self.auth_needed = True # after use then revert to locked state
+        self.auth_needed = True  # after use then revert to locked state
         return data
-

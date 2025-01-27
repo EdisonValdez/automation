@@ -126,9 +126,11 @@ def get_levels(request):
     Fetch levels from the local automation Level model,
     returning them as JSON or an error if something fails.
     """
+    language = request.headers.get('language', 'en')
+
     client = LSBackendClient()
     try:
-        levels = client.get_levels()
+        levels = client.get_levels(language=language)
         return JsonResponse(levels, safe=False)
     except Exception as e:
         logger.error(f"Error fetching ls levels: {e}", exc_info=True)
@@ -156,21 +158,25 @@ def load_categories(request):
 
 def get_categories(request):
     level_id = request.GET.get('level_id')
+    language = request.headers.get('language', 'en')
+
     if not level_id:
         return JsonResponse({'error': 'Level ID is required'}, status=400)
     
     client = LSBackendClient()
-    categories = client.get_categories(level_id=level_id)
+    categories = client.get_categories(level_id=level_id, language=language)
 
     return JsonResponse(categories, safe=False)
 
 def get_subcategories(request):
     category_id = request.GET.get('category_id')
+    language = request.headers.get('language', 'en')
+
     if not category_id:
         return JsonResponse({'error': 'Category ID is required'}, status=400)
     
     client = LSBackendClient()
-    subcategories = client.get_sub_categories(category_id=category_id)
+    subcategories = client.get_sub_categories(category_id=category_id, language=language)
 
     return JsonResponse(subcategories, safe=False)
  
