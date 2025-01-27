@@ -253,15 +253,19 @@
                     </div>
                 </div>
             </div>
-            </div>        
+            </div>    
+            <div class="row">  
+            <div class="col-xl-8 col-lg-8 col-md-6 col-sm-12">
             <!-- Toggleable Description Field-->
             <div class="form-group mb-24">
-                <label class="form-label mt-1 fs-18 font-w500 color-primary">
+               <!-- <label class="form-label mt-1 fs-18 font-w500 color-primary">
                     <a href="#" id="toggle-description" class="btn btn-outline-primary">+ Add Google Maps URL (optional)</a>
                 </label>
-                <div id="description-container" style="display: none;">
+                <div id="description-container" style="display: none;">-->
+                <div id="description-container">
                     <div class="form-group">
-                        <label for="id_description">Paste one URL</label>
+                        <!--<label for="id_description">Paste one URL</label>--> 
+                        <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Paste one URL</label>
                         <div class="input-group">
                             <input type="text"
                                 id="id_description"
@@ -281,17 +285,22 @@
                     </div>
                 </div>
             </div>
-
-        <!-- images Count Selection -->  
-            <div class="row mb-3">
-                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                    <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
-                    <div class="input-group file-browser">
-                        {{ form.file }}
+            </div>
+                <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+        
+                <div class="row mb-3">
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                        <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
+                        <div class="input-group file-browser">
+                            {{ form.file }}
+                        </div>
+                        <div class="form-text">{{ form.file.help_text }}</div>
                     </div>
-                    <div class="form-text">{{ form.file.help_text }}</div>
-                </div>
-            </div>                                  
+                </div>     
+            </div>
+             </div>  
+            
+            
             <div class="row">
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12"> 
                     <div class="input-group file-browser">

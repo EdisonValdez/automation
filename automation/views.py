@@ -228,6 +228,7 @@ class UploadFileView(View):
             'form': form,
             'last_image_count': user_pref.last_image_count,
             'user_preferences': user_pref,
+            'default_image_count': 5
         }
         return render(request, self.template_name, context)
 
@@ -237,22 +238,29 @@ class UploadFileView(View):
         if form.is_valid():
             try:
                 with transaction.atomic():
-                    # Save form data
+                    # Create project title
+                    project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
+                    if form.cleaned_data['subcategory']:
+                        project_title += f" - {form.cleaned_data['subcategory'].title}"
+
+                    # Create task ONCE
                     task = form.save(commit=False)
                     task.user = request.user
+                    task.status = 'QUEUED'
+                    task.project_title = project_title
+                    task.country_name = form.cleaned_data['country'].name
+                    task.destination_name = form.cleaned_data['destination'].name
                     task.save()
 
                     # Update user preferences
                     user_pref = self.get_user_preferences(request.user)
-                    
-                    # Get the actual model instances from form's cleaned data
                     user_pref.last_country = form.cleaned_data.get('country')
                     user_pref.last_destination = form.cleaned_data.get('destination')
                     user_pref.last_level = form.cleaned_data.get('level')
                     user_pref.last_main_category = form.cleaned_data.get('main_category')
                     user_pref.last_subcategory = form.cleaned_data.get('subcategory')
                     user_pref.last_image_count = request.POST.get('image_count', 5)
-                    
+
                     # Debug logging
                     logger.info(f"Saving preferences for user {request.user.username}")
                     logger.info(f"Country: {user_pref.last_country}")
@@ -263,16 +271,34 @@ class UploadFileView(View):
                     
                     user_pref.save()
 
-                    messages.success(request, 'Task created successfully!')
-                    return redirect('task_list')
+                    # Prepare form data
+                    form_data = {
+                        'country_id': task.country.id if task.country else None,
+                        'country_name': task.country_name,
+                        'destination_id': task.destination.id if task.destination else None,
+                        'destination_name': task.destination_name,
+                        'level': task.level.ls_id if task.level else None,
+                        'main_category': task.main_category.title if task.main_category else '',
+                        'subcategory': task.subcategory.title if task.subcategory else '',
+                        'image_count': int(user_pref.last_image_count),
+                    }
+
+                    try:
+                        process_scraping_task(task_id=task.id, form_data=form_data)
+                        logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
+                        messages.success(request, 'Task created successfully!')
+                        return redirect('task_list')
+                    except Exception as e:
+                        logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
+                        messages.error(request, "Failed to start the Sites Gathering task. Please try again.")
+                        raise
 
             except Exception as e:
                 logger.error(f"Error saving preferences: {str(e)}")
                 messages.error(request, f"Error creating task: {str(e)}")
-                
+        
         return render(request, self.template_name, {'form': form})
-    
-    
+
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
     def get(self, request, id):

@@ -1735,7 +1735,8 @@ def save_business(task, local_result, query, form_data=None):
         US_COUNTRY_NAMES = {'united states', 'usa', 'u.s.', 'united states of america'}
 
         # Check if the country is one of the acceptable variations
-        if business_data.get('country', '').strip().lower() in US_COUNTRY_NAMES:
+        #if business_data.get('country', '').strip().lower() in US_COUNTRY_NAMES:
+        if business_data.get('country', '').strip() and business_data.get('country', '').strip().lower() in US_COUNTRY_NAMES:
             phone = business_data.get('phone', '')
             if phone and not phone.startswith('+1'):
                 business_data['phone'] = f'+1{phone.lstrip(" +")}'
