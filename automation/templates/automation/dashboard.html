@@ -179,15 +179,17 @@
     <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
         <div class="modern-card">
             <div class="card-content">
-                <!-- Header: ID and Status -->
+                <!-- Header: ID and Status --> 
                 <div class="card-header-flex">
                     <span class="task-id">#{{ task.id }}</span>
                     {% if task.status == 'DONE' %}
+                        <span class="status-badge status-active">REVIEWED</span>
+                    {% elif task.status == 'TASK_DONE' %}
                         <span class="status-badge status-live">LIVE</span>
                     {% elif task.status == 'COMPLETED' %}
-                        <span class="status-badge status-review">REVIEW</span>
+                        <span class="status-badge status-review">READY TO REVIEW</span>
                     {% elif task.status == 'IN_PROGRESS' %}
-                        <span class="status-badge status-active">ACTIVE</span>
+                        <span class="status-badge status-active">IN PROGRESS</span>
                     {% elif task.status == 'FAILED' %}
                         <span class="status-badge status-failed">FAILED</span>
                     {% else %}
