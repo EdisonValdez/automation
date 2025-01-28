@@ -184,12 +184,22 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 col-sm-12 mb-24">
+                <!-- <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
                         <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
                         {{ form.level }}
                     </div>
+                </div> -->
+
+                <div class="col-md-4 col-sm-12 mb-24">
+                    <div class="form-group">
+                        <label for="id_level" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
+                        <select name="level" class="form-control" id="id_level">
+                            <option value="">Select a level</option>
+                        </select>
+                    </div>
                 </div>
+
             </div>
         
             <div class="row">
@@ -364,9 +374,14 @@ $(document).ready(function() {
                 url: '{% url "get_categories" %}',
                 data: { 'level_id': levelId },
                 success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(category) {
-                            $('#id_main_category').append($('<option></option>').attr('value', category.id).text(category.title));
+                    var results = data["results"]
+
+                    if (results.length > 0) {
+                        results.forEach(function(category) {
+                            $('#id_main_category').append($('<option></option>').
+                            attr('value', category.id).
+                            data('category_name', category.title).
+                            text(category.title));
                         });
                     } else {
                         $('#id_main_category').append('<option value="">No categories available</option>');
@@ -389,9 +404,14 @@ $(document).ready(function() {
                 url: '{% url "get_subcategories" %}',
                 data: { 'category_id': categoryId },
                 success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(subcategory) {
-                            $('#id_subcategory').append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
+                    var results = data["results"]
+
+                    if (results.length > 0) {
+                        results.forEach(function(subcategory) {
+                            $('#id_subcategory').append($('<option></option>').
+                            attr('value', subcategory.id).
+                            data('sub_category_name', subcategory.title).
+                            text(subcategory.title));
                         });
                     } else {
                         $('#id_subcategory').append('<option value="">No subcategories available</option>');
@@ -405,30 +425,30 @@ $(document).ready(function() {
     });
 
     
-    // Handle Country and Destination changes
-    $('#id_country').change(function() {
-        var countryId = $(this).val();
-        $('#id_destination').empty().append('<option value="">Select a destination</option>');
+    // // Handle Country and Destination changes
+    // $('#id_country').change(function() {
+    //     var countryId = $(this).val();
+    //     $('#id_destination').empty().append('<option value="">Select a destination</option>');
 
-        if (countryId) {
-            $.ajax({
-                url: '{% url "get_destinations_by_country" %}',
-                data: { 'country_id': countryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(destination) {
-                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
-                        });
-                    } else {
-                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching destinations: ' + error);
-                }
-            });
-        }
-    });
+    //     if (countryId) {
+    //         $.ajax({
+    //             url: '{% url "get_destinations_by_country" %}',
+    //             data: { 'country_id': countryId },
+    //             success: function(data) {
+    //                 if (data.length > 0) {
+    //                     data.forEach(function(destination) {
+    //                         $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
+    //                     });
+    //                 } else {
+    //                     $('#id_destination').append('<option value="">No destinations available for this country</option>');
+    //                 }
+    //             },
+    //             error: function(xhr, status, error) {
+    //                 console.error('Error fetching destinations: ' + error);
+    //             }
+    //         });
+    //     }
+    // });
 });
 
 
@@ -439,9 +459,16 @@ $(document).ready(function() {
         method: 'GET',
         success: function(data) {
             $('#id_country').empty().append('<option value="">Select a country</option>');
-            if (data.length > 0) {
-                data.forEach(function(country) {
-                    $('#id_country').append($('<option></option>').attr('value', country.id).text(country.name));
+            var results = data["results"]
+
+            if (results.length > 0) {
+                results.forEach(function(country) {
+                    $('#id_country').append($('<option></option>').
+                    attr('value', country.id).
+                    data('country_name', country.name).
+                    data('country_code', country.code).
+                    data('country_phone_code', country.phone_code).
+                    text(country.name));
                 });
             } else {
                 $('#id_country').append('<option value="">No countries available</option>');
@@ -462,9 +489,19 @@ $(document).ready(function() {
                 url: '{% url "get_destinations_by_country" %}',
                 data: { 'country_id': countryId },
                 success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(destination) {
-                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
+                    var results = data["results"]
+                    if (results.length > 0) {
+                        results.forEach(function(destination) {
+                            $('#id_destination').append($('<option></option>').
+                            attr('value', destination.id).
+                            data('city_name', destination.name).
+                            data('city_cp', destination.cp).
+                            data('city_province', destination.province).
+                            data('city_description', destination.description).
+                            data('city_link', destination.link).
+                            data('city_latitude', destination.latitude).
+                            data('city_longitude', destination.longitude).
+                            text(destination.name));
                         });
                     } else {
                         $('#id_destination').append('<option value="">No destinations available for this country</option>');
@@ -474,6 +511,28 @@ $(document).ready(function() {
                     console.error('Error fetching destinations: ' + error);
                 }
             });
+        }
+    });
+    $.ajax({
+        url: '{% url "get_levels" %}',
+        method: 'GET',
+        success: function(data) {
+            $('#id_level').empty().append('<option value="">Select a level</option>');
+            var results = data["results"]
+
+            if (results.length > 0) {
+                results.forEach(function(level) {
+                    $('#id_level').append($('<option></option>').
+                    attr('value', level.id).
+                    data('level_name', level.title).
+                    text(level.title));
+                });
+            } else {
+                $('#id_level').append('<option value="">No levels available</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching levels: ' + error);
         }
     });
 });
@@ -491,6 +550,34 @@ $(document).ready(function() {
             e.preventDefault();
 
             var formData = new FormData(this);
+            
+            // Country
+            var selectedCountry = $('#id_country option:selected');
+            formData.append('country_code', selectedCountry.data('country_code'));
+            formData.append('country_phone_code', selectedCountry.data('country_phone_code'));
+            formData.append('country_name', selectedCountry.data('country_name'));
+            
+            // Destination
+            var selectedDestination = $('#id_destination option:selected');
+            formData.append('city_name', selectedDestination.data('city_name'));
+            formData.append('city_cp', selectedDestination.data('city_cp'));
+            formData.append('city_province', selectedDestination.data('city_province'));
+            formData.append('city_description', selectedDestination.data('city_description'));
+            formData.append('city_link', selectedDestination.data('city_link'));
+            formData.append('city_latitude', selectedDestination.data('city_latitude'));
+            formData.append('city_longitude', selectedDestination.data('city_longitude'));
+     
+            // Level
+            var selectedLevel = $('#id_level option:selected');
+            formData.append('level_name', selectedLevel.data('level_name'));
+
+            // Category
+            var selectedCategory = $('#id_main_category option:selected');
+            formData.append('category_name', selectedCategory.data('category_name'));
+
+            // Sub Category
+            var selectedSubCategory = $('#id_subcategory option:selected');
+            formData.append('sub_category_name', selectedSubCategory.data('sub_category_name'));
 
             // Clear previous messages
             $('#successMessage').text('');

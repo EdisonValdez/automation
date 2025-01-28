@@ -5,7 +5,7 @@ from django.contrib.admin.models import LogEntry
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-from automation.models import Business, CustomUser, UserRole, Feedback
+from automation.models import Business, CustomUser, UserRole, Feedback, Country, Level, Destination, Category
 from django.db.models.signals import pre_save
 import logging
 from django.core.mail import send_mail
@@ -14,6 +14,7 @@ from django.utils.timezone import now
 from django.db.models.signals import pre_delete
 from django.template.loader import render_to_string
 from django.contrib.messages import add_message, SUCCESS, WARNING
+from django.db import models  # Import models
 logger = logging.getLogger(__name__)
 
 
@@ -181,3 +182,13 @@ def after_business_save(sender, instance, created, **kwargs):
             logger.debug(f"Post-save: Tailored Categories Added to Business '{instance.title}': {', '.join(tailored_added)}")
         if tailored_removed:
             logger.debug(f"Post-save: Tailored Categories Removed from Business '{instance.title}': {', '.join(tailored_removed)}")
+
+
+@receiver(pre_save, sender=Country)
+@receiver(pre_save, sender=Level)
+@receiver(pre_save, sender=Destination)
+@receiver(pre_save, sender=Category)
+def ensure_primary_key(sender, instance, **kwargs):
+    if not instance.id:  # Assign an ID only if it's not set
+        max_id = sender.objects.aggregate(max_id=models.Max('id'))['max_id'] or 0
+        instance.id = max_id + 1

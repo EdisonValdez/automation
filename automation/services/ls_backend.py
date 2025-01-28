@@ -212,7 +212,6 @@ class LSBackendClient:
         """
         Fetches Levels.
         """
-        print("languagggee", language)
         data = []
         cache_key = self._get_cache_key(
             'levels',

@@ -103,7 +103,7 @@ urlpatterns = [
  
     # LS Backend API endpoints
     path('api/countries/', views.get_ls_countries, name='get_countries'),
-    path('api/cities/', views.get_cities, name='get_cities'),
+    path('api/cities/', views.get_cities, name='get_destinations_by_country'),
     path('api/categories/', views.get_categories, name='get_categories'),
     path('api/subcategories/', views.get_subcategories, name='get_subcategories'),
     path('api/load-categories/', views.load_categories, name='load_categories'),
@@ -122,10 +122,10 @@ urlpatterns = [
  
  
     path('load-categories/', views.load_categories, name='load_categories'),  
-    path('categories/', views.get_categories, name='get_categories'),         
+    #path('categories/', views.get_categories, name='get_categories'),         
     path('subcategories/', views.get_subcategories, name='get_subcategories'), 
-    path('get-countries/', views.get_countries, name='get_countries'),
-    path('get-destinations/', views.get_destinations_by_country, name='get_destinations_by_country'),
+    #path('get-countries/', views.get_countries, name='get_countries'),
+    #path('get-destinations/', views.get_destinations_by_country, name='get_destinations_by_country'),
     path('events/search/', views.search_events, name='search_events'),
     path('events/save_selected/', views.save_selected_events, name='save_selected_events'),
  

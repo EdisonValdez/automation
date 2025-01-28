@@ -131,7 +131,7 @@ def get_levels(request):
     client = LSBackendClient()
     try:
         levels = client.get_levels(language=language)
-        return JsonResponse(levels, safe=False)
+        return JsonResponse({"results": levels}, safe=False)
     except Exception as e:
         logger.error(f"Error fetching ls levels: {e}", exc_info=True)
         return JsonResponse({'error': 'Error fetching ls levels'}, status=500)
@@ -166,7 +166,7 @@ def get_categories(request):
     client = LSBackendClient()
     categories = client.get_categories(level_id=level_id, language=language)
 
-    return JsonResponse(categories, safe=False)
+    return JsonResponse({"results": categories}, safe=False)
 
 def get_subcategories(request):
     category_id = request.GET.get('category_id')
@@ -178,7 +178,7 @@ def get_subcategories(request):
     client = LSBackendClient()
     subcategories = client.get_sub_categories(category_id=category_id, language=language)
 
-    return JsonResponse(subcategories, safe=False)
+    return JsonResponse({"results": subcategories}, safe=False)
  
 def get_ls_countries(request):
     """
