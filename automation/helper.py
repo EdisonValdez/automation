@@ -23,7 +23,7 @@ class DataSyncer:
     def __init__(self, request):
         self.request_data = request.POST
 
-    def get_country(self, country_lsid: int) -> Country:
+    def _get_country(self, country_lsid: int) -> Country:
         """"
         Checks if the country already exists. If it does, it returns the existing country.
         If the country doesn't exist, it creates a new one and returns the newly created object.
@@ -45,7 +45,7 @@ class DataSyncer:
             raise ValidationError(
                 "Failed to retrieve or create the country. Please check the provided data.")
 
-    def get_destination(self, city_lsid: int) -> Destination:
+    def _get_destination(self, city_lsid: int) -> Destination:
         """"
         Checks if the destination already exists. If it does, it returns the existing destination.
         If the destination doesn't exist, it creates a new one and returns the newly created object.
@@ -73,7 +73,7 @@ class DataSyncer:
             raise ValidationError(
                 "Failed to retrieve or create the destination. Please check the provided data.")
 
-    def get_level(self, level_lsid: int) -> Level:
+    def _get_level(self, level_lsid: int) -> Level:
         """"
         Checks if the level already exists. If it does, it returns the existing level.
         If the level doesn't exist, it creates a new one and returns the newly created object.
@@ -93,7 +93,7 @@ class DataSyncer:
             raise ValidationError(
                 "Failed to retrieve or create the level. Please check the provided data.")
 
-    def get_category(self, category_lsid: int) -> Category:
+    def _get_category(self, category_lsid: int) -> Category:
         """"
         Checks if the category already exists. If it does, it returns the existing category.
         If the category doesn't exist, it creates a new one and returns the newly created object.
@@ -116,7 +116,7 @@ class DataSyncer:
             raise ValidationError(
                 "Failed to retrieve or create the category. Please check the provided data.")
 
-    def get_subcategory(self, subcategory_lsid) -> Category:
+    def _get_subcategory(self, subcategory_lsid) -> Category:
         """"
         Checks if the subcategory already exists. If it does, it returns the existing subcategory.
         If the subcategory doesn't exist, it creates a new one and returns the newly created object.
@@ -145,16 +145,16 @@ class DataSyncer:
         """
         Orchestrates the data synchronization process for country, destination, level, category, subcategory.
         """
-        country_ls_id = int(self.request_data.get('country'))
-        destination_ls_id = int(self.request_data.get('destination'))
-        level_ls_id = int(self.request_data.get('level'))
-        category_ls_id = int(self.request_data.get('main_category'))
-        sub_category_ls_id = self.request_data.get('subcategory')
+        country_lsid = int(self.request_data.get('country'))
+        city_lsid = int(self.request_data.get('destination'))
+        level_lsid = int(self.request_data.get('level'))
+        category_lsid = int(self.request_data.get('main_category'))
+        subcategory_lsid = self.request_data.get('subcategory')
 
         return {
-            "country": self.get_country(country_ls_id),
-            "destination": self.get_destination(destination_ls_id),
-            "level": self.get_level(level_ls_id),
-            "category": self.get_category(category_ls_id),
-            "subcategory": self.get_subcategory(int(sub_category_ls_id)) if sub_category_ls_id else None,
+            "country": self._get_country(country_lsid),
+            "destination": self._get_destination(city_lsid),
+            "level": self._get_level(level_lsid),
+            "category": self._get_category(category_lsid),
+            "subcategory": self._get_subcategory(int(subcategory_lsid)) if subcategory_lsid else None,
         }
