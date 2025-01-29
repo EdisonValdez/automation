@@ -47,7 +47,7 @@ from .serpapi_integration import fetch_google_events
 from .models import Event  
 from automation.request.client import RequestClient
 from automation import constants as const
-from automation.helper import datetime_serializer
+from automation.helper import datetime_serializer, DataSyncer
 from django.views.generic import ListView 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from automation.services.ls_backend import LSBackendClient   
@@ -229,74 +229,142 @@ class UploadFileView(View):
         }
 
         return render(request, 'automation/upload.html', context)
-
-
+    
     @transaction.atomic
     def post(self, request):
         logger.info("Received file upload POST request")
-        form = ScrapingTaskForm(request.POST, request.FILES)
+        
+        # Move LS backend records to the automation system.
+        sync_objects = DataSyncer(request).sync()
+        country = sync_objects.get("country")
+        destination = sync_objects.get("destination")
+        level = sync_objects.get("level")
+        category = sync_objects.get("category")
+        subcategory = sync_objects.get("subcategory")
 
-        if form.is_valid():
-            # Generate the project_title dynamically
-            project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
-            if form.cleaned_data['subcategory']:
-                project_title += f" - {form.cleaned_data['subcategory'].title}"
+        # Generate the project_title dynamically
+        project_title = f"{country.name} - {destination.name} - {level.title} - {category.title}"
+        if subcategory:
+            project_title += f" - {subcategory.title}"
 
-            # Set the project_title in the form
-            form.initial['project_title'] = project_title
-            image_count = request.POST.get('image_count', '3')
-
-            task = ScrapingTask(
-                user=request.user,
-                status='QUEUED',
-                country=form.cleaned_data['country'],
-                country_name=form.cleaned_data['country'].name,
-                destination=form.cleaned_data['destination'],
-                destination_name=form.cleaned_data['destination'].name,
-                level=form.cleaned_data['level'],
-                main_category=form.cleaned_data['main_category'],
-                subcategory=form.cleaned_data['subcategory'],
-                description=form.cleaned_data['description'],
-                file=form.cleaned_data['file'],
-                project_title=project_title,
-            )
-            task.save() 
-            form_data = {
-                'country_id': task.country.id if task.country else None,
-                'country_name': task.country_name,
-                'destination_id': task.destination.id if task.destination else None,
-                'destination_name': task.destination_name,
-                'level': task.level.ls_id if task.level else None,
-                'main_category': task.main_category.title if task.main_category else '',
-                'subcategory': task.subcategory.title if task.subcategory else '',
-                'image_count': int(image_count),
-            }
-            try:
-                # asynchronous task processing Celery, use delay()
-                # process_scraping_task.delay(task.id, form_data=form_data)
-                
-                # For synchronous processing
-                process_scraping_task(task_id=task.id, form_data=form_data)
-                
-                logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
-                return JsonResponse({
-                    'status': 'success',
-                    'message': "File uploaded successfully and task queued.",
-                    'redirect_url': reverse('dashboard')
-                })
-            except Exception as e:
-                logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
-                return JsonResponse({
-                    'status': 'error',
-                    'message': "Failed to start the Sites Gathering task. Please try again.",
-                })
-        else:
-            logger.warning(f"Form validation failed: {form.errors}")
+        # Set the project_title in the form
+        form = ScrapingTaskForm()
+        form.initial['project_title'] = project_title
+        image_count = request.POST.get('image_count', '3')
+        
+        task = ScrapingTask(
+            user=request.user,
+            status='QUEUED',
+            country=country,
+            country_name=country.name,
+            destination=destination,
+            destination_name=destination.name,
+            level=level,
+            main_category=category,
+            subcategory=subcategory,
+            description=request.POST.get('description'),
+            file=request.FILES.get('file'),
+            project_title=project_title,
+        )
+        task.save() 
+        form_data = {
+            'country_id': task.country.id if task.country else None,
+            'country_name': task.country_name,
+            'destination_id': task.destination.id if task.destination else None,
+            'destination_name': task.destination_name,
+            'level': task.level.ls_id if task.level else None,
+            'main_category': task.main_category.title if task.main_category else '',
+            'subcategory': task.subcategory.title if task.subcategory else '',
+            'image_count': int(image_count),
+        }
+        try:
+            # asynchronous task processing Celery, use delay()
+            # process_scraping_task.delay(task.id, form_data=form_data)
+            
+            # For synchronous processing
+            process_scraping_task(task_id=task.id, form_data=form_data)
+            
+            logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
+            return JsonResponse({
+                'status': 'success',
+                'message': "File uploaded successfully and task queued.",
+                'redirect_url': reverse('dashboard')
+            })
+        except Exception as e:
+            logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
             return JsonResponse({
                 'status': 'error',
-                'message': "There was an error with your submission. Please check the form.",
-                'errors': form.errors  # Return form errors to the frontend
+                'message': "Failed to start the Sites Gathering task. Please try again.",
             })
+    
+
+    # @transaction.atomic
+    # def post(self, request):
+    #     logger.info("Received file upload POST request")
+
+    #     form = ScrapingTaskForm(request.POST, request.FILES)
+
+    #     if form.is_valid():
+    #         # Generate the project_title dynamically
+    #         project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
+    #         if form.cleaned_data['subcategory']:
+    #             project_title += f" - {form.cleaned_data['subcategory'].title}"
+
+    #         # Set the project_title in the form
+    #         form.initial['project_title'] = project_title
+    #         image_count = request.POST.get('image_count', '3')
+
+    #         task = ScrapingTask(
+    #             user=request.user,
+    #             status='QUEUED',
+    #             country=form.cleaned_data['country'],
+    #             country_name=form.cleaned_data['country'].name,
+    #             destination=form.cleaned_data['destination'],
+    #             destination_name=form.cleaned_data['destination'].name,
+    #             level=form.cleaned_data['level'],
+    #             main_category=form.cleaned_data['main_category'],
+    #             subcategory=form.cleaned_data['subcategory'],
+    #             description=form.cleaned_data['description'],
+    #             file=form.cleaned_data['file'],
+    #             project_title=project_title,
+    #         )
+    #         task.save() 
+    #         form_data = {
+    #             'country_id': task.country.id if task.country else None,
+    #             'country_name': task.country_name,
+    #             'destination_id': task.destination.id if task.destination else None,
+    #             'destination_name': task.destination_name,
+    #             'level': task.level.ls_id if task.level else None,
+    #             'main_category': task.main_category.title if task.main_category else '',
+    #             'subcategory': task.subcategory.title if task.subcategory else '',
+    #             'image_count': int(image_count),
+    #         }
+    #         try:
+    #             # asynchronous task processing Celery, use delay()
+    #             # process_scraping_task.delay(task.id, form_data=form_data)
+                
+    #             # For synchronous processing
+    #             process_scraping_task(task_id=task.id, form_data=form_data)
+                
+    #             logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
+    #             return JsonResponse({
+    #                 'status': 'success',
+    #                 'message': "File uploaded successfully and task queued.",
+    #                 'redirect_url': reverse('dashboard')
+    #             })
+    #         except Exception as e:
+    #             logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
+    #             return JsonResponse({
+    #                 'status': 'error',
+    #                 'message': "Failed to start the Sites Gathering task. Please try again.",
+    #             })
+    #     else:
+    #         logger.warning(f"Form validation failed: {form.errors}")
+    #         return JsonResponse({
+    #             'status': 'error',
+    #             'message': "There was an error with your submission. Please check the form.",
+    #             'errors': form.errors  # Return form errors to the frontend
+    #         })
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
