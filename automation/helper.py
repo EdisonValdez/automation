@@ -123,7 +123,7 @@ class DataSyncer:
         """
         try:
             self.subcategory, _ = Category.objects.get_or_create(
-                ls_id=int(subcategory_lsid),
+                ls_id=subcategory_lsid,
                 parent=self.category.id,
                 level=self.level.id,
                 defaults={
@@ -141,10 +141,31 @@ class DataSyncer:
             raise ValidationError(
                 "Failed to retrieve or create the subcategory. Please check the provided data.")
 
+    def _validate_fields(self):
+        """Validate country, destination, level and main category
+        """
+        errors = {}
+
+        if not (self.request_data.get('country')):
+            errors["country"] = ["Please select a country."]
+
+        if not (self.request_data.get('destination')):
+            errors["destination"] = ["Please select a destination."]
+
+        if not (self.request_data.get('level')):
+            errors["level"] = ["Please select a level."]
+
+        if not (self.request_data.get('main_category')):
+            errors["main_category"] = ["Please select a main category."]
+
+        if errors:
+            raise ValidationError(errors)
+
     def sync(self):
         """
         Orchestrates the data synchronization process for country, destination, level, category, subcategory.
         """
+        self._validate_fields()
         country_lsid = int(self.request_data.get('country'))
         city_lsid = int(self.request_data.get('destination'))
         level_lsid = int(self.request_data.get('level'))

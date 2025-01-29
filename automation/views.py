@@ -233,6 +233,17 @@ class UploadFileView(View):
     @transaction.atomic
     def post(self, request):
         logger.info("Received file upload POST request")
+
+        # Move LS backend records to the automation system.
+        try:
+            sync_objects = DataSyncer(request).sync()
+        except ValidationError as e:
+            logger.warning(f"Form validation failed: {str(e)}")
+            return JsonResponse({
+                'status': 'error',
+                'message': "There was an error with your submission. Please check the form.",
+                'errors': e.message_dict   # Return form errors to the frontend
+            })
         
         # Move LS backend records to the automation system.
         sync_objects = DataSyncer(request).sync()
