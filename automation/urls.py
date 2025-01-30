@@ -123,7 +123,7 @@ urlpatterns = [
  
     path('load-categories/', views.load_categories, name='load_categories'),  
     #path('categories/', views.get_categories, name='get_categories'),         
-    path('subcategories/', views.get_subcategories, name='get_subcategories'), 
+    #path('subcategories/', views.get_subcategories, name='get_subcategories'), 
     #path('get-countries/', views.get_countries, name='get_countries'),
     #path('get-destinations/', views.get_destinations_by_country, name='get_destinations_by_country'),
     path('events/search/', views.search_events, name='search_events'),
