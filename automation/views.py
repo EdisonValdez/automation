@@ -256,103 +256,218 @@ class UploadFileView(View):
         return render(request, self.template_name, context)
 
     def post(self, request):
-        logger.info("Received file upload POST request")
+        form = ScrapingTaskForm(request.POST, request.FILES)
         
-        with transaction.atomic():
-            
-            # Move LS backend records to the automation system.
+        if form.is_valid():
             try:
-                sync_objects = DataSyncer(request).sync()
-            except ValidationError as e:
-                logger.warning(f"Form validation failed: {str(e)}")
-                return JsonResponse({
-                    'status': 'error',
-                    'message': "There was an error with your submission. Please check the form.",
-                    'errors': e.message_dict   # Return form errors to the frontend
-                })
-            
-            # Move LS backend records to the automation system.
-            sync_objects = DataSyncer(request).sync()
-            country = sync_objects.get("country")
-            destination = sync_objects.get("destination")
-            level = sync_objects.get("level")
-            category = sync_objects.get("category")
-            subcategory = sync_objects.get("subcategory")
+                with transaction.atomic():
+                    # Create project title
+                    project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
+                    if form.cleaned_data['subcategory']:
+                        project_title += f" - {form.cleaned_data['subcategory'].title}"
 
-            # Generate the project_title dynamically
-            project_title = f"{country.name} - {destination.name} - {level.title} - {category.title}"
-            if subcategory:
-                project_title += f" - {subcategory.title}"
+                    # Create task ONCE
+                    task = form.save(commit=False)
+                    task.user = request.user
+                    task.status = 'QUEUED'
+                    task.project_title = project_title
+                    task.country_name = form.cleaned_data['country'].name
+                    task.destination_name = form.cleaned_data['destination'].name
+                    task.save()
 
-            # Set the project_title in the form
-            form = ScrapingTaskForm()
-            form.initial['project_title'] = project_title
-            image_count = request.POST.get('image_count', '5')
-            
-            task = ScrapingTask(
-                user=request.user,
-                status='QUEUED',
-                country=country,
-                country_name=country.name,
-                destination=destination,
-                destination_name=destination.name,
-                level=level,
-                main_category=category,
-                subcategory=subcategory,
-                description=request.POST.get('description'),
-                file=request.FILES.get('file'),
-                project_title=project_title,
-            )
-            task.save() 
+                    # Update user preferences
+                    user_pref = self.get_user_preferences(request.user)
+                    user_pref.last_country = form.cleaned_data.get('country')
+                    user_pref.last_destination = form.cleaned_data.get('destination')
+                    user_pref.last_level = form.cleaned_data.get('level')
+                    user_pref.last_main_category = form.cleaned_data.get('main_category')
+                    user_pref.last_subcategory = form.cleaned_data.get('subcategory')
+                    user_pref.last_image_count = request.POST.get('image_count', 5)
 
-            # Update user preferences
-            user_pref = self.get_user_preferences(request.user)
-            user_pref.last_country = country
-            user_pref.last_destination = destination
-            user_pref.last_level = level
-            user_pref.last_main_category = category
-            user_pref.last_subcategory = subcategory
-            user_pref.last_image_count = image_count
+                    # Debug logging
+                    logger.info(f"Saving preferences for user {request.user.username}")
+                    logger.info(f"Country: {user_pref.last_country}")
+                    logger.info(f"Destination: {user_pref.last_destination}")
+                    logger.info(f"Level: {user_pref.last_level}")
+                    logger.info(f"Main Category: {user_pref.last_main_category}")
+                    logger.info(f"Subcategory: {user_pref.last_subcategory}")
+                    
+                    user_pref.save()
 
-            # Debug logging
-            logger.info(f"Saving preferences for user {request.user.username}")
-            logger.info(f"Country: {user_pref.last_country}")
-            logger.info(f"Destination: {user_pref.last_destination}")
-            logger.info(f"Level: {user_pref.last_level}")
-            logger.info(f"Main Category: {user_pref.last_main_category}")
-            logger.info(f"Subcategory: {user_pref.last_subcategory}")
-            
-            user_pref.save()
-            
-            form_data = {
-                'country_id': task.country.id if task.country else None,
-                'country_name': task.country_name,
-                'destination_id': task.destination.id if task.destination else None,
-                'destination_name': task.destination_name,
-                'level': task.level.ls_id if task.level else None,
-                'main_category': task.main_category.title if task.main_category else '',
-                'subcategory': task.subcategory.title if task.subcategory else '',
-                'image_count': int(image_count),
-            }
-            try:
-                # asynchronous task processing Celery, use delay()
-                # process_scraping_task.delay(task.id, form_data=form_data)
-                
-                # For synchronous processing
-                process_scraping_task(task_id=task.id, form_data=form_data)
-                
-                logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
-                return JsonResponse({
-                    'status': 'success',
-                    'message': "File uploaded successfully and task queued.",
-                    'redirect_url': reverse('dashboard')
-                })
+                    # Prepare form data
+                    form_data = {
+                        'country_id': task.country.id if task.country else None,
+                        'country_name': task.country_name,
+                        'destination_id': task.destination.id if task.destination else None,
+                        'destination_name': task.destination_name,
+                        'level': task.level.ls_id if task.level else None,
+                        'main_category': task.main_category.title if task.main_category else '',
+                        'subcategory': task.subcategory.title if task.subcategory else '',
+                        'image_count': int(user_pref.last_image_count),
+                    }
+
+                    try:
+                        process_scraping_task(task_id=task.id, form_data=form_data)
+                        logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
+                        messages.success(request, 'Task created successfully!')
+                        return redirect('task_list')
+                    except Exception as e:
+                        logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
+                        messages.error(request, "Failed to start the Sites Gathering task. Please try again.")
+                        raise
+
             except Exception as e:
-                logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
-                return JsonResponse({
-                    'status': 'error',
-                    'message': "Failed to start the Sites Gathering task. Please try again.",
-                })
+                logger.error(f"Error saving preferences: {str(e)}")
+                messages.error(request, f"Error creating task: {str(e)}")
+        
+        return render(request, self.template_name, {'form': form})
+#@method_decorator(login_required, name='dispatch')
+# #@method_decorator(user_passes_test(is_admin), name='dispatch')
+# class UploadFileView(View):
+#     template_name = 'automation/upload.html'
+
+#     def get_user_preferences(self, user):
+#         """Get or create user preferences"""
+#         pref, created = UserPreference.objects.get_or_create(user=user)
+#         return pref
+
+#     def get_initial_data(self, user_pref):
+#         """Get initial form data from user preferences"""
+#         return {
+#             'country': user_pref.last_country.id if user_pref.last_country else None,
+#             'destination': user_pref.last_destination.id if user_pref.last_destination else None,
+#             'level': user_pref.last_level.id if user_pref.last_level else None,
+#             'main_category': user_pref.last_main_category.id if user_pref.last_main_category else None,
+#             'subcategory': user_pref.last_subcategory.id if user_pref.last_subcategory else None,
+#         }
+
+#     def get(self, request):
+#         user_pref = self.get_user_preferences(request.user)
+#         initial_data = self.get_initial_data(user_pref)
+        
+#         form = ScrapingTaskForm(initial=initial_data)
+        
+#         # Update querysets based on saved preferences
+#         if user_pref.last_country:
+#             form.fields['destination'].queryset = Destination.objects.filter(
+#                 country=user_pref.last_country
+#             )
+#         if user_pref.last_level:
+#             form.fields['main_category'].queryset = Category.objects.filter(
+#                 level=user_pref.last_level,
+#                 parent__isnull=True
+#             )
+#         if user_pref.last_main_category:
+#             form.fields['subcategory'].queryset = Category.objects.filter(
+#                 parent=user_pref.last_main_category
+#             )
+
+#         context = {
+#             'form': form,
+#             'last_image_count': user_pref.last_image_count,
+#             'user_preferences': user_pref,
+#             'default_image_count': 5
+#         }
+#         return render(request, self.template_name, context)
+
+#     def post(self, request):
+#         logger.info("Received file upload POST request")
+        
+#         with transaction.atomic():
+            
+#             # Move LS backend records to the automation system.
+#             try:
+#                 sync_objects = DataSyncer(request).sync()
+#             except ValidationError as e:
+#                 logger.warning(f"Form validation failed: {str(e)}")
+#                 return JsonResponse({
+#                     'status': 'error',
+#                     'message': "There was an error with your submission. Please check the form.",
+#                     'errors': e.message_dict   # Return form errors to the frontend
+#                 })
+            
+#             # Move LS backend records to the automation system.
+#             sync_objects = DataSyncer(request).sync()
+#             country = sync_objects.get("country")
+#             destination = sync_objects.get("destination")
+#             level = sync_objects.get("level")
+#             category = sync_objects.get("category")
+#             subcategory = sync_objects.get("subcategory")
+
+#             # Generate the project_title dynamically
+#             project_title = f"{country.name} - {destination.name} - {level.title} - {category.title}"
+#             if subcategory:
+#                 project_title += f" - {subcategory.title}"
+
+#             # Set the project_title in the form
+#             form = ScrapingTaskForm()
+#             form.initial['project_title'] = project_title
+#             image_count = request.POST.get('image_count', '5')
+            
+#             task = ScrapingTask(
+#                 user=request.user,
+#                 status='QUEUED',
+#                 country=country,
+#                 country_name=country.name,
+#                 destination=destination,
+#                 destination_name=destination.name,
+#                 level=level,
+#                 main_category=category,
+#                 subcategory=subcategory,
+#                 description=request.POST.get('description'),
+#                 file=request.FILES.get('file'),
+#                 project_title=project_title,
+#             )
+#             task.save() 
+
+#             # Update user preferences
+#             user_pref = self.get_user_preferences(request.user)
+#             user_pref.last_country = country
+#             user_pref.last_destination = destination
+#             user_pref.last_level = level
+#             user_pref.last_main_category = category
+#             user_pref.last_subcategory = subcategory
+#             user_pref.last_image_count = image_count
+
+#             # Debug logging
+#             logger.info(f"Saving preferences for user {request.user.username}")
+#             logger.info(f"Country: {user_pref.last_country}")
+#             logger.info(f"Destination: {user_pref.last_destination}")
+#             logger.info(f"Level: {user_pref.last_level}")
+#             logger.info(f"Main Category: {user_pref.last_main_category}")
+#             logger.info(f"Subcategory: {user_pref.last_subcategory}")
+            
+#             user_pref.save()
+            
+#             form_data = {
+#                 'country_id': task.country.id if task.country else None,
+#                 'country_name': task.country_name,
+#                 'destination_id': task.destination.id if task.destination else None,
+#                 'destination_name': task.destination_name,
+#                 'level': task.level.ls_id if task.level else None,
+#                 'main_category': task.main_category.title if task.main_category else '',
+#                 'subcategory': task.subcategory.title if task.subcategory else '',
+#                 'image_count': int(image_count),
+#             }
+#             try:
+#                 # asynchronous task processing Celery, use delay()
+#                 # process_scraping_task.delay(task.id, form_data=form_data)
+                
+#                 # For synchronous processing
+#                 process_scraping_task(task_id=task.id, form_data=form_data)
+                
+#                 logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
+#                 return JsonResponse({
+#                     'status': 'success',
+#                     'message': "File uploaded successfully and task queued.",
+#                     'redirect_url': reverse('dashboard')
+#                 })
+#             except Exception as e:
+#                 logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
+#                 return JsonResponse({
+#                     'status': 'error',
+#                     'message': "Failed to start the Sites Gathering task. Please try again.",
+#                 })
 
 
 @method_decorator(login_required, name='dispatch')
