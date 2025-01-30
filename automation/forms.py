@@ -208,9 +208,8 @@ class ScrapingTaskForm(forms.ModelForm):
                 'class': 'form-control',
                 'readonly': True
             }),
-            'description': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 4,
+            'description': forms.TextInput(attrs={
+                'class': 'form-control',         
                 'placeholder': 'Enter description or paste Google Maps URL (one url)'
             }),
         }
