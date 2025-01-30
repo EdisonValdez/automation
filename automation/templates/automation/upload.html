@@ -4,7 +4,6 @@
 
 {% block content %}
 <style> .image-count-selection {margin-top: 10px;}.form-check-inline {margin-right: 20px;}.form-check-input:checked {background-color: #F4C031;border-color: #F4C031;}.form-check-label {cursor: pointer;}.sidebar-expand.active .sidebar {transition: transform 0.3s ease-in-out;max-width: 100%;z-index: 1111;}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.loader {border: 5px solid #f3f3f3;border-top: 5px solid #3498db;border-radius: 50%;width: 50px;height: 50px;animation: spin 1s linear infinite;display: none;}@keyframes spin {0% {transform: rotate(0deg);}100% {transform: rotate(360deg);}}.overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background-color: rgba(0, 0, 0, 0.5);z-index: 1000;display: none;}#loading-spinner {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index: 1001;display: none;}</style>
- 
 <div class="main-content project"> 
     <div class="row">
         <div class="col-12">
@@ -17,29 +16,154 @@
                 </h1>
             </div>
         </div>
-    </div>
-
-
+    </div> 
 <div class="row">
 <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
     <div class="box">
         <div class="box-body">
             {% if messages %}
-            <ul class="messages">
+            <div class="messages-container">
                 {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
                 {% endfor %}
-            </ul>
-            {% endif %}
-            {% if error %}
-            <div class="icon-box bg-color-9" role="alert">
-                {{ error }}
             </div>
             {% endif %}
+
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="icon-box">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ error }}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <style>
+            .messages-container {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1050;
+                max-width: 350px;
+            }
+
+            .alert {
+                margin-bottom: 1rem;
+                padding: 1rem;
+                border: none;
+                border-radius: 8px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+            }
+
+            .alert-success {
+                background-color: #d4edda;
+                color: #155724;
+                border-left: 4px solid #28a745;
+            }
+
+            .alert-warning {
+                background-color: #fff3cd;
+                color: #856404;
+                border-left: 4px solid #ffc107;
+            }
+
+            .alert-error,
+            .alert-danger {
+                background-color: #f8d7da;
+                color: #721c24;
+                border-left: 4px solid #dc3545;
+            }
+
+            .alert-info {
+                background-color: #d1ecf1;
+                color: #0c5460;
+                border-left: 4px solid #17a2b8;
+            }
+
+            .btn-close {
+                padding: 0.5rem;
+                margin: -0.5rem -0.5rem -0.5rem auto;
+                background: transparent;
+                border: 0;
+                float: right;
+                font-size: 1.5rem;
+                font-weight: 700;
+                line-height: 1;
+                color: inherit;
+                opacity: .5;
+                cursor: pointer;
+            }
+
+            .btn-close:hover {
+                opacity: 1;
+            }
+
+            .icon-box {
+                display: flex;
+                align-items: center;
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+
+            .alert.fade-out {
+                animation: fadeOut 0.3s ease-out forwards;
+            }
+            </style>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Auto-dismiss messages after 5 seconds
+                const messages = document.querySelectorAll('.alert');
+                messages.forEach(message => {
+                    setTimeout(() => {
+                        message.classList.add('fade-out');
+                        setTimeout(() => {
+                            message.remove();
+                        }, 300);
+                    }, 5000);
+                });
+
+                // Click to dismiss
+                document.querySelectorAll('.btn-close').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const alert = this.closest('.alert');
+                        alert.classList.add('fade-out');
+                        setTimeout(() => {
+                            alert.remove();
+                        }, 300);
+                    });
+                });
+            });
+            </script>
+
         <form id="upload-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row">
-
                 <!-- Country Dropdown -->
                 <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
@@ -49,7 +173,6 @@
                         </select>
                     </div>
                 </div>
-        
                 <!-- Destination Dropdown -->
                 <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
@@ -59,18 +182,14 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
                         <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
                         {{ form.level }}
                     </div>
                 </div>
-            </div>
-        
+            </div>        
             <div class="row">
-                
-        
                 <!-- Main Category Dropdown -->
                 <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
@@ -134,102 +253,110 @@
                     </div>
                 </div>
             </div>
-            </div>
-        
-            <!-- Toggleable Description Field
+            </div>    
+            <div class="row">  
+            <div class="col-xl-8 col-lg-8 col-md-6 col-sm-12">
+            <!-- Toggleable Description Field-->
             <div class="form-group mb-24">
-                <label class="form-label mt-1 fs-18 font-w500 color-primary">
-                    <a href="#" id="toggle-description" class="text-primary">+ Add Description (optional)</a>
+               <!-- <label class="form-label mt-1 fs-18 font-w500 color-primary">
+                    <a href="#" id="toggle-description" class="btn btn-outline-primary">+ Add Google Maps URL (optional)</a>
                 </label>
-                <div id="description-container" style="display: none;">
-                    <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Description</label>
-                    {{ form.description }}
-                </div>
-            </div> -->
-            
-        <!-- images Count Selection --> 
-        
-
-            <div class="row mb-3">
-                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
-                    <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
-                    <div class="input-group file-browser">
-                        {{ form.file }}
+                <div id="description-container" style="display: none;">-->
+                <div id="description-container">
+                    <div class="form-group">
+                        <!--<label for="id_description">Paste one URL</label>--> 
+                        <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Paste one URL</label>
+                        <div class="input-group">
+                            <input type="text"
+                                id="id_description"
+                                name="description"
+                                class="form-control"
+                                placeholder="https://maps.google.com/maps/place/...">
+                            <div class="input-group-append">
+                                <span class="input-group-text validation-indicator" style="display: none;">
+                                    <i class="fas"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <small id="urlHelp" class="form-text text-muted">
+                            Paste Google Maps URL (one url only)
+                        </small>
+                        <div id="urlFeedback" class="invalid-feedback" style="display: none;"></div>
                     </div>
-                    <div class="form-text">{{ form.file.help_text }}</div>
                 </div>
-            </div>  
-
-
-                                
+            </div>
+            </div>
+                <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                    {% if user.is_admin %}
+                <div class="row mb-3">
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                        <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
+                        <div class="input-group file-browser">
+                            {{ form.file }}
+                        </div>
+                        <div class="form-text">{{ form.file.help_text }}</div>
+                    </div>
+                </div>    
+                {% endif %} 
+                
+            </div>
+             </div>  
+            
+            
             <div class="row">
                 <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12"> 
                     <div class="input-group file-browser">
-                        <button type="submit" class="btn btn-primary">Start Businesses Acquisition <i class="fas fa-rocket"></i></button>
+                        <button type="submit" class="btn btn-primary btn-lg">Start Businesses Acquisition <i class="fas fa-rocket"></i></button>
                     </div>
                 </div>
             
             </div>
         </form>
-                    
-<!-- JavaScript to toggle the description field 
-<script>
-    document.getElementById("toggle-description").addEventListener("click", function(event) {
-        event.preventDefault();
-        var descriptionContainer = document.getElementById("description-container");
-        if (descriptionContainer.style.display === "none") {
-            descriptionContainer.style.display = "block";
-            this.textContent = "- Hide Description";
-        } else {
-            descriptionContainer.style.display = "none";
-            this.textContent = "+ Add Description (optional)";
-        }
-    });
-</script>-->
+                
+<!-- JavaScript to toggle the description field -->
+  
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-                        
-<!-- JavaScript to toggle the images field -->
-<script>
-    document.getElementById("toggle-images").addEventListener("click", function(event) {
-        event.preventDefault();
-        var imagesContainer = document.getElementById("images-container");
-        if (imagesContainer.style.display === "none") {
-            imagesContainer.style.display = "block";
-            this.textContent = "- Hide images";
-        } else {
-            imagesContainer.style.display = "none";
-            this.textContent = "+ Add images (optional)";
-        }
-    });
-</script>
-<!-- JavaScript to toggle the images field -->
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggleFileUploadButton = document.getElementById('toggle-file-upload');
-        const fileUploadSection = document.getElementById('file-upload-section');
-        
-        toggleFileUploadButton.addEventListener('click', function () {
-            // Toggle visibility
-            if (fileUploadSection.classList.contains('d-none')) {
-                fileUploadSection.classList.remove('d-none');
-                toggleFileUploadButton.textContent = 'Hide File Upload';
-            } else {
-                fileUploadSection.classList.add('d-none');
-                toggleFileUploadButton.textContent = 'Show File Upload';
-            }
-        });
-    });
-</script>
-
-                    
- 
+<!--Categories and Levels-->
 <script>
 $(document).ready(function() {
+    // Initialize Select2 for all select elements
+    $('select').select2({
+        width: '100%',
+        placeholder: 'Select an option',
+        allowClear: true
+    });
+
+    // Function to set initial values and trigger changes
+    function initializeForm() {
+        // Get saved values from the server
+        const savedPreferences = {
+            level_id: '{{ user_preferences.last_level.id|default:"" }}',
+            main_category_id: '{{ user_preferences.last_main_category.id|default:"" }}',
+            subcategory_id: '{{ user_preferences.last_subcategory.id|default:"" }}',
+            country_id: '{{ user_preferences.last_country.id|default:"" }}',
+            destination_id: '{{ user_preferences.last_destination.id|default:"" }}'
+        };
+
+        // Set initial values and trigger changes
+        if (savedPreferences.level_id) {
+            $('#id_level').val(savedPreferences.level_id).trigger('change');
+        }
+        if (savedPreferences.country_id) {
+            $('#id_country').val(savedPreferences.country_id).trigger('change');
+        }
+    }
+
     // Handle Level and Main Category changes
-    $('#id_level').change(function() {
-        var levelId = $(this).val();
-        $('#id_main_category').empty().append('<option value="">Select a category</option>');
-        $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+    $('#id_level').on('change', function() {
+        const levelId = $(this).val();
+        const $mainCategory = $('#id_main_category');
+        const $subcategory = $('#id_subcategory');
+        const savedMainCategoryId = '{{ user_preferences.last_main_category.id|default:"" }}';
+
+        $mainCategory.empty().append('<option value="">Select a category</option>');
+        $subcategory.empty().append('<option value="">Select a subcategory (optional)</option>');
 
         if (levelId) {
             $.ajax({
@@ -238,23 +365,34 @@ $(document).ready(function() {
                 success: function(data) {
                     if (data.length > 0) {
                         data.forEach(function(category) {
-                            $('#id_main_category').append($('<option></option>').attr('value', category.id).text(category.title));
+                            $mainCategory.append(
+                                $('<option></option>')
+                                    .attr('value', category.id)
+                                    .text(category.title)
+                            );
                         });
-                    } else {
-                        $('#id_main_category').append('<option value="">No categories available</option>');
+                        
+                        // Set saved main category if it exists
+                        if (savedMainCategoryId) {
+                            $mainCategory.val(savedMainCategoryId).trigger('change');
+                        }
                     }
+                    $mainCategory.trigger('change.select2');
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching categories: ' + error);
+                error: function(error) {
+                    console.error('Error fetching categories:', error);
                 }
             });
         }
     });
 
     // Handle Main Category and Subcategory changes
-    $('#id_main_category').change(function() {
-        var categoryId = $(this).val();
-        $('#id_subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+    $('#id_main_category').on('change', function() {
+        const categoryId = $(this).val();
+        const $subcategory = $('#id_subcategory');
+        const savedSubcategoryId = '{{ user_preferences.last_subcategory.id|default:"" }}';
+
+        $subcategory.empty().append('<option value="">Select a subcategory (optional)</option>');
 
         if (categoryId) {
             $.ajax({
@@ -263,100 +401,429 @@ $(document).ready(function() {
                 success: function(data) {
                     if (data.length > 0) {
                         data.forEach(function(subcategory) {
-                            $('#id_subcategory').append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
+                            $subcategory.append(
+                                $('<option></option>')
+                                    .attr('value', subcategory.id)
+                                    .text(subcategory.title)
+                            );
                         });
-                    } else {
-                        $('#id_subcategory').append('<option value="">No subcategories available</option>');
+                        
+                        // Set saved subcategory if it exists
+                        if (savedSubcategoryId) {
+                            $subcategory.val(savedSubcategoryId);
+                        }
                     }
+                    $subcategory.trigger('change.select2');
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching subcategories: ' + error);
+                error: function(error) {
+                    console.error('Error fetching subcategories:', error);
                 }
             });
         }
     });
 
-    
-    // Handle Country and Destination changes
-    $('#id_country').change(function() {
-        var countryId = $(this).val();
-        $('#id_destination').empty().append('<option value="">Select a destination</option>');
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+            /* Container styling */
+            .select2-container--custom {
+                margin-bottom: 1rem;
+            }
 
-        if (countryId) {
-            $.ajax({
-                url: '{% url "get_destinations_by_country" %}',
-                data: { 'country_id': countryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(destination) {
-                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
-                        });
-                    } else {
-                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching destinations: ' + error);
-                }
-            });
-        }
-    });
+            /* Main select box styling */
+            .select2-container--custom .select2-selection--single {
+                height: 45px;
+                background-color: #fff;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+            }
+
+            /* Hover state */
+            .select2-container--custom .select2-selection--single:hover {
+                border-color: #cbd5e0;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Focus state */
+            .select2-container--custom.select2-container--focus .select2-selection--single {
+                border-color: #4299e1;
+                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+            }
+
+            /* Selected option text */
+            .select2-container--custom .select2-selection--single .select2-selection__rendered {
+                line-height: 43px;
+                padding-left: 15px;
+                padding-right: 30px;
+                color: #2d3748;
+                font-size: 0.95rem;
+            }
+
+            /* Placeholder */
+            .select2-container--custom .select2-selection--single .select2-selection__placeholder {
+                color: #a0aec0;
+            }
+
+            /* Arrow container */
+            .select2-container--custom .select2-selection--single .select2-selection__arrow {
+                height: 43px;
+                width: 30px;
+                right: 3px;
+            }
+
+            /* Custom arrow */
+            .select2-container--custom .select2-selection--single .select2-selection__arrow b {
+                border: none;
+                height: 10px;
+                width: 10px;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: contain;
+                margin-left: -7px;
+                margin-top: -5px;
+            }
+
+            /* Dropdown panel */
+            .select2-container--custom .select2-dropdown {
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                margin-top: 5px;
+                overflow: hidden;
+            }
+
+            /* Search box */
+            .select2-container--custom .select2-search--dropdown .select2-search__field {
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 8px 12px;
+                margin: 8px;
+                width: calc(100% - 16px);
+            }
+
+            .select2-container--custom .select2-search--dropdown .select2-search__field:focus {
+                outline: none;
+                border-color: #4299e1;
+                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+            }
+
+            /* Options list */
+            .select2-container--custom .select2-results__option {
+                padding: 10px 15px;
+                font-size: 0.95rem;
+                transition: all 0.2s ease;
+            }
+
+            /* Option hover */
+            .select2-container--custom .select2-results__option--highlighted[aria-selected] {
+                background-color: #f7fafc;
+                color: #2d3748;
+            }
+
+            /* Selected option */
+            .select2-container--custom .select2-results__option[aria-selected=true] {
+                background-color: #ebf8ff;
+                color: #2b6cb0;
+            }
+
+            /* Disabled state */
+            .select2-container--custom.select2-container--disabled .select2-selection--single {
+                background-color: #f7fafc;
+                cursor: not-allowed;
+                border-color: #edf2f7;
+            }
+
+            /* Clear button */
+            .select2-container--custom .select2-selection--single .select2-selection__clear {
+                margin-right: 25px;
+                color: #a0aec0;
+                font-size: 18px;
+                font-weight: 500;
+            }
+
+            .select2-container--custom .select2-selection--single .select2-selection__clear:hover {
+                color: #e53e3e;
+            }
+
+            /* Group header */
+            .select2-container--custom .select2-results__group {
+                padding: 10px 15px;
+                font-weight: 600;
+                color: #4a5568;
+                background-color: #f7fafc;
+            }
+
+            /* Loading state */
+            .select2-container--custom .select2-results__option.loading-results {
+                padding: 15px;
+                text-align: center;
+                color: #a0aec0;
+            }
+        `)
+        .appendTo('head');
+
+    // Initialize the form with saved values
+    initializeForm();
 });
-
-
+</script>
+<!--Categories and Levels-->
+ 
+<!--Country and City-->
+<script>
 $(document).ready(function() {
-    // Load countries when the page loads
+    // Initialize Select2
+    $('#id_country, #id_destination').select2({
+        width: '100%',
+        placeholder: 'Select an option',
+        allowClear: true
+    });
+
+    // Function to load and set saved preferences
+    function loadSavedPreferences() {
+        const savedCountryId = '{{ user_preferences.last_country.id|default:"" }}';
+        const savedDestinationId = '{{ user_preferences.last_destination.id|default:"" }}';
+
+        // If we have a saved country, select it and load its destinations
+        if (savedCountryId) {
+            $('#id_country').val(savedCountryId).trigger('change');
+        }
+    }
+
+    // Function to load destinations for a country
+    function loadDestinations(countryId, callback) {
+        const $destination = $('#id_destination');
+        $destination.empty().append('<option value="">Select a destination</option>');
+
+        if (!countryId) return;
+
+        $.ajax({
+            url: '{% url "get_destinations_by_country" %}',
+            data: { 'country_id': countryId },
+            method: 'GET',
+            success: function(data) {
+                if (data.length > 0) {
+                    data.forEach(function(destination) {
+                        $destination.append(
+                            $('<option></option>')
+                            .attr('value', destination.id)
+                            .text(destination.name)
+                        );
+                    });
+                    
+                    // If callback provided, execute it
+                    if (callback) callback();
+                } else {
+                    $destination.append('<option value="">No destinations available</option>');
+                }
+                $destination.trigger('change.select2');
+            },
+            error: function(error) {
+                console.error('Error fetching destinations:', error);
+                $destination.append('<option value="">Error loading destinations</option>');
+                $destination.trigger('change.select2');
+            }
+        });
+    }
+
+    // Load countries when page loads
     $.ajax({
         url: '{% url "get_countries" %}',
         method: 'GET',
         success: function(data) {
-            $('#id_country').empty().append('<option value="">Select a country</option>');
+            const $country = $('#id_country');
+            $country.empty().append('<option value="">Select a country</option>');
+
             if (data.length > 0) {
                 data.forEach(function(country) {
-                    $('#id_country').append($('<option></option>').attr('value', country.id).text(country.name));
+                    $country.append(
+                        $('<option></option>')
+                        .attr('value', country.id)
+                        .text(country.name)
+                    );
                 });
+
+                // After loading countries, load saved preferences
+                loadSavedPreferences();
             } else {
-                $('#id_country').append('<option value="">No countries available</option>');
+                $country.append('<option value="">No countries available</option>');
             }
+            $country.trigger('change.select2');
         },
-        error: function(xhr, status, error) {
-            console.error('Error fetching countries: ' + error);
+        error: function(error) {
+            console.error('Error fetching countries:', error);
+            $('#id_country').append('<option value="">Error loading countries</option>');
+            $('#id_country').trigger('change.select2');
         }
     });
 
-    // Handle country and destination changes
-    $('#id_country').change(function() {
-        var countryId = $(this).val();
-        $('#id_destination').empty().append('<option value="">Select a destination</option>');
-
-        if (countryId) {
-            $.ajax({
-                url: '{% url "get_destinations_by_country" %}',
-                data: { 'country_id': countryId },
-                success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(destination) {
-                            $('#id_destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
-                        });
-                    } else {
-                        $('#id_destination').append('<option value="">No destinations available for this country</option>');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error fetching destinations: ' + error);
-                }
-            });
-        }
+    // Handle country change
+    $('#id_country').on('change', function() {
+        const countryId = $(this).val();
+        const savedDestinationId = '{{ user_preferences.last_destination.id|default:"" }}';
+        
+        loadDestinations(countryId, function() {
+            // After loading destinations, set the saved destination if it exists
+            if (savedDestinationId) {
+                $('#id_destination').val(savedDestinationId).trigger('change.select2');
+            }
+        });
     });
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+            /* Container styling */
+            .select2-container--custom {
+                margin-bottom: 1rem;
+            }
+
+            /* Main select box styling */
+            .select2-container--custom .select2-selection--single {
+                height: 45px;
+                background-color: #fff;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+            }
+
+            /* Hover state */
+            .select2-container--custom .select2-selection--single:hover {
+                border-color: #cbd5e0;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Focus state */
+            .select2-container--custom.select2-container--focus .select2-selection--single {
+                border-color: #4299e1;
+                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+            }
+
+            /* Selected option text */
+            .select2-container--custom .select2-selection--single .select2-selection__rendered {
+                line-height: 43px;
+                padding-left: 15px;
+                padding-right: 30px;
+                color: #2d3748;
+                font-size: 0.95rem;
+            }
+
+            /* Placeholder */
+            .select2-container--custom .select2-selection--single .select2-selection__placeholder {
+                color: #a0aec0;
+            }
+
+            /* Arrow container */
+            .select2-container--custom .select2-selection--single .select2-selection__arrow {
+                height: 43px;
+                width: 30px;
+                right: 3px;
+            }
+
+            /* Custom arrow */
+            .select2-container--custom .select2-selection--single .select2-selection__arrow b {
+                border: none;
+                height: 10px;
+                width: 10px;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: contain;
+                margin-left: -7px;
+                margin-top: -5px;
+            }
+
+            /* Dropdown panel */
+            .select2-container--custom .select2-dropdown {
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                margin-top: 5px;
+                overflow: hidden;
+            }
+
+            /* Search box */
+            .select2-container--custom .select2-search--dropdown .select2-search__field {
+                border: 1px solid #e2e8f0;
+                border-radius: 6px;
+                padding: 8px 12px;
+                margin: 8px;
+                width: calc(100% - 16px);
+            }
+
+            .select2-container--custom .select2-search--dropdown .select2-search__field:focus {
+                outline: none;
+                border-color: #4299e1;
+                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+            }
+
+            /* Options list */
+            .select2-container--custom .select2-results__option {
+                padding: 10px 15px;
+                font-size: 0.95rem;
+                transition: all 0.2s ease;
+            }
+
+            /* Option hover */
+            .select2-container--custom .select2-results__option--highlighted[aria-selected] {
+                background-color: #f7fafc;
+                color: #2d3748;
+            }
+
+            /* Selected option */
+            .select2-container--custom .select2-results__option[aria-selected=true] {
+                background-color: #ebf8ff;
+                color: #2b6cb0;
+            }
+
+            /* Disabled state */
+            .select2-container--custom.select2-container--disabled .select2-selection--single {
+                background-color: #f7fafc;
+                cursor: not-allowed;
+                border-color: #edf2f7;
+            }
+
+            /* Clear button */
+            .select2-container--custom .select2-selection--single .select2-selection__clear {
+                margin-right: 25px;
+                color: #a0aec0;
+                font-size: 18px;
+                font-weight: 500;
+            }
+
+            .select2-container--custom .select2-selection--single .select2-selection__clear:hover {
+                color: #e53e3e;
+            }
+
+            /* Group header */
+            .select2-container--custom .select2-results__group {
+                padding: 10px 15px;
+                font-weight: 600;
+                color: #4a5568;
+                background-color: #f7fafc;
+            }
+
+            /* Loading state */
+            .select2-container--custom .select2-results__option.loading-results {
+                padding: 15px;
+                text-align: center;
+                color: #a0aec0;
+            }
+        `)
+        .appendTo('head');
 });
 </script>
+<!--Country and City-->
+
+
 <div class="overlay" ></div>                 
-
 <div id="log-container"></div>
-
  
 {% include 'automation/modals.html' %}
  
+<!--Messages-->
 <script>
     $(document).ready(function() {
         $('#upload-form').on('submit', function(e) {
@@ -463,7 +930,9 @@ $(document).ready(function() {
         });
     });
 </script>
- 
+<!--Messages-->
+
+
 <!--Translate Tasks-->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -730,6 +1199,186 @@ $(document).ready(function() {
 </script>
 <!--Translate Tasks-->
  
+<!--Validator Google URL format-->       
+<script>
+$(document).ready(function() { 
+    $('#toggle-description').click(function(e) {
+        e.preventDefault();
+        $('#description-container').slideToggle();
+    });
+    
+    const urlInput = $('#id_description');
+    const indicator = $('.validation-indicator');
+    const feedback = $('#urlFeedback'); 
+    const clearIcon = $('.clear-input');
+    const validPatterns = [
+        /^https:\/\/(www\.)?google\.com\/maps\/place\/.+/i,
+        /^https:\/\/maps\.google\.com\/maps\?q=.+/i,
+        /^https:\/\/maps\.google\.com\/maps\/dir\/.+/i,
+        /^https:\/\/(www\.)?google\.com\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,
+        /^https:\/\/maps\.app\.goo\.gl\/.+/i
+    ];
+         
+ 
+    clearIcon.on('click', function() {
+            urlInput.val('').removeClass('is-valid is-invalid');
+            indicator.hide();
+            feedback.hide();
+            $('#description-container').slideUp();
+            $('#toggle-description').removeClass('active');
+        }); 
+
+    function validateGoogleMapsUrl(url) { 
+        url = url.trim(); 
+        if (!url) {
+            return {
+                isValid: false,
+                message: 'URL cannot be empty'
+            };
+        } 
+        if (!url.match(/^https?:\/\//i)) {
+            return {
+                isValid: false,
+                message: 'URL must start with http:// or https://'
+            };
+        } 
+        const isValidPattern = validPatterns.some(pattern => pattern.test(url));
+        if (!isValidPattern) {
+            return {
+                isValid: false,
+                message: 'Invalid Google Maps URL format'
+            };
+        } 
+        try {
+            const urlObj = new URL(url);
+            const hostname = urlObj.hostname.toLowerCase();
+            
+            if (!hostname.includes('google.com') && 
+                !hostname.includes('maps.google.com') && 
+                !hostname.includes('maps.app.goo.gl')) {
+                return {
+                    isValid: false,
+                    message: 'URL must be from Google Maps'
+                };
+            }
+
+            return {
+                isValid: true,
+                message: 'Valid Google Maps URL',
+                trimmedUrl: url
+            };
+        } catch (e) {
+            return {
+                isValid: false,
+                message: 'Invalid URL format'
+            };
+        }
+    }
+
+    function updateValidationUI(validationResult) {
+        const icon = indicator.find('i');
+        indicator.show();
+        feedback.show();
+
+        if (validationResult.isValid) {
+            urlInput.removeClass('is-invalid').addClass('is-valid');
+            icon.removeClass('fa-times').addClass('fa-check');
+            indicator.removeClass('bg-danger').addClass('bg-success');
+            feedback.removeClass('invalid-feedback').addClass('valid-feedback');
+            urlInput.val(validationResult.trimmedUrl);
+        } else {
+            urlInput.removeClass('is-valid').addClass('is-invalid');
+            icon.removeClass('fa-check').addClass('fa-times');
+            indicator.removeClass('bg-success').addClass('bg-danger');
+            feedback.removeClass('valid-feedback').addClass('invalid-feedback');
+        }            
+        feedback.text(validationResult.message);
+    }     
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+            .validation-indicator {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                transition: all 0.3s ease;
+            }
+            .validation-indicator i {
+                color: white;
+            }
+            .input-group-text.bg-success {
+                background-color: #28a745 !important;
+                border-color: #28a745;
+            }
+            .input-group-text.bg-danger {
+                background-color: #dc3545 !important;
+                border-color: #dc3545;
+            }
+            .valid-feedback, .invalid-feedback {
+                display: none;
+                margin-top: 0.25rem;
+                font-size: 80%;
+            }
+            .valid-feedback {
+                color: #28a745;
+            }
+            .invalid-feedback {
+                color: #dc3545;
+            }
+            .is-valid {
+                border-color: #28a745 !important;
+            }
+            .is-invalid {
+                border-color: #dc3545 !important;
+            }
+        
+                .clear-input {
+                    cursor: pointer;
+                    transition: opacity 0.3s ease;
+                }
+                .clear-input:hover {
+                    opacity: 0.7;
+                }
+                .validation-indicator {
+                    cursor: pointer;
+                }
+                /* Rest of your previous styles */
+            `)
+            .appendTo('head');
+    
+        // Optional: Add tooltip for clear icon
+        clearIcon.attr('title', 'Clear URL');
+        
+
+
+    let typingTimer;
+    const doneTypingInterval = 500;  
+
+    urlInput.on('input', function() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            const result = validateGoogleMapsUrl($(this).val());
+            updateValidationUI(result);
+        }, doneTypingInterval);
+    });
+
+    urlInput.on('keydown', function() {
+        clearTimeout(typingTimer);
+    }); 
+    $('form').on('submit', function(e) {
+        const url = urlInput.val();
+        if (url) {  
+            const result = validateGoogleMapsUrl(url);
+            if (!result.isValid) {
+                e.preventDefault();
+                updateValidationUI(result);
+            }
+        }
+    });
+});
+</script>
+<!--Validator Google URL format-->
 {% endblock %}
 
  

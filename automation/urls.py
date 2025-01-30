@@ -109,6 +109,7 @@ urlpatterns = [
     path('api/load-categories/', views.load_categories, name='load_categories'),
     path('api/levels/', views.get_levels, name='get_levels'), 
     path('api/destination-categories/', views.DestinationCategoriesView.as_view(), name='destination_categories'),
+ 
 
     path('task-status/<int:task_id>/', views.task_status, name='task_status'),
     path('tasks/', views.task_list, name='task_list'),

@@ -36,7 +36,7 @@ from django.template.loader import render_to_string
 from .tasks import *
 from .serializers import BusinessSerializer
 from .permissions import IsAdminOrAmbassadorForDestination
-from .models import CustomUser, Destination, Feedback, HourlyBusyness, Level, PopularTimes, ScrapingTask, Image, Business, UserPreference,  UserRole, Country
+from .models import CustomUser, Destination, Feedback, HourlyBusyness, Level, PopularTimes, ScrapingTask, Image, Business,  UserRole, Country
 from .forms import FeedbackFormSet, DestinationForm, UserProfileForm, CustomUserCreationForm, CustomUserChangeForm, ScrapingTaskForm, BusinessForm
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
@@ -51,7 +51,7 @@ from automation.helper import datetime_serializer
 from django.views.generic import ListView 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from automation.services.ls_backend import LSBackendClient   
-from automation.signals import update_task_status_signal
+
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -83,16 +83,33 @@ def get_available_openai_key():
         settings.FALLBACK_2_OPENAI_API_KEY,
     ]
     for key in keys:
-        try:
-            openai.api_key = key
-            openai.Model.list()
-            logger.debug(f"Using OpenAI API Key: {key} - views")
-            return key
-        except Exception as e:
-            logger.error(f"API key {key} failed with error: {e}")
-            continue
+        for _ in range(3):   
+            try:
+                openai.api_key = key
+                openai.Model.list()
+                logger.debug(f"Using OpenAI API Key: {key} - tasks")
+                return key
+            except openai.error.OpenAIError as e:
+                logger.warning(f"Transient error with key {key}: {e}")
+                time.sleep(2)   
+                continue
+            except Exception as e:
+                logger.error(f"API key {key} failed with error: {e}")
+                break  
+        continue
     logger.error("All OpenAI API keys failed.")
     return None
+
+valid_openai_key = get_available_openai_key()
+
+if valid_openai_key:
+    try:
+        doctran = Doctran(openai_api_key=valid_openai_key)
+    except Exception as e:
+        logger.critical(f"Failed to initialize Doctran: {e}")
+else:
+    logger.critical("Failed to initialize Doctran due to no available OpenAI API keys.")
+
  
 #LSBACKEND API
 
@@ -184,120 +201,123 @@ def get_cities(request):
 #LSBACKEND API
 
 @method_decorator(login_required, name='dispatch')
-#@method_decorator(user_passes_test(is_admin), name='dispatch')
+@method_decorator(user_passes_test(is_admin), name='dispatch')
 class UploadFileView(View):
-    template_name = 'automation/upload.html'
-
-    def get_user_preferences(self, user):
-        """Get or create user preferences"""
-        pref, created = UserPreference.objects.get_or_create(user=user)
-        return pref
-
-    def get_initial_data(self, user_pref):
-        """Get initial form data from user preferences"""
-        return {
-            'country': user_pref.last_country.id if user_pref.last_country else None,
-            'destination': user_pref.last_destination.id if user_pref.last_destination else None,
-            'level': user_pref.last_level.id if user_pref.last_level else None,
-            'main_category': user_pref.last_main_category.id if user_pref.last_main_category else None,
-            'subcategory': user_pref.last_subcategory.id if user_pref.last_subcategory else None,
-        }
-
     def get(self, request):
-        user_pref = self.get_user_preferences(request.user)
-        initial_data = self.get_initial_data(user_pref)
+        logger.info("Accessing UploadFileView GET")
+        form = ScrapingTaskForm()
         
-        form = ScrapingTaskForm(initial=initial_data)
+        # Fetch tasks with pagination
+        tasks = ScrapingTask.objects.all().order_by('-created_at')
+        paginator = Paginator(tasks, 15)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
         
-        # Update querysets based on saved preferences
-        if user_pref.last_country:
-            form.fields['destination'].queryset = Destination.objects.filter(
-                country=user_pref.last_country
-            )
-        if user_pref.last_level:
-            form.fields['main_category'].queryset = Category.objects.filter(
-                level=user_pref.last_level,
-                parent__isnull=True
-            )
-        if user_pref.last_main_category:
-            form.fields['subcategory'].queryset = Category.objects.filter(
-                parent=user_pref.last_main_category
-            )
-
         context = {
             'form': form,
-            'last_image_count': user_pref.last_image_count,
-            'user_preferences': user_pref,
+            'page_obj': page_obj,
+            'tasks': page_obj.object_list,
             'default_image_count': 5
         }
-        return render(request, self.template_name, context)
+        
+        return render(request, 'automation/upload.html', context)
 
+    @transaction.atomic
     def post(self, request):
+        logger.info("Received file upload POST request")
         form = ScrapingTaskForm(request.POST, request.FILES)
         
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    # Create project title
-                    project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
-                    if form.cleaned_data['subcategory']:
-                        project_title += f" - {form.cleaned_data['subcategory'].title}"
+        try:
+            if form.is_valid():
+                # Generate the project_title dynamically
+                project_title = self._generate_project_title(form.cleaned_data)
+                
+                # Create task instance
+                task = self._create_task_instance(request.user, form.cleaned_data, project_title)
+                
+                # Prepare form data for processing
+                form_data = self._prepare_form_data(task, request.POST.get('image_count', '5'))
+                
+                # Process description for URLs if present
+                description = form.cleaned_data.get('description', '').strip()
+                if description:
+                    form_data['description'] = description
+                    form_data['has_urls'] = bool(re.match(r'https?://', description))
+                
+                # Start task processing
+                process_scraping_task(task_id=task.id, form_data=form_data)
+                
+                logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': "Task created successfully and queued for processing.",
+                    'redirect_url': reverse('dashboard')
+                })
+            
+            else:
+                logger.warning(f"Form validation failed: {form.errors}")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': "There was an error with your submission. Please check the form.",
+                    'errors': form.errors
+                })
+                
+        except Exception as e:
+            logger.error(f"Error processing upload request: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'status': 'error',
+                'message': "An error occurred while processing your request. Please try again.",
+                'errors': {'internal': str(e)}
+            })
 
-                    # Create task ONCE
-                    task = form.save(commit=False)
-                    task.user = request.user
-                    task.status = 'QUEUED'
-                    task.project_title = project_title
-                    task.country_name = form.cleaned_data['country'].name
-                    task.destination_name = form.cleaned_data['destination'].name
-                    task.save()
-
-                    # Update user preferences
-                    user_pref = self.get_user_preferences(request.user)
-                    user_pref.last_country = form.cleaned_data.get('country')
-                    user_pref.last_destination = form.cleaned_data.get('destination')
-                    user_pref.last_level = form.cleaned_data.get('level')
-                    user_pref.last_main_category = form.cleaned_data.get('main_category')
-                    user_pref.last_subcategory = form.cleaned_data.get('subcategory')
-                    user_pref.last_image_count = request.POST.get('image_count', 5)
-
-                    # Debug logging
-                    logger.info(f"Saving preferences for user {request.user.username}")
-                    logger.info(f"Country: {user_pref.last_country}")
-                    logger.info(f"Destination: {user_pref.last_destination}")
-                    logger.info(f"Level: {user_pref.last_level}")
-                    logger.info(f"Main Category: {user_pref.last_main_category}")
-                    logger.info(f"Subcategory: {user_pref.last_subcategory}")
-                    
-                    user_pref.save()
-
-                    # Prepare form data
-                    form_data = {
-                        'country_id': task.country.id if task.country else None,
-                        'country_name': task.country_name,
-                        'destination_id': task.destination.id if task.destination else None,
-                        'destination_name': task.destination_name,
-                        'level': task.level.ls_id if task.level else None,
-                        'main_category': task.main_category.title if task.main_category else '',
-                        'subcategory': task.subcategory.title if task.subcategory else '',
-                        'image_count': int(user_pref.last_image_count),
-                    }
-
-                    try:
-                        process_scraping_task(task_id=task.id, form_data=form_data)
-                        logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
-                        messages.success(request, 'Task created successfully!')
-                        return redirect('task_list')
-                    except Exception as e:
-                        logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
-                        messages.error(request, "Failed to start the Sites Gathering task. Please try again.")
-                        raise
-
-            except Exception as e:
-                logger.error(f"Error saving preferences: {str(e)}")
-                messages.error(request, f"Error creating task: {str(e)}")
+    def _generate_project_title(self, cleaned_data):
+        """Generate project title from form data"""
+        components = [
+            cleaned_data['country'].name,
+            cleaned_data['destination'].name,
+            cleaned_data['level'].title,
+            cleaned_data['main_category'].title
+        ]
         
-        return render(request, self.template_name, {'form': form})
+        if cleaned_data.get('subcategory'):
+            components.append(cleaned_data['subcategory'].title)
+            
+        return " - ".join(components)
+
+    def _create_task_instance(self, user, cleaned_data, project_title):
+        """Create and save task instance"""
+        task = ScrapingTask(
+            user=user,
+            status='QUEUED',
+            project_title=project_title,
+            country=cleaned_data['country'],
+            country_name=cleaned_data['country'].name,
+            destination=cleaned_data['destination'],
+            destination_name=cleaned_data['destination'].name,
+            level=cleaned_data['level'],
+            main_category=cleaned_data['main_category'],
+            subcategory=cleaned_data.get('subcategory'),
+            description=cleaned_data.get('description', ''),
+            file=cleaned_data.get('file')
+        )
+        task.save()
+        return task
+
+    def _prepare_form_data(self, task, image_count):
+        """Prepare form data for task processing"""
+        return {
+            'country_id': task.country.id if task.country else None,
+            'country_name': task.country_name,
+            'destination_id': task.destination.id if task.destination else None,
+            'destination_name': task.destination_name,
+            'level': task.level.ls_id if task.level else None,
+            'main_category': task.main_category.title if task.main_category else '',
+            'subcategory': task.subcategory.title if task.subcategory else '',
+            'image_count': int(image_count),
+            'task_id': task.id,
+        }
+
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
@@ -338,7 +358,6 @@ class TaskDetailView(View):
                     to_attr='first_image')
         )
 
-
         # Get business counts by status
         business_counts = {
             'total': businesses.count(),
@@ -349,24 +368,13 @@ class TaskDetailView(View):
             'reviewed': businesses.filter(status='REVIEWED').count(),
             'discarded': businesses.filter(status='DISCARDED').count(),
             'in_production': businesses.filter(status='IN_PRODUCTION').count(),
+            'empty_descriptions': businesses.filter(
+                Q(description__isnull=True) | Q(description='')
+            ).count(),
         }
-
-
-        # Calculate empty descriptions count - EXCLUDING DISCARDED businesses
-        empty_descriptions_count = businesses.exclude(
-            status='DISCARDED'
-        ).filter(
-            Q(description__isnull=True) |
-            Q(description='None') |
-            Q(description='') |
-            Q(description__exact='No description Available')
-        ).count() 
-
-        business_counts['empty_descriptions'] = empty_descriptions_count
 
         # Add percentage calculations
         total_count = business_counts['total']
-
         if total_count > 0:
             business_counts['percentages'] = {
                 'pending': (business_counts['pending'] / total_count) * 100,
@@ -384,7 +392,9 @@ class TaskDetailView(View):
             business.first_image = business.first_image[0] if business.first_image else None
 
         # Check for empty descriptions
-        has_empty_descriptions = empty_descriptions_count > 0
+        has_empty_descriptions = businesses.filter(
+            Q(description__isnull=True) | Q(description='')
+        ).exists()
 
         # Build context
         context = {
@@ -392,7 +402,6 @@ class TaskDetailView(View):
             'businesses': businesses,
             'business_counts': business_counts,
             'has_empty_descriptions': has_empty_descriptions,
-            'empty_descriptions_count': empty_descriptions_count,
             'previous_task': previous_task,
             'next_task': next_task,
             'is_first_task': previous_task is None,
@@ -404,49 +413,12 @@ class TaskDetailView(View):
         }
 
         logger.info(f"Retrieved task {id} with {business_counts['total']} businesses")
-        logger.info(f"Empty descriptions (excluding DISCARDED): {empty_descriptions_count}")
-        logger.debug(f"Business counts breakdown: "
-                    f"Total: {business_counts['total']}, "
-                    f"Non-discarded needing descriptions: {empty_descriptions_count}, "
-                    f"Discarded: {business_counts['discarded']}")
+        logger.debug(f"Business counts: {business_counts}")
+        logger.debug(f"Previous task: {previous_task.id if previous_task else None}, "
+                    f"Next task: {next_task.id if next_task else None}")
 
         return render(request, 'automation/task_detail.html', context)
-
-def update_main_task_status(task):
-    """Update the main task status based on business statuses"""
-    businesses = task.businesses.exclude(status='DISCARDED')
-    total_count = businesses.count()
-    
-    if total_count == 0:
-        return
-
-    status_counts = {
-        'in_production': businesses.filter(status='IN_PRODUCTION').count(),
-        'pending': businesses.filter(status='PENDING').count(),
-        'reviewed': businesses.filter(status='REVIEWED').count()
-    }
-    if (status_counts['in_production'] == total_count and 
-        status_counts['pending'] == 0 and 
-        status_counts['reviewed'] == 0):
-        new_status = 'TASK_DONE'
-        logger.info(f"Task {task.id} marked as LIVE - All businesses in production")
-    else:
-        if status_counts['pending'] > 0:
-            new_status = 'IN_PROGRESS'
-        elif businesses.exclude(status='IN_PRODUCTION').filter(status='COMPLETED').count() == businesses.exclude(status='IN_PRODUCTION').count():
-            new_status = 'DONE'
-        else:
-            new_status = task.status
-
-    if new_status != task.status:
-        task.status = new_status
-        if new_status in ['DONE', 'TASK_DONE']:
-            task.completed_at = timezone.now()
-        task.save(update_fields=['status', 'completed_at'])
-        logger.info(f"Task ID {task.id} status updated to '{new_status}'")
-
-    return new_status
-
+ 
 @method_decorator(login_required, name='dispatch')
 @method_decorator(user_passes_test(lambda u: u.is_superuser or u.roles.filter(role='ADMIN').exists()), name='dispatch')
 class TranslateBusinessesView(View):
@@ -778,8 +750,7 @@ class AmbassadorDashboardView(View):
             'completed': tasks.filter(status='COMPLETED').count(),
             'in_progress': tasks.filter(status='IN_PROGRESS').count(),
             'pending': tasks.filter(status='PENDING').count(),
-            'done': tasks.filter(status='DONE').count(),
-           # 'task_done': tasks.filter(status='TASK_DONE').count(),
+            'done': tasks.filter(status='DONE').count()
         }
 
         # Calculate percentages
@@ -788,9 +759,7 @@ class AmbassadorDashboardView(View):
             'completed': (status_counts['completed'] / total * 100) if total > 0 else 0,
             'in_progress': (status_counts['in_progress'] / total * 100) if total > 0 else 0,
             'pending': (status_counts['pending'] / total * 100) if total > 0 else 0,
-            'done': (status_counts['done'] / total * 100) if total > 0 else 0,
-           # 'task_done': (status_counts['task_done'] / total * 100) if total > 0 else 0,
-            
+            'done': (status_counts['done'] / total * 100) if total > 0 else 0
         }
 
         # Paginate tasks
@@ -802,17 +771,17 @@ class AmbassadorDashboardView(View):
         businesses = Business.objects.filter(
             form_destination_id__in=destination_ids
         ).order_by('-scraped_at')[:10]
- 
+
         context = {
             'page_obj': page_obj,
             'tasks': page_obj.object_list,
-            'all_tasks': tasks,
+            'all_tasks': tasks,  # Keep the full queryset for counts
             'businesses': businesses,
             'ambassador_destinations': ambassador_destinations,
             'status_counts': status_counts,
             'status_percentages': status_percentages,
         }
- 
+
         return render(request, 'automation/ambassador_dashboard.html', context)
 
 ###Not using this one
@@ -860,7 +829,9 @@ def login_view(request):
         else:
             messages.error(request, "Invalid username or password.")
     return render(request, 'automation/login.html')
- 
+
+
+
 class DestinationCategoriesView(View):
     def get(self, request):
         try:
@@ -1035,7 +1006,6 @@ class DashboardView(View):
         completed_count = tasks.filter(status='COMPLETED').count()
         in_progress_count = tasks.filter(status='IN_PROGRESS').count()
         pending_count = tasks.filter(status='PENDING').count()
-        task_done_count = tasks.filter(status='TASK_DONE').count()
         total_count = tasks.count()
         
         # Calculate task percentages
@@ -1069,7 +1039,6 @@ class DashboardView(View):
             'completed_count': completed_count,
             'in_progress_count': in_progress_count,
             'pending_count': pending_count,
-            'task_done_count': task_done_count,
             'completed_percentage': completed_percentage,
             'in_progress_percentage': in_progress_percentage,
             'business_status_data': json.dumps(business_status_counts),
@@ -1120,7 +1089,7 @@ class DashboardView(View):
 
             # Get total counts with proper filtering
             context['total_projects'] = ScrapingTask.objects.filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'TASK_DONE']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
             ).count()
             
             context['total_businesses'] = Business.objects.filter(
@@ -1138,7 +1107,7 @@ class DashboardView(View):
                     'DISCARDED': 0,
                     'PENDING': 0,
                     'REVIEWED': 0,
-                    'IN_PRODUCTION': 0,
+                    'IN_PRODUCTION': 0
                 },
                 'total_businesses': 0
             }   
@@ -1146,7 +1115,7 @@ class DashboardView(View):
             status_counts = ScrapingTask.objects.values('status').annotate(
                 count=Count('id', distinct=True)  # Use distinct to avoid duplicates
             ).filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED', 'TASK_DONE']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
             ).order_by()
 
             # Debug logging
@@ -1157,7 +1126,6 @@ class DashboardView(View):
             context['ongoing_projects'] = 0
             context['completed_projects'] = 0
             context['failed_projects'] = 0
-            context['task_done'] = 0
             context['translated_projects'] = next((item['count'] for item in translation_status_counts if item['translation_status'] == 'TRANSLATED'), 0)
             
 
@@ -1177,7 +1145,6 @@ class DashboardView(View):
                 context['pending_projects'] +
                 context['ongoing_projects'] +
                 context['completed_projects'] +
-                context['task_done'] +
                 context['failed_projects']
             )
 
@@ -1192,7 +1159,7 @@ class DashboardView(View):
 
             # Get recent projects with proper ordering and limit
             context['projects'] = ScrapingTask.objects.filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED','TASK_DONE']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
             ).order_by('-created_at')[:5]
 
             # Add timeline data
@@ -1202,13 +1169,13 @@ class DashboardView(View):
             status_counts_chart = ScrapingTask.objects.values('status').annotate(
                 count=Count('id', distinct=True)
             ).filter(
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED','TASK_DONE']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
             ).order_by()
 
             context['status_counts'] = {
                 item['status']: item['count'] 
                 for item in status_counts_chart 
-                if item['status'] in ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED','TASK_DONE']
+                if item['status'] in ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
             }
 
             # Additional statistics with validation
@@ -1227,7 +1194,7 @@ class DashboardView(View):
             seven_days_ago = timezone.now() - timezone.timedelta(days=7)
             context['recent_tasks_count'] = ScrapingTask.objects.filter(
                 created_at__gte=seven_days_ago,
-                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED','TASK_DONE']
+                status__in=['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
             ).count()
 
             # Debug logging
@@ -1875,13 +1842,6 @@ def update_business_status(request, business_id):
             business.status = new_status
             business.save()
 
-            try:
-                if business.task:
-                    update_task_status_signal(business.task, business)
-                    logger.info(f"Task status updated for business {business_id} status change")
-            except Exception as e:
-                    logger.error(f"Error updating task status for business {business_id}: {str(e)}", exc_info=True)
- 
             # Handle IN_PRODUCTION specific logic
             if new_status == 'IN_PRODUCTION':
                 business_data = model_to_dict(business)
@@ -2005,7 +1965,8 @@ def update_business_status(request, business_id):
                             'status': 'error',
                             'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(second_error)}"
                         }, status=400)
- 
+
+            # Update status counts (outside the IN_PRODUCTION block)
             old_status_count = Business.objects.filter(status=old_status).count()
             new_status_count = Business.objects.filter(status=new_status).count()
             
@@ -2023,7 +1984,7 @@ def update_business_status(request, business_id):
                 'status': 'error',
                 'message': 'Invalid status'
             }, status=400)
-         
+
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {str(e)}")
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
@@ -2042,148 +2003,18 @@ def update_business_statuses(request):
             data = json.loads(request.body)
             business_ids = data.get('business_ids', [])
             new_status = data.get('new_status')
- 
-            if not business_ids:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'No business IDs provided'
-                }, status=400)
 
-            if not new_status:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'New status not provided'
-                }, status=400)
- 
-            affected_tasks = set()
-            updated_businesses = []
-            errors = [] 
-            with transaction.atomic():
-                for business_id in business_ids:
-                    try:
-                        business = get_object_or_404(Business, id=business_id) 
-                        old_status = business.status 
-                        business.status = new_status
-                        business.save() 
-                        if business.task:
-                            affected_tasks.add(business.task)
-                        
-                        updated_businesses.append({
-                            'id': business.id,
-                            'old_status': old_status,
-                            'new_status': new_status
-                        })
-                        
-                        logger.info(
-                            f"Business {business_id} status updated: "
-                            f"{old_status} -> {new_status}"
-                        )
-                    
-                    except Business.DoesNotExist:
-                        error_msg = f"Business {business_id} not found"
-                        errors.append(error_msg)
-                        logger.error(error_msg)
-                    except Exception as e:
-                        error_msg = f"Error updating business {business_id}: {str(e)}"
-                        errors.append(error_msg)
-                        logger.error(error_msg, exc_info=True)
- 
-            for task in affected_tasks:
-                try:
-                    update_task_status_signal(task, None) 
-                except Exception as e:
-                    error_msg = f"Error updating task {task.id} status: {str(e)}"
-                    errors.append(error_msg)
-                    logger.error(error_msg, exc_info=True)
- 
-            response_data = {
-                'success': len(updated_businesses) > 0,
-                'updated_count': len(updated_businesses),
-                'updated_businesses': updated_businesses,
-                'affected_tasks': list(task.id for task in affected_tasks),
-            }
+            # Update the status for each business
+            for business_id in business_ids:
+                business = get_object_or_404(Business, id=business_id)
+                business.status = new_status
+                business.save()
 
-            if errors:
-                response_data['errors'] = errors
-                response_data['partial_success'] = True 
-
-            logger.info(
-                f"Bulk status update completed: "
-                f"{len(updated_businesses)} businesses updated, "
-                f"{len(errors)} errors occurred"
-            )
-
-            return JsonResponse(response_data)
-
-        except json.JSONDecodeError:
-            return JsonResponse({
-                'success': False,
-                'error': 'Invalid JSON in request body'
-            }, status=400)
+            return JsonResponse({'success': True})
         except Exception as e:
-            logger.error(f"Bulk update failed: {str(e)}", exc_info=True)
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=500)
+            return JsonResponse({'success': False, 'error': str(e)})
 
-    return JsonResponse({
-        'success': False,
-        'error': 'Invalid request method.'
-    }, status=405)
- 
-def update_task_status(task, instance):
-    """Update the task status based on its businesses' statuses"""
-    logger.info(f"Updating task status for Task ID: {task.id}")
-    
-    # Get all businesses excluding DISCARDED
-    businesses = task.businesses.exclude(status='DISCARDED')
-    total_count = businesses.count()
-    
-    if total_count == 0:
-        return task.status
-
-    # Get status counts
-    status_counts = {
-        'in_production': businesses.filter(status='IN_PRODUCTION').count(),
-        'pending': businesses.filter(status='PENDING').count(),
-        'reviewed': businesses.filter(status='REVIEWED').count()
-    }
-
-    logger.info(f"Pending businesses exist: {status_counts['pending'] > 0}")
-
-    # Determine new status
-    new_status = None
-
-    try:
-        # Check if all non-discarded businesses are in production
-        if (status_counts['in_production'] == total_count and 
-            status_counts['pending'] == 0 and 
-            status_counts['reviewed'] == 0):
-            new_status = 'TASK_DONE'  # Project LIVE
-            logger.info(f"Task {task.id} marked as LIVE - All businesses in production")
-        
-        # Other status checks
-        elif status_counts['pending'] > 0:
-            new_status = 'IN_PROGRESS'
-        elif businesses.exclude(status='IN_PRODUCTION').filter(status='COMPLETED').count() == businesses.exclude(status='IN_PRODUCTION').count():
-            new_status = 'DONE'
-        else:
-            new_status = task.status
-
-        # Update task if status changed
-        if new_status and new_status != task.status:
-            task.status = new_status
-            if new_status in ['DONE', 'TASK_DONE']:
-                task.completed_at = timezone.now()
-            task.save(update_fields=['status', 'completed_at'])
-            logger.info(f"Task ID {task.id} status updated to '{new_status}'")
-
-        return new_status
-
-    except Exception as e:
-        logger.error(f"Error updating status for task {task.id}: {str(e)}", exc_info=True)
-        raise
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=405)
 
 ########CHANGE STATUS#############################
  
@@ -2266,6 +2097,8 @@ def business_list(request):
         'search_query': search_query,
     })
  
+ 
+
 @login_required
 def business_detail(request, business_id):
     business = get_object_or_404(Business, id=business_id)
@@ -2526,10 +2359,12 @@ def delete_business(request, business_id):
     return redirect('business_list')
  
 ###########ENHANCE AND GENERATE DESCRIPTION##################
+
 class BusinessDescriptionGenerator:
     """
     Class to generate descriptions for businesses without original descriptions in a specific task
-    """    
+    """
+    
     def __init__(self, task_id):
         self.task_id = task_id
         self.task = None
@@ -2542,43 +2377,30 @@ class BusinessDescriptionGenerator:
         Generate a description based on business attributes
         """
         try:
-            # Basic validation
-            if not business.title:
-                raise ValueError("Business title is required")
-
             # Template for description generation
-            parts = []
-            
-            # Add welcome and location
-            parts.append(f"Welcome to {business.title}")
-            if business.city and business.country:
-                parts.append(f"located in {business.city}, {business.country}")
-            
+            description = (
+                f"Welcome to {business.title}, "
+                f"located in {business.city}, {business.country}. "
+            )
+
             # Add category information if available
             if business.main_category:
-                parts.append(f"We specialize in {business.main_category}")
-            
+                description += f"We specialize in {business.main_category}. "
+
             # Add location context
             if business.address:
-                parts.append(f"You can find us at {business.address}")
-            
+                description += f"You can find us at {business.address}. "
+
             # Add contact information
             if business.phone:
-                parts.append(f"Contact us at {business.phone}")
-            
+                description += f"Contact us at {business.phone}. "
+
             # Add website information
             if business.website:
-                parts.append(f"Visit our website at {business.website} for more information")
-            
-            # Join all parts with proper punctuation
-            description = '. '.join(parts) + '.'
-            
-            # Validate final description
-            if len(description.strip()) < 10:  # Minimum length check
-                raise ValueError("Generated description is too short")
-                
+                description += f"Visit our website at {business.website} for more information. "
+
             return description.strip()
-            
+
         except Exception as e:
             logger.error(f"Error generating description for business {business.id}: {e}")
             self.errors.append(f"Business {business.id}: {str(e)}")
@@ -2589,31 +2411,38 @@ class BusinessDescriptionGenerator:
         Process all businesses in the task that don't have descriptions
         """
         try:
+            # Get the task
             self.task = ScrapingTask.objects.get(id=self.task_id)
+            
+            # Get businesses without descriptions
             businesses = Business.objects.filter(
-                task=self.task
+                task=self.task,
+                description__isnull=True
             ).exclude(
-                status='DISCARDED'   
-            ).filter(
-                Q(description__isnull=True) |    
-                Q(description='None') |      
-                Q(description='') |        
-                Q(description__exact='No description Available')
+                status='DISCARDED'
             )
-            logger.info(f"Found {businesses.count()} businesses without descriptions (excluding DISCARDED) in task {self.task_id}")
+
+            logger.info(f"Found {businesses.count()} businesses without descriptions in task {self.task_id}")
+
             with transaction.atomic():
                 for business in businesses:
                     try:
-                        description = self.generate_description(business)                        
+                        # Skip if business already has a description
+                        if business.description:
+                            self.businesses_skipped += 1
+                            logger.debug(f"Skipped business {business.id} - already has description")
+                            continue
+
+                        # Generate and save description
+                        description = self.generate_description(business)
                         if description:
                             business.description = description
-                            business.save(update_fields=['description']) 
-                            
+                            business.save(update_fields=['description'])
                             self.businesses_updated += 1
-                            logger.info(f"Generated main description for business {business.id}")
+                            logger.info(f"Generated description for business {business.id}")
                         else:
                             self.businesses_skipped += 1
-                            logger.warning(f"Could not generate main description for business {business.id}")
+                            logger.warning(f"Could not generate description for business {business.id}")
 
                     except Exception as e:
                         self.errors.append(f"Business {business.id}: {str(e)}")
@@ -2767,10 +2596,7 @@ def enhance_translate_business(request, business_id):
     else:
         logger.debug("Invalid request method in enhance_translate_business. Only POST is allowed.")
         return JsonResponse({'success': False, 'message': 'Invalid request method.'})
-
-#--Generate the based main description when businesses have empty the main description, 
-# then the translator enhance that main description and translate it to the other
-# languages 
+ 
 @login_required
 def generate_task_descriptions(request, task_id):
     if request.method == 'POST':
@@ -2778,69 +2604,28 @@ def generate_task_descriptions(request, task_id):
         generator = BusinessDescriptionGenerator(task_id)
         
         try:
-            # First, let's check if there are any businesses needing descriptions
-            needs_description = task.businesses.filter(
-                Q(description__isnull=True) |  # Handles None values in database
-                Q(description='None') |        # Handles string 'None'
-                Q(description='') |            # Handles empty strings
-                Q(description__exact='No description Available')
-            ).exists()
-
-            if not needs_description:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'No businesses need descriptions',
-                    'needs_description': False
-                })
-
             generator.process_businesses()
             results = generator.get_results()
-
-            # After processing, recheck the status
-            remaining_empty = task.businesses.filter(
-                Q(description__isnull=True) |
-                Q(description='None') |
-                Q(description='') |
-                Q(description__exact='No description Available')
-            ).count()
-
+            
             return JsonResponse({
                 'success': True,
                 'message': f"Generated {results['businesses_updated']} descriptions",
                 'businesses_updated': results['businesses_updated'],
                 'businesses_skipped': results['businesses_skipped'],
-                'remaining_empty': remaining_empty,
-                'needs_description': remaining_empty > 0
+                'has_empty_descriptions': task.businesses.filter(
+                    Q(description__isnull=True) | Q(description='')
+                ).exists()
             })
-
+            
         except Exception as e:
-            logger.error(f"Error generating descriptions for task {task_id}: {e}", exc_info=True)
+            logger.error(f"Error generating descriptions for task {task_id}: {e}")
             return JsonResponse({
                 'success': False,
                 'error': str(e)
             })
-
-    # Add an endpoint to check status without processing
-    elif request.method == 'GET':
-        task = get_object_or_404(ScrapingTask, id=task_id)
-        needs_description = task.businesses.filter(
-            Q(description__isnull=True) |
-            Q(description='None') |
-            Q(description='') |
-            Q(description__exact='No description Available')
-        ).exists()
-
-        return JsonResponse({
-            'needs_description': needs_description,
-            'empty_count': task.businesses.filter(
-                Q(description__isnull=True) |
-                Q(description='None') |
-                Q(description='') |
-                Q(description__exact='No description Available')
-            ).count()
-        })
-
+            
     return JsonResponse({'error': 'Method not allowed'}, status=405)
+
 
 ###########ENHANCE AND GENERATE DESCRIPTION##################
 
@@ -3095,7 +2880,8 @@ def destination_detail(request, destination_id):
     }
 
     return render(request, 'automation/destination_detail.html', context)
- 
+
+
 @login_required
 def ambassador_profile(request, ambassador_id):
     ambassador = get_object_or_404(UserRole, id=ambassador_id, role='AMBASSADOR')
@@ -3350,6 +3136,7 @@ def parse_address(address):
             break
     
     return parsed
+ 
  
 @transaction.atomic
 def save_business_from_json(task, business_data, query, form_data=None):

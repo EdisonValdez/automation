@@ -28,7 +28,6 @@ def split_by_comma(value):
     if isinstance(value, str):  
         return value.split(',')
     return value  
-
  
 @register.filter
 def divided_by(value, arg):
@@ -39,9 +38,26 @@ def divided_by(value, arg):
         result = int(12 / int(arg))
         return result
     except (ValueError, ZeroDivisionError):
-        return 4   
-    
+        return 4    
     
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key)
+ 
+@register.filter
+def divide(value, arg):
+    try:
+        return float(value) / float(arg)
+    except (ValueError, ZeroDivisionError):
+        return 0
+    
+@register.filter
+def multiply(value, arg):
+    try:
+        return float(value) * float(arg)
+    except ValueError:
+        return 0
+ 
+@register.filter
+def subtract(value, arg):
+    return value - arg

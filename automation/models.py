@@ -206,9 +206,10 @@ class ScrapingTask(models.Model):
         ('QUEUED', 'QUEUED'),
         ('PENDING', 'PENDING'),
         ('IN_PROGRESS', 'IN PROGRESS'),
-        ('COMPLETED', 'COMPLETED'),
+        ('COMPLETED', 'READY TO REVIEW'),
         ('FAILED', 'FAILED'),
-        ('DONE', 'DONE'),
+        ('DONE', 'REVIEWED'),
+        ('TASK_DONE', 'LIVE'),
     ]
     TRANSLATION_STATUS_CHOICES = [
         ('PENDING_TRANSLATION', 'Pending Translation'),
@@ -288,7 +289,6 @@ class ActiveBusinessManager(models.Manager):
  
 class Business(models.Model):
     STATUS_CHOICES = [ 
-
         ('DISCARDED', 'Discarded'),
         ('PENDING', 'Pending'),
         ('REVIEWED', 'Reviewed'),
@@ -368,9 +368,9 @@ class Business(models.Model):
     description_eng = models.TextField(blank=True, null=True)
     description_fr = models.TextField(blank=True, null=True)
 
-    types_esp = models.TextField(blank=True, null=True) #Translate types provided by google
-    types_eng = models.TextField(blank=True, null=True) #Translate types provided by google
-    types_fr = models.TextField(blank=True, null=True) #Translate types provided by google
+    types_esp = models.TextField(blank=True, null=True)  
+    types_eng = models.TextField(blank=True, null=True)  
+    types_fr = models.TextField(blank=True, null=True)  
 
     #comments = models.TextField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
@@ -675,3 +675,20 @@ class HourlyBusyness(models.Model):
 
     def __str__(self):
         return f"{self.popular_times.business.title} - {self.popular_times.day} - {self.time}"
+    
+
+class UserPreference(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    last_country = models.ForeignKey('Country', null=True, blank=True, on_delete=models.SET_NULL)
+    last_destination = models.ForeignKey('Destination', null=True, blank=True, on_delete=models.SET_NULL)
+    last_level = models.ForeignKey('Level', null=True, blank=True, on_delete=models.SET_NULL)
+    last_main_category = models.ForeignKey('Category', null=True, blank=True, 
+                                         on_delete=models.SET_NULL, related_name='main_category_prefs')
+    last_subcategory = models.ForeignKey('Category', null=True, blank=True, 
+                                        on_delete=models.SET_NULL, related_name='subcategory_prefs')
+    last_image_count = models.IntegerField(default=5)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Preferences for {self.user.username}"
+

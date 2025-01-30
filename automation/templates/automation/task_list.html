@@ -45,7 +45,7 @@
                 <div class="box">
                 <!-- Search Form -->
                 <form method="get" class="d-flex align-items-center mb-4 mt-4">
-                    <div class="input-group" style="max-width: 600px; margin: 0 auto;">
+                    <div class="input-group" style="max-width: 1200px; margin: 0 auto;">
                         <span class="input-group-text bg-light border-end-0" id="search-icon"
                             style="border-radius: 0.5rem 0 0 0.5rem; border: 1px solid #ced4da; box-shadow: none;">
                             <i class="fas fa-search" style="color: #888;"></i>
@@ -107,78 +107,101 @@
                             <th></th>
                         </tr>
                         </thead>
-                <tbody>
-                    {% for task in tasks %}
-                    <tr>
-                        <td>
-                            <a href="{% url 'task_detail' task.id %}" class="d-flex">
-                                <span>{{ task.id }} - {{ task.project_title }}  - {{ task.created_at|date:"d-m-Y" }}</span>       
-                            </a>
-                        </td> 
-                        <td>  {{ task.businesses.count }} </td>
-                        <td>        
-                            {{ task.country |truncatechars:20 }}                                             
-                        </td>
-                        <td>        
-                            {{ task.destination |truncatechars:20 }}                                             
-                        </td>
-                        <td>
-                            <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% endif %}">
-                                {{ task.get_status_display }}
-                            </span>
-                        </td>
-                        <td>
-                            <span class="badge {% if task.translation_status == 'PENDING_TRANSLATION' %} badge-warning {% elif task.translation_status == 'TRANSLATION_FAILED' %} badge-danger {% elif task.translation_status == 'TRANSLATED' %} badge-success {% endif %}">
-                                {{ task.translation_status }}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="dropdown">
-                                <a href="#" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bx bx-dots-horizontal-rounded"></i>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right">
-                                <a id="generateDescriptionsBtn-{{ task.id }}"
-                                    class="btn-generate-descriptions {% if not task.has_empty_descriptions %}disabled{% endif %}"
-                                    {% if not task.has_empty_descriptions %}disabled{% endif %}
-                                    data-task-id="{{ task.id }}"
-                                    href="javascript:void(0);">
-                                        <i class="fas fa-language"></i> 
-                                        Generate Descriptions
-                                        {% if task.empty_descriptions_count > 0 %}
-                                            <span class="badge bg-warning">{{ task.empty_descriptions_count }}</span>
-                                        {% endif %}
-                                    </a>
+                        {% load task_tags %}
 
+<tbody>
+    {% for task in tasks %}
+    <tr>
+        <td>
+            <a href="{% url 'task_detail' task.id %}" class="d-flex">
+                <span>{{ task.id }} - {{ task.project_title }}  - {{ task.created_at|date:"d-m-Y" }}</span>      
+            </a>
+        </td>
+        <td>{{ task.businesses.count }}</td>
+        <td>{{ task.country |truncatechars:20 }}</td>
+        <td>{{ task.destination |truncatechars:20 }}</td>
+        <td>
+            {% is_task_live task as is_live %}
+            <span class="badge 
+                {% if is_live %}
+                    badge-orange
+                {% elif task.status == 'IN_PROGRESS' %}
+                badge-pink-light
+                {% elif task.status == 'PENDING' %}
+                    badge-warning
+                {% elif task.status == 'FAILED' %}
+                    badge-danger
+                {% elif task.status == 'COMPLETED' %}
+                    badge-primary
+                {% elif task.status == 'DONE' %}
+                    badge-success
+                {% endif %}">
+                {% if is_live %}
+                    LIVE  
+                {% else %}
+                    {{ task.get_status_display }}
+                {% endif %}
+            </span>
+        </td>
+        <td>
+            <span class="badge 
+                {% if task.translation_status == 'PENDING_TRANSLATION' %}
+                    badge-warning
+                {% elif task.translation_status == 'TRANSLATION_FAILED' %}
+                    badge-danger
+                {% elif task.translation_status == 'TRANSLATED' %}
+                    badge-success
+                {% endif %}">
+                {{ task.translation_status }}
+            </span>
+        </td>
+        <td>
+            <div class="dropdown">
+                <a href="#" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bx bx-dots-horizontal-rounded"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <a id="generateDescriptionsBtn-{{ task.id }}"
+                        class="btn-generate-descriptions {% if not task.has_empty_descriptions %}disabled{% endif %}"
+                        {% if not task.has_empty_descriptions %}disabled{% endif %}
+                        data-task-id="{{ task.id }}"
+                        href="javascript:void(0);">
+                        <i class="fas fa-language"></i>
+                        Generate Descriptions
+                        {% if task.empty_descriptions_count > 0 %}
+                            <span class="badge bg-warning">{{ task.empty_descriptions_count }}</span>
+                        {% endif %}
+                    </a>
 
-                                    {% if task.translation_status != 'TRANSLATED' %}
-                                    <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
-                                        <i class="fas fa-sync"></i> Translate and Enhance
-                                    </a>
-                                    {% elif task.translation_status == 'PENDING_TRANSLATION' %}
-                                    <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
-                                        <i class="fas fa-sync danger"></i> Translate and Enhance
-                                    </a>
-                                    {% endif %}
-                                    <a class="dropdown-item" href="{% url 'task_detail' task.id %}">
-                                        <i class="bx bx-info-circle font-size-16 align-middle me-1"></i>View
-                                    </a>
-                                    {% if user.is_admin %}
-                                    <a class="dropdown-item delete-task-btn" href="#" data-task-id="{{ task.id }}">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </td>  
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5">No tasks found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                    
+                    {% if task.translation_status != 'TRANSLATED' %}
+                    <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                        <i class="fas fa-sync"></i> Translate and Enhance
+                    </a>
+                    {% elif task.translation_status == 'PENDING_TRANSLATION' %}
+                    <a class="dropdown-item start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                        <i class="fas fa-sync danger"></i> Translate and Enhance
+                    </a>
+                    {% endif %}
+                    <a class="dropdown-item" href="{% url 'task_detail' task.id %}">
+                        <i class="bx bx-info-circle font-size-16 align-middle me-1"></i>View
+                    </a>
+                    {% if user.is_admin %}
+                    <a class="dropdown-item delete-task-btn" href="#" data-task-id="{{ task.id }}">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </td>  
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="5">No tasks found.</td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+                        
                     
                 </table> 
 
