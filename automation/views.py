@@ -47,7 +47,7 @@ from .serpapi_integration import fetch_google_events
 from .models import Event  
 from automation.request.client import RequestClient
 from automation import constants as const
-from automation.helper import datetime_serializer
+from automation.helper import datetime_serializer, DataSyncer
 from django.views.generic import ListView 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from automation.services.ls_backend import LSBackendClient   
@@ -96,29 +96,46 @@ def get_available_openai_key():
  
 #LSBACKEND API
 
+# def get_levels(request):
+#     """
+#     Fetch levels from the local automation Level model,
+#     returning them as JSON or an error if something fails.
+#     """
+#     from .models import Level
+    
+#     try:
+#         levels_qs = Level.objects.all().order_by('title')
+#         if not levels_qs.exists():
+#             logger.warning("No local levels found.")
+#         levels_data = []
+#         for lvl in levels_qs:
+#             levels_data.append({
+#                 'id': lvl.id,
+#                 'title': lvl.title,
+#                 'ls_id': lvl.ls_id,  
+#             })
+#         return JsonResponse(levels_data, safe=False)
+
+#     except Exception as e:
+#         logger.error(f"Error fetching local levels: {e}", exc_info=True)
+#         return JsonResponse({'error': 'Error fetching local levels'}, status=500)
+    
+
 def get_levels(request):
     """
     Fetch levels from the local automation Level model,
     returning them as JSON or an error if something fails.
     """
-    from .models import Level
-    
-    try:
-        levels_qs = Level.objects.all().order_by('title')
-        if not levels_qs.exists():
-            logger.warning("No local levels found.")
-        levels_data = []
-        for lvl in levels_qs:
-            levels_data.append({
-                'id': lvl.id,
-                'title': lvl.title,
-                'ls_id': lvl.ls_id,  
-            })
-        return JsonResponse(levels_data, safe=False)
+    language = request.headers.get('language', 'en')
 
+    client = LSBackendClient()
+    try:
+        levels = client.get_levels(language=language)
+        return JsonResponse({"results": levels}, safe=False)
     except Exception as e:
-        logger.error(f"Error fetching local levels: {e}", exc_info=True)
-        return JsonResponse({'error': 'Error fetching local levels'}, status=500)
+        logger.error(f"Error fetching ls levels: {e}", exc_info=True)
+        return JsonResponse({'error': 'Error fetching ls levels'}, status=500)
+    
  
 def load_levels(request):
     client = LSBackendClient()
@@ -128,6 +145,8 @@ def load_levels(request):
     except Exception as e:
         logger.error(f"Error loading levels: {str(e)}")
         return render(request, 'automation/upload.html', {'error': 'Failed to load levels'})
+    
+
  
 def load_categories(request):
     client = LSBackendClient()
@@ -139,25 +158,29 @@ def load_categories(request):
 
 def get_categories(request):
     level_id = request.GET.get('level_id')
+    language = request.headers.get('language', 'en')
+
     if not level_id:
         return JsonResponse({'error': 'Level ID is required'}, status=400)
     
     client = LSBackendClient()
-    categories = client.get_categories(level_id)
+    categories = client.get_categories(level_id=level_id, language=language)
 
-    return JsonResponse(categories, safe=False)
+    return JsonResponse({"results": categories}, safe=False)
 
 def get_subcategories(request):
     category_id = request.GET.get('category_id')
+    language = request.headers.get('language', 'en')
+
     if not category_id:
         return JsonResponse({'error': 'Category ID is required'}, status=400)
     
     client = LSBackendClient()
-    subcategories = client.get_categories(category_id)
+    subcategories = client.get_sub_categories(category_id=category_id, language=language)
 
-    return JsonResponse(subcategories, safe=False)
+    return JsonResponse({"results": subcategories}, safe=False)
  
-def get_countries(request):
+def get_ls_countries(request):
     """
     Fetch countries from LS Backend with optional search
     """
@@ -233,71 +256,104 @@ class UploadFileView(View):
         return render(request, self.template_name, context)
 
     def post(self, request):
-        form = ScrapingTaskForm(request.POST, request.FILES)
+        logger.info("Received file upload POST request")
         
-        if form.is_valid():
+        with transaction.atomic():
+            
+            # Move LS backend records to the automation system.
             try:
-                with transaction.atomic():
-                    # Create project title
-                    project_title = f"{form.cleaned_data['country'].name} - {form.cleaned_data['destination'].name} - {form.cleaned_data['level'].title} - {form.cleaned_data['main_category'].title}"
-                    if form.cleaned_data['subcategory']:
-                        project_title += f" - {form.cleaned_data['subcategory'].title}"
+                sync_objects = DataSyncer(request).sync()
+            except ValidationError as e:
+                logger.warning(f"Form validation failed: {str(e)}")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': "There was an error with your submission. Please check the form.",
+                    'errors': e.message_dict   # Return form errors to the frontend
+                })
+            
+            # Move LS backend records to the automation system.
+            sync_objects = DataSyncer(request).sync()
+            country = sync_objects.get("country")
+            destination = sync_objects.get("destination")
+            level = sync_objects.get("level")
+            category = sync_objects.get("category")
+            subcategory = sync_objects.get("subcategory")
 
-                    # Create task ONCE
-                    task = form.save(commit=False)
-                    task.user = request.user
-                    task.status = 'QUEUED'
-                    task.project_title = project_title
-                    task.country_name = form.cleaned_data['country'].name
-                    task.destination_name = form.cleaned_data['destination'].name
-                    task.save()
+            # Generate the project_title dynamically
+            project_title = f"{country.name} - {destination.name} - {level.title} - {category.title}"
+            if subcategory:
+                project_title += f" - {subcategory.title}"
 
-                    # Update user preferences
-                    user_pref = self.get_user_preferences(request.user)
-                    user_pref.last_country = form.cleaned_data.get('country')
-                    user_pref.last_destination = form.cleaned_data.get('destination')
-                    user_pref.last_level = form.cleaned_data.get('level')
-                    user_pref.last_main_category = form.cleaned_data.get('main_category')
-                    user_pref.last_subcategory = form.cleaned_data.get('subcategory')
-                    user_pref.last_image_count = request.POST.get('image_count', 5)
+            # Set the project_title in the form
+            form = ScrapingTaskForm()
+            form.initial['project_title'] = project_title
+            image_count = request.POST.get('image_count', '5')
+            
+            task = ScrapingTask(
+                user=request.user,
+                status='QUEUED',
+                country=country,
+                country_name=country.name,
+                destination=destination,
+                destination_name=destination.name,
+                level=level,
+                main_category=category,
+                subcategory=subcategory,
+                description=request.POST.get('description'),
+                file=request.FILES.get('file'),
+                project_title=project_title,
+            )
+            task.save() 
 
-                    # Debug logging
-                    logger.info(f"Saving preferences for user {request.user.username}")
-                    logger.info(f"Country: {user_pref.last_country}")
-                    logger.info(f"Destination: {user_pref.last_destination}")
-                    logger.info(f"Level: {user_pref.last_level}")
-                    logger.info(f"Main Category: {user_pref.last_main_category}")
-                    logger.info(f"Subcategory: {user_pref.last_subcategory}")
-                    
-                    user_pref.save()
+            # Update user preferences
+            user_pref = self.get_user_preferences(request.user)
+            user_pref.last_country = country
+            user_pref.last_destination = destination
+            user_pref.last_level = level
+            user_pref.last_main_category = category
+            user_pref.last_subcategory = subcategory
+            user_pref.last_image_count = image_count
 
-                    # Prepare form data
-                    form_data = {
-                        'country_id': task.country.id if task.country else None,
-                        'country_name': task.country_name,
-                        'destination_id': task.destination.id if task.destination else None,
-                        'destination_name': task.destination_name,
-                        'level': task.level.ls_id if task.level else None,
-                        'main_category': task.main_category.title if task.main_category else '',
-                        'subcategory': task.subcategory.title if task.subcategory else '',
-                        'image_count': int(user_pref.last_image_count),
-                    }
-
-                    try:
-                        process_scraping_task(task_id=task.id, form_data=form_data)
-                        logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
-                        messages.success(request, 'Task created successfully!')
-                        return redirect('task_list')
-                    except Exception as e:
-                        logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
-                        messages.error(request, "Failed to start the Sites Gathering task. Please try again.")
-                        raise
-
+            # Debug logging
+            logger.info(f"Saving preferences for user {request.user.username}")
+            logger.info(f"Country: {user_pref.last_country}")
+            logger.info(f"Destination: {user_pref.last_destination}")
+            logger.info(f"Level: {user_pref.last_level}")
+            logger.info(f"Main Category: {user_pref.last_main_category}")
+            logger.info(f"Subcategory: {user_pref.last_subcategory}")
+            
+            user_pref.save()
+            
+            form_data = {
+                'country_id': task.country.id if task.country else None,
+                'country_name': task.country_name,
+                'destination_id': task.destination.id if task.destination else None,
+                'destination_name': task.destination_name,
+                'level': task.level.ls_id if task.level else None,
+                'main_category': task.main_category.title if task.main_category else '',
+                'subcategory': task.subcategory.title if task.subcategory else '',
+                'image_count': int(image_count),
+            }
+            try:
+                # asynchronous task processing Celery, use delay()
+                # process_scraping_task.delay(task.id, form_data=form_data)
+                
+                # For synchronous processing
+                process_scraping_task(task_id=task.id, form_data=form_data)
+                
+                logger.info(f"Sites Gathering task {task.id} created and queued, project ID: {task.project_id}")
+                return JsonResponse({
+                    'status': 'success',
+                    'message': "File uploaded successfully and task queued.",
+                    'redirect_url': reverse('dashboard')
+                })
             except Exception as e:
-                logger.error(f"Error saving preferences: {str(e)}")
-                messages.error(request, f"Error creating task: {str(e)}")
-        
-        return render(request, self.template_name, {'form': form})
+                logger.error(f"Failed to start the Sites Gathering task for task_id {task.id}: {str(e)}", exc_info=True)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': "Failed to start the Sites Gathering task. Please try again.",
+                })
+
 
 @method_decorator(login_required, name='dispatch')
 class TaskDetailView(View):
@@ -3281,45 +3337,45 @@ def save_business_from_results(task, results, query):
         business = save_business(task, local_result, query)
         download_images(business, local_result)
 
-def load_categories(request):
-    # Fetch only top-level categories (those with no parent)
-    top_level_categories = Category.objects.filter(parent__isnull=True)
+# def load_categories(request):
+#     # Fetch only top-level categories (those with no parent)
+#     top_level_categories = Category.objects.filter(parent__isnull=True)
 
-    # Render the form with only the top-level categories
-    return render(request, 'automation/upload.html', {
-        'main_categories': top_level_categories,
-    })
+#     # Render the form with only the top-level categories
+#     return render(request, 'automation/upload.html', {
+#         'main_categories': top_level_categories,
+#     })
  
-def get_categories(request):
-    """
-    Fetch categories based on the specified level.
-    """
-    level_id = request.GET.get('level_id')
+# def get_categories(request):
+#     """
+#     Fetch categories based on the specified level.
+#     """
+#     level_id = request.GET.get('level_id')
 
-    if not level_id:
-        return JsonResponse({'error': 'Level ID is required'}, status=400)
+#     if not level_id:
+#         return JsonResponse({'error': 'Level ID is required'}, status=400)
 
-    # Fetch categories that belong to the selected level and have no parent (top-level categories)
-    categories = Category.objects.filter(level_id=level_id, parent__isnull=True).values('id', 'title')
+#     # Fetch categories that belong to the selected level and have no parent (top-level categories)
+#     categories = Category.objects.filter(level_id=level_id, parent__isnull=True).values('id', 'title')
 
-    if not categories:
-        return JsonResponse({'error': 'No categories found for this level'}, status=404)
+#     if not categories:
+#         return JsonResponse({'error': 'No categories found for this level'}, status=404)
 
-    return JsonResponse(list(categories), safe=False)
+#     return JsonResponse(list(categories), safe=False)
  
-def get_subcategories(request):
-    """
-    Fetch subcategories based on the selected main category.
-    """
-    category_id = request.GET.get('category_id')
+# def get_subcategories(request):
+#     """
+#     Fetch subcategories based on the selected main category.
+#     """
+#     category_id = request.GET.get('category_id')
 
-    if not category_id:
-        return JsonResponse({'error': 'Category ID is required'}, status=400)
+#     if not category_id:
+#         return JsonResponse({'error': 'Category ID is required'}, status=400)
 
-    # Fetch subcategories where the parent is the selected category
-    subcategories = Category.objects.filter(parent_id=category_id).values('id', 'title')
+#     # Fetch subcategories where the parent is the selected category
+#     subcategories = Category.objects.filter(parent_id=category_id).values('id', 'title')
 
-    return JsonResponse(list(subcategories), safe=False)
+#     return JsonResponse(list(subcategories), safe=False)
 
 def get_countries(request):
     countries = Country.objects.all().values('id', 'name')   

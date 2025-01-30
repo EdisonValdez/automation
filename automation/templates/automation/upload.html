@@ -182,13 +182,25 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-12 mb-24">
+
+                <!-- <div class="col-md-4 col-sm-12 mb-24">
                     <div class="form-group">
                         <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
                         {{ form.level }}
                     </div>
+                </div> -->
+
+                <div class="col-md-4 col-sm-12 mb-24">
+                    <div class="form-group">
+                        <label for="id_level" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
+                        <select name="level" class="form-control" id="id_level">
+                            <option value="">Select a level</option>
+                        </select>
+                    </div>
                 </div>
-            </div>        
+
+            </div>
+        
             <div class="row">
                 <!-- Main Category Dropdown -->
                 <div class="col-md-4 col-sm-12 mb-24">
@@ -196,9 +208,9 @@
                         <label for="id_main_category" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
                         <select name="main_category" class="form-control" required id="id_main_category">
                             <option value="">Select a category</option>
-                            {% for category in main_categories %}
+                            <!-- {% for category in main_categories %}
                                 <option value="{{ category.id }}">{{ category.title }}</option>
-                            {% endfor %}
+                            {% endfor %} -->
                         </select>
                     </div>
                 </div>
@@ -332,11 +344,11 @@ $(document).ready(function() {
     function initializeForm() {
         // Get saved values from the server
         const savedPreferences = {
-            level_id: '{{ user_preferences.last_level.id|default:"" }}',
-            main_category_id: '{{ user_preferences.last_main_category.id|default:"" }}',
-            subcategory_id: '{{ user_preferences.last_subcategory.id|default:"" }}',
-            country_id: '{{ user_preferences.last_country.id|default:"" }}',
-            destination_id: '{{ user_preferences.last_destination.id|default:"" }}'
+            level_id: '{{ user_preferences.last_level.ls_id|default:"" }}',
+            main_category_id: '{{ user_preferences.last_main_category.ls_id|default:"" }}',
+            subcategory_id: '{{ user_preferences.last_subcategory.ls_id|default:"" }}',
+            country_id: '{{ user_preferences.last_country.ls_id|default:"" }}',
+            destination_id: '{{ user_preferences.last_destination.ls_id|default:"" }}'
         };
 
         // Set initial values and trigger changes
@@ -353,7 +365,7 @@ $(document).ready(function() {
         const levelId = $(this).val();
         const $mainCategory = $('#id_main_category');
         const $subcategory = $('#id_subcategory');
-        const savedMainCategoryId = '{{ user_preferences.last_main_category.id|default:"" }}';
+        const savedMainCategoryId = '{{ user_preferences.last_main_category.ls_id|default:"" }}';
 
         $mainCategory.empty().append('<option value="">Select a category</option>');
         $subcategory.empty().append('<option value="">Select a subcategory (optional)</option>');
@@ -363,13 +375,14 @@ $(document).ready(function() {
                 url: '{% url "get_categories" %}',
                 data: { 'level_id': levelId },
                 success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(category) {
-                            $mainCategory.append(
-                                $('<option></option>')
-                                    .attr('value', category.id)
-                                    .text(category.title)
-                            );
+                    var results = data["results"]
+
+                    if (results.length > 0) {
+                        results.forEach(function(category) {
+                            $mainCategory.append($('<option></option>').
+                            attr('value', category.id).
+                            data('category_name', category.title).
+                            text(category.title));
                         });
                         
                         // Set saved main category if it exists
@@ -399,13 +412,14 @@ $(document).ready(function() {
                 url: '{% url "get_subcategories" %}',
                 data: { 'category_id': categoryId },
                 success: function(data) {
-                    if (data.length > 0) {
-                        data.forEach(function(subcategory) {
-                            $subcategory.append(
-                                $('<option></option>')
-                                    .attr('value', subcategory.id)
-                                    .text(subcategory.title)
-                            );
+                    var results = data["results"]
+
+                    if (results.length > 0) {
+                        results.forEach(function(subcategory) {
+                            $subcategory.append($('<option></option>').
+                            attr('value', subcategory.id).
+                            data('sub_category_name', subcategory.title).
+                            text(subcategory.title));
                         });
                         
                         // Set saved subcategory if it exists
@@ -582,13 +596,23 @@ $(document).ready(function() {
     });
 
     // Function to load and set saved preferences
-    function loadSavedPreferences() {
-        const savedCountryId = '{{ user_preferences.last_country.id|default:"" }}';
-        const savedDestinationId = '{{ user_preferences.last_destination.id|default:"" }}';
+    function loadCountryPreferences() {
+        const savedCountryId = '{{ user_preferences.last_country.ls_id|default:"" }}';
+        const savedDestinationId = '{{ user_preferences.last_destination.ls_id|default:"" }}';
 
         // If we have a saved country, select it and load its destinations
         if (savedCountryId) {
             $('#id_country').val(savedCountryId).trigger('change');
+        }
+    }
+
+    // Function to load and set saved preferences
+    function loadLevelPreferences() {
+        const savedLevelId = '{{ user_preferences.last_level.ls_id|default:"" }}';
+
+        // If we have a saved level
+        if (savedLevelId) {
+            $('#id_level').val(savedLevelId).trigger('change');
         }
     }
 
@@ -604,12 +628,20 @@ $(document).ready(function() {
             data: { 'country_id': countryId },
             method: 'GET',
             success: function(data) {
-                if (data.length > 0) {
-                    data.forEach(function(destination) {
+                var results = data["results"]
+                if (results.length > 0) {
+                    results.forEach(function(destination) {
                         $destination.append(
-                            $('<option></option>')
-                            .attr('value', destination.id)
-                            .text(destination.name)
+                            $('<option></option>').
+                            attr('value', destination.id).
+                            data('city_name', destination.name).
+                            data('city_cp', destination.cp).
+                            data('city_province', destination.province).
+                            data('city_description', destination.description).
+                            data('city_link', destination.link).
+                            data('city_latitude', destination.latitude).
+                            data('city_longitude', destination.longitude).
+                            text(destination.name)
                         );
                     });
                     
@@ -633,20 +665,23 @@ $(document).ready(function() {
         url: '{% url "get_countries" %}',
         method: 'GET',
         success: function(data) {
+
             const $country = $('#id_country');
             $country.empty().append('<option value="">Select a country</option>');
+            var results = data["results"]
 
-            if (data.length > 0) {
-                data.forEach(function(country) {
-                    $country.append(
-                        $('<option></option>')
-                        .attr('value', country.id)
-                        .text(country.name)
-                    );
+            if (results.length > 0) {
+                results.forEach(function(country) {
+                    $('#id_country').append($('<option></option>').
+                    attr('value', country.id).
+                    data('country_name', country.name).
+                    data('country_code', country.code).
+                    data('country_phone_code', country.phone_code).
+                    text(country.name));
                 });
 
                 // After loading countries, load saved preferences
-                loadSavedPreferences();
+                loadCountryPreferences();
             } else {
                 $country.append('<option value="">No countries available</option>');
             }
@@ -662,7 +697,7 @@ $(document).ready(function() {
     // Handle country change
     $('#id_country').on('change', function() {
         const countryId = $(this).val();
-        const savedDestinationId = '{{ user_preferences.last_destination.id|default:"" }}';
+        const savedDestinationId = '{{ user_preferences.last_destination.ls_id|default:"" }}';
         
         loadDestinations(countryId, function() {
             // After loading destinations, set the saved destination if it exists
@@ -671,6 +706,32 @@ $(document).ready(function() {
             }
         });
     });
+
+    $.ajax({
+        url: '{% url "get_levels" %}',
+        method: 'GET',
+        success: function(data) {
+            const $level = $('#id_level');
+            $level.empty().append('<option value="">Select a level</option>');
+            var results = data["results"]
+
+            if (results.length > 0) {
+                results.forEach(function(level) {
+                    $level.append($('<option></option>').
+                    attr('value', level.id).
+                    data('level_name', level.title).
+                    text(level.title));
+                });
+                loadLevelPreferences()
+            } else {
+                $level.append('<option value="">No levels available</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching levels: ' + error);
+        }
+    });
+    
     $('<style>')
         .prop('type', 'text/css')
         .html(`
@@ -830,6 +891,34 @@ $(document).ready(function() {
             e.preventDefault();
 
             var formData = new FormData(this);
+            
+            // Country
+            var selectedCountry = $('#id_country option:selected');
+            formData.append('country_code', selectedCountry.data('country_code'));
+            formData.append('country_phone_code', selectedCountry.data('country_phone_code'));
+            formData.append('country_name', selectedCountry.data('country_name'));
+            
+            // Destination
+            var selectedDestination = $('#id_destination option:selected');
+            formData.append('city_name', selectedDestination.data('city_name'));
+            formData.append('city_cp', selectedDestination.data('city_cp'));
+            formData.append('city_province', selectedDestination.data('city_province'));
+            formData.append('city_description', selectedDestination.data('city_description'));
+            formData.append('city_link', selectedDestination.data('city_link'));
+            formData.append('city_latitude', selectedDestination.data('city_latitude'));
+            formData.append('city_longitude', selectedDestination.data('city_longitude'));
+     
+            // Level
+            var selectedLevel = $('#id_level option:selected');
+            formData.append('level_name', selectedLevel.data('level_name'));
+
+            // Category
+            var selectedCategory = $('#id_main_category option:selected');
+            formData.append('category_name', selectedCategory.data('category_name'));
+
+            // Sub Category
+            var selectedSubCategory = $('#id_subcategory option:selected');
+            formData.append('sub_category_name', selectedSubCategory.data('sub_category_name'));
 
             // Clear previous messages
             $('#successMessage').text('');
