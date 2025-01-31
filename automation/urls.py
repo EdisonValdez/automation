@@ -118,8 +118,6 @@ urlpatterns = [
     path('health/', views.health_check, name='health_check'),
     path('', views.welcome_view, name='welcome'),
 
-
- 
  
     path('load-categories/', views.load_categories, name='load_categories'),  
     path('categories/', views.get_categories, name='get_categories'),         
