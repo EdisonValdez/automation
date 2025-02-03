@@ -362,7 +362,16 @@ $(document).ready(function() {
 
     // Handle Level and Main Category changes
     $('#id_level').on('change', function() {
-        const levelId = $(this).val();
+        const selectedOption = $(this).find('option:selected');
+
+        // if value for level_id exist in the data, then that would be the parent level id
+        // and the val() will be the translated level id (child level id) and vice versa
+        const levelId = selectedOption.data('level_id') !== '' ? selectedOption.data('level_id') : $(this).val();
+        
+        console.log("Level <val>: ", $(this).val())
+        console.log("Level <level_id>: ", selectedOption.data('level_id'))
+        console.log("Final level: ", levelId)
+
         const $mainCategory = $('#id_main_category');
         const $subcategory = $('#id_subcategory');
         const savedMainCategoryId = '{{ user_preferences.last_main_category.ls_id|default:"" }}';
@@ -377,12 +386,19 @@ $(document).ready(function() {
                 success: function(data) {
                     var results = data["results"]
 
+                    // If the category__id key exists, it means the record is a translated category. 
+                    // The category__id contains the original parent key ID, while id holds the translated category ID.
+                    //  If the key does not exist, then the record is not translated.
+
                     if (results.length > 0) {
                         results.forEach(function(category) {
-                            $mainCategory.append($('<option></option>').
-                            attr('value', category.id).
-                            data('category_name', category.title).
-                            text(category.title));
+                            let $option = $('<option></option>')
+                                .attr('value', category.id)
+                                .data('category_name', category.title)
+                                .text(category.title);
+
+                            $option.data('category_id', category.hasOwnProperty('category__id') ? category.category__id : '');  
+                            $mainCategory.append($option);
                         });
                         
                         // Set saved main category if it exists
@@ -401,10 +417,18 @@ $(document).ready(function() {
 
     // Handle Main Category and Subcategory changes
     $('#id_main_category').on('change', function() {
-        const categoryId = $(this).val();
+        const selectedOption = $(this).find('option:selected');
+
+        // if value for category_id exist in the data, then that would be the parent category id
+        // and the val() will be the translated category id (child category id) and vice versa
+        const categoryId = selectedOption.data('category_id') !== '' ? selectedOption.data('category_id') : $(this).val();
+        
+        console.log("Category <val>: ", $(this).val())
+        console.log("Category <category_id>: ", selectedOption.data('category_id'))
+        console.log("Final category: ", categoryId)
+
         const $subcategory = $('#id_subcategory');
         const savedSubcategoryId = '{{ user_preferences.last_subcategory.id|default:"" }}';
-
         $subcategory.empty().append('<option value="">Select a subcategory (optional)</option>');
 
         if (categoryId) {
@@ -670,14 +694,24 @@ $(document).ready(function() {
             $country.empty().append('<option value="">Select a country</option>');
             var results = data["results"]
 
+            console.log(results)
+
             if (results.length > 0) {
                 results.forEach(function(country) {
-                    $('#id_country').append($('<option></option>').
-                    attr('value', country.id).
-                    data('country_name', country.name).
-                    data('country_code', country.code).
-                    data('country_phone_code', country.phone_code).
-                    text(country.name));
+
+                    // If the country__id key exists, it means the record is a translated country. 
+                    // The country__id contains the original parent key ID, while id holds the translated country ID.
+                    //  If the key does not exist, then the record is not translated.
+
+                    let $option = $('<option></option>')
+                        .attr('value', country.id)
+                        .text(country.name)
+                        .data('country_name', country.name)
+                        .data('country_code', country.code)
+                        .data('country_phone_code', country.phone_code);
+
+                    $option.data('country_id', country.hasOwnProperty('country__id') ? country.country__id : '');  
+                    $country.append($option);
                 });
 
                 // After loading countries, load saved preferences
@@ -696,7 +730,17 @@ $(document).ready(function() {
 
     // Handle country change
     $('#id_country').on('change', function() {
-        const countryId = $(this).val();
+        
+        const selectedOption = $(this).find('option:selected');
+
+        // if value for country_id exist in the data, then that would be the parent country id
+        // and the val() will be the translated country id (child country id) and vice versa
+        const countryId = selectedOption.data('country_id') !== '' ? selectedOption.data('country_id') : $(this).val();
+        
+        console.log("Country <val>: ", $(this).val())
+        console.log("Country <country_id>: ", selectedOption.data('country_id'))
+        console.log("Final country: ", countryId)
+
         const savedDestinationId = '{{ user_preferences.last_destination.ls_id|default:"" }}';
         
         loadDestinations(countryId, function() {
@@ -715,12 +759,19 @@ $(document).ready(function() {
             $level.empty().append('<option value="">Select a level</option>');
             var results = data["results"]
 
+            // If the level__id key exists, it means the record is a translated level. 
+            // The level__id contains the original parent key ID, while id holds the translated level ID.
+            //  If the key does not exist, then the record is not translated.
+
             if (results.length > 0) {
                 results.forEach(function(level) {
-                    $level.append($('<option></option>').
-                    attr('value', level.id).
-                    data('level_name', level.title).
-                    text(level.title));
+                    let $option = $('<option></option>')
+                    .attr('value', level.id)
+                    .data('level_name', level.title)
+                    .text(level.title);
+
+                $option.data('level_id', level.hasOwnProperty('level__id') ? level.level__id : '');  
+                $level.append($option);
                 });
                 loadLevelPreferences()
             } else {

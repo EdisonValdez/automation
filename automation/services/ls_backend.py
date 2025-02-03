@@ -157,15 +157,25 @@ class LSBackendClient:
         if search:
             params['name'] = search.strip()
 
+        # Generate and validate access signature for the request.
+        # topic is the name of the url which we are trying to access.
+        rs = ResourceAccessSignature()
+        timestamp, signature = rs.generate_signature(topic="country-list")
+
+        self.headers["X-Signature"] = signature
+        self.headers["X-Timestamp"] = str(timestamp)
+        self.auth_needed = False  # no need for token based authentication
+
         try:
-            data = self._make_request('/cities/countries', params)
+            data = self._make_request('/api/custom-request/load_country', params)
 
             # Typically data is a list of {id: int, name: str}, but it could differ
             # if the backend returns an object
             cache.set(cache_key, data, timeout=self.cache_timeout)
         except Exception as e:
             logger.error(f"Error fetching countries: {str(e)}")
-
+        
+        self.auth_needed = True  # after use then revert to locked state
         return data
 
     def get_cities(
@@ -178,6 +188,7 @@ class LSBackendClient:
         Fetches cities with optional filtering by country_id and search name.
         The LS Backend expects ?country_id=<...> for filtering by city.
         """
+        data = []
         cache_key = self._get_cache_key(
             'cities',
             country_id=country_id,
@@ -195,15 +206,25 @@ class LSBackendClient:
             params['country_id'] = country_id
         if search:
             params['name'] = search.strip()
+        
+        # Generate and validate access signature for the request.
+        # topic is the name of the url which we are trying to access.
+        rs = ResourceAccessSignature()
+        timestamp, signature = rs.generate_signature(topic="city-list")
+
+        self.headers["X-Signature"] = signature
+        self.headers["X-Timestamp"] = str(timestamp)
+        self.auth_needed = False  # no need for token based authentication
 
         try:
-            data = self._make_request('/cities/', params)
+            data = self._make_request('/api/custom-request/load_city', params)
             cache.set(cache_key, data, timeout=self.cache_timeout)
-            return data
         except Exception as e:
             logger.error(f"Error fetching cities: {str(e)}")
-            return []
 
+        self.auth_needed = True  # after use then revert to locked state
+        return data
+        
     def get_levels(
         self,
         language: str = 'en',
@@ -308,7 +329,6 @@ class LSBackendClient:
             language=language,
             search=search,
             category_id=category_id
-
         )
         cached_data = cache.get(cache_key)
         if cached_data:

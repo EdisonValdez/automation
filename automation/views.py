@@ -271,8 +271,6 @@ class UploadFileView(View):
                     'errors': e.message_dict   # Return form errors to the frontend
                 })
             
-            # Move LS backend records to the automation system.
-            sync_objects = DataSyncer(request).sync()
             country = sync_objects.get("country")
             destination = sync_objects.get("destination")
             level = sync_objects.get("level")
