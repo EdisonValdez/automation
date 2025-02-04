@@ -926,10 +926,9 @@ $(document).ready(function() {
                 resetButton(button, originalText);
             }
         }
-
+ 
         function handleTranslationResponse(response) {
         const data = response.details || {};
-        
         let message = `
             <div class="translation-status">
                 <p>${response.message}</p>
@@ -941,12 +940,12 @@ $(document).ready(function() {
                     <p>Reviewed: ${data.reviewed || 0}</p>
                     <p>Discarded: ${data.discarded || 0}</p>
                 </div>
-    
+
                 ${data.error_details && data.error_details.length > 0 ? `
                     <div class="errors">
                         <h4>Issues Found:</h4>
                         <ul>
-                            ${data.error_details.map(error => 
+                            ${data.error_details.map(error =>
                                 `<li>Business ${error.business_id}: ${error.issue}</li>`
                             ).join('')}
                         </ul>
@@ -954,49 +953,69 @@ $(document).ready(function() {
                 ` : ''}
             </div>
         `;
-    
+
         Swal.fire({
-            icon: response.status === 'success' ? 'success' : 
+            icon: response.status === 'success' ? 'success' :
                 response.status === 'warning' ? 'warning' : 'error',
-            title: response.status === 'success' ? 'Translation Complete' : 
+            title: response.status === 'success' ? 'Translation Complete' :
                 response.status === 'warning' ? 'Warning' : 'Translation Failed',
             html: message,
             confirmButtonText: 'OK'
+        }).then(() => {
+            // Force reload after dialog is closed
+            window.location.href = window.location.href;
         });
     }
-        
+
         function handleSuccess(data, button) {
-        button.innerHTML = '<i class="fas fa-check"></i> Translation Complete';
-        
-        const taskId = button.getAttribute('data-task-id');
-        const taskUrl = `/tasks/${taskId}/details/`; // Adjust this URL according to your routing
-    
-        Swal.fire({
-            icon: 'success',
-            title: 'Translation Successful',
-            html: `
-                <div class="translation-summary">
-                    ${createSuccessMessage(data)}
-                    <div class="mt-3">
-                        <a href="${taskUrl}" class="btn btn-info btn-sm">
-                            <i class="fas fa-eye"></i> View Task Details
-                        </a>
+            button.innerHTML = '<i class="fas fa-check"></i> Translation Complete';
+            
+            const taskId = button.getAttribute('data-task-id');
+            const taskUrl = `/tasks/${taskId}/details/`; // Adjust this URL according to your routing
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Translation Successful',
+                html: `
+                    <div class="translation-summary">
+                        ${createSuccessMessage(data)}
+                        <div class="mt-3">
+                            <a href="${taskUrl}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> View Task Details
+                            </a>
+                        </div>
                     </div>
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'Refresh Page',
-            cancelButtonText: 'View Task',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                location.reload();
-            } else {
-                window.location.href = taskUrl;
-            }
-        });
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Refresh Page',
+                cancelButtonText: 'View Task',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Method 1: Force reload
+                    window.location.href = window.location.href;
+                    
+                    // Method 2: Alternative reload
+                    // window.location.replace(window.location.href);
+                    
+                    // Method 3: Force reload without cache
+                    // window.location.reload(true);
+                    
+                    // Method 4: Reload with timestamp
+                    // window.location.href = window.location.href + '?t=' + Date.now();
+                } else {
+                    window.location.href = taskUrl;
+                }
+            });
+        }
+
+// Add event listener to prevent caching
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) {
+        window.location.reload();
     }
-    
+});
+
         function handleWarning(data, button, originalText) {
             button.innerHTML = originalText;
             button.classList.remove('disabled');
