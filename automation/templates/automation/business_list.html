@@ -49,7 +49,7 @@
                   <div class="box">
                   <!-- Search Form -->
                     <form method="get" class="d-flex align-items-center mb-24 mt-11">
-                        <div class="input-group" style="max-width: 600px; margin: 0 auto;">
+                        <div class="input-group" style="max-width: 1200px; margin: 0 auto;">
                             <span class="input-group-text bg-light border-end-0" id="search-icon"
                                 style="border-radius: 0.5rem 0 0 0.5rem; border: 1px solid #ced4da; box-shadow: none;">
                                 <i class="fas fa-search" style="color: #888;"></i>
@@ -100,7 +100,7 @@
                                 ({{ business.id }}) - {{ business.title }}
                             </a>
                             </td>
-                            <td>{{ business.category_name }}</td>
+                            <td>{{ business.main_category }}</td>
                             <td>{{ business.address|truncatechars:20 }}</td>
                             <td>{{ business.city }}</td>
                             <td>{{ business.destination }}</td>

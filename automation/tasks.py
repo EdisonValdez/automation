@@ -1131,10 +1131,9 @@ def translate_business_titles(business, languages):
         logger.error(f"Error translating titles for business {business.id}: {str(e)}", exc_info=True)
         return False
 
+"""
 def translate_business_types(business, languages):
-    """
-    Handles the translation of business tags and types.
-    """
+ 
     try:
         for lang in languages:
             if lang == "spanish" and not business.types_esp:
@@ -1158,7 +1157,59 @@ def translate_business_types(business, languages):
     except Exception as e:
         logger.error(f"Error translating types for business {business.id}: {str(e)}", exc_info=True)
         return False
+"""
 
+def translate_business_types(business, languages):
+    """
+    Handles the translation of business tags and types.
+    """
+    try:
+        for lang in languages:
+            if lang == "spanish" and not business.types_esp:
+                business.types_esp = translate_comma_separated_list(business.types, "Spanish")
+            elif lang == "eng" and not business.types_eng:
+                business.types_eng = translate_comma_separated_list(business.types, "British English")
+            elif lang == "fr" and not business.types_fr:
+                business.types_fr = translate_comma_separated_list(business.types, "French")
+
+        business.save(update_fields=['types_esp', 'types_eng', 'types_fr'])
+        return True
+
+    except Exception as e:
+        logger.error(f"Error translating types for business {business.id}: {str(e)}", exc_info=True)
+        return False
+ 
+def translate_comma_separated_list(types_string, language_description):
+    """
+    Sends all comma-separated items in a single prompt, telling GPT explicitly
+    to output the translation as a comma-separated list with the same number of items.
+    """
+    if not types_string.strip():
+        return ""
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an expert translator. "
+                f"Translate the following comma-separated list into {language_description}. "
+                "Preserve the same number of items and their order. "
+                "Return them as a comma-separated list. Do not omit anything."
+            )
+        },
+        {
+            "role": "user",
+            "content": types_string
+        }
+    ]
+
+    try:
+        response = call_openai_with_retry(messages=messages, max_tokens=500, temperature=0.0)
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        logger.error(f"Error in translate_comma_separated_list: {str(e)}", exc_info=True)
+        return ""
+ 
 def process_business_translations(business, languages):
     """
     Processes translations for business descriptions.

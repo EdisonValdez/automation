@@ -480,7 +480,8 @@ class TranslateBusinessesView(View):
             task.save(update_fields=['translation_status'])
 
             # Process translations
-            results = self.process_translations(businesses, request.user)
+            #results = self.process_translations(businesses, request.user)
+            results = self.process_translations(businesses, request)
             
             # Update final status
             task.translation_status = self.determine_final_status(results)
@@ -503,7 +504,7 @@ class TranslateBusinessesView(View):
                 'details': self.get_business_stats(task) if 'task' in locals() else None
             }, status=500)
 
-    def process_translations(self, businesses, user):
+    def process_translations(self, businesses, request):
         """Process translations for businesses"""
 
         results = {
@@ -551,7 +552,8 @@ class TranslateBusinessesView(View):
 
         # Notify the user about the translation completion
         message = f"Translation process completed: {results['success']} succeeded, {results['failed']} failed."
-        messages.success(user, message)
+        #messages.success(user, message)
+        messages.success(request, message)
 
         return results
 
