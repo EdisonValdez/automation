@@ -9,6 +9,11 @@ from django.db import transaction
 import logging
 from django.core.exceptions import ValidationError 
 import json
+from rest_framework.viewsets import ViewSet 
+from rest_framework.decorators import api_view, action
+from rest_framework.response import Response
+
+import requests 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import TruncDate
 from django.views.decorators.http import require_http_methods
@@ -32,9 +37,13 @@ from django.views import View
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.views.decorators.csrf import csrf_exempt
-from django.template.loader import render_to_string 
-from .tasks import *
-from .serializers import BusinessSerializer
+from django.template.loader import render_to_string
+
+from automation.api.serializers import BusinessSerializer, TimelineDataSerializer
+from automation.services.ls_backend import LSBackendClient
+from automation.services.dashboard_service import DashboardService
+ 
+from .tasks import * 
 from .permissions import IsAdminOrAmbassadorForDestination
 from .models import CustomUser, Destination, Feedback, HourlyBusyness, Level, PopularTimes, ScrapingTask, Image, Business, UserPreference,  UserRole, Country
 from .forms import FeedbackFormSet, DestinationForm, UserProfileForm, CustomUserCreationForm, CustomUserChangeForm, ScrapingTaskForm, BusinessForm
@@ -50,7 +59,7 @@ from automation import constants as const
 from automation.helper import datetime_serializer
 from django.views.generic import ListView 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from automation.services.ls_backend import LSBackendClient   
+ 
 from automation.signals import update_task_status_signal
 
 User = get_user_model()
@@ -259,7 +268,7 @@ class UploadFileView(View):
                     user_pref.last_level = form.cleaned_data.get('level')
                     user_pref.last_main_category = form.cleaned_data.get('main_category')
                     user_pref.last_subcategory = form.cleaned_data.get('subcategory')
-                    user_pref.last_image_count = request.POST.get('image_count', 5)
+                    user_pref.last_image_count = form.cleaned_data.get('image_count', 5)
 
                     # Debug logging
                     logger.info(f"Saving preferences for user {request.user.username}")
@@ -268,10 +277,11 @@ class UploadFileView(View):
                     logger.info(f"Level: {user_pref.last_level}")
                     logger.info(f"Main Category: {user_pref.last_main_category}")
                     logger.info(f"Subcategory: {user_pref.last_subcategory}")
-                    
+                    logger.info(f"Image Count: {user_pref.last_image_count}")
+
                     user_pref.save()
 
-                    # Prepare form data
+                    # Prepare form data for task processing
                     form_data = {
                         'country_id': task.country.id if task.country else None,
                         'country_name': task.country_name,
@@ -303,115 +313,74 @@ class UploadFileView(View):
 class TaskDetailView(View):
     def get(self, request, id):
         logger.info(f"Accessing TaskDetailView for task {id}")
-        user = request.user
-
-        # Get base queryset for tasks based on user role
-        if user.is_superuser or user.roles.filter(role='ADMIN').exists():
-            base_task_queryset = ScrapingTask.objects.all()
-        elif user.roles.filter(role='AMBASSADOR').exists():
-            ambassador_destinations = user.destinations.all()
-            base_task_queryset = ScrapingTask.objects.filter(
-                businesses__form_destination_id__in=ambassador_destinations
-            ).distinct()
-        else:
-            return render(request, 'automation/error.html',
-                        {'error': 'You do not have permission to access this task.'},
-                        status=403)
-
-        # Get the current task with prefetched businesses
-        task = get_object_or_404(
-            base_task_queryset.prefetch_related(
-                Prefetch('businesses',
-                        queryset=Business.objects.filter(is_deleted=False))
-            ),
-            id=id
-        )
         
-        # Get previous and next tasks from the base queryset
-        previous_task = base_task_queryset.filter(id__lt=task.id).order_by('-id').first()
-        next_task = base_task_queryset.filter(id__gt=task.id).order_by('id').first()
+        try:
+            user = request.user
+            
+            # Check basic permissions
+            if not (user.is_superuser or 
+                   user.roles.filter(role__in=['ADMIN', 'AMBASSADOR']).exists()):
+                return render(
+                    request,
+                    'automation/error.html',
+                    {'error': 'You do not have permission to access this task.'},
+                    status=403
+                )
 
-        # Prefetch businesses with images
-        businesses = task.businesses.filter(is_deleted=False).prefetch_related(
-            Prefetch('images',
-                    queryset=Image.objects.filter(is_deleted=False).order_by('id'),
-                    to_attr='first_image')
-        )
+            api_url = f"{request.scheme}://{request.get_host()}/api/tasks/{id}/detailed_view/"
+            response = requests.get(
+                api_url,
+                cookies=request.COOKIES,
+                headers={
+                    'X-CSRFToken': request.COOKIES.get('csrftoken'),
+                    'Accept': 'application/json'
+                }
+            )
 
+            if response.status_code != 200:
+                logger.error(f"API request failed with status {response.status_code}")
+                return render(
+                    request,
+                    'automation/error.html',
+                    {'error': 'Task not found or error occurred.'},
+                    status=404
+                )
 
-        # Get business counts by status
-        business_counts = {
-            'total': businesses.count(),
-            'by_status': businesses.values('status').annotate(
-                count=Count('id')
-            ).order_by('status'),
-            'pending': businesses.filter(status='PENDING').count(),
-            'reviewed': businesses.filter(status='REVIEWED').count(),
-            'discarded': businesses.filter(status='DISCARDED').count(),
-            'in_production': businesses.filter(status='IN_PRODUCTION').count(),
-        }
-
-
-        # Calculate empty descriptions count - EXCLUDING DISCARDED businesses
-        empty_descriptions_count = businesses.exclude(
-            status='DISCARDED'
-        ).filter(
-            Q(description__isnull=True) |
-            Q(description='None') |
-            Q(description='') |
-            Q(description__exact='No description Available')
-        ).count() 
-
-        business_counts['empty_descriptions'] = empty_descriptions_count
-
-        # Add percentage calculations
-        total_count = business_counts['total']
-
-        if total_count > 0:
-            business_counts['percentages'] = {
-                'pending': (business_counts['pending'] / total_count) * 100,
-                'reviewed': (business_counts['reviewed'] / total_count) * 100,
-                'discarded': (business_counts['discarded'] / total_count) * 100,
-                'in_production': (business_counts['in_production'] / total_count) * 100,
+            api_data = response.json()
+            
+            # Prepare context with all necessary permissions
+            context = {
+                'task': api_data['task'],
+                'businesses': api_data['businesses'],
+                'status_counts': api_data['status_counts'],
+                'total_businesses': api_data['total_businesses'],
+                'empty_descriptions': api_data['empty_descriptions'],
+                'previous_task': api_data['navigation']['previous_task'],
+                'next_task': api_data['navigation']['next_task'],
+                'status_choices': api_data['status_choices'],
+                'MEDIA_URL': settings.MEDIA_URL,
+                'DEFAULT_IMAGE_URL': settings.DEFAULT_IMAGE_URL,
+                'is_admin': api_data['user_permissions']['is_admin'],
+                'is_ambassador': api_data['user_permissions']['is_ambassador'],
+                'can_edit': api_data['user_permissions']['can_edit'],
+                'can_delete': api_data['user_permissions']['can_delete'],
+                'can_move_to_production': api_data['user_permissions']['can_move_to_production'],
+                'user': request.user,
             }
-        else:
-            business_counts['percentages'] = {
-                'pending': 0, 'reviewed': 0, 'discarded': 0, 'in_production': 0
-            }
 
-        # Attach first image to each business
-        for business in businesses:
-            business.first_image = business.first_image[0] if business.first_image else None
+            return render(request, 'automation/task_detail.html', context)
 
-        # Check for empty descriptions
-        has_empty_descriptions = empty_descriptions_count > 0
+        except Exception as e:
+            logger.error(f"Error in TaskDetailView for task {id}: {str(e)}", exc_info=True)
+            return render(
+                request,
+                'automation/error.html',
+                {'error': 'An unexpected error occurred.'},
+                status=500
+            )
 
-        # Build context
-        context = {
-            'task': task,
-            'businesses': businesses,
-            'business_counts': business_counts,
-            'has_empty_descriptions': has_empty_descriptions,
-            'empty_descriptions_count': empty_descriptions_count,
-            'previous_task': previous_task,
-            'next_task': next_task,
-            'is_first_task': previous_task is None,
-            'is_last_task': next_task is None,
-            'status_choices': Business.STATUS_CHOICES,
-            'MEDIA_URL': settings.MEDIA_URL,
-            'MEDIA_ROOT': settings.MEDIA_ROOT,
-            'DEFAULT_IMAGE_URL': settings.DEFAULT_IMAGE_URL,
-        }
 
-        logger.info(f"Retrieved task {id} with {business_counts['total']} businesses")
-        logger.info(f"Empty descriptions (excluding DISCARDED): {empty_descriptions_count}")
-        logger.debug(f"Business counts breakdown: "
-                    f"Total: {business_counts['total']}, "
-                    f"Non-discarded needing descriptions: {empty_descriptions_count}, "
-                    f"Discarded: {business_counts['discarded']}")
-
-        return render(request, 'automation/task_detail.html', context)
-
+          
 def update_main_task_status(task):
     """Update the main task status based on business statuses"""
     businesses = task.businesses.exclude(status='DISCARDED')
@@ -938,7 +907,7 @@ class DestinationCategoriesView(View):
                 'message': str(e)
             }, status=500)
                
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class BusinessStatusDataView(View):
     """
@@ -1426,7 +1395,7 @@ class DashboardView(View):
 
     def get_user_context(self, user):
         return {}
-
+ 
 class GetTimelineDataView(View):
     def get(self, request):
         try:
@@ -1496,6 +1465,134 @@ class GetTimelineDataView(View):
             return JsonResponse({
                 'error': 'Failed to fetch timeline data'
             }, status=400)
+from rest_framework.pagination import PageNumberPagination
+class CustomPagination(PageNumberPagination):
+    page_size = 50  # Default page size
+    page_size_query_param = 'page_size'  # Allow client to override page size
+    max_page_size = 1000  # Maximum limit per page
+ 
+class DashboardViewSet(ViewSet):
+    pagination_class = CustomPagination
+
+    @action(detail=False, methods=['get'])
+    def recent_projects(self, request):
+        """
+        Get recent projects with business counts using optimized annotation.
+        """
+        try:
+            limit = int(request.query_params.get('limit', 10))
+            status_filter = request.query_params.get('status', 'ALL')
+
+            # Ensure 'businesses' related name exists in Business model.
+            queryset = ScrapingTask.objects.annotate(
+                business_count=Count('businesses', distinct=True)  # Ensure the related_name is correct
+            ).select_related(
+                'user',
+                'destination'
+            ).order_by('-created_at')
+
+            # Apply status filter if not ALL
+            if status_filter != 'ALL':
+                queryset = queryset.filter(status=status_filter)
+
+            # Get limited results
+            projects = queryset[:limit]
+
+            data = self.serialize_projects(projects)
+
+            return Response({
+                'status': 'success',
+                'data': data,
+                'total_projects': queryset.count(),
+                'total_businesses': Business.objects.count()
+            })
+
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+
+    def serialize_projects(self, projects):
+        """Helper method to serialize projects with pre-annotated business_count"""
+        return [{
+            'id': project.id,
+            'project_title': project.project_title,
+            'status': project.status,
+            'created_at': project.created_at.strftime('%Y-%m-%d %H:%M'),
+            'user': {
+                'id': project.user.id if project.user else None,
+                'username': project.user.username if project.user else '',
+                'email': project.user.email if project.user else '',
+                'full_name': project.user.get_full_name() if project.user else ''
+            },
+            'destination': {
+                'id': project.destination.id,
+                'name': project.destination.name,
+                'country': project.destination.country_id
+            } if project.destination else None,
+            'business_count': project.business_count  # Using pre-annotated value
+        } for project in projects]
+
+    @action(detail=False, methods=['get'])
+    def timeline_data(self, request):
+        """
+        Get timeline data for tasks and businesses with counts.
+        """
+        try:
+            start_date = request.query_params.get('start_date')
+            end_date = request.query_params.get('end_date')
+
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+
+            timeline_data = (
+                ScrapingTask.objects.filter(
+                    created_at__date__gte=start_date,
+                    created_at__date__lte=end_date
+                )
+                .annotate(date=TruncDate('created_at'))
+                .values('date')
+                .annotate(
+                    task_count=Count('id', distinct=True),
+                    business_count=Count('businesses', distinct=True)
+                )
+                .order_by('date')
+            )
+
+            totals = ScrapingTask.objects.filter(
+                created_at__date__gte=start_date,
+                created_at__date__lte=end_date
+            ).aggregate(
+                total_tasks=Count('id', distinct=True),
+                total_businesses=Count('businesses', distinct=True)
+            )
+
+            dates = []
+            tasks = []
+            businesses = []
+
+            current_date = start_date
+            while current_date <= end_date:
+                dates.append(current_date.strftime('%Y-%m-%d'))
+                day_data = next(
+                    (item for item in timeline_data if item['date'] == current_date),
+                    {'task_count': 0, 'business_count': 0}
+                )
+                tasks.append(day_data['task_count'])
+                businesses.append(day_data['business_count'])
+                current_date += timezone.timedelta(days=1)
+
+            return Response({
+                'dates': dates,
+                'tasks': tasks,
+                'businesses': businesses,
+                'total_tasks': totals['total_tasks'],
+                'total_businesses': totals['total_businesses']
+            })
+
+        except Exception as e:
+            return Response({'error': 'Failed to fetch timeline data'}, status=400)
 
 #########USER###################USER###################USER###################USER##########
   
@@ -2036,6 +2133,9 @@ def update_business_status(request, business_id):
             debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
             logger.error(f"Traceback Error: {debugger}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+
 
 @csrf_exempt
 def update_business_statuses(request):
@@ -2773,77 +2873,93 @@ def enhance_translate_business(request, business_id):
 #--Generate the based main description when businesses have empty the main description, 
 # then the translator enhance that main description and translate it to the other
 # languages 
+
 @login_required
+@require_http_methods(["GET", "POST"])
 def generate_task_descriptions(request, task_id):
+    """Generate or check status of business descriptions for a task"""
+    task = get_object_or_404(ScrapingTask, id=task_id)
+    
     if request.method == 'POST':
-        task = get_object_or_404(ScrapingTask, id=task_id)
-        generator = BusinessDescriptionGenerator(task_id)
-        
-        try:
-            # First, let's check if there are any businesses needing descriptions
-            needs_description = task.businesses.filter(
-                Q(description__isnull=True) |  # Handles None values in database
-                Q(description='None') |        # Handles string 'None'
-                Q(description='') |            # Handles empty strings
-                Q(description__exact='No description Available')
-            ).exists()
+        return handle_description_generation(task)
+    return check_description_status(task)
 
-            if not needs_description:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'No businesses need descriptions',
-                    'needs_description': False
-                })
+def handle_description_generation(task):
+    """Handle POST request for description generation"""
+    try:
+        # Check for businesses needing descriptions
+        empty_description_query = get_empty_description_query()
+        needs_description = task.businesses.filter(empty_description_query).exists()
 
-            generator.process_businesses()
-            results = generator.get_results()
-
-            # After processing, recheck the status
-            remaining_empty = task.businesses.filter(
-                Q(description__isnull=True) |
-                Q(description='None') |
-                Q(description='') |
-                Q(description__exact='No description Available')
-            ).count()
-
+        if not needs_description:
             return JsonResponse({
                 'success': True,
-                'message': f"Generated {results['businesses_updated']} descriptions",
-                'businesses_updated': results['businesses_updated'],
-                'businesses_skipped': results['businesses_skipped'],
-                'remaining_empty': remaining_empty,
-                'needs_description': remaining_empty > 0
+                'status': 'already_generated',
+                'message': 'All businesses already have descriptions generated.',
+                'needs_description': False,
+                'info_type': 'info'  # Add this to trigger info alert in frontend
             })
 
-        except Exception as e:
-            logger.error(f"Error generating descriptions for task {task_id}: {e}", exc_info=True)
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            })
+        # Generate descriptions
+        generator = BusinessDescriptionGenerator(task.id)
+        generator.process_businesses()
+        results = generator.get_results()
 
-    # Add an endpoint to check status without processing
-    elif request.method == 'GET':
-        task = get_object_or_404(ScrapingTask, id=task_id)
-        needs_description = task.businesses.filter(
-            Q(description__isnull=True) |
-            Q(description='None') |
-            Q(description='') |
-            Q(description__exact='No description Available')
-        ).exists()
+        # Recheck remaining empty descriptions
+        remaining_empty = task.businesses.filter(empty_description_query).count()
 
         return JsonResponse({
-            'needs_description': needs_description,
-            'empty_count': task.businesses.filter(
-                Q(description__isnull=True) |
-                Q(description='None') |
-                Q(description='') |
-                Q(description__exact='No description Available')
-            ).count()
+            'success': True,
+            'message': f"Generated {results['businesses_updated']} descriptions",
+            'businesses_updated': results['businesses_updated'],
+            'businesses_skipped': results['businesses_skipped'],
+            'remaining_empty': remaining_empty,
+            'needs_description': remaining_empty > 0
         })
 
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+    except Exception as e:
+        logger.error(f"Error generating descriptions for task {task.id}: {str(e)}", exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
+def check_description_status(task):
+    """Handle GET request to check description status"""
+    try:
+        empty_description_query = get_empty_description_query()
+        empty_count = task.businesses.filter(empty_description_query).count()
+        
+        if empty_count == 0:
+            return JsonResponse({
+                'success': True,
+                'status': 'complete',
+                'message': 'All descriptions are already generated.',
+                'needs_description': False,
+                'empty_count': 0,
+                'info_type': 'info'  # Add this to trigger info alert in frontend
+            })
+
+        return JsonResponse({
+            'needs_description': True,
+            'empty_count': empty_count
+        })
+
+    except Exception as e:
+        logger.error(f"Error checking description status for task {task.id}: {str(e)}", exc_info=True)
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+def get_empty_description_query():
+    """Get query for finding businesses without descriptions"""
+    return (
+        Q(description__isnull=True) |
+        Q(description='None') |
+        Q(description='') |
+        Q(description__exact='No description Available')
+    )
 ###########ENHANCE AND GENERATE DESCRIPTION##################
 
 @csrf_exempt
@@ -3649,21 +3765,20 @@ def save_selected_events(request):
 @require_POST
 def delete_task(request, id):
     user = request.user
-
     try:
+        # If superuser or admin => can delete any
         if user.is_superuser or user.roles.filter(role='ADMIN').exists():
             task = ScrapingTask.objects.get(id=id)
         else:
-            # Ensure the user has permission to delete this task
+            # Must be the task's owner
             task = ScrapingTask.objects.get(id=id, user=user)
-
         task.delete()
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'success', 'message': 'Task deleted successfully.'})
     except ScrapingTask.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': 'Task not found'}, status=404)
+        return JsonResponse({'status': 'error', 'message': 'Task not found.'}, status=404)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
+
 
 class FeedbackListView(LoginRequiredMixin, ListView):
     model = Feedback
@@ -3766,4 +3881,143 @@ def delete_feedback(request, feedback_id):
         return JsonResponse({
             'status': 'error',
             'message': 'An error occurred while deleting the feedback'
+        }, status=500)
+ 
+@login_required
+@require_GET
+def get_business_stats(request):
+    """Get counts of businesses by status"""
+    try:
+        # Get all statuses and their counts
+        status_counts = Business.objects.values('status')\
+            .exclude(status__isnull=True)\
+            .exclude(status='')\
+            .annotate(count=Count('id'))
+        
+        # Convert to dictionary format
+        stats = {
+            item['status']: item['count']
+            for item in status_counts
+        }
+        
+        # Ensure all standard statuses are present
+        default_statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']
+        for status in default_statuses:
+            if status not in stats:
+                stats[status] = 0
+                
+        return JsonResponse(stats)
+    except Exception as e:
+        print(f"Error in get_business_stats: {str(e)}")
+        return JsonResponse({
+            'error': 'Failed to fetch business stats'
+        }, status=500)
+
+@login_required
+@require_GET
+def get_tasks_timeline(request):
+    """Get task counts over the last 7 days"""
+    try:
+        end_date = timezone.now()
+        start_date = end_date - timedelta(days=6)
+        
+        # Get daily task counts
+        daily_counts = ScrapingTask.objects.filter(
+            created_at__gte=start_date,
+            created_at__lte=end_date
+        ).annotate(
+            date=TruncDate('created_at')
+        ).values('date').annotate(
+            count=Count('id')
+        ).order_by('date')
+        
+        # Create a complete date range
+        date_range = []
+        counts = []
+        current_date = start_date.date()
+        
+        while current_date <= end_date.date():
+            date_range.append(current_date.isoformat())
+            # Find count for this date or use 0
+            count = next(
+                (item['count'] for item in daily_counts if item['date'] == current_date),
+                0
+            )
+            counts.append(count)
+            current_date += timedelta(days=1)
+            
+        return JsonResponse({
+            'dates': date_range,
+            'tasks': counts
+        })
+    except Exception as e:
+        print(f"Error in get_tasks_timeline: {str(e)}")
+        return JsonResponse({
+            'error': 'Failed to fetch tasks timeline'
+        }, status=500)
+ 
+@api_view(['GET'])
+def get_timeline_data(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    # Query your database
+    tasks = ScrapingTask.objects.filter(
+        created_at__range=[start_date, end_date]
+    ).values('created_at').annotate(
+        task_count=Count('id'),
+        business_count=Count('businesses')
+    ).order_by('created_at')
+    
+    # Process the data
+    dates = []
+    task_counts = []
+    business_counts = []
+    
+    for task in tasks:
+        dates.append(task['created_at'])
+        task_counts.append(task['task_count'])
+        business_counts.append(task['business_count'])
+    
+    data = {
+        'dates': dates,
+        'tasks': task_counts,
+        'businesses': business_counts,
+        'total_tasks': sum(task_counts),
+        'total_businesses': sum(business_counts)
+    }
+    
+    serializer = TimelineDataSerializer(data=data)
+    if serializer.is_valid():
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
+ 
+
+    """Get recent tasks with related information"""
+    try:
+        tasks = ScrapingTask.objects.select_related(
+            'user'
+        ).prefetch_related(
+            'businesses'
+        ).order_by('-created_at')[:10]
+        
+        tasks_data = []
+        for task in tasks:
+            tasks_data.append({
+                'id': task.id,
+                'project_title': task.project_title,
+                'status': task.status,
+                'created_at': task.created_at.isoformat(),
+                'user_name': task.user.username if task.user else 'Unknown',
+                'user_email': task.user.email if task.user else 'No email',
+                'business_count': task.businesses.count(),
+                'destination': task.destination.name if hasattr(task, 'destination') else 'N/A',
+                'translation_status': task.translation_status
+            })
+            
+        return JsonResponse(tasks_data, safe=False)
+    except Exception as e:
+        print(f"Error in get_recent_tasks: {str(e)}")
+        return JsonResponse({
+            'error': 'Failed to fetch recent tasks'
         }, status=500)

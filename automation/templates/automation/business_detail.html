@@ -91,24 +91,20 @@
                         <!-- Business Title -->
                         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label"> 
-                            <i class="fas fa-briefcase me-2"></i> Business Title
-                            <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('title')">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                        </label>
+                            <i class="fas fa-briefcase me-2"></i> Business Title</label>
                             <div class="card-body d-flex align-items-center">
                                 <span id="title-display">{{ business.title }}</span><br>
                                 <input type="text" name="title" id="title-edit" class="form-control ms-2" value="{{ business.title }}" style="display:none;">
-                               
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('title')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                             </div>
                         </div>
                     
                         <!-- Status -->
                         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label"> 
-                            <i class="fas fa-info-circle me-2"></i> Status <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('status')">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button></label>
+                            <i class="fas fa-info-circle me-2"></i> Status</label>
                             <div class="card-body d-flex align-items-center">
                                 <span id="status-display" style="display: none;">{{ business.get_status_display }}</span><br>
                                 <select name="status" id="status-edit" class="form-control" style="display:none;">
@@ -131,53 +127,49 @@
                                 </select>
                                 
                                 
-                                
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('status')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                             </div>
                         </div>
                     
                         <!-- City -->
                         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label"> 
-                            <i class="fas fa-map-marker-alt me-2"></i> Destination
-                            <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('city')">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button></label>
+                            <i class="fas fa-map-marker-alt me-2"></i> Destination</label>
                             <div class="card-body d-flex align-items-center">
                                 <span id="city-display">{{ business.city|default:"N/A" }}</span><br>
                                 <input type="text" name="city" id="city-edit" class="form-control ms-2" value="{{ business.city }}" style="display:none;">
-                                
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('city')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                             </div>
                         </div>
                     
                         <!-- Price -->
                         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label">
-                                <i class="fas fa-dollar-sign me-2"></i> Price
-                                <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('price')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button></label>
+                                <i class="fas fa-dollar-sign me-2"></i> Price</label>
                             <div class="card-body d-flex align-items-center">
                                 <span id="price-display">{{ business.price|default:"N/A" }}</span>
                                 <input type="text" name="price" id="price-edit" class="form-control ms-2" value="{{ business.price }}" style="display:none;">
-                                
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('price')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                             </div>
                         </div>
                     
                         <!-- Website -->
                         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label">
-                                <i class="fas fa-globe me-2"></i> Website
-                                {% if business.website %}
-                                <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('website')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                {% endif %}
-                            </label>
+                                <i class="fas fa-globe me-2"></i> Website</label>
                             <div class="card-body d-flex align-items-center">
                                 {% if business.website %}
                                 <span id="website-display">{{ business.website|truncatechars:30  }}</span>
                                 <input type="text" name="website" id="website-edit" class="form-control ms-2" value="{{ business.website }}" style="display:none;">
-                                
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('website')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                                 {% else %}
                                 <span class="text-muted">N/A</span>
                                 {% endif %}
@@ -188,18 +180,14 @@
                         <!-- Phone Number -->
                         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label">
-                                <i class="fas fa-phone me-2"></i> Phone Number
-                                {% if business.phone %}
-                                <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('phone')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                {% endif %}
-                            </label>
+                                <i class="fas fa-phone me-2"></i> Phone Number</label>
                             <div class="card-body d-flex align-items-center">
                                 {% if business.phone %}
                                 <span id="phone-display">{{ business.phone }}</span>
                                 <input type="text" name="phone" id="phone-edit" class="form-control ms-2" value="{{ business.phone }}" style="display:none;">
-                                 
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('phone')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                                 {% else %}
                                 <span class="text-muted">N/A</span>
                                 {% endif %}
@@ -209,16 +197,14 @@
                          <!-- Address -->
                          <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label">
-                                <i class="fas fa-road me-2"></i> Full Address
-                                <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('address')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </label>
+                                <i class="fas fa-road me-2"></i> Full Address</label>
                             <div class="card-body d-flex align-items-center">
                                 {% if business.address %}
                                 <span id="address-display">{{ business.address }}</span>
                                 <input type="text" name="address" id="address-edit" class="form-control ms-2" value="{{ business.address }}" style="display:none;">
-                                
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('address')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                                 {% else %}
                                 <span class="text-muted">N/A</span>
                                 {% endif %}
@@ -245,7 +231,6 @@
                         <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 transition">
                             <label class="form-label">
                                 <i class="fas fa-list-ul me-2"></i> Main Categories
-
                             </label>
                             <div class="card-body d-flex align-items-center">
                                 <!-- Display Mode -->
@@ -321,16 +306,15 @@
                         </div>
 
                         <!-- Types -->
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
                             <label class="form-label">
-                                <i class="fas fa-shapes me-2"></i> Google Types
-                                <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('types')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button></label>
+                                <i class="fas fa-shapes me-2"></i> Google Types</label>
                             <div class="card-body d-flex align-items-center">
                                 <span id="types-display">{{ business.types|default:"N/A" }}</span>
                                 <input type="text" name="types" id="types-edit" class="form-control ms-2" value="{{ business.types }}" style="display:none;">
-                                
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('types')">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                             </div>
                         </div>
                     
@@ -341,7 +325,7 @@
                             <div class="card-body d-flex align-items-center">
                                 <span id="latitude-display">{{ business.latitude|default:"N/A" }}</span>
                                 <input type="text" name="latitude" id="latitude-edit" class="form-control ms-2" value="{{ business.latitude }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('latitude')">
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('latitude')">
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>
                             </div>
@@ -354,7 +338,7 @@
                             <div class="card-body d-flex align-items-center">
                                 <span id="longitude-display">{{ business.longitude|default:"N/A" }}</span>
                                 <input type="text" name="longitude" id="longitude-edit" class="form-control ms-2" value="{{ business.longitude }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('longitude')">
+                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('longitude')">
                                     <i class="fas fa-pencil-alt"></i>
                                 </button>
                             </div>
@@ -432,14 +416,11 @@
                             <div class="col-md-12">
                                 <label class="form-label">
                                     <i class="fas fa-clock me-2"></i> Operating Hours
-                                    {% if business.operating_hours %}
-                                    <button type="button" class="btn btn-link" onclick="editOperatingHours()">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </button>
-                                    {% endif %}
                                 </label>
                                 {% if business.operating_hours %}
-                               
+                                <button type="button" class="btn btn-link" onclick="editOperatingHours()">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
                                 <ul class="card-body box-list mt-3">
                                     {% for day, hours in business.operating_hours.items %}
                                     <li class="d-flex align-items-center">
@@ -457,7 +438,8 @@
                         </div>
                     </div>
                 </div>
-            </div>             
+            </div>  
+           
         </div>
              
         <div class="row">            
@@ -465,7 +447,7 @@
                 <!-- Description (Original) -->
                 <div class="left-dot">
                     <div class="card box-body translation">
-                        <div class="card-header business-title">American <img src="{% static 'images/flags/us.jpg'%}" width="25px" />
+                        <div class="card-header business-title">American Eng <img src="{% static 'images/flags/us.jpg'%}" width="25px" />
                             <button type="button" class="btn btn-link" onclick="toggleEdit('description')">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>

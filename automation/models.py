@@ -370,7 +370,9 @@ class Business(models.Model):
 
     types_esp = models.TextField(blank=True, null=True)  
     types_eng = models.TextField(blank=True, null=True)  
+    types_uk = models.TextField(blank=True, null=True)
     types_fr = models.TextField(blank=True, null=True)  
+
 
     #comments = models.TextField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
@@ -399,12 +401,9 @@ class Business(models.Model):
         return self.task.level.site_types if self.task and self.task.level else None
         
     def clean_types(self):
-        """Clean types field before saving"""
-        if self.types:
-            # Split, clean and deduplicate types
+        if isinstance(self.types, str):  
             types_list = [t.strip() for t in self.types.split(',') if t.strip()]
-            unique_types = list(dict.fromkeys(types_list))
-            self.types = ','.join(unique_types)
+            self.types = ', '.join(types_list)
  
     def delete(self, *args, **kwargs):
         self.is_deleted = True
@@ -452,7 +451,7 @@ class Business(models.Model):
             models.Index(fields=['scraped_at']),    
             models.Index(fields=['form_destination_id']),   
             models.Index(fields=['main_category']),   
-            models.Index(fields=['city']),   
+            models.Index(fields=['city']),    
         ]
         verbose_name_plural = "Businesses"
 
@@ -675,7 +674,6 @@ class HourlyBusyness(models.Model):
 
     def __str__(self):
         return f"{self.popular_times.business.title} - {self.popular_times.day} - {self.time}"
-    
 
 class UserPreference(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -691,4 +689,22 @@ class UserPreference(models.Model):
 
     def __str__(self):
         return f"Preferences for {self.user.username}"
+ 
+class TagMapping(models.Model):
+    english_tag = models.CharField(max_length=120, unique=True)
+    uk_tag = models.CharField(max_length=120, null=True)
+    spanish_tag = models.CharField(max_length=120, null=True)
+    french_tag = models.CharField(max_length=120, null=True)
+    tag_ls_id = models.CharField(max_length=50, null=True, blank=True)  
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['english_tag']),
+            models.Index(fields=['uk_tag']),
+            models.Index(fields=['spanish_tag']),
+            models.Index(fields=['french_tag']),
+            models.Index(fields=['tag_ls_id']),  
+        ]
 

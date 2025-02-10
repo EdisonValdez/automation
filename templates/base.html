@@ -84,6 +84,9 @@ Local Secrets - Content Curation Management Admin Dashboard
                     </li>
                     <li>
                         <a href="{% url 'upload_file' %}"><i class='bx bx-upload'></i> ADD NEW CONTENT</a>
+                    </li> 
+                    <li>
+                        <a href="{% url 'business_list' %}"><i class='bx bxs-business'></i> BUSINESS SEARCH</a>
                     </li>
                 {% elif user.is_ambassador %}
                 
@@ -95,27 +98,16 @@ Local Secrets - Content Curation Management Admin Dashboard
                     </li>
                     <li>
                         <a href="{% url 'upload_file' %}"><i class='bx bx-upload'></i> ADD NEW CONTENT</a>
+                    </li> 
+                    <li>
+                        <a href="{% url 'business_list' %}"><i class='bx bxs-business'></i> BUSINESS SEARCH</a>
                     </li>
                 {% endif %}
             </ul>
         </li>
 
-        <!-- Places Section -->
-        <li class="sidebar-submenu active">
-            <a href="#" class="sidebar-menu-dropdown">
-                <i class='bx bxs-business'></i>
-                <span>PLACES</span>
-                <div class="dropdown-icon">
-                    <i class='bx bx-chevron-down'></i>
-                </div>
-            </a>
-            <ul class="sidebar-menu sidebar-menu-dropdown-content active">
-                <li>
-                    <a href="{% url 'business_list' %}">View all Places</a>
-                </li>
-            </ul>
-        </li>
-
+        
+ 
         {% if user.is_admin %}
             <!-- Events Section -->
             <li class="sidebar-submenu active">

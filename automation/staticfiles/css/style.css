@@ -4083,6 +4083,11 @@ tr.top {
     color: #35CF96;
     background-color: rgba(53, 207, 150, 0.1);
 }
+.badge-production {
+    color: #ffffff;
+    background-color: #607D8B;
+}
+
 
 .badge-orange {
     color: #fff;
@@ -4091,7 +4096,7 @@ tr.top {
 
 .badge-primary {
     color: #fff;
-    background-color: #36f;
+    background-color: #212d94;
 }
 
 .user .progress {

@@ -1,0 +1,144 @@
+# app.yaml 
+name: automation
+services:
+  - name: web
+    environment_slug: python
+    github:
+      branch: master
+      deploy_on_push: true
+      repo: EdisonValdez/automation
+    build_command: pip install -r requirements.txt
+    run_command: gunicorn automation.wsgi:application
+    instance_size_slug: basic-xs
+    instance_count: 1
+    routes:
+      - path: /
+    envs:
+      - key: DJANGO_SETTINGS_MODULE
+        value: automation.settings
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db-postgresql-nyc3-61625.DATABASE_URL}
+      - key: DEBUG
+        value: "True"
+      - key: DJANGO_SECRET_KEY
+        value: ${DJANGO_SECRET_KEY}
+      - key: USE_S3
+        value: "True"
+      - key: AWS_ACCESS_KEY_ID
+        value: ${AWS_ACCESS_KEY_ID}
+      - key: AWS_SECRET_ACCESS_KEY
+        value: ${AWS_SECRET_ACCESS_KEY}
+      - key: AWS_STORAGE_BUCKET_NAME
+        value: "businesses"
+      - key: AWS_S3_REGION_NAME
+        value: "nyc3"
+      - key: AWS_S3_ENDPOINT_URL
+        value: "https://nyc3.digitaloceanspaces.com"
+      - key: DEVELOPMENT_MODE
+        value: "False"
+      - key: BASE_URL
+        value: "https://orca-app-jasq8.ondigitalocean.app"
+      - key: TRANSLATION_OPENAI_API_KEY
+        value: ${TRANSLATION_OPENAI_API_KEY}
+      - key: SERPAPI_KEY
+        value: ${SERPAPI_KEY}
+
+workers:
+  - name: scraping-worker
+    environment_slug: python
+    github:
+      branch: master
+      repo: EdisonValdez/automation
+    build_command: pip install -r requirements.txt
+    run_command: celery -A automation worker -Q scraping --loglevel=info
+    instance_size_slug: basic-xs
+    instance_count: 1
+    envs:
+      - key: DJANGO_SETTINGS_MODULE
+        value: automation.settings
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db-postgresql-nyc3-61625.DATABASE_URL}
+      - key: CELERY_BROKER_URL
+        scope: RUN_TIME
+        value: ${REDIS_URL}
+      - key: USE_S3
+        value: "True"
+      - key: AWS_ACCESS_KEY_ID
+        value: ${AWS_ACCESS_KEY_ID}
+      - key: AWS_SECRET_ACCESS_KEY
+        value: ${AWS_SECRET_ACCESS_KEY}
+      - key: AWS_STORAGE_BUCKET_NAME
+        value: "businesses"
+      - key: AWS_S3_REGION_NAME
+        value: "nyc3"
+      - key: AWS_S3_ENDPOINT_URL
+        value: "https://nyc3.digitaloceanspaces.com"
+      - key: TRANSLATION_OPENAI_API_KEY
+        value: ${TRANSLATION_OPENAI_API_KEY}
+      - key: SERPAPI_KEY
+        value: ${SERPAPI_KEY}
+
+  - name: image-worker
+    environment_slug: python
+    github:
+      branch: master
+      repo: EdisonValdez/automation
+    build_command: pip install -r requirements.txt
+    run_command: celery -A automation worker -Q images --loglevel=info
+    instance_size_slug: basic-xs
+    instance_count: 1
+    envs:
+      - key: DJANGO_SETTINGS_MODULE
+        value: automation.settings
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db-postgresql-nyc3-61625.DATABASE_URL}
+      - key: CELERY_BROKER_URL
+        scope: RUN_TIME
+        value: ${REDIS_URL}
+      - key: USE_S3
+        value: "True"
+      - key: AWS_ACCESS_KEY_ID
+        value: ${AWS_ACCESS_KEY_ID}
+      - key: AWS_SECRET_ACCESS_KEY
+        value: ${AWS_SECRET_ACCESS_KEY}
+      - key: AWS_STORAGE_BUCKET_NAME
+        value: "businesses"
+      - key: AWS_S3_REGION_NAME
+        value: "nyc3"
+      - key: AWS_S3_ENDPOINT_URL
+        value: "https://nyc3.digitaloceanspaces.com"
+
+  - name: celery-beat
+    environment_slug: python
+    github:
+      branch: master
+      repo: EdisonValdez/automation
+    build_command: pip install -r requirements.txt
+    run_command: celery -A automation beat --loglevel=info
+    instance_size_slug: basic-xs
+    instance_count: 1
+    envs:
+      - key: DJANGO_SETTINGS_MODULE
+        value: automation.settings
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${db-postgresql-nyc3-61625.DATABASE_URL}
+      - key: CELERY_BROKER_URL
+        scope: RUN_TIME
+        value: ${REDIS_URL}
+
+databases:
+  - engine: PG
+    name: automation-db
+    num_nodes: 1
+    size: db-s-dev-database
+
+# Redis for Celery
+databases:
+  - engine: REDIS
+    name: automation-redis
+    num_nodes: 1
+    size: db-s-dev-database

@@ -38,8 +38,7 @@ from django.template.loader import get_template
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.apps import apps
-import psutil
-from celery import shared_task
+import psutil 
 from celery.schedules import crontab
 from celery import Celery
 from django.core.files import File
@@ -448,6 +447,10 @@ def process_scraping_task(self, task_id, form_data=None):
         task.status = 'IN_PROGRESS'
         task.save()
 
+        # Get image_count early and ensure it's an integer
+        image_count = int(form_data.get('image_count', 5)) if form_data else 5
+        logger.info(f"Using image count: {image_count}")
+
         queries = []
         description = task.description if task.description else ''
         
@@ -491,8 +494,7 @@ def process_scraping_task(self, task_id, form_data=None):
             task.save()
             return
 
-        total_results = 0
-        image_count = form_data.get('image_count', 5) if form_data else 5
+        total_results = 0 
 
         for index, query_data in enumerate(queries, start=1):
             query = query_data['query']
@@ -614,19 +616,21 @@ def get_s3_client():
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
     )
- 
+
 def download_images(business, local_result, image_count=5):
     photos_link = local_result.get('photos_link')
     if not photos_link:
         logger.info(f"No photos link found for business {business.id}")
         return []
+
+    # Ensure image_count is a positive integer
     try:
-        image_count = int(image_count)
+        image_count = max(1, int(image_count))
         logger.info(f"Processing download with image count: {image_count}")
-    except (TypeError, ValueError):
+    except (TypeError, ValueError) as e:
+        logger.warning(f"Invalid image count provided ({image_count}), using default: 5. Error: {str(e)}")
         image_count = 5
-        logger.warning(f"Invalid image count provided, using default: {image_count}")
-   
+
     image_paths = []
     try:
         photos_search = GoogleSearch({

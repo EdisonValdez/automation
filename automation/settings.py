@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django.contrib.postgres',
     'storages',
+    'rest_framework',
 ]
 
 LOGIN_URL = '/login/'  
@@ -221,15 +222,19 @@ if not DEBUG:
 
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
-    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 100,
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
 }
 
 # Static Files Finders
@@ -297,4 +302,24 @@ LS_BACKEND_SETTINGS = {
     'CACHE_ENABLED': True,
     'DEFAULT_LANGUAGE': 'en',
 }
- 
+
+
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Task-specific settings
+CELERY_TASK_ROUTES = {
+    'automation.tasks.process_scraping_task': {'queue': 'scraping'},
+    #'automation.tasks.bulk_business_translation': {'queue': 'translation'},
+    #'automation.tasks.download_images': {'queue': 'images'},
+}
+
+# Task time limits
+CELERY_TASK_TIME_LIMIT = 1800  # 30 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 1500  # 25 minutes
+

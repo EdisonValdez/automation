@@ -1,4 +1,8 @@
 {
     "git.ignoreLimitWarning": true,
-    "python.REPL.enableREPLSmartSend": false
+    "python.REPL.enableREPLSmartSend": false,
+    "python.analysis.extraPaths": [
+        "./automation/services",
+        "./automation/services"
+    ]
 }

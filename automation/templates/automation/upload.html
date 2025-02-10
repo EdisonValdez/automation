@@ -921,15 +921,17 @@ $(document).ready(function() {
     const feedback = $('#urlFeedback'); 
     const clearIcon = $('.clear-input');
     const validPatterns = [
-        /^https:\/\/(www\.)?google\.com\/maps\/place\/.+/i,
-        /^https:\/\/maps\.google\.com\/maps\?q=.+/i,
-        /^https:\/\/maps\.google\.com\/maps\/dir\/.+/i,
-        /^https:\/\/(www\.)?google\.com\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,
-        /^https:\/\/maps\.app\.goo\.gl\/.+/i
-    ];
-         
- 
-    clearIcon.on('click', function() {
+    /^https:\/\/(www\.)?google\.com\/maps\/place\/.+/i,
+    /^https:\/\/(www\.)?google\.es\/maps\/place\/.+/i,  // Added google.es pattern
+    /^https:\/\/maps\.google\.com\/maps\?q=.+/i,
+    /^https:\/\/maps\.google\.es\/maps\?q=.+/i,
+    /^https:\/\/maps\.google\.com\/maps\/dir\/.+/i,
+    /^https:\/\/maps\.google\.es\/maps\/dir\/.+/i,
+    /^https:\/\/(www\.)?google\.com\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,
+    /^https:\/\/(www\.)?google\.es\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,  // Added google.es pattern
+    /^https:\/\/maps\.app\.goo\.gl\/.+/i
+];
+clearIcon.on('click', function() {
             urlInput.val('').removeClass('is-valid is-invalid');
             indicator.hide();
             feedback.hide();
@@ -937,52 +939,57 @@ $(document).ready(function() {
             $('#toggle-description').removeClass('active');
         }); 
 
-    function validateGoogleMapsUrl(url) { 
-        url = url.trim(); 
-        if (!url) {
-            return {
-                isValid: false,
-                message: 'URL cannot be empty'
-            };
-        } 
-        if (!url.match(/^https?:\/\//i)) {
-            return {
-                isValid: false,
-                message: 'URL must start with http:// or https://'
-            };
-        } 
-        const isValidPattern = validPatterns.some(pattern => pattern.test(url));
-        if (!isValidPattern) {
-            return {
-                isValid: false,
-                message: 'Invalid Google Maps URL format'
-            };
-        } 
-        try {
-            const urlObj = new URL(url);
-            const hostname = urlObj.hostname.toLowerCase();
-            
-            if (!hostname.includes('google.com') && 
-                !hostname.includes('maps.google.com') && 
-                !hostname.includes('maps.app.goo.gl')) {
-                return {
-                    isValid: false,
-                    message: 'URL must be from Google Maps'
-                };
-            }
+function validateGoogleMapsUrl(url) {
+    url = url.trim();
+    if (!url) {
+        return {
+            isValid: false,
+            message: 'URL cannot be empty'
+        };
+    }
 
-            return {
-                isValid: true,
-                message: 'Valid Google Maps URL',
-                trimmedUrl: url
-            };
-        } catch (e) {
+    if (!url.match(/^https?:\/\//i)) {
+        return {
+            isValid: false,
+            message: 'URL must start with http:// or https://'
+        };
+    }
+
+    const isValidPattern = validPatterns.some(pattern => pattern.test(url));
+    if (!isValidPattern) {
+        return {
+            isValid: false,
+            message: 'Invalid Google Maps URL format'
+        };
+    }
+
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+        
+        if (!hostname.includes('google.com') &&
+            !hostname.includes('google.es') &&    
+            !hostname.includes('maps.google.com') &&
+            !hostname.includes('maps.google.es') &&
+            !hostname.includes('maps.app.goo.gl')) {
             return {
                 isValid: false,
-                message: 'Invalid URL format'
+                message: 'URL must be from Google Maps'
             };
         }
+
+        return {
+            isValid: true,
+            message: 'Valid Google Maps URL',
+            trimmedUrl: url
+        };
+    } catch (e) {
+        return {
+            isValid: false,
+            message: 'Invalid URL format'
+        };
     }
+}
 
     function updateValidationUI(validationResult) {
         const icon = indicator.find('i');
