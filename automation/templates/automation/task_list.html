@@ -65,7 +65,7 @@
                         </div>
                 
                         <!-- Collapsible Advanced Filters -->
-                        <div class="collapse show" id="advancedFilters">
+                        <div class="collapse" id="advancedFilters">
                             <div class="row g-3">
                                 <!-- User Filter -->
                                 <div class="col-12 col-md-4">
@@ -457,59 +457,84 @@
                     resultsContainer.innerHTML = this.generateResultsHTML(data);
                 }
             
-                // Minimal pagination
-                renderPagination(currentPage, totalPages) {
-                    const paginationDiv = document.getElementById('pagination');
-                    if (!paginationDiv) return;
-            
-                    if (totalPages <= 1) {
-                        paginationDiv.innerHTML = '';
-                        return;
-                    }
-            
-                    let html = '<nav><ul class="pagination">';
-            
-                    // "Prev" button
-                    if (currentPage > 1) {
-                        html += `<li class="page-item">
-                            <a class="page-link" href="#" data-page="${currentPage - 1}">Prev</a>
-                        </li>`;
-                    }
-            
-                    // Page numbers
-                    for (let p = 1; p <= totalPages; p++) {
-                        const activeClass = (p === currentPage) ? 'active' : '';
-                        html += `
-                            <li class="page-item ${activeClass}">
-                                <a class="page-link" href="#" data-page="${p}">${p}</a>
-                            </li>
-                        `;
-                    }
-            
-                    // "Next" button
-                    if (currentPage < totalPages) {
-                        html += `<li class="page-item">
-                            <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
-                        </li>`;
-                    }
-            
-                    html += '</ul></nav>';
-                    paginationDiv.innerHTML = html;
-            
-                    // event listeners
-                    paginationDiv.querySelectorAll('a.page-link').forEach(link => {
-                        link.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            const newPage = parseInt(link.dataset.page, 10);
-                            this.goToPage(newPage);
-                        });
-                    });
-                }
-            
-                goToPage(page) {
-                    this.currentPage = page;
-                    this.applyFilters();
-                }
+ /* =========== PAGINATION WITH ELLIPSES =========== */
+ renderPagination(currentPage, totalPages) {
+                            const pagDiv = document.getElementById('pagination');
+                            if (!pagDiv) return;
+                            if (totalPages <= 1) {
+                                pagDiv.innerHTML = '';
+                                return;
+                            }
+                    
+                            const pages = this.buildPaginationPages(currentPage, totalPages, 2);
+                            let html = '<nav><ul class="pagination">';
+                    
+                            // Prev
+                            if (currentPage>1) {
+                                html += `<li class="page-item">
+                                    <a class="page-link" href="#" data-page="${currentPage-1}">Prev</a>
+                                </li>`;
+                            }
+                            // pages or ellipses
+                            pages.forEach(p => {
+                                if (p === '...') {
+                                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                                } else {
+                                    const active = (p===currentPage) ? 'active' : '';
+                                    html += `<li class="page-item ${active}">
+                                        <a class="page-link" href="#" data-page="${p}">${p}</a>
+                                    </li>`;
+                                }
+                            });
+                            // Next
+                            if (currentPage<totalPages) {
+                                html += `<li class="page-item">
+                                    <a class="page-link" href="#" data-page="${currentPage+1}">Next</a>
+                                </li>`;
+                            }
+                            html += '</ul></nav>';
+                    
+                            pagDiv.innerHTML = html;
+                            // attach events
+                            pagDiv.querySelectorAll('a.page-link').forEach(link => {
+                                link.addEventListener('click', e => {
+                                    e.preventDefault();
+                                    const newPage = parseInt(link.dataset.page,10);
+                                    if (!isNaN(newPage)) {
+                                        this.goToPage(newPage);
+                                    }
+                                });
+                            });
+                        }
+                    
+                        buildPaginationPages(current, total, delta=2) {
+                            if (total<=7) {
+                                return Array.from({length:total},(_,i)=>i+1);
+                            }
+                            const pages=[];
+                            const left = current-delta;
+                            const right= current+delta;
+                            let last;
+                            for (let p=1;p<=total;p++){
+                                if(p<=2||p>total-2||(p>=left && p<=right)){
+                                    if(last){
+                                        if(p-last===2){
+                                            pages.push(last+1);
+                                        } else if (p-last>2){
+                                            pages.push('...');
+                                        }
+                                    }
+                                    pages.push(p);
+                                    last=p;
+                                }
+                            }
+                            return pages;
+                        }
+                    
+                        goToPage(p) {
+                            this.currentPage=p;
+                            this.applyFilters();
+                        }
             
                 generateResultsHTML(data) {
                     return `
