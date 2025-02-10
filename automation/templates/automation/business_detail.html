@@ -81,444 +81,496 @@
             </div>
         </div>  
     </div>
- 
-    <form id="business-form" method="post" action="{% url 'update_business' business.id %}">
-        {% csrf_token %} 
-        <div class="row">        
-            <div class="col-xl-9 col-lg-9 col-md-6 col-sm-12">
-                <div class="box left-dot">
-                    <div class="row gy-3">
-                        <!-- Business Title -->
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label"> 
-                            <i class="fas fa-briefcase me-2"></i> Business Title</label>
-                            <div class="card-body d-flex align-items-center">
-                                <span id="title-display">{{ business.title }}</span><br>
-                                <input type="text" name="title" id="title-edit" class="form-control ms-2" value="{{ business.title }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('title')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                    
-                        <!-- Status -->
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label"> 
-                            <i class="fas fa-info-circle me-2"></i> Status</label>
-                            <div class="card-body d-flex align-items-center">
-                                <span id="status-display" style="display: none;">{{ business.get_status_display }}</span><br>
-                                <select name="status" id="status-edit" class="form-control" style="display:none;">
-                                    {% for status_code, status_name in status_choices %}
-                                        {% if status_code != 'IN_PRODUCTION' %}
-                                            <!-- Show all statuses except 'IN_PRODUCTION' -->
-                                            <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
-                                                {{ status_name }}
-                                            </option>
-                                        {% elif is_admin %}
-                                            <!-- If user is admin, show 'IN_PRODUCTION' -->
-                                            <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
-                                                {{ status_name }}
-                                            </option>
-                                        {% elif business.status == status_code %}
-                                            <!-- If the business is already 'IN_PRODUCTION', show it but disable selection -->
-                                            <option value="{{ status_code }}" selected disabled>{{ status_name }}</option>
-                                        {% endif %}
-                                    {% endfor %}
-                                </select>
-                                
-                                
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('status')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                    
-                        <!-- City -->
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label"> 
-                            <i class="fas fa-map-marker-alt me-2"></i> Destination</label>
-                            <div class="card-body d-flex align-items-center">
-                                <span id="city-display">{{ business.city|default:"N/A" }}</span><br>
-                                <input type="text" name="city" id="city-edit" class="form-control ms-2" value="{{ business.city }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('city')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                    
-                        <!-- Price -->
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label">
-                                <i class="fas fa-dollar-sign me-2"></i> Price</label>
-                            <div class="card-body d-flex align-items-center">
-                                <span id="price-display">{{ business.price|default:"N/A" }}</span>
-                                <input type="text" name="price" id="price-edit" class="form-control ms-2" value="{{ business.price }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('price')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                    
-                        <!-- Website -->
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label">
-                                <i class="fas fa-globe me-2"></i> Website</label>
-                            <div class="card-body d-flex align-items-center">
-                                {% if business.website %}
-                                <span id="website-display">{{ business.website|truncatechars:30  }}</span>
-                                <input type="text" name="website" id="website-edit" class="form-control ms-2" value="{{ business.website }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('website')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                {% else %}
-                                <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                    
-                        <!-- Phone Number -->
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label">
-                                <i class="fas fa-phone me-2"></i> Phone Number</label>
-                            <div class="card-body d-flex align-items-center">
-                                {% if business.phone %}
-                                <span id="phone-display">{{ business.phone }}</span>
-                                <input type="text" name="phone" id="phone-edit" class="form-control ms-2" value="{{ business.phone }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('phone')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                {% else %}
-                                <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                         <!-- Address -->
-                         <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label">
-                                <i class="fas fa-road me-2"></i> Full Address</label>
-                            <div class="card-body d-flex align-items-center">
-                                {% if business.address %}
-                                <span id="address-display">{{ business.address }}</span>
-                                <input type="text" name="address" id="address-edit" class="form-control ms-2" value="{{ business.address }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('address')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                {% else %}
-                                <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Level Title -->
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label">
-                                <i class="fas fa-tree me-2"></i> Level Title</label>
-                            <div class="card-body d-flex align-items-center">
-                                {% if business.level_title %}
-                                <span id="level_title-display">{{ business.level_title }}</span>
-                                <input type="text" name="level_title" id="level_title-edit" class="form-control ms-2" value="{{ business.level_title }}" style="display:none;">
-                                
-                                {% else %}
-                                <span class="text-muted">N/A</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    
-                    
-                        <!-- Main Categories -->
-                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 transition">
-                            <label class="form-label">
-                                <i class="fas fa-list-ul me-2"></i> Main Categories
-                            </label>
-                            <div class="card-body d-flex align-items-center">
-                                <!-- Display Mode -->
-                                <div id="main_category-display">
-                                    {% with business.main_category|split_by_comma as selected_main_categories %}
-                                        {% if selected_main_categories %}
-                                            {% for category in selected_main_categories %}
-                                                <span class="badge badge-primary badge-category">{{ category }}</span>
-                                            {% endfor %}
-                                        {% else %}
-                                            <span class="text-muted">No categories selected.</span>
-                                        {% endif %}
-                                    {% endwith %}
-                                </div>
-
-                                <!-- Edit Mode -->
-                                <div id="main_category-edit-container" style="display: none; width: 100%;">
-                                    <select name="main_category" id="main_category-edit" class="form-control select2" multiple>
-                                        {% with business.main_category|split_by_comma as selected_main_categories %}
-                                            {% for category in main_categories %}
-                                                <option value="{{ category.title }}" {% if category.title in selected_main_categories %}selected{% endif %}>
-                                                    {{ category.title }}
-                                                </option>
-                                            {% endfor %}
-                                        {% endwith %}
-                                    </select>
-                                </div>
-
-                                <!-- Toggle Button -->
-                                <button type="button" class="btn btn-link ml-2 toggle-edit-btn" data-category-type="main_category">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Tailored Categories -->
-                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 transition">
-                            <label class="form-label">
-                                <i class="fas fa-tags me-2"></i> Sub-Categories
-                            </label>
-                            <div class="card-body d-flex align-items-center">
-                                <!-- Display Mode -->
-                                <div id="tailored_category-display">
-                                    {% with business.tailored_category|split_by_comma as selected_tailored_categories %}
-                                        {% if selected_tailored_categories %}
-                                            {% for category in selected_tailored_categories %}
-                                                <span class="badge badge-success badge-category">{{ category }}</span>
-                                            {% endfor %}
-                                        {% else %}
-                                            <span class="text-muted">No sub-categories selected.</span>
-                                        {% endif %}
-                                    {% endwith %}
-                                </div>
-
-                                <!-- Edit Mode -->
-                                <div id="tailored_category-edit-container" style="display: none; width: 100%;">
-                                    <select name="tailored_category" id="tailored_category-edit" class="form-control select2" multiple>
-                                        {% with business.tailored_category|split_by_comma as selected_tailored_categories %}
-                                            {% for category in subcategories %}
-                                                <option value="{{ category.title }}" {% if category.title in selected_tailored_categories %}selected{% endif %}>
-                                                    {{ category.title }}
-                                                </option>
-                                            {% endfor %}
-                                        {% endwith %}
-                                    </select>
-                                </div>
-
-                                <!-- Toggle Button -->
-                                <button type="button" class="btn btn-link ml-2 toggle-edit-btn" data-category-type="tailored_category">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Types -->
-                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label">
-                                <i class="fas fa-shapes me-2"></i> Google Types</label>
-                            <div class="card-body d-flex align-items-center">
-                                <span id="types-display">{{ business.types|default:"N/A" }}</span>
-                                <input type="text" name="types" id="types-edit" class="form-control ms-2" value="{{ business.types }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('types')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                    
-                        <!-- Latitude
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label">
-                                <i class="fas fa-map-marker me-2"></i> Longitude</label>
-                            <div class="card-body d-flex align-items-center">
-                                <span id="latitude-display">{{ business.latitude|default:"N/A" }}</span>
-                                <input type="text" name="latitude" id="latitude-edit" class="form-control ms-2" value="{{ business.latitude }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('latitude')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                        -->
-                        <!-- Longitude
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                            <label class="form-label">
-                                <i class="fas fa-map-marker me-2"></i> Longitude</label>
-                            <div class="card-body d-flex align-items-center">
-                                <span id="longitude-display">{{ business.longitude|default:"N/A" }}</span>
-                                <input type="text" name="longitude" id="longitude-edit" class="form-control ms-2" value="{{ business.longitude }}" style="display:none;">
-                                <button type="button" class="btn btn-link ms-2" onclick="toggleEdit('longitude')">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                         -->
-                    </div>
-                    
+    <form id="business-form" data-business-id="{{ business.id }}">
+        {% csrf_token %}
+        <div class="row">
+          <!-- Left Column: Main Business Fields -->
+          <div class="col-xl-9 col-lg-9 col-md-6 col-sm-12">
+            <div class="box left-dot">
+              <div class="row gy-3">
+                <!-- Business Title -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-briefcase me-2"></i> Business Title
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('title')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <span id="title-display">{{ business.title }}</span><br>
+                    <input type="text" name="title" id="title-edit"
+                           class="form-control ms-2" value="{{ business.title }}"
+                           style="display:none;">
+                  </div>
                 </div>
-            </div>         
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-                <div class="box left-dot">
-                    <div class="box-body">
-                        <!-- Service Options Button -->
-                        <div class="row gy-3">
-                            <div class="col-md-12">
-                                <label class="form-label">
-                                    <i class="fas fa-concierge-bell me-2"></i> Service Options
-                                </label>
-                                {% if business.service_options %}
-                                    <button type="button" class="btn btn-outline-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#serviceOptionsModal">
-                                        <i class="fas fa-eye me-1"></i> View Service Options
-                                    </button>
-                                {% else %}
-                                    <br>
-                                    <p>No service options available.</p>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Service Options Modal -->
-                        {% if business.service_options %}
-                        <div class="modal fade" id="serviceOptionsModal" tabindex="-1" aria-labelledby="serviceOptionsModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="serviceOptionsModalLabel">
-                                            <i class="fas fa-concierge-bell me-2"></i> Service Options for {{ business.title }}
-                                        </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="row">
-                                            {% for category in business.service_options %}
-                                                {% for category_name, options in category.items %}
-                                                    <div class="col-md-3 mb-4">
-                                                        <div class="service-category">
-                                                            <h6 class="text-primary">
-                                                                <i class="fas fa-info-circle me-2"></i>
-                                                                {{ category_name|title }}
-                                                            </h6>
-                                                            <ul class="list-unstyled ms-4">
-                                                                {% for option in options %}
-                                                                    <li class="mb-1">
-                                                                        <i class="fas fa-check text-success me-2"></i>
-                                                                        {{ option }}
-                                                                    </li>
-                                                                {% endfor %}
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                {% endfor %}
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+      
+                <!-- Status -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-info-circle me-2"></i> Status
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('status')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <span id="status-display" style="display: none;">
+                      {{ business.get_status_display }}
+                    </span><br>
+                    <!-- This select can be dynamically populated by JS -->
+                    <select name="status" id="status-edit"
+                            class="form-control" style="display:none;"></select>
+                  </div>
+                </div>
+      
+                <!-- Destination (City) -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-map-marker-alt me-2"></i> Destination
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('city')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <span id="city-display">{{ business.city }}</span><br>
+                    <input type="text" name="city" id="city-edit"
+                           class="form-control ms-2" value="{{ business.city }}"
+                           style="display:none;">
+                  </div>
+                </div>
+      
+                <!-- Price -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-dollar-sign me-2"></i> Price
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('price')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <span id="price-display">{{ business.price|default:"N/A" }}</span>
+                    <input type="text" name="price" id="price-edit"
+                           class="form-control ms-2" value="{{ business.price }}"
+                           style="display:none;">
+                  </div>
+                </div>
+      
+                <!-- Website -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-globe me-2"></i> Website
+                    {% if business.website %}
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('website')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    {% endif %}
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    {% if business.website %}
+                      <span id="website-display">{{ business.website }}</span>
+                      <input type="text" name="website" id="website-edit"
+                             class="form-control ms-2" value="{{ business.website }}"
+                             style="display:none;">
+                    {% else %}
+                      <span class="text-muted">N/A</span>
+                    {% endif %}
+                  </div>
+                </div>
+      
+                <!-- Phone Number -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-phone me-2"></i> Phone Number
+                    {% if business.phone %}
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('phone')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    {% endif %}
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    {% if business.phone %}
+                      <span id="phone-display">{{ business.phone }}</span>
+                      <input type="text" name="phone" id="phone-edit"
+                             class="form-control ms-2" value="{{ business.phone }}"
+                             style="display:none;">
+                    {% else %}
+                      <span class="text-muted">N/A</span>
+                    {% endif %}
+                  </div>
+                </div>
+      
+                <!-- Full Address -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-road me-2"></i> Full Address
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('address')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    {% if business.address %}
+                      <span id="address-display">{{ business.address }}</span>
+                      <input type="text" name="address" id="address-edit"
+                             class="form-control ms-2" value="{{ business.address }}"
+                             style="display:none;">
+                    {% else %}
+                      <span class="text-muted">N/A</span>
+                    {% endif %}
+                  </div>
+                </div>
+      
+                <!-- Level Title (Read-only) -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-tree me-2"></i> Level Title
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <span id="level_title-display">
+                      {{ business.level_title|default:"N/A" }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Main Categories -->
+                <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 transition">
+                  <label class="form-label">
+                    <i class="fas fa-list-ul me-2"></i> Main Categories
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <!-- Display Mode -->
+                    <div id="main_category-display">
+                      {% with business.main_category|split_by_comma as selected_main_categories %}
+                        {% if selected_main_categories %}
+                          {% for category in selected_main_categories %}
+                            <span class="badge badge-primary badge-category">{{ category }}</span>
+                          {% endfor %}
+                        {% else %}
+                          <span class="text-muted">No categories selected.</span>
                         {% endif %}
+                      {% endwith %}
+                    </div>
 
-                        <!-- Operating Hours -->
-                        <div class="row gy-3">
-                            <div class="col-md-12">
-                                <label class="form-label">
-                                    <i class="fas fa-clock me-2"></i> Operating Hours
-                                </label>
-                                {% if business.operating_hours %}
-                                <button type="button" class="btn btn-link" onclick="editOperatingHours()">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </button>
-                                <ul class="card-body box-list mt-3">
-                                    {% for day, hours in business.operating_hours.items %}
-                                    <li class="d-flex align-items-center">
-                                        <div id="{{ day }}_display" class="flex-grow-1">
-                                            <strong>{{ day|title }}:</strong> {{ hours }}
-                                        </div>
-                                        <input type="text" name="operating_hours[{{ day }}]" id="{{ day }}_edit" class="form-control ms-2" value="{{ hours }}" style="display:none;">
-                                    </li>
+                    <!-- Edit Mode -->
+                    <div id="main_category-edit-container" style="display: none; width: 100%;">
+                      <select name="main_category" id="main_category-edit" class="form-control select2" multiple>
+                        {% if business.main_category %}
+                          {% for category in business.main_category|split_by_comma %}
+                            <option value="{{ category }}" selected>{{ category }}</option>
+                          {% endfor %}
+                        {% endif %}
+                      </select>
+                    </div>
+
+                    <!-- Toggle Button -->
+                    <button type="button" class="btn btn-link ml-2 toggle-edit-btn" data-category-type="main_category">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Tailored (Sub) Categories -->
+                <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 transition">
+                  <label class="form-label">
+                    <i class="fas fa-tags me-2"></i> Sub-Categories
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <!-- Display Mode -->
+                    <div id="tailored_category-display">
+                      {% with business.tailored_category|split_by_comma as selected_tailored_categories %}
+                        {% if selected_tailored_categories %}
+                          {% for category in selected_tailored_categories %}
+                            <span class="badge badge-success badge-category">{{ category }}</span>
+                          {% endfor %}
+                        {% else %}
+                          <span class="text-muted">No sub-categories selected.</span>
+                        {% endif %}
+                      {% endwith %}
+                    </div>
+
+                    <!-- Edit Mode -->
+                    <div id="tailored_category-edit-container" style="display: none; width: 100%;">
+                      <select name="tailored_category" id="tailored_category-edit" class="form-control select2" multiple>
+                        {% if business.tailored_category %}
+                          {% for t_category in business.tailored_category|split_by_comma %}
+                            <option value="{{ t_category }}" selected>{{ t_category }}</option>
+                          {% endfor %}
+                        {% endif %}
+                      </select>
+                    </div>
+
+                    <!-- Toggle Button -->
+                    <button type="button" class="btn btn-link ml-2 toggle-edit-btn" data-category-type="tailored_category">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </div>
+                </div>
+
+
+                <!-- Google Types -->
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-shapes me-2"></i> Google Types
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('types')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <span id="types-display">
+                      {% if business.types %}
+                        {{ business.types }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </span>
+                    <input type="text" name="types" id="types-edit"
+                           class="form-control ms-2"
+                           value="{{ business.types }}"
+                           style="display:none;">
+                  </div>
+                  <!-- Translations Collapsible -->
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-secondary" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#typesTranslations"
+                            aria-expanded="false" aria-controls="typesTranslations">
+                      Show Translations
+                    </button>
+                    <div class="collapse mt-2" id="typesTranslations">
+                      <div class="card card-body">
+                        <small>
+                          <strong>English:</strong> {{ business.types }}<br>
+                          <strong>Spanish:</strong> {{ business.types_esp }}<br>
+                          <strong>French:</strong> {{ business.types_fr }}<br>
+                          <strong>UK:</strong> {{ business.types_eng }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div><!-- End .row gy-3 inside left column -->
+            </div><!-- End .box.left-dot -->
+          </div><!-- End Left Column -->
+      
+          <!-- Right Column: Service Options & Operating Hours -->
+          <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <div class="box left-dot">
+              <div class="box-body">
+                <!-- Service Options -->
+                <div class="row gy-3">
+                  <div class="col-md-12">
+                    <label class="form-label">
+                      <i class="fas fa-concierge-bell me-2"></i> Service Options
+                    </label>
+                    {% if business.service_options %}
+                      <button type="button" class="btn btn-outline-primary btn-sm ms-2"
+                              data-bs-toggle="modal" data-bs-target="#serviceOptionsModal">
+                        <i class="fas fa-eye me-1"></i> View Service Options
+                      </button>
+                    {% else %}
+                      <br>
+                      <p>No service options available.</p>
+                    {% endif %}
+                  </div>
+                </div>
+      
+                <!-- Service Options Modal -->
+                {% if business.service_options %}
+                <div class="modal fade" id="serviceOptionsModal" tabindex="-1"
+                     aria-labelledby="serviceOptionsModalLabel" aria-hidden="true">
+                  <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="serviceOptionsModalLabel">
+                          <i class="fas fa-concierge-bell me-2"></i> Service Options for {{ business.title }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <div class="row">
+                          {% for category in business.service_options %}
+                            {% for category_name, options in category.items %}
+                              <div class="col-md-3 mb-4">
+                                <div class="service-category">
+                                  <h6 class="text-primary">
+                                    <i class="fas fa-info-circle me-2"></i> {{ category_name|title }}
+                                  </h6>
+                                  <ul class="list-unstyled ms-4">
+                                    {% for option in options %}
+                                      <li class="mb-1">
+                                        <i class="fas fa-check text-success me-2"></i> {{ option }}
+                                      </li>
                                     {% endfor %}
-                                </ul>
-                                {% else %}
-                                <p>No Operating Hours available.</p>
-                                {% endif %}
-                            </div>
+                                  </ul>
+                                </div>
+                              </div>
+                            {% endfor %}
+                          {% endfor %}
                         </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                          Close
+                        </button>
+                      </div>
                     </div>
+                  </div>
                 </div>
-            </div>  
-           
-        </div>
-             
-        <div class="row">            
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-                <!-- Description (Original) -->
-                <div class="left-dot">
-                    <div class="card box-body translation">
-                        <div class="card-header business-title">American Eng <img src="{% static 'images/flags/us.jpg'%}" width="25px" />
-                            <button type="button" class="btn btn-link" onclick="toggleEdit('description')">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
-                            {% if not business.description or business.description == 'None' %}
-                                <button title="Generate description" type="button" class="btn btn-primary" id="generate-description-btn" onclick="generateDescription({{ business.id }})">
-                                    <i class="fa-solid fa-indent"></i>
-                                </button>
-                            {% else %}
-                    
-                                <button title="Enhance & Translate Description" type="button" class="btn btn-link" onclick="enhanceAndTranslateDescription({{ business.id }})">
-                                    <i class="fas fa-language page-title"></i>  
-                                </button>
-                            {% endif %}
+                {% endif %}
+      
+                <!-- Operating Hours -->
+                <div class="row gy-3">
+                  <div class="col-md-12">
+                    <label class="form-label">
+                      <i class="fas fa-clock me-2"></i> Operating Hours
+                      {% if business.operating_hours %}
+                        <button type="button" class="btn btn-link"
+                                onclick="editOperatingHours()">
+                          <i class="fas fa-pencil-alt"></i>
+                        </button>
+                      {% endif %}
+                    </label>
+                    {% if business.operating_hours %}
+                      <ul class="card-body box-list mt-3">
+                        {% for day, hours in business.operating_hours.items %}
+                          <li class="d-flex align-items-center">
+                            <div id="{{ day }}_display" class="flex-grow-1">
+                              <strong>{{ day|title }}:</strong> {{ hours }}
                             </div>
-                            <div class="card-body">
-                        <p id="description-display" class="description-content">{{ business.description|default:"No description available." }}</p>
-                        <textarea name="description" id="description-edit" class="form-control" style="display:none;">{{ business.description }}</textarea>
-                        </div>
-                    </div>
+                            <input type="text" name="operating_hours[{{ day }}]"
+                                   id="{{ day }}_edit" class="form-control ms-2"
+                                   value="{{ hours }}" style="display:none;">
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    {% else %}
+                      <p>No Operating Hours available.</p>
+                    {% endif %}
+                  </div>
                 </div>
-            </div>
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
-            <!-- Description (UK) -->
+              </div><!-- End .box-body -->
+            </div><!-- End .box.left-dot -->
+          </div><!-- End Right Column -->
+        </div><!-- End main row -->
+      
+        <!-- Row for Descriptions -->
+        <div class="row">
+          <!-- Description (American) -->
+          <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
             <div class="left-dot">
-                    <div class="card box-body translation">
-                        <div class="card-header business-title">UK Eng  <img src="{% static 'images/flags/uk.jpg'%}" width="25px" />
-                            <button type="button" class="btn btn-link" onclick="toggleEdit('description-eng')">
-                                <i id="description-eng-toggle-icon" class="fas fa-pencil-alt"></i>
-                            </button>
-                        </div>
-                        <div class="card-body">
-                        <p id="description-eng-display" class="description-content">{{ business.description_eng|default:"No description available." }}</p>
-                        <textarea name="description_eng" id="description-eng-edit" class="form-control" style="display:none;">{{ business.description_eng }}</textarea>
-                    </div>
-                    </div>
+              <div class="card box-body translation">
+                <div class="card-header business-title">
+                  American <img src="{% static 'images/flags/us.jpg' %}" width="25px" />
+                  <button type="button" class="btn btn-link"
+                          onclick="toggleEdit('description')">
+                    <i class="fas fa-pencil-alt"></i>
+                  </button>
+                  {% if not business.description or business.description == 'None' %}
+                    <button title="Generate description" type="button"
+                            class="btn btn-primary" id="generate-description-btn"
+                            onclick="generateDescription({{ business.id }})">
+                      <i class="fa-solid fa-indent"></i>
+                    </button>
+                  {% else %}
+                    <button title="Enhance & Translate Description" type="button"
+                            class="btn btn-link"
+                            onclick="enhanceAndTranslateDescription({{ business.id }})">
+                      <i class="fas fa-language page-title"></i>
+                    </button>
+                  {% endif %}
                 </div>
+                <div class="card-body">
+                  <p id="description-display" class="description-content">
+                    {{ business.description|default:"No description available." }}
+                  </p>
+                  <textarea name="description" id="description-edit"
+                            class="form-control" style="display:none;"></textarea>
+                </div>
+              </div>
             </div>
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12"> 
-                <!-- Description (Spanish) -->
-                <div class="left-dot">
-                    <div class="card box-body translation">
-                        <div class="card-header business-title">Spanish  <img src="{% static 'images/flags/spain.jpg'%}" width="25px" />
-                            <button type="button" class="btn btn-link" onclick="toggleEdit('description-esp')">
-                                <i id="description-esp-toggle-icon" class="fas fa-pencil-alt"></i>
-                            </button>
-                        </div>
-                        <div class="card-body">
-                        <p id="description-esp-display" class="description-content">{{ business.description_esp|default:"No description available." }}</p>
-                        <textarea name="description_esp" id="description-esp-edit" class="form-control" style="display:none;">{{ business.description_esp }}</textarea>
-                        </div>
-                    </div>
+          </div>
+      
+          <!-- Description (UK) -->
+          <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <div class="left-dot">
+              <div class="card box-body translation">
+                <div class="card-header business-title">
+                  UK Eng <img src="{% static 'images/flags/uk.jpg' %}" width="25px" />
+                  <button type="button" class="btn btn-link"
+                          onclick="toggleEdit('description-eng')">
+                    <i id="description-eng-toggle-icon" class="fas fa-pencil-alt"></i>
+                  </button>
                 </div>
-            </div>    
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12"> 
-                <!-- Description (French) -->
-                <div class="left-dot">
-                    <div class="card box-body translation">
-                        <div class="card-header business-title">French  <img src="{% static 'images/flags/fr.png'%}" width="25px" />
-                            <button type="button" class="btn btn-link" onclick="toggleEdit('description-fr')">
-                                <i id="description-fr-toggle-icon" class="fas fa-pencil-alt"></i>
-                            </button>
-                        </div>
-                        <div class="card-body">
-                        <p id="description-fr-display" class="description-content">{{ business.description_fr|default:"No description available." }}</p>
-                        <textarea name="description_fr" id="description-fr-edit" class="form-control" style="display:none;">{{ business.description_fr }}</textarea>
-                        </div>
-                    </div>
+                <div class="card-body">
+                  <p id="description-eng-display" class="description-content">
+                    {{ business.description_eng|default:"No description available." }}
+                  </p>
+                  <textarea name="description_eng" id="description-eng-edit"
+                            class="form-control" style="display:none;"></textarea>
                 </div>
-            </div>                
-        </div>           
- 
+              </div>
+            </div>
+          </div>
+      
+          <!-- Description (Spanish) -->
+          <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <div class="left-dot">
+              <div class="card box-body translation">
+                <div class="card-header business-title">
+                  Spanish <img src="{% static 'images/flags/spain.jpg' %}" width="25px" />
+                  <button type="button" class="btn btn-link"
+                          onclick="toggleEdit('description-esp')">
+                    <i id="description-esp-toggle-icon" class="fas fa-pencil-alt"></i>
+                  </button>
+                </div>
+                <div class="card-body">
+                  <p id="description-esp-display" class="description-content">
+                    {{ business.description_esp|default:"No description available." }}
+                  </p>
+                  <textarea name="description_esp" id="description-esp-edit"
+                            class="form-control" style="display:none;"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+      
+          <!-- Description (French) -->
+          <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <div class="left-dot">
+              <div class="card box-body translation">
+                <div class="card-header business-title">
+                  French <img src="{% static 'images/flags/fr.png' %}" width="25px" />
+                  <button type="button" class="btn btn-link"
+                          onclick="toggleEdit('description-fr')">
+                    <i id="description-fr-toggle-icon" class="fas fa-pencil-alt"></i>
+                  </button>
+                </div>
+                <div class="card-body">
+                  <p id="description-fr-display" class="description-content">
+                    {{ business.description_fr|default:"No description available." }}
+                  </p>
+                  <textarea name="description_fr" id="description-fr-edit"
+                            class="form-control" style="display:none;">{{ business.description_fr }}</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+   
         <div class="box-body">
             <button type="submit" class="btn btn-danger mt-3">
                 <i class="fas fa-save"></i> Save Changes
@@ -609,6 +661,385 @@
         </div>
          
     </form>   
+    <!--API Payload JS-->  
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const formEl = document.getElementById('business-form');
+          if (!formEl) return;
+        
+          const businessID = formEl.dataset.businessId; // from data-business-id="..."
+          if (!businessID) {
+            console.error('No business ID found on form.');
+            return;
+          }
+        
+          // 1) Load existing business data from the API
+          loadBusinessData(businessID);
+        
+          // 2) On form submit => gather fields => save
+          formEl.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveBusinessData(businessID);
+          });
+        
+          // 3) Setup event for toggling multi-category fields
+          // For your "toggle-edit-btn" approach on main_category or subcategories:
+          document.querySelectorAll('.toggle-edit-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const type = btn.dataset.categoryType;  // e.g. "main_category"
+              toggleCategoryEdit(type);
+            });
+          });
+        });
+        
+        /** 1) Fetch the business from /api/businesses/<id>/, then populate the form fields. */
+        async function loadBusinessData(businessID) {
+          try {
+            const resp = await fetch(`/api/businesses/${businessID}/`);
+            if (!resp.ok) {
+              console.error('Failed to load business data. Status:', resp.status);
+              return;
+            }
+            const biz = await resp.json();
+            console.log('Business data:', biz);
+        
+            // Fill standard fields (title, price, city, address, etc.)
+            setUpField('title',        biz.title);
+            setUpField('price',        biz.price);
+            setUpField('city',         biz.city);
+            setUpField('address',      biz.address);
+            setUpField('phone',        biz.phone);
+            setUpField('website',      biz.website);
+            setUpField('types',        biz.types);
+            setUpField('description',  biz.description);
+        
+            // For multi-lingual descriptions
+            setUpField('description-eng', biz.description_eng);
+            setUpField('description-esp', biz.description_esp);
+            setUpField('description-fr',  biz.description_fr);
+        
+            // If phone is absent => hide the pencil
+            togglePencilVisibility('phone', biz.phone);
+        
+            // Similarly for website
+            togglePencilVisibility('website', biz.website);
+        
+            // If level_title is present, we set it up too:
+            setUpField('level_title', biz.level_title);
+        
+            // 2) Populate status <select>
+            populateStatusField(biz);
+        
+            // 3) For main_category, sub_category if you do array approach
+            populateCategoryField('main_category', biz.main_category_list || []);
+            populateCategoryField('tailored_category', biz.tailored_category_list || []);
+            
+            // Set up main categories correctly
+            if (biz.main_category) {
+                const mainCategorySelect = document.getElementById("main_category-edit");
+                mainCategorySelect.innerHTML = ""; // Clear previous options
+                
+                biz.main_category.split(",").forEach(category => {
+                    let option = document.createElement("option");
+                    option.value = category.trim();
+                    option.textContent = category.trim();
+                    option.selected = true;
+                    mainCategorySelect.appendChild(option);
+                });
+            }
+
+            // Set up tailored categories correctly
+            if (biz.tailored_category) {
+                const tailoredCategorySelect = document.getElementById("tailored_category-edit");
+                tailoredCategorySelect.innerHTML = ""; // Clear previous options
+                
+                biz.tailored_category.split(",").forEach(category => {
+                    let option = document.createElement("option");
+                    option.value = category.trim();
+                    option.textContent = category.trim();
+                    option.selected = true;
+                    tailoredCategorySelect.appendChild(option);
+                });
+            }
+
+            // Ensure display mode shows the correct categories
+            document.getElementById("main_category-display").innerHTML = biz.main_category 
+                ? biz.main_category.split(",").map(cat => `<span class="badge badge-primary badge-category">${cat.trim()}</span>`).join(" ") 
+                : `<span class="text-muted">No categories selected.</span>`;
+
+            document.getElementById("tailored_category-display").innerHTML = biz.tailored_category 
+                ? biz.tailored_category.split(",").map(cat => `<span class="badge badge-success badge-category">${cat.trim()}</span>`).join(" ") 
+                : `<span class="text-muted">No sub-categories selected.</span>`;
+
+                
+        
+            // 4) Possibly set up a Google Maps link if place_id:
+            if (biz.place_id) {
+              const mapsLink = document.getElementById('mapsLink');
+              if (mapsLink) {
+                mapsLink.href = `https://www.google.com/maps/place/?q=place_id:${biz.place_id}`;
+                mapsLink.classList.remove('d-none');
+              }
+            }
+        
+            // If there's a "back to task" link:
+            if (biz.task) {
+              const taskLink = document.getElementById('taskLink');
+              if (taskLink) {
+                // e.g. /tasks/<id> or something
+                taskLink.href = `/tasks/${biz.task}/`;
+              }
+            }
+        
+          } catch (err) {
+            console.error('Error loading business data:', err);
+          }
+        }
+        
+        /** 2) Helper to fill <span id="FIELD-display"> and <input id="FIELD-edit">. 
+            If val is falsy => show "N/A" in display.
+        */
+        function setUpField(fieldName, val) {
+          const displayEl = document.getElementById(fieldName + '-display');
+          const editEl    = document.getElementById(fieldName + '-edit');
+          if (!displayEl || !editEl) return;
+        
+          if (!val) {
+            displayEl.textContent = 'N/A';
+          } else {
+            displayEl.textContent = val;
+          }
+          editEl.value = val || '';
+        }
+        
+        /** 3) Show/hide the pencil icon for a field if the value doesn't exist (phone, website). */
+        function togglePencilVisibility(fieldName, val) {
+          // The pencil icon is in the label or near it: <button onclick="toggleEdit('phone')"> ...
+          const labelEl = document.querySelector(`[onclick="toggleEdit('${fieldName}')"]`);
+          if (labelEl) {
+            if (!val) {
+              labelEl.style.display = 'none';
+            } else {
+              labelEl.style.display = '';
+            }
+          }
+        }
+        
+        /** 4) Create or update the <select> for "status". 
+            Example: we build some statuses array, or fetch them from server, then set the selected option.
+        */
+        function populateStatusField(biz) {
+          const statusDisplay = document.getElementById('status-display');
+          const statusEdit    = document.getElementById('status-edit');
+          if (!statusDisplay || !statusEdit) return;
+        
+          // Show the display text
+          if (biz.status_display) {
+            statusDisplay.textContent = biz.status_display;
+          } else {
+            statusDisplay.textContent = biz.status || 'N/A';
+          }
+        
+          // Suppose we have an array of possible statuses
+          // If you want to handle admin logic for "IN_PRODUCTION", do it here
+          const possibleStatuses = [
+            { code: 'DISCARDED',      name: 'Discarded' },
+            { code: 'PENDING',        name: 'Pending' },
+            { code: 'REVIEWED',       name: 'Reviewed' },
+            { code: 'IN_PRODUCTION',  name: 'In Production' },
+          ];
+        
+          // Clear existing <option>
+          statusEdit.innerHTML = '';
+        
+          // Build new options
+          possibleStatuses.forEach(st => {
+            // If you have logic about user roles to hide 'IN_PRODUCTION', do it here:
+            // e.g., if (!isAdmin && st.code === 'IN_PRODUCTION') { return; }
+            const opt = document.createElement('option');
+            opt.value = st.code;
+            opt.textContent = st.name;
+            if (biz.status === st.code) {
+              opt.selected = true;
+            }
+            statusEdit.appendChild(opt);
+          });
+        }
+        
+        /** 5) If you're using a multi-select for categories, fill them from the array. 
+            E.g. if biz.main_category_list = ["Amusement Parks","Family-friendly"] => 
+            set #main_category-edit to those values. 
+        */
+        function populateCategoryField(categoryType, arrayVal) {
+          // We have something like <select id="main_category-edit" multiple>, 
+          // inside a container #main_category-edit-container (optional).
+          const editSelect = document.getElementById(`${categoryType}-edit`);
+          if (!editSelect) return;
+        
+          // Possibly we have <option> tags from the server. If not, you can also dynamically build them. 
+          // We'll just set the .value to match arrayVal. If you're using something like select2:
+          //   $(editSelect).val(arrayVal).trigger('change');
+          // For vanilla:
+          // 1) Turn arrayVal into a set for easy checking
+          const chosenSet = new Set(arrayVal.map(v => v.toLowerCase()));
+          // 2) Loop existing <option> to see if it matches
+          Array.from(editSelect.options).forEach(opt => {
+            const optValLower = opt.value.toLowerCase();
+            opt.selected = chosenSet.has(optValLower);
+          });
+        
+          // For the display portion #main_category-display
+          const displayEl = document.getElementById(`${categoryType}-display`);
+          if (displayEl) {
+            if (arrayVal.length === 0) {
+              displayEl.innerHTML = `<span class="text-muted">No ${categoryType} selected.</span>`;
+            } else {
+              displayEl.innerHTML = arrayVal.map(cat =>
+                `<span class="badge badge-success badge-category">${escapeHtml(cat)}</span>`
+              ).join(' ');
+            }
+          }
+        }
+        
+        /** 6) On submit => gather updated values => PATCH them to /api/businesses/<id>/. */
+        async function saveBusinessData(businessID) {
+          // Gather from the "edit" inputs
+          const titleVal    = document.getElementById('title-edit')?.value || '';
+          const priceVal    = document.getElementById('price-edit')?.value || '';
+          const cityVal     = document.getElementById('city-edit')?.value || '';
+          const statusVal   = document.getElementById('status-edit')?.value || '';
+          const phoneVal    = document.getElementById('phone-edit')?.value || '';
+          const addressVal  = document.getElementById('address-edit')?.value || '';
+          const websiteVal  = document.getElementById('website-edit')?.value || '';
+          const typesVal    = document.getElementById('types-edit')?.value || '';
+          const levelTitleVal = document.getElementById('level_title-edit')?.value || '';
+        
+          // If you handle multi categories, read from #main_category-edit, #tailored_category-edit
+          const mainCats = gatherMultiSelectValues('main_category');
+          const subCats  = gatherMultiSelectValues('tailored_category');
+        
+          // For descriptions
+          const descVal       = document.getElementById('description-edit')?.value || '';
+          const descEngVal    = document.getElementById('description-eng-edit')?.value || '';
+          const descEspVal    = document.getElementById('description-esp-edit')?.value || '';
+          const descFrVal     = document.getElementById('description-fr-edit')?.value || '';
+        
+          // Build the payload
+          const payload = {
+            title: titleVal,
+            price: priceVal,
+            city: cityVal,
+            status: statusVal,
+            phone: phoneVal,
+            address: addressVal,
+            website: websiteVal,
+            types: typesVal,
+            level_title: levelTitleVal,
+        
+            // If your backend expects arrays, e.g. `main_category_list`, do:
+            main_category_list: mainCats, 
+            tailored_category_list: subCats,
+        
+            description: descVal,
+            description_eng: descEngVal,
+            description_esp: descEspVal,
+            description_fr: descFrVal
+          };
+        
+          console.log('Saving with payload:', payload);
+        
+          try {
+            const resp = await fetch(`/api/businesses/${businessID}/`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+            if (!resp.ok) {
+              const txt = await resp.text();
+              console.error('Failed to save. Status:', resp.status, txt);
+              Swal.fire('Error', 'Failed to save changes.', 'error');
+              return;
+            }
+            const updatedBiz = await resp.json();
+            console.log('Business updated successfully:', updatedBiz);
+        
+            Swal.fire('Saved', 'Business changes have been saved.', 'success');
+            // Re-load to reflect the new data
+            loadBusinessData(businessID);
+          } catch (err) {
+            console.error('Error saving business data:', err);
+            Swal.fire('Error', 'An error occurred while saving.', 'error');
+          }
+        }
+        
+        /** 7) Gather multi-select values from #<categoryType>-edit. 
+            e.g. #main_category-edit or #tailored_category-edit
+        */
+        function gatherMultiSelectValues(categoryType) {
+          const selectEl = document.getElementById(`${categoryType}-edit`);
+          if (!selectEl) return [];
+          // For vanilla:
+          const selected = [];
+          Array.from(selectEl.options).forEach(opt => {
+            if (opt.selected) selected.push(opt.value);
+          });
+          return selected;
+        }
+        
+        /** 8) Toggles read/edit for multi‐select categories. 
+            Hides <div id="main_category-display">, shows <div id="main_category-edit-container">.
+        */
+        function toggleCategoryEdit(categoryType) {
+          const displayEl = document.getElementById(`${categoryType}-display`);
+          const editContainer = document.getElementById(`${categoryType}-edit-container`);
+          if (!displayEl || !editContainer) return;
+        
+          const isEditVisible = (editContainer.style.display !== 'none');
+          if (isEditVisible) {
+            // Hide edit => show display
+            editContainer.style.display = 'none';
+            displayEl.style.display = '';
+          } else {
+            // Show edit => hide display
+            displayEl.style.display = 'none';
+            editContainer.style.display = '';
+          }
+        }
+        
+        /** 9) The original toggleEdit for single fields. 
+            Hides <span id="FIELD-display">, shows <input id="FIELD-edit">. 
+        */
+        function toggleEdit(fieldName) {
+          const displayEl = document.getElementById(fieldName + '-display');
+          const editEl    = document.getElementById(fieldName + '-edit');
+          if (!displayEl || !editEl) return;
+        
+          const isEditVisible = (editEl.style.display !== 'none');
+          if (isEditVisible) {
+            // Hide edit => show display
+            editEl.style.display = 'none';
+            displayEl.style.display = '';
+          } else {
+            editEl.style.display = '';
+            displayEl.style.display = 'none';
+          }
+        }
+        
+        /** 10) Simple escape function if needed for constructing badges, etc. */
+        function escapeHtml(unsafe) {
+          if (!unsafe) return '';
+          return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
+    </script>        
+    <!--API Payload JS-->    
+        
 </div> 
 <!--box left-dot-->      
  
