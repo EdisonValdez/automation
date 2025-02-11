@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load project_tags %}
-{% load custom_tags %}
 {% block content %}
 <style>.filter-container{background-color:#fff;transition:all 0.3s ease}.filter-label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.5rem;color:#495057}.search-input-group{position:relative}.search-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#6c757d}.search-control{padding-left:2rem}.date-range-group{position:relative;gap:.5rem}.calendar-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#6c757d}.date-input{padding-left:2rem}.date-separator{color:#6c757d;padding:0 .25rem}.select2-container{width:100%!important}.select2-multi .select2-selection--multiple{min-height:38px;border:1px solid #ced4da}@media (max-width:768px){.date-range-group{flex-direction:column}.date-separator{text-align:center;margin:.5rem 0}.calendar-icon{display:none}}
 .page-item.active.page-link{z-index:1;color:#fff;background-color:#212d94;border-color:#212d94}.select-active{background-color:#e7f3ff!important}.input-group-text{background-color:#f8f9fa;border:1px solid #ced4da;border-radius:0.5rem 0 0 0.5rem;box-shadow:none;height:auto}.form-control{border:1px solid #ced4da;border-radius:0 0.5rem 0.5rem 0;box-shadow:none}.form-control:focus{border-color:#212d94;box-shadow:0 0 0 0.2rem rgba(0,123,255,.25)}.btn-primary{border-radius:0 0.5rem 0.5rem 0;transition:background-color 0.2s}.btn-primary:hover{background-color:#0056b3;border-color:#0056b3}.btn-generate-descriptions{display:inline-flex;align-items:center;gap:8px;width:100%;padding:8px 12px;transition: all 0.3s ease;}.btn-generate-descriptions:not(.disabled):hover { background-color: #f8f9fa;}.btn-generate-descriptions.disabled {opacity: 0.6;cursor: not-allowed;}.progress { margin-top: 1rem;border-radius: 0.25rem;}
@@ -311,248 +309,234 @@
                 }
             
                 populateFilterOptions(optionsData) {
-                // userFilter
-                const userFilter = document.getElementById('userFilter');
-                if (userFilter && optionsData.users) {
-                    userFilter.innerHTML = '<option value="">All Users</option>';
-                    optionsData.users.forEach(user => {
-                        const option = document.createElement('option');
-                        option.value = user.id;
-                        option.textContent = user.username;
-                        userFilter.appendChild(option);
-                    });
+                    // userFilter
+                    const userFilter = document.getElementById('userFilter');
+                    if (userFilter && optionsData.users) {
+                        userFilter.innerHTML = '<option value="">All Users</option>';
+                        optionsData.users.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user.id;
+                            option.textContent = user.username;
+                            userFilter.appendChild(option);
+                        });
+                    }
+                    // categoryFilter
+                    const categoryFilter = document.getElementById('categoryFilter');
+                    if (categoryFilter && optionsData.categories) {
+                        categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                        optionsData.categories.forEach(cat => {
+                            const option = document.createElement('option');
+                            option.value = cat.id;
+                            option.textContent = cat.title;
+                            categoryFilter.appendChild(option);
+                        });
+                    }
+                    // destinationFilter
+                    const destinationFilter = document.getElementById('destinationFilter');
+                    if (destinationFilter && optionsData.destinations) {
+                        destinationFilter.innerHTML = '<option value="">All Destinations</option>';
+                        optionsData.destinations.forEach(dest => {
+                            const option = document.createElement('option');
+                            option.value = dest.id;
+                            option.textContent = dest.name;
+                            destinationFilter.appendChild(option);
+                        });
+                    }
+                    // statusFilter (multi-select)
+                    const statusFilter = document.getElementById('statusFilter');
+                    if (statusFilter && optionsData.statuses) {
+                        statusFilter.innerHTML = '';
+                        optionsData.statuses.forEach(st => {
+                            const option = document.createElement('option');
+                            option.value = st;
+                            option.textContent = st;
+                            statusFilter.appendChild(option);
+                        });
+                    }
                 }
-
-                // categoryFilter
-                const categoryFilter = document.getElementById('categoryFilter');
-                if (categoryFilter && optionsData.categories) {
-                    categoryFilter.innerHTML = '<option value="">All Categories</option>';
-                    optionsData.categories.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat.id;
-                        option.textContent = cat.title;
-                        categoryFilter.appendChild(option);
-                    });
+            
+                loadSavedFilters() {
+                    const saved = localStorage.getItem('taskFilters');
+                    if (!saved) {
+                        const limitInput = document.getElementById('limit');
+                        if (limitInput) limitInput.value = '12';
+                        return;
+                    }
+                    try {
+                        const filterObj = JSON.parse(saved);
+                        document.getElementById('searchQuery').value = filterObj.search || '';
+                        document.getElementById('userFilter').value = filterObj.user || '';
+                        document.getElementById('categoryFilter').value = filterObj.category || '';
+                        document.getElementById('destinationFilter').value = filterObj.destination || '';
+                        document.getElementById('dateFrom').value = filterObj.date_from || '';
+                        document.getElementById('dateTo').value = filterObj.date_to || '';
+                        document.getElementById('sortBy').value = filterObj.sort_by || '-created_at';
+                        
+                        // For multi-status
+                        if (filterObj.status) {
+                            const statuses = filterObj.status.split(',');
+                            const statusSelect = document.getElementById('statusFilter');
+                            if (statusSelect) {
+                                Array.from(statusSelect.options).forEach(opt => {
+                                    if (statuses.includes(opt.value)) {
+                                        opt.selected = true;
+                                    }
+                                });
+                            }
+                        }
+                        // Limit
+                        const limitEl = document.getElementById('limit');
+                        if (limitEl) {
+                            limitEl.value = filterObj.limit || '12';
+                        }
+                    } catch (err) {
+                        console.warn('Failed to parse saved filters:', err);
+                    }
                 }
-
-                // destinationFilter
-                const destinationFilter = document.getElementById('destinationFilter');
-                if (destinationFilter && optionsData.destinations) {
-                    destinationFilter.innerHTML = '<option value="">All Destinations</option>';
-                    optionsData.destinations.forEach(dest => {
-                        const option = document.createElement('option');
-                        option.value = dest.id;
-                        option.textContent = dest.name;
-                        destinationFilter.appendChild(option);
-                    });
+            
+                saveFilters(filters) {
+                    localStorage.setItem('taskFilters', JSON.stringify(filters));
                 }
-
-                // statusFilter (multi-select)
-                const statusFilter = document.getElementById('statusFilter');
-                if (statusFilter && optionsData.statuses) {
-                    statusFilter.innerHTML = '';
-
-                    // Status display mapping
-                    const statusDisplayMap = {
-                        'PENDING': 'PENDING',
-                        'IN_PROGRESS': 'IN PROGRESS',
-                        'FAILED': 'FAILED',
-                        'COMPLETED': 'READY TO REVIEW',
-                        'DONE': 'REVIEWED',
-                        'TASK_DONE': 'LIVE'
+            
+                getFilterValues() {
+                    const statusSelect = document.getElementById('statusFilter');
+                    let statuses = '';
+                    if (statusSelect) {
+                        const selectedOptions = Array.from(statusSelect.selectedOptions);
+                        statuses = selectedOptions.map(opt => opt.value).join(',');
+                    }
+                    // We need a page param => either store it in local property or localStorage
+                    return {
+                        search: document.getElementById('searchQuery')?.value || '',
+                        user: document.getElementById('userFilter')?.value || '',
+                        category: document.getElementById('categoryFilter')?.value || '',
+                        destination: document.getElementById('destinationFilter')?.value || '',
+                        status: statuses,
+                        date_from: document.getElementById('dateFrom')?.value || '',
+                        date_to: document.getElementById('dateTo')?.value || '',
+                        sort_by: document.getElementById('sortBy')?.value || '-created_at',
+                        limit: document.getElementById('limit')?.value || '12',
+            
+                        // page => from our property
+                        page: this.currentPage
                     };
-
-                    optionsData.statuses.forEach(st => {
-                        const option = document.createElement('option');
-                        option.value = st;
-                        option.textContent = statusDisplayMap[st] || st; // Use mapped status display
-                        statusFilter.appendChild(option);
-                    });
                 }
-            }
-
-            loadSavedFilters() {
-                const saved = localStorage.getItem('taskFilters');
-                if (!saved) {
-                    const limitInput = document.getElementById('limit');
-                    if (limitInput) limitInput.value = '12';
-                    return;
+            
+                async applyFilters() {
+                    try {
+                        const filters = this.getFilterValues();
+                        this.saveFilters(filters);
+            
+                        const queryParams = new URLSearchParams(filters);
+                        const response = await fetch(`/api/tasks/filter/?${queryParams}`);
+                        const result = await response.json();
+            
+                        if (result.status === 'success') {
+                            this.updateResults(result.data);
+                            this.updateTotalCount(result.total_count);
+            
+                            // If your server returns { page, total_pages }, do this:
+                            if (result.page && result.total_pages) {
+                                this.renderPagination(result.page, result.total_pages);
+                            }
+                        } else {
+                            this.showError(result.message || 'Failed to fetch results');
+                        }
+                    } catch (error) {
+                        console.error('Error applying filters:', error);
+                        this.showError('Failed to apply filters');
+                    }
                 }
-                try {
-                    const filterObj = JSON.parse(saved);
-                    document.getElementById('searchQuery').value = filterObj.search || '';
-                    document.getElementById('userFilter').value = filterObj.user || '';
-                    document.getElementById('categoryFilter').value = filterObj.category || '';
-                    document.getElementById('destinationFilter').value = filterObj.destination || '';
-                    document.getElementById('dateFrom').value = filterObj.date_from || '';
-                    document.getElementById('dateTo').value = filterObj.date_to || '';
-                    document.getElementById('sortBy').value = filterObj.sort_by || '-created_at';
+            
+                updateResults(data) {
+                    const resultsContainer = document.getElementById('taskResults');
+                    if (!Array.isArray(data) || data.length === 0) {
+                        resultsContainer.innerHTML = '<p class="text-center">No results found.</p>';
+                        return;
+                    }
+                    resultsContainer.innerHTML = this.generateResultsHTML(data);
+                }
+            
+ /* =========== PAGINATION WITH ELLIPSES =========== */
+ renderPagination(currentPage, totalPages) {
+                            const pagDiv = document.getElementById('pagination');
+                            if (!pagDiv) return;
+                            if (totalPages <= 1) {
+                                pagDiv.innerHTML = '';
+                                return;
+                            }
                     
-                    // For multi-status
-                    if (filterObj.status) {
-                        const statuses = filterObj.status.split(',');
-                        const statusSelect = document.getElementById('statusFilter');
-                        if (statusSelect) {
-                            Array.from(statusSelect.options).forEach(opt => {
-                                if (statuses.includes(opt.value)) {
-                                    opt.selected = true;
+                            const pages = this.buildPaginationPages(currentPage, totalPages, 2);
+                            let html = '<nav><ul class="pagination">';
+                    
+                            // Prev
+                            if (currentPage>1) {
+                                html += `<li class="page-item">
+                                    <a class="page-link" href="#" data-page="${currentPage-1}">Prev</a>
+                                </li>`;
+                            }
+                            // pages or ellipses
+                            pages.forEach(p => {
+                                if (p === '...') {
+                                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                                } else {
+                                    const active = (p===currentPage) ? 'active' : '';
+                                    html += `<li class="page-item ${active}">
+                                        <a class="page-link" href="#" data-page="${p}">${p}</a>
+                                    </li>`;
                                 }
                             });
-                        }
-                    }
-                    // Limit
-                    const limitEl = document.getElementById('limit');
-                    if (limitEl) {
-                        limitEl.value = filterObj.limit || '12';
-                    }
-                } catch (err) {
-                    console.warn('Failed to parse saved filters:', err);
-                }
-            }
-        
-            saveFilters(filters) {
-                localStorage.setItem('taskFilters', JSON.stringify(filters));
-            }
-        
-                    getFilterValues() {
-                const statusSelect = document.getElementById('statusFilter');
-                let statuses = '';
-                if (statusSelect) {
-                    const selectedOptions = Array.from(statusSelect.selectedOptions);
-                    statuses = selectedOptions.map(opt => opt.value).join(',');
-                }
-                // We need a page param => either store it in local property or localStorage
-                return {
-                    search: document.getElementById('searchQuery')?.value || '',
-                    user: document.getElementById('userFilter')?.value || '',
-                    category: document.getElementById('categoryFilter')?.value || '',
-                    destination: document.getElementById('destinationFilter')?.value || '',
-                    status: statuses,
-                    date_from: document.getElementById('dateFrom')?.value || '',
-                    date_to: document.getElementById('dateTo')?.value || '',
-                    sort_by: document.getElementById('sortBy')?.value || '-created_at',
-                    limit: document.getElementById('limit')?.value || '12',
-        
-                    // page => from our property
-                    page: this.currentPage
-                };
-            }
-        
-                    async applyFilters() {
-                        try {
-                            const filters = this.getFilterValues();
-                            this.saveFilters(filters);
-                
-                            const queryParams = new URLSearchParams(filters);
-                            const response = await fetch(`/api/tasks/filter/?${queryParams}`);
-                            const result = await response.json();
-                
-                            if (result.status === 'success') {
-                                this.updateResults(result.data);
-                                this.updateTotalCount(result.total_count);
-                
-                                // If your server returns { page, total_pages }, do this:
-                                if (result.page && result.total_pages) {
-                                    this.renderPagination(result.page, result.total_pages);
-                                }
-                            } else {
-                                this.showError(result.message || 'Failed to fetch results');
+                            // Next
+                            if (currentPage<totalPages) {
+                                html += `<li class="page-item">
+                                    <a class="page-link" href="#" data-page="${currentPage+1}">Next</a>
+                                </li>`;
                             }
-                        } catch (error) {
-                            console.error('Error applying filters:', error);
-                            this.showError('Failed to apply filters');
-                        }
-                    }
-                
-                    updateResults(data) {
-                const resultsContainer = document.getElementById('taskResults');
-                if (!Array.isArray(data) || data.length === 0) {
-                    resultsContainer.innerHTML = '<p class="text-center">No results found.</p>';
-                    return;
-                }
-                resultsContainer.innerHTML = this.generateResultsHTML(data);
-            }
-        
-                    /* =========== PAGINATION WITH ELLIPSES =========== */
-                    renderPagination(currentPage, totalPages) {
-                                                const pagDiv = document.getElementById('pagination');
-                                                if (!pagDiv) return;
-                                                if (totalPages <= 1) {
-                                                    pagDiv.innerHTML = '';
-                                                    return;
-                                                }
-                                        
-                                                const pages = this.buildPaginationPages(currentPage, totalPages, 2);
-                                                let html = '<nav><ul class="pagination">';
-                                        
-                                                // Prev
-                                                if (currentPage>1) {
-                                                    html += `<li class="page-item">
-                                                        <a class="page-link" href="#" data-page="${currentPage-1}">Prev</a>
-                                                    </li>`;
-                                                }
-                                                // pages or ellipses
-                                                pages.forEach(p => {
-                                                    if (p === '...') {
-                                                        html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-                                                    } else {
-                                                        const active = (p===currentPage) ? 'active' : '';
-                                                        html += `<li class="page-item ${active}">
-                                                            <a class="page-link" href="#" data-page="${p}">${p}</a>
-                                                        </li>`;
-                                                    }
-                                                });
-                                                // Next
-                                                if (currentPage<totalPages) {
-                                                    html += `<li class="page-item">
-                                                        <a class="page-link" href="#" data-page="${currentPage+1}">Next</a>
-                                                    </li>`;
-                                                }
-                                                html += '</ul></nav>';
-                                        
-                                                pagDiv.innerHTML = html;
-                                                // attach events
-                                                pagDiv.querySelectorAll('a.page-link').forEach(link => {
-                                                    link.addEventListener('click', e => {
-                                                        e.preventDefault();
-                                                        const newPage = parseInt(link.dataset.page,10);
-                                                        if (!isNaN(newPage)) {
-                                                            this.goToPage(newPage);
-                                                        }
-                                                    });
-                                                });
-                                            }
-                                        
-                    buildPaginationPages(current, total, delta=2) {
-                        if (total<=7) {
-                            return Array.from({length:total},(_,i)=>i+1);
-                        }
-                        const pages=[];
-                        const left = current-delta;
-                        const right= current+delta;
-                        let last;
-                        for (let p=1;p<=total;p++){
-                            if(p<=2||p>total-2||(p>=left && p<=right)){
-                                if(last){
-                                    if(p-last===2){
-                                        pages.push(last+1);
-                                    } else if (p-last>2){
-                                        pages.push('...');
+                            html += '</ul></nav>';
+                    
+                            pagDiv.innerHTML = html;
+                            // attach events
+                            pagDiv.querySelectorAll('a.page-link').forEach(link => {
+                                link.addEventListener('click', e => {
+                                    e.preventDefault();
+                                    const newPage = parseInt(link.dataset.page,10);
+                                    if (!isNaN(newPage)) {
+                                        this.goToPage(newPage);
                                     }
-                                }
-                                pages.push(p);
-                                last=p;
-                            }
+                                });
+                            });
                         }
-                        return pages;
-                    }
-                
-                    goToPage(p) {
-                        this.currentPage=p;
-                        this.applyFilters();
-                    }
-        
-                    generateResultsHTML(data) {
+                    
+                        buildPaginationPages(current, total, delta=2) {
+                            if (total<=7) {
+                                return Array.from({length:total},(_,i)=>i+1);
+                            }
+                            const pages=[];
+                            const left = current-delta;
+                            const right= current+delta;
+                            let last;
+                            for (let p=1;p<=total;p++){
+                                if(p<=2||p>total-2||(p>=left && p<=right)){
+                                    if(last){
+                                        if(p-last===2){
+                                            pages.push(last+1);
+                                        } else if (p-last>2){
+                                            pages.push('...');
+                                        }
+                                    }
+                                    pages.push(p);
+                                    last=p;
+                                }
+                            }
+                            return pages;
+                        }
+                    
+                        goToPage(p) {
+                            this.currentPage=p;
+                            this.applyFilters();
+                        }
+            
+                generateResultsHTML(data) {
                     return `
                         <table class="table table-hover table-striped align-middle">
                         <thead class="table">
@@ -572,139 +556,124 @@
                         </table>
                     `;
                     }
-                    
-                    isTaskLive(task) {
-                            return task.computed_status === 'TASK_DONE';
-                        }
-
+            
                     generateTaskRow(task) {
-                        const businessCount = typeof task.business_count === 'number'
-                            ? task.business_count
-                            : (Array.isArray(task.businesses) ? task.businesses.length : 0);
+                    // If back-end annotates 'business_count'
+                    const businessCount =
+                        typeof task.business_count === 'number'
+                        ? task.business_count
+                        : (Array.isArray(task.businesses) ? task.businesses.length : 0);
 
-                        // Status mapping for display
-                        const statusDisplayMap = {
-                            'PENDING': 'PENDING',
-                            'IN_PROGRESS': 'IN PROGRESS',
-                            'FAILED': 'FAILED',
-                            'COMPLETED': 'READY TO REVIEW',
-                            'DONE': 'REVIEWED',
-                            'TASK_DONE': '🚀 LIVE'
-                        };
+                    const statusBadgeClass = this.getStatusBadgeColor(task.status);
 
-                        // Get the display status
-                        const isLive = task.computed_status === 'TASK_DONE';
-                        const displayStatus = isLive ? '🚀 LIVE' : (statusDisplayMap[task.status] || task.status);
-                        const statusBadgeClass = isLive ? 'orange' : this.getStatusBadgeColor(task.status);
-
-                        return `
-                            <tr>
-                                <td>
-                                    <a href="/task/${task.id}/" class="text-decoration-none fw-semibold">
-                                        ${task.id} - ${this.escapeHtml(task.project_title)}
-                                    </a>
-                                    <div class="small text-muted">
-                                        ${this.escapeHtml(task.main_category || '')}
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-secondary">${businessCount}</span>
-                                </td>
-                                <td>
-                                    <a href="/task/${task.id}/" class="text-decoration-none">
-                                        ${this.escapeHtml(task.user?.username || 'N/A')}
-                                    </a>
-                                </td>
-                                <td>${this.escapeHtml(task.destination?.name || 'N/A')}</td>
-                                <td>
-                                    <span class="badge badge-${statusBadgeClass}">
-                                        ${this.escapeHtml(displayStatus)}
-                                    </span>
-                                </td>
-                                <td class="text-nowrap">
-                                    ${new Date(task.created_at).toLocaleDateString()}
-                                </td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button
-                                            class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                                            type="button"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
-                                        >
-                                            <i class="bx bx-dots-horizontal-rounded"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" href="/task/${task.id}/">
-                                                    <i class="fas fa-eye me-2"></i> View
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a
-                                                    href="#"
-                                                    class="dropdown-item delete-task-btn"
-                                                    data-task-id="${task.id}"
-                                                >
-                                                    <i class="fas fa-trash me-2"></i> Delete
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        `;
+                    return `
+                        <tr>
+                        <td>
+                            <a href="/task/${task.id}/" class="text-decoration-none fw-semibold">
+                            ${this.escapeHtml(task.project_title)}
+                            </a>
+                            <div class="small text-muted">
+                            ${this.escapeHtml(task.main_category || '')}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-secondary">${businessCount}</span>
+                        </td>
+                        <td>
+                            <a href="/task/${task.id}/" class="text-decoration-none">
+                            ${this.escapeHtml(task.user?.username || 'N/A')}
+                            </a>
+                        </td>
+                        <td>${this.escapeHtml(task.destination?.name || 'N/A')}</td>
+                        <td>
+                            <span class="badge badge-${statusBadgeClass}">
+                            ${this.escapeHtml(task.status)}
+                            </span>
+                        </td>
+                        <td class="text-nowrap">
+                            ${new Date(task.created_at).toLocaleDateString()}
+                        </td>
+                        <td>
+                            <!-- Actions dropdown -->
+                            <div class="dropdown">
+                            <button 
+                                class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                type="button" 
+                                data-bs-toggle="dropdown" 
+                                aria-expanded="false"
+                            >
+                                <i class="bx bx-dots-horizontal-rounded"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                <a class="dropdown-item" href="/task/${task.id}/">
+                                    <i class="fas fa-eye me-2"></i> View
+                                </a>
+                                </li>
+                                <li>
+                                <a 
+                                    href="#" 
+                                    class="dropdown-item delete-task-btn" 
+                                    data-task-id="${task.id}"
+                                >
+                                    <i class="fas fa-trash me-2"></i> Delete
+                                </a>
+                                </li>
+                            </ul>
+                            </div>
+                        </td>
+                        </tr>
+                    `;
                     }
-
-                    getStatusBadgeColor(status) {
-                            const statusMap = {
-                                'PENDING': 'warning',
-                                'IN_PROGRESS': 'pink-light',
-                                'FAILED': 'danger',
-                                'COMPLETED': 'primary',
-                                'DONE': 'success',
-                                'TASK_DONE': 'production',
-                            };
-                            return statusMap[status] || 'secondary';
-                        }
-                    
-                    escapeHtml(unsafe) {
-                        if (!unsafe) return '';
-                        return unsafe
-                            .replace(/&/g, "&amp;")
-                            .replace(/</g, "&lt;")
-                            .replace(/>/g, "&gt;")
-                            .replace(/"/g, "&quot;")
-                            .replace(/'/g, "&#039;");
-                    }
-                
-                    updateTotalCount(count) {
-                        const countElement = document.getElementById('totalCount');
-                        if (countElement) {
-                            countElement.textContent = `Total Results: ${count}`;
-                        }
-                    }
-                
-                    showError(message) {
-                        console.error(message);
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'alert alert-danger alert-dismissible fade show';
-                        errorDiv.innerHTML = `
-                            ${message}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        `;
-                        const container = document.querySelector('.container');
-                        if (container) {
-                            container.insertBefore(errorDiv, container.firstChild);
-                        }
-                        setTimeout(() => errorDiv.remove(), 5000);
+                getStatusBadgeColor(status) {
+                    const map = {
+                        'PENDING': 'warning',
+                        'IN_PROGRESS': 'info',
+                        'COMPLETED': 'success',
+                        'FAILED': 'danger',
+                        'DONE': 'primary'
+                    };
+                    return map[status] || 'secondary';
+                }
+            
+                escapeHtml(unsafe) {
+                    if (!unsafe) return '';
+                    return unsafe
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+                }
+            
+                updateTotalCount(count) {
+                    const countElement = document.getElementById('totalCount');
+                    if (countElement) {
+                        countElement.textContent = `Total Results: ${count}`;
                     }
                 }
-                
+            
+                showError(message) {
+                    console.error(message);
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    errorDiv.innerHTML = `
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    const container = document.querySelector('.container');
+                    if (container) {
+                        container.insertBefore(errorDiv, container.firstChild);
+                    }
+                    setTimeout(() => errorDiv.remove(), 5000);
+                }
+            }
+            
             document.addEventListener('DOMContentLoaded', () => {
                 new TaskFilter();
             });
-        </script>            
+            </script>
+            
         <!-- Results JS -->
             
         </div>

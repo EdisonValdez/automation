@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Task Status</h1>
 <p>Task ID: {{ task.id }}</p>
-<p>Status: <span id="task-status">{{ task.status }}</span></p>
+<p>Status: <span id="task-status">{{ task.get_status_display }}</span></p>
 <div id="log-container" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
 
 <script>/*

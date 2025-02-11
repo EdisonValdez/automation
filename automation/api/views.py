@@ -246,10 +246,8 @@ class BusinessFilterView(APIView):
             date_from = request.GET.get('date_from', '')
             date_to = request.GET.get('date_to', '')
             status_filter = request.GET.get('status', '')  # e.g. "IN_PRODUCTION,REVIEWED"
-            sort_by = request.GET.get('sort_by', '-scraped_at') 
-            # NOTE: If your front-end default is "-created_at", 
-            # you must map it to "-scraped_at" or rename the front-end option
-
+            sort_by = request.GET.get('sort_by', '-scraped_at')  
+            
             # 3) Base queryset (same logic as your get_queryset in the BusinessViewSet)
             queryset = self.get_business_queryset(request.user)
 
@@ -630,6 +628,7 @@ class RecentTasksView(APIView):
                     'project_title': task.project_title,
                     'status': task.status,
                     'created_at': task.created_at.strftime('%Y-%m-%d %H:%M'),
+                    'completed_at': task.completed_at.strftime('%Y-%m-%d %H:%M'),
                     'destination': {
                         'id': task.destination.id if task.destination else None,
                         'name': task.destination.name if task.destination else 'N/A'
@@ -832,8 +831,7 @@ class TaskFilterView(APIView):
    
 class TaskTimelineView(APIView):
     def get(self, request):
-        try:
-            # Get date range from request, default to last 30 days if not provided
+        try: 
             end_date = request.query_params.get('end_date')
             start_date = request.query_params.get('start_date')
 
@@ -843,7 +841,7 @@ class TaskTimelineView(APIView):
                 end_date = timezone.datetime.strptime(end_date, '%Y-%m-%d').date()
 
             if not start_date:
-                start_date = end_date - timedelta(days=30)
+                start_date = end_date - timedelta(days=90)
             else:
                 start_date = timezone.datetime.strptime(start_date, '%Y-%m-%d').date()
 
@@ -990,10 +988,10 @@ class CategoryStatsView(APIView):
 class DashboardSummaryView(APIView):
     def get(self, request):
         try:
-            # Get date range from request or default to last 30 days
+            # Get date range from request or default to last 90 days
             end_date = timezone.now().date()
             start_date = end_date - timezone.timedelta(
-                days=int(request.GET.get('days', 30))
+                days=int(request.GET.get('days', 90))
             )
             
             # Get timeline data

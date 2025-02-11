@@ -95,11 +95,12 @@ class ProjectSerializer(serializers.ModelSerializer):
     destination = DestinationSerializer(read_only=True)
     business_count = serializers.IntegerField(read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    completed_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
         model = ScrapingTask
         fields = [
-            'id', 'project_title', 'status', 'created_at',
+            'id', 'project_title', 'status', 'created_at', 'completed_at',
             'user', 'country', 'destination', 'business_count'
         ]
 
@@ -107,12 +108,14 @@ class TaskSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     destination = DestinationSerializer(read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    completed_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
 
     class Meta:
         model = ScrapingTask
         fields = [
-            'id', 'project_title', 'status', 'created_at',
-            'user', 'destination'
+            'id', 'project_title', 'status', 'created_at', 'completed_at',
+            'user', 'destination', 'status_display'
         ]
 
 class AdminStatsSerializer(serializers.Serializer):

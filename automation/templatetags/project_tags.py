@@ -22,11 +22,13 @@ def pending_count(tasks):
         return tasks.filter(status='PENDING').count()
     return sum(1 for task in tasks if task.status == 'PENDING')
 
-@register.filter
+@register.filter 
 def done_count(tasks):
+    """ Return the count of tasks that are either 'DONE' or 'TASK_DONE'. """ 
     if isinstance(tasks, QuerySet):
-        return tasks.filter(status='DONE').count()
-    return sum(1 for task in tasks if task.status == 'DONE')
+        return tasks.filter(status__in=['DONE', 'TASK_DONE']).count() 
+    return sum(1 for task in tasks if task.status in ['DONE', 'TASK_DONE'])
+
 
 @register.filter
 def status_percentage(tasks, status):
