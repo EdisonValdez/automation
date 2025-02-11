@@ -79,7 +79,16 @@ class BusinessViewSet(viewsets.ModelViewSet):
             if limit < 1: 
                 limit = 12
 
-            # 2) Apply filters
+            # 2) Search functionality
+            search = request.query_params.get('search', '').strip()
+            if search:
+                queryset = queryset.filter(
+                    Q(title__icontains=search) |
+                    Q(description__icontains=search) |
+                    Q(destination__name__icontains=search) |
+                    Q(country__icontains=search)
+                )
+
             # 2a) statuses => filter(status__in=[...])
             if statuses:
                 queryset = queryset.filter(status__in=statuses)
@@ -232,157 +241,128 @@ class BusinessFilterView(APIView):
 
     def get(self, request):
         try:
-            # 1) Pagination params
-            page = int(request.GET.get('page', 1))
-            limit = int(request.GET.get('limit', 12))
-            if page < 1: page = 1
-            if limit < 1: limit = 12
+            # 1️⃣ Pagination Parameters
+            page = int(request.GET.get("page", 1))
+            limit = int(request.GET.get("limit", 12))
+            page = max(page, 1)
+            limit = max(limit, 1)
 
-            # 2) Collect filter params
-            search = request.GET.get('search', '')
-            user_id = request.GET.get('user', '')
-            category_id = request.GET.get('category', '')
-            destination_id = request.GET.get('destination', '')
-            date_from = request.GET.get('date_from', '')
-            date_to = request.GET.get('date_to', '')
-            status_filter = request.GET.get('status', '')  # e.g. "IN_PRODUCTION,REVIEWED"
-            sort_by = request.GET.get('sort_by', '-scraped_at')  
-            
-            # 3) Base queryset (same logic as your get_queryset in the BusinessViewSet)
+            # 2️⃣ Collect Filter Parameters
+            search = request.GET.get("search", "").strip()
+            category_id = request.GET.get("category", "").strip()
+            destination_id = request.GET.get("destination", "").strip()
+            status_filter = request.GET.get("status", "").strip()
+            date_from = request.GET.get("date_from", "").strip()
+            date_to = request.GET.get("date_to", "").strip()
+            sort_by = request.GET.get("sort_by", "-scraped_at")
+
+            # 3️⃣ Base Queryset
             queryset = self.get_business_queryset(request.user)
 
-            # 4) Apply filters
+            # 4️⃣ Apply Filters
             queryset = self.apply_filters(
-                queryset, 
+                queryset,
                 search=search,
-                user_id=user_id,
                 category_id=category_id,
                 destination_id=destination_id,
                 date_from=date_from,
                 date_to=date_to,
-                status_filter=status_filter
+                status_filter=status_filter,
             )
 
-            # 5) Sort
-            # If you want to map front-end "created_at" to "scraped_at", do something like:
+            # 5️⃣ Sorting
             sort_map = {
-                'created_at': 'scraped_at',
-                '-created_at': '-scraped_at',
-                'scraped_at': 'scraped_at',
-                '-scraped_at': '-scraped_at',
-                'title': 'title',
-                '-title': '-title',
-                'status': 'status',
-                '-status': '-status',
+                "created_at": "scraped_at",
+                "-created_at": "-scraped_at",
+                "scraped_at": "scraped_at",
+                "-scraped_at": "-scraped_at",
+                "title": "title",
+                "-title": "-title",
+                "status": "status",
+                "-status": "-status",
             }
-            if sort_by in sort_map:
-                sort_by = sort_map[sort_by]
-
+            sort_by = sort_map.get(sort_by, "-scraped_at")
             queryset = queryset.order_by(sort_by)
 
-            # 6) Pagination
+            # 6️⃣ Pagination
             total_count = queryset.count()
             total_pages = ceil(total_count / limit) if total_count > 0 else 1
-            if page > total_pages:
-                page = total_pages
+            page = min(page, total_pages)
             offset = (page - 1) * limit
             businesses = queryset[offset : offset + limit]
 
-            # 7) Build data
-            data = []
-            for b in businesses:
-                data.append({
-                    'id': b.id,
-                    'title': b.title,
-                    'status': b.status,
-                    'destination': {
-                        'id': b.destination.id if b.destination else None,
-                        'name': b.destination.name if b.destination else 'N/A'
-                    },
-                    'created_at': b.scraped_at.isoformat() if b.scraped_at else None,
-                    # or rename to 'scraped_at' if you prefer
-                    # ... plus any other fields you want
-                })
+            # 7️⃣ Serialize Data (includes full business details)
+            serialized_data = BusinessSerializer(businesses, many=True).data
 
-            return Response({
-                'status': 'success',
-                'data': data,
-                'total_count': total_count,
-                'page': page,
-                'total_pages': total_pages
-            })
+            return Response(
+                {
+                    "status": "success",
+                    "data": serialized_data,
+                    "total_count": total_count,
+                    "page": page,
+                    "total_pages": total_pages,
+                }
+            )
 
         except Exception as e:
             logger.error(f"Error in BusinessFilterView: {str(e)}", exc_info=True)
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"status": "error", "message": str(e)}, status=500)
 
     def get_business_queryset(self, user):
-        """Mimics your BusinessViewSet logic."""
-        if user.is_superuser or user.roles.filter(role='ADMIN').exists():
+        """Replicates logic from BusinessViewSet"""
+        if user.is_superuser or user.roles.filter(role="ADMIN").exists():
             return Business.objects.filter(is_deleted=False)
-        elif user.roles.filter(role='AMBASSADOR').exists():
+        elif user.roles.filter(role="AMBASSADOR").exists():
             return Business.objects.filter(
-                form_destination_id__in=user.destinations.values_list('id', flat=True),
-                is_deleted=False
+                form_destination_id__in=user.destinations.values_list("id", flat=True),
+                is_deleted=False,
             )
         else:
             return Business.objects.none()
 
-    def apply_filters(self, queryset, search='', user_id='', category_id='', destination_id='', 
-                      date_from='', date_to='', status_filter=''):
+    def apply_filters(self, queryset, search="", category_id="", destination_id="", date_from="", date_to="", status_filter=""):
+        """Filters businesses based on search, category, destination, dates, and status"""
 
-        # 1) Search
+        # 🔍 Improved Search Query
         if search:
             queryset = queryset.filter(
                 Q(title__icontains=search) | 
+                Q(description__icontains=search) |  # Search in descriptions
                 Q(destination__name__icontains=search) |
                 Q(country__icontains=search)
             )
 
-        # 2) user_id or category_id if your Business model has such fields
-        # But typically "user" or "category" might not exist in Business
-        # If so, adapt or remove these
-        if user_id:
-            # If you actually store user_id in the Business model or "task__user_id"
-            # For example, if your Business has .task.user
-            queryset = queryset.filter(task__user_id=user_id)
-
+        # 🔹 Filter by Category
         if category_id:
-            # If there's a "main_category" or "businesscategory" link
             queryset = queryset.filter(main_category=category_id)
 
-        # 3) Destination
+        # 🔹 Filter by Destination
         if destination_id:
-            # If it's a foreign key "destination"
             queryset = queryset.filter(destination_id=destination_id)
-            # If it's "form_destination_id", do .filter(form_destination_id=destination_id)
 
-        # 4) Date range => use "scraped_at"
+        # 📅 Date Filtering
         if date_from:
             try:
-                df = datetime.strptime(date_from, '%Y-%m-%d').date()
+                df = datetime.strptime(date_from, "%Y-%m-%d").date()
                 queryset = queryset.filter(scraped_at__date__gte=df)
-            except:
+            except ValueError:
                 pass
 
         if date_to:
             try:
-                dt = datetime.strptime(date_to, '%Y-%m-%d').date()
+                dt = datetime.strptime(date_to, "%Y-%m-%d").date()
                 queryset = queryset.filter(scraped_at__date__lte=dt)
-            except:
+            except ValueError:
                 pass
 
-        # 5) Multi-status => "IN_PRODUCTION,REVIEWED"
+        # 🔄 Status Filtering
         if status_filter:
-            statuses = [s.strip() for s in status_filter.split(',') if s.strip()]
+            statuses = [s.strip() for s in status_filter.split(",") if s.strip()]
             if statuses:
                 queryset = queryset.filter(status__in=statuses)
 
         return queryset
- 
+
 class BusinessStatusView(APIView):
     permission_classes = [IsAdminOrAmbassador]
 

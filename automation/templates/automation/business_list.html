@@ -1,39 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<style>
-    /* Custom Search Input Styles */
-.input-group-text {
-    background-color: #f8f9fa; /* Light background for the input group */
-    border: 1px solid #ced4da; /* Match border color */
-    border-radius: 0.5rem 0 0 0.5rem; /* Rounded corners */
-    box-shadow: none; /* Remove shadow */
-    height: auto;
-}
-
-.form-control {
-    border: 1px solid #ced4da; /* Match border color */
-    border-radius: 0 0.5rem 0.5rem 0; /* Rounded corners */
-    box-shadow: none; /* Remove shadow */
-}
-
-.form-control:focus {
-    border-color: #212d94; /* Bootstrap primary color on focus */
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); /* Add subtle shadow effect */
-}
-
-/* Button Styles */
-.btn-primary {
-    border-radius: 0 0.5rem 0.5rem 0; /* Rounded corners on the right side */
-    transition: background-color 0.2s; /* Smooth transition for hover effects */
-}
-
-.btn-primary:hover {
-    background-color: #0056b3; /* Darker primary color on hover */
-    border-color: #0056b3; /* Match border color on hover */
-}
-
-</style>
+<style>.filter-container{background-color:#fff;transition:all 0.3s ease}.filter-label{display:block;font-size:.875rem;font-weight:bolder;margin-bottom:.5rem;color:#495057}.search-input-group{position:relative}.search-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#6c757d}.search-control{padding-left:2rem}.date-range-group{position:relative;gap:.5rem}.calendar-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#6c757d}.date-input{padding-left:2rem}.date-separator{color:#6c757d;padding:0 .25rem}.select2-container{width:100%!important}.select2-multi .select2-selection--multiple{min-height:38px;border:1px solid #ced4da}.input-group-text{background-color:#f8f9fa;border:1px solid #ced4da;border-radius:.5rem 0 0 .5rem;box-shadow:none;height:auto}.form-control{border:1px solid #ced4da;border-radius:0 .5rem .5rem 0;box-shadow:none}.form-control:focus{border-color:#212d94;box-shadow:0 0 0 .2rem rgb(0 123 255 / .25)}.btn-primary{border-radius:0 .5rem .5rem 0;transition:background-color 0.2s}.btn-primary:hover{background-color:#0056b3;border-color:#0056b3}</style>
 <div class="main-content project"> 
     <div class="row">
         <div class="col-12">
@@ -205,58 +173,7 @@
                           </div>
                         </form>
                       </div>
-                       <!-- Some styling for the icons & form -->
-                      <style>
-                      .filter-container {
-                        background-color: #fff;
-                        transition: all 0.3s ease;
-                      }
-                      .filter-label {
-                        display: block;
-                        font-size: 0.875rem;
-                        font-weight: bolder;
-                        margin-bottom: 0.5rem;
-                        color: #495057;
-                      }
-                      .search-input-group {
-                        position: relative;
-                      }
-                      .search-icon {
-                        position: absolute;
-                        top: 50%;
-                        left: 10px;
-                        transform: translateY(-50%);
-                        color: #6c757d;
-                      }
-                      .search-control {
-                        padding-left: 2rem;
-                      }
-                      .date-range-group {
-                        position: relative;
-                        gap: 0.5rem;
-                      }
-                      .calendar-icon {
-                        position: absolute;
-                        top: 50%;
-                        left: 10px;
-                        transform: translateY(-50%);
-                        color: #6c757d;
-                      }
-                      .date-input {
-                        padding-left: 2rem;
-                      }
-                      .date-separator {
-                        color: #6c757d;
-                        padding: 0 0.25rem;
-                      }
-                      .select2-container {
-                        width: 100% !important;
-                      }
-                      .select2-multi .select2-selection--multiple {
-                        min-height: 38px;
-                        border: 1px solid #ced4da;
-                      }
-                      </style> 
+        
  
                     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
                     <script>
@@ -508,14 +425,15 @@
                                 // build repeated query
                                 let params = [];
                                 // single fields
-                                if (filters.search)   params.push('search=' + encodeURIComponent(filters.search));
+                                if (filters.search) params.push('search=' + encodeURIComponent(filters.search));
                                 if (filters.category) params.push('category=' + encodeURIComponent(filters.category));
                                 if (filters.date_from) params.push('date_from=' + encodeURIComponent(filters.date_from));
                                 if (filters.date_to)   params.push('date_to=' + encodeURIComponent(filters.date_to));
                                 if (filters.sort_by)   params.push('sort_by=' + encodeURIComponent(filters.sort_by));
                                 if (filters.limit)     params.push('limit=' + encodeURIComponent(filters.limit));
                                 if (filters.page)      params.push('page=' + encodeURIComponent(filters.page));
-                    
+                                console.log('Search Value:', filters.search);
+
                                 // multi statuses => ?status=IN_PRODUCTION&status=REVIEWED
                                 if (filters.status) {
                                     const stArr = filters.status.split(',');
