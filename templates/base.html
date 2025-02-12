@@ -78,31 +78,43 @@ Local Secrets - Content Curation Management Admin Dashboard
             </a>
             <ul class="sidebar-menu sidebar-menu-dropdown-content active">
                 {% if user.is_admin %}
+                <li>
+                    <a href="{% url 'dashboard' %}">
+                        <i class="bx bxs-dashboard"></i>
+                            <span>Dashboard</span>
+                    </a>
+                </li> 
                     <li>
-                        <a href="{% url 'dashboard' %}">Dashboard</a>
+                        <a href="{% url 'task_list' %}">
+                            <i class="fas fa-tasks"></i>
+                                <span>Content List</span>
+                        </a>
                     </li>
                     <li>
-                        <a href="{% url 'task_list' %}">Content List</a>
-                    </li>
-                    <li>
-                        <a href="{% url 'upload_file' %}"><i class='bx bx-upload'></i> ADD NEW CONTENT</a>
+                        <a href="{% url 'upload_file' %}"><i class='bx bx-upload'></i> Add New Content</a>
                     </li> 
                     <li>
-                        <a href="{% url 'business_list' %}"><i class='bx bxs-business'></i> BUSINESS SEARCH</a>
+                        <a href="{% url 'business_list' %}"><i class='bx bxs-business'></i> Business Search</a>
                     </li>
                 {% elif user.is_ambassador %}
                 
                     <li>
-                        <a href="{% url 'ambassador_dashboard' %}">Dashboard</a>
+                        <a href="{% url 'dashboard' %}">
+                            <i class="bx bxs-dashboard"></i>
+                                <span>Dashboard</span>
+                        </a>
                     </li>
                     <li>
-                        <a href="{% url 'task_list' %}">Content List</a>
+                        <a href="{% url 'task_list' %}">
+                            <i class="fas fa-comments"></i>
+                                <span>Content List</span>
+                        </a>
                     </li>
                     <li>
-                        <a href="{% url 'upload_file' %}"><i class='bx bx-upload'></i> ADD NEW CONTENT</a>
+                        <a href="{% url 'upload_file' %}"><i class='bx bx-upload'></i> Add New Content</a>
                     </li> 
                     <li>
-                        <a href="{% url 'business_list' %}"><i class='bx bxs-business'></i> BUSINESS SEARCH</a>
+                        <a href="{% url 'business_list' %}"><i class='bx bxs-business'></i> Business Search</a>
                     </li>
                 {% endif %}
             </ul>
@@ -115,7 +127,7 @@ Local Secrets - Content Curation Management Admin Dashboard
             <li class="sidebar-submenu active">
                 <a href="#" class="sidebar-menu-dropdown">
                     <i class='bx bxs-calendar-event'></i>
-                    <span>EVENTS</span>
+                    <span>Events</span>
                     <div class="dropdown-icon">
                         <i class='bx bx-chevron-down'></i>
                     </div>
@@ -138,7 +150,7 @@ Local Secrets - Content Curation Management Admin Dashboard
             <!-- Admin Tools -->
             <li>
                 <a href="{% url 'admin:index' %}" target="_blank">
-                    <i class='bx bxs-dashboard'></i>
+                    <i class='fas fa-cog'></i>
                     <span>Admin Tools</span>
                 </a>
             </li>

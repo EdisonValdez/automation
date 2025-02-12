@@ -237,7 +237,7 @@ class UploadFileView(View):
             'form': form,
             'last_image_count': user_pref.last_image_count,
             'user_preferences': user_pref,
-            'default_image_count': 5
+            'default_image_count': 6
         }
         return render(request, self.template_name, context)
 
@@ -268,7 +268,7 @@ class UploadFileView(View):
                     user_pref.last_level = form.cleaned_data.get('level')
                     user_pref.last_main_category = form.cleaned_data.get('main_category')
                     user_pref.last_subcategory = form.cleaned_data.get('subcategory')
-                    user_pref.last_image_count = form.cleaned_data.get('image_count', 5)
+                    user_pref.last_image_count = form.cleaned_data.get('image_count', 6)
 
                     # Debug logging
                     logger.info(f"Saving preferences for user {request.user.username}")
@@ -1592,7 +1592,10 @@ class DashboardViewSet(ViewSet):
             })
 
         except Exception as e:
-            return Response({'error': 'Failed to fetch timeline data'}, status=400)
+            logger.error(f"Error in timeline_data view: {str(e)}")
+            return Response({
+                'error': 'Failed to fetch timeline data'
+            }, status=400)
 
 #########USER###################USER###################USER###################USER##########
   
@@ -3882,6 +3885,24 @@ def delete_feedback(request, feedback_id):
             'status': 'error',
             'message': 'An error occurred while deleting the feedback'
         }, status=500)
+    
+@login_required
+@require_GET
+def dashboard_stats(request):
+    """API endpoint for dashboard statistics"""
+    try:
+        service = DashboardService()
+        stats = service.get_dashboard_stats()
+        return JsonResponse({
+            'status': 'success',
+            'data': stats
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'error': str(e)
+        }, status=500)
+     
  
 @login_required
 @require_GET
@@ -3992,7 +4013,9 @@ def get_timeline_data(request):
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
  
-
+@login_required
+@require_GET
+def get_recent_tasks(request):
     """Get recent tasks with related information"""
     try:
         tasks = ScrapingTask.objects.select_related(

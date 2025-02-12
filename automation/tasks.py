@@ -448,7 +448,7 @@ def process_scraping_task(self, task_id, form_data=None):
         task.save()
 
         # Get image_count early and ensure it's an integer
-        image_count = int(form_data.get('image_count', 5)) if form_data else 5
+        image_count = int(form_data.get('image_count', 6)) if form_data else 6
         logger.info(f"Using image count: {image_count}")
 
         queries = []
@@ -617,7 +617,7 @@ def get_s3_client():
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
     )
 
-def download_images(business, local_result, image_count=5):
+def download_images(business, local_result, image_count=6):
     photos_link = local_result.get('photos_link')
     if not photos_link:
         logger.info(f"No photos link found for business {business.id}")
@@ -628,8 +628,8 @@ def download_images(business, local_result, image_count=5):
         image_count = max(1, int(image_count))
         logger.info(f"Processing download with image count: {image_count}")
     except (TypeError, ValueError) as e:
-        logger.warning(f"Invalid image count provided ({image_count}), using default: 5. Error: {str(e)}")
-        image_count = 5
+        logger.warning(f"Invalid image count provided ({image_count}), using default: 6. Error: {str(e)}")
+        image_count = 6
 
     image_paths = []
     try:
