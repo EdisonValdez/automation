@@ -3,7 +3,7 @@
 {% block title %}Upload File{% endblock %}
 
 {% block content %}
-<style> .image-count-selection {margin-top: 10px;}.form-check-inline {margin-right: 20px;}.form-check-input:checked {background-color: #F4C031;border-color: #F4C031;}.form-check-label {cursor: pointer;}.sidebar-expand.active .sidebar {transition: transform 0.3s ease-in-out;max-width: 100%;z-index: 1111;}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.loader {border: 5px solid #f3f3f3;border-top: 5px solid #3498db;border-radius: 50%;width: 50px;height: 50px;animation: spin 1s linear infinite;display: none;}@keyframes spin {0% {transform: rotate(0deg);}100% {transform: rotate(360deg);}}.overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background-color: rgba(0, 0, 0, 0.5);z-index: 1000;display: none;}#loading-spinner {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index: 1001;display: none;}</style>
+<style>.messages-container{position:fixed;top:20px;right:20px;z-index:1050;max-width:350px}.alert{margin-bottom:1rem;padding:1rem;border:none;border-radius:8px;box-shadow:0 2px 5px rgb(0 0 0 / .2);animation:slideIn 0.3s ease-out}.alert-success{background-color:#d4edda;color:#155724;border-left:4px solid #28a745}.alert-warning{background-color:#fff3cd;color:#856404;border-left:4px solid #ffc107}.alert-error,.alert-danger{background-color:#f8d7da;color:#721c24;border-left:4px solid #dc3545}.alert-info{background-color:#d1ecf1;color:#0c5460;border-left:4px solid #17a2b8}.btn-close{padding:.5rem;margin:-.5rem -.5rem -.5rem auto;background:#fff0;border:0;float:right;font-size:1.5rem;font-weight:700;line-height:1;color:inherit;opacity:.5;cursor:pointer}.btn-close:hover{opacity:1}.icon-box{display:flex;align-items:center}@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes fadeOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}.alert.fade-out{animation:fadeOut 0.3s ease-out forwards} .image-count-selection {margin-top: 10px;}.form-check-inline {margin-right: 20px;}.form-check-input:checked {background-color: #F4C031;border-color: #F4C031;}.form-check-label {cursor: pointer;}.sidebar-expand.active .sidebar {transition: transform 0.3s ease-in-out;max-width: 100%;z-index: 1111;}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.loader {border: 5px solid #f3f3f3;border-top: 5px solid #3498db;border-radius: 50%;width: 50px;height: 50px;animation: spin 1s linear infinite;display: none;}@keyframes spin {0% {transform: rotate(0deg);}100% {transform: rotate(360deg);}}.overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background-color: rgba(0, 0, 0, 0.5);z-index: 1000;display: none;}#loading-spinner {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index: 1001;display: none;}</style>
 <div class="main-content project"> 
     <div class="row">
         <div class="col-12">
@@ -41,100 +41,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             {% endif %}
-
-            <style>
-            .messages-container {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 1050;
-                max-width: 350px;
-            }
-
-            .alert {
-                margin-bottom: 1rem;
-                padding: 1rem;
-                border: none;
-                border-radius: 8px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                animation: slideIn 0.3s ease-out;
-            }
-
-            .alert-success {
-                background-color: #d4edda;
-                color: #155724;
-                border-left: 4px solid #28a745;
-            }
-
-            .alert-warning {
-                background-color: #fff3cd;
-                color: #856404;
-                border-left: 4px solid #ffc107;
-            }
-
-            .alert-error,
-            .alert-danger {
-                background-color: #f8d7da;
-                color: #721c24;
-                border-left: 4px solid #dc3545;
-            }
-
-            .alert-info {
-                background-color: #d1ecf1;
-                color: #0c5460;
-                border-left: 4px solid #17a2b8;
-            }
-
-            .btn-close {
-                padding: 0.5rem;
-                margin: -0.5rem -0.5rem -0.5rem auto;
-                background: transparent;
-                border: 0;
-                float: right;
-                font-size: 1.5rem;
-                font-weight: 700;
-                line-height: 1;
-                color: inherit;
-                opacity: .5;
-                cursor: pointer;
-            }
-
-            .btn-close:hover {
-                opacity: 1;
-            }
-
-            .icon-box {
-                display: flex;
-                align-items: center;
-            }
-
-            @keyframes slideIn {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-
-            @keyframes fadeOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-            }
-
-            .alert.fade-out {
-                animation: fadeOut 0.3s ease-out forwards;
-            }
-            </style>
-
+ 
             <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // Auto-dismiss messages after 5 seconds
@@ -326,20 +233,13 @@
         </form>
                 
 <!-- JavaScript to toggle the description field -->
-  
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+   
 
 <!--Categories and Levels-->
 <script>
 $(document).ready(function() {
-    // Initialize Select2 for all select elements
-    $('select').select2({
-        width: '100%',
-        placeholder: 'Select an option',
-        allowClear: true
-    });
-
+    // Initialize select for all select elements
+  
     // Function to set initial values and trigger changes
     function initializeForm() {
         // Get saved values from the server
@@ -406,7 +306,7 @@ $(document).ready(function() {
                             $mainCategory.val(savedMainCategoryId).trigger('change');
                         }
                     }
-                    $mainCategory.trigger('change.select2');
+                    $mainCategory.trigger('change.select');
                 },
                 error: function(error) {
                     console.error('Error fetching categories:', error);
@@ -451,7 +351,7 @@ $(document).ready(function() {
                             $subcategory.val(savedSubcategoryId);
                         }
                     }
-                    $subcategory.trigger('change.select2');
+                    $subcategory.trigger('change.select');
                 },
                 error: function(error) {
                     console.error('Error fetching subcategories:', error);
@@ -459,150 +359,7 @@ $(document).ready(function() {
             });
         }
     });
-
-    $('<style>')
-        .prop('type', 'text/css')
-        .html(`
-            /* Container styling */
-            .select2-container--custom {
-                margin-bottom: 1rem;
-            }
-
-            /* Main select box styling */
-            .select2-container--custom .select2-selection--single {
-                height: 45px;
-                background-color: #fff;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-                transition: all 0.3s ease;
-            }
-
-            /* Hover state */
-            .select2-container--custom .select2-selection--single:hover {
-                border-color: #cbd5e0;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-
-            /* Focus state */
-            .select2-container--custom.select2-container--focus .select2-selection--single {
-                border-color: #4299e1;
-                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
-            }
-
-            /* Selected option text */
-            .select2-container--custom .select2-selection--single .select2-selection__rendered {
-                line-height: 43px;
-                padding-left: 15px;
-                padding-right: 30px;
-                color: #2d3748;
-                font-size: 0.95rem;
-            }
-
-            /* Placeholder */
-            .select2-container--custom .select2-selection--single .select2-selection__placeholder {
-                color: #a0aec0;
-            }
-
-            /* Arrow container */
-            .select2-container--custom .select2-selection--single .select2-selection__arrow {
-                height: 43px;
-                width: 30px;
-                right: 3px;
-            }
-
-            /* Custom arrow */
-            .select2-container--custom .select2-selection--single .select2-selection__arrow b {
-                border: none;
-                height: 10px;
-                width: 10px;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: contain;
-                margin-left: -7px;
-                margin-top: -5px;
-            }
-
-            /* Dropdown panel */
-            .select2-container--custom .select2-dropdown {
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                margin-top: 5px;
-                overflow: hidden;
-            }
-
-            /* Search box */
-            .select2-container--custom .select2-search--dropdown .select2-search__field {
-                border: 1px solid #e2e8f0;
-                border-radius: 6px;
-                padding: 8px 12px;
-                margin: 8px;
-                width: calc(100% - 16px);
-            }
-
-            .select2-container--custom .select2-search--dropdown .select2-search__field:focus {
-                outline: none;
-                border-color: #4299e1;
-                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
-            }
-
-            /* Options list */
-            .select2-container--custom .select2-results__option {
-                padding: 10px 15px;
-                font-size: 0.95rem;
-                transition: all 0.2s ease;
-            }
-
-            /* Option hover */
-            .select2-container--custom .select2-results__option--highlighted[aria-selected] {
-                background-color: #f7fafc;
-                color: #2d3748;
-            }
-
-            /* Selected option */
-            .select2-container--custom .select2-results__option[aria-selected=true] {
-                background-color: #ebf8ff;
-                color: #2b6cb0;
-            }
-
-            /* Disabled state */
-            .select2-container--custom.select2-container--disabled .select2-selection--single {
-                background-color: #f7fafc;
-                cursor: not-allowed;
-                border-color: #edf2f7;
-            }
-
-            /* Clear button */
-            .select2-container--custom .select2-selection--single .select2-selection__clear {
-                margin-right: 25px;
-                color: #a0aec0;
-                font-size: 18px;
-                font-weight: 500;
-            }
-
-            .select2-container--custom .select2-selection--single .select2-selection__clear:hover {
-                color: #e53e3e;
-            }
-
-            /* Group header */
-            .select2-container--custom .select2-results__group {
-                padding: 10px 15px;
-                font-weight: 600;
-                color: #4a5568;
-                background-color: #f7fafc;
-            }
-
-            /* Loading state */
-            .select2-container--custom .select2-results__option.loading-results {
-                padding: 15px;
-                text-align: center;
-                color: #a0aec0;
-            }
-        `)
-        .appendTo('head');
-
+ 
     // Initialize the form with saved values
     initializeForm();
 });
@@ -612,8 +369,8 @@ $(document).ready(function() {
 <!--Country and City-->
 <script>
 $(document).ready(function() {
-    // Initialize Select2
-    $('#id_country, #id_destination').select2({
+    // Initialize select
+    $('#id_country, #id_destination').select({
         width: '100%',
         placeholder: 'Select an option',
         allowClear: true
@@ -674,12 +431,12 @@ $(document).ready(function() {
                 } else {
                     $destination.append('<option value="">No destinations available</option>');
                 }
-                $destination.trigger('change.select2');
+                $destination.trigger('change.select');
             },
             error: function(error) {
                 console.error('Error fetching destinations:', error);
                 $destination.append('<option value="">Error loading destinations</option>');
-                $destination.trigger('change.select2');
+                $destination.trigger('change.select');
             }
         });
     }
@@ -719,12 +476,12 @@ $(document).ready(function() {
             } else {
                 $country.append('<option value="">No countries available</option>');
             }
-            $country.trigger('change.select2');
+            $country.trigger('change.select');
         },
         error: function(error) {
             console.error('Error fetching countries:', error);
             $('#id_country').append('<option value="">Error loading countries</option>');
-            $('#id_country').trigger('change.select2');
+            $('#id_country').trigger('change.select');
         }
     });
 
@@ -746,11 +503,10 @@ $(document).ready(function() {
         loadDestinations(countryId, function() {
             // After loading destinations, set the saved destination if it exists
             if (savedDestinationId) {
-                $('#id_destination').val(savedDestinationId).trigger('change.select2');
+                $('#id_destination').val(savedDestinationId).trigger('change.select');
             }
         });
     });
-
     $.ajax({
         url: '{% url "get_levels" %}',
         method: 'GET',
@@ -782,149 +538,6 @@ $(document).ready(function() {
             console.error('Error fetching levels: ' + error);
         }
     });
-    
-    $('<style>')
-        .prop('type', 'text/css')
-        .html(`
-            /* Container styling */
-            .select2-container--custom {
-                margin-bottom: 1rem;
-            }
-
-            /* Main select box styling */
-            .select2-container--custom .select2-selection--single {
-                height: 45px;
-                background-color: #fff;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-                transition: all 0.3s ease;
-            }
-
-            /* Hover state */
-            .select2-container--custom .select2-selection--single:hover {
-                border-color: #cbd5e0;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-
-            /* Focus state */
-            .select2-container--custom.select2-container--focus .select2-selection--single {
-                border-color: #4299e1;
-                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
-            }
-
-            /* Selected option text */
-            .select2-container--custom .select2-selection--single .select2-selection__rendered {
-                line-height: 43px;
-                padding-left: 15px;
-                padding-right: 30px;
-                color: #2d3748;
-                font-size: 0.95rem;
-            }
-
-            /* Placeholder */
-            .select2-container--custom .select2-selection--single .select2-selection__placeholder {
-                color: #a0aec0;
-            }
-
-            /* Arrow container */
-            .select2-container--custom .select2-selection--single .select2-selection__arrow {
-                height: 43px;
-                width: 30px;
-                right: 3px;
-            }
-
-            /* Custom arrow */
-            .select2-container--custom .select2-selection--single .select2-selection__arrow b {
-                border: none;
-                height: 10px;
-                width: 10px;
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: contain;
-                margin-left: -7px;
-                margin-top: -5px;
-            }
-
-            /* Dropdown panel */
-            .select2-container--custom .select2-dropdown {
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                margin-top: 5px;
-                overflow: hidden;
-            }
-
-            /* Search box */
-            .select2-container--custom .select2-search--dropdown .select2-search__field {
-                border: 1px solid #e2e8f0;
-                border-radius: 6px;
-                padding: 8px 12px;
-                margin: 8px;
-                width: calc(100% - 16px);
-            }
-
-            .select2-container--custom .select2-search--dropdown .select2-search__field:focus {
-                outline: none;
-                border-color: #4299e1;
-                box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
-            }
-
-            /* Options list */
-            .select2-container--custom .select2-results__option {
-                padding: 10px 15px;
-                font-size: 0.95rem;
-                transition: all 0.2s ease;
-            }
-
-            /* Option hover */
-            .select2-container--custom .select2-results__option--highlighted[aria-selected] {
-                background-color: #f7fafc;
-                color: #2d3748;
-            }
-
-            /* Selected option */
-            .select2-container--custom .select2-results__option[aria-selected=true] {
-                background-color: #ebf8ff;
-                color: #2b6cb0;
-            }
-
-            /* Disabled state */
-            .select2-container--custom.select2-container--disabled .select2-selection--single {
-                background-color: #f7fafc;
-                cursor: not-allowed;
-                border-color: #edf2f7;
-            }
-
-            /* Clear button */
-            .select2-container--custom .select2-selection--single .select2-selection__clear {
-                margin-right: 25px;
-                color: #a0aec0;
-                font-size: 18px;
-                font-weight: 500;
-            }
-
-            .select2-container--custom .select2-selection--single .select2-selection__clear:hover {
-                color: #e53e3e;
-            }
-
-            /* Group header */
-            .select2-container--custom .select2-results__group {
-                padding: 10px 15px;
-                font-weight: 600;
-                color: #4a5568;
-                background-color: #f7fafc;
-            }
-
-            /* Loading state */
-            .select2-container--custom .select2-results__option.loading-results {
-                padding: 15px;
-                text-align: center;
-                color: #a0aec0;
-            }
-        `)
-        .appendTo('head');
 });
 </script>
 <!--Country and City-->
@@ -1352,15 +965,17 @@ $(document).ready(function() {
     const feedback = $('#urlFeedback'); 
     const clearIcon = $('.clear-input');
     const validPatterns = [
-        /^https:\/\/(www\.)?google\.com\/maps\/place\/.+/i,
-        /^https:\/\/maps\.google\.com\/maps\?q=.+/i,
-        /^https:\/\/maps\.google\.com\/maps\/dir\/.+/i,
-        /^https:\/\/(www\.)?google\.com\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,
-        /^https:\/\/maps\.app\.goo\.gl\/.+/i
-    ];
-         
- 
-    clearIcon.on('click', function() {
+    /^https:\/\/(www\.)?google\.com\/maps\/place\/.+/i,
+    /^https:\/\/(www\.)?google\.es\/maps\/place\/.+/i,  // Added google.es pattern
+    /^https:\/\/maps\.google\.com\/maps\?q=.+/i,
+    /^https:\/\/maps\.google\.es\/maps\?q=.+/i,
+    /^https:\/\/maps\.google\.com\/maps\/dir\/.+/i,
+    /^https:\/\/maps\.google\.es\/maps\/dir\/.+/i,
+    /^https:\/\/(www\.)?google\.com\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,
+    /^https:\/\/(www\.)?google\.es\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,  // Added google.es pattern
+    /^https:\/\/maps\.app\.goo\.gl\/.+/i
+];
+clearIcon.on('click', function() {
             urlInput.val('').removeClass('is-valid is-invalid');
             indicator.hide();
             feedback.hide();
@@ -1368,52 +983,57 @@ $(document).ready(function() {
             $('#toggle-description').removeClass('active');
         }); 
 
-    function validateGoogleMapsUrl(url) { 
-        url = url.trim(); 
-        if (!url) {
-            return {
-                isValid: false,
-                message: 'URL cannot be empty'
-            };
-        } 
-        if (!url.match(/^https?:\/\//i)) {
-            return {
-                isValid: false,
-                message: 'URL must start with http:// or https://'
-            };
-        } 
-        const isValidPattern = validPatterns.some(pattern => pattern.test(url));
-        if (!isValidPattern) {
-            return {
-                isValid: false,
-                message: 'Invalid Google Maps URL format'
-            };
-        } 
-        try {
-            const urlObj = new URL(url);
-            const hostname = urlObj.hostname.toLowerCase();
-            
-            if (!hostname.includes('google.com') && 
-                !hostname.includes('maps.google.com') && 
-                !hostname.includes('maps.app.goo.gl')) {
-                return {
-                    isValid: false,
-                    message: 'URL must be from Google Maps'
-                };
-            }
+function validateGoogleMapsUrl(url) {
+    url = url.trim();
+    if (!url) {
+        return {
+            isValid: false,
+            message: 'URL cannot be empty'
+        };
+    }
 
-            return {
-                isValid: true,
-                message: 'Valid Google Maps URL',
-                trimmedUrl: url
-            };
-        } catch (e) {
+    if (!url.match(/^https?:\/\//i)) {
+        return {
+            isValid: false,
+            message: 'URL must start with http:// or https://'
+        };
+    }
+
+    const isValidPattern = validPatterns.some(pattern => pattern.test(url));
+    if (!isValidPattern) {
+        return {
+            isValid: false,
+            message: 'Invalid Google Maps URL format'
+        };
+    }
+
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+        
+        if (!hostname.includes('google.com') &&
+            !hostname.includes('google.es') &&    
+            !hostname.includes('maps.google.com') &&
+            !hostname.includes('maps.google.es') &&
+            !hostname.includes('maps.app.goo.gl')) {
             return {
                 isValid: false,
-                message: 'Invalid URL format'
+                message: 'URL must be from Google Maps'
             };
         }
+
+        return {
+            isValid: true,
+            message: 'Valid Google Maps URL',
+            trimmedUrl: url
+        };
+    } catch (e) {
+        return {
+            isValid: false,
+            message: 'Invalid URL format'
+        };
     }
+}
 
     function updateValidationUI(validationResult) {
         const icon = indicator.find('i');

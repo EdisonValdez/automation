@@ -1,4 +1,10 @@
 #from .countries_destinations_translated import city_name_mapping, country_name_mapping
+from automation.models import TagMapping
+from django.core.exceptions import ObjectDoesNotExist
+import logging 
+
+logger = logging.getLogger(__name__)
+
 country_name_mapping = {
     'Italia': 'Italy',
     'España': 'Spain',
@@ -167,8 +173,8 @@ def translate_location(city, country):
     translated_city = city_name_mapping.get(city, city)  # Default to original name if no mapping found
     translated_country = country_name_mapping.get(country, country)  # Default to original name if no mapping found
     return translated_city, translated_country
- 
- 
+
+
 def process_scraped_types(scraped_types, main_category=None):
     """
     Process types from scraping before saving to Business model
@@ -185,14 +191,11 @@ def process_scraped_types(scraped_types, main_category=None):
         types_list = [t.strip() for t in scraped_types.split(',') if t.strip()]
     else:
         types_list = []
-    
-    # Add main category if provided
-    if main_category:
-        # Convert plural category to singular for type
-        singular_category = main_category.rstrip('s')  # Simple conversion, adjust if needed
+     
+    if main_category: 
+        singular_category = main_category.rstrip('s')  
         types_list.append(singular_category)
-    
-    # Remove duplicates while preserving order
+     
     unique_types = list(dict.fromkeys(types_list))
     return ', '.join(unique_types)
 

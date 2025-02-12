@@ -38,8 +38,7 @@ from django.template.loader import get_template
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.apps import apps
-import psutil
-from celery import shared_task
+import psutil 
 from celery.schedules import crontab
 from celery import Celery
 from django.core.files import File
@@ -448,6 +447,10 @@ def process_scraping_task(self, task_id, form_data=None):
         task.status = 'IN_PROGRESS'
         task.save()
 
+        # Get image_count early and ensure it's an integer
+        image_count = int(form_data.get('image_count', 6)) if form_data else 6
+        logger.info(f"Using image count: {image_count}")
+
         queries = []
         description = task.description if task.description else ''
         
@@ -491,8 +494,7 @@ def process_scraping_task(self, task_id, form_data=None):
             task.save()
             return
 
-        total_results = 0
-        image_count = form_data.get('image_count', 5) if form_data else 5
+        total_results = 0 
 
         for index, query_data in enumerate(queries, start=1):
             query = query_data['query']
@@ -614,19 +616,21 @@ def get_s3_client():
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
     )
- 
-def download_images(business, local_result, image_count=5):
+
+def download_images(business, local_result, image_count=6):
     photos_link = local_result.get('photos_link')
     if not photos_link:
         logger.info(f"No photos link found for business {business.id}")
         return []
+
+    # Ensure image_count is a positive integer
     try:
-        image_count = int(image_count)
+        image_count = max(1, int(image_count))
         logger.info(f"Processing download with image count: {image_count}")
-    except (TypeError, ValueError):
-        image_count = 5
-        logger.warning(f"Invalid image count provided, using default: {image_count}")
-   
+    except (TypeError, ValueError) as e:
+        logger.warning(f"Invalid image count provided ({image_count}), using default: 6. Error: {str(e)}")
+        image_count = 6
+
     image_paths = []
     try:
         photos_search = GoogleSearch({
@@ -1131,10 +1135,9 @@ def translate_business_titles(business, languages):
         logger.error(f"Error translating titles for business {business.id}: {str(e)}", exc_info=True)
         return False
 
+"""
 def translate_business_types(business, languages):
-    """
-    Handles the translation of business tags and types.
-    """
+ 
     try:
         for lang in languages:
             if lang == "spanish" and not business.types_esp:
@@ -1158,7 +1161,59 @@ def translate_business_types(business, languages):
     except Exception as e:
         logger.error(f"Error translating types for business {business.id}: {str(e)}", exc_info=True)
         return False
+"""
 
+def translate_business_types(business, languages):
+    """
+    Handles the translation of business tags and types.
+    """
+    try:
+        for lang in languages:
+            if lang == "spanish" and not business.types_esp:
+                business.types_esp = translate_comma_separated_list(business.types, "Spanish")
+            elif lang == "eng" and not business.types_eng:
+                business.types_eng = translate_comma_separated_list(business.types, "British English")
+            elif lang == "fr" and not business.types_fr:
+                business.types_fr = translate_comma_separated_list(business.types, "French")
+
+        business.save(update_fields=['types_esp', 'types_eng', 'types_fr'])
+        return True
+
+    except Exception as e:
+        logger.error(f"Error translating types for business {business.id}: {str(e)}", exc_info=True)
+        return False
+ 
+def translate_comma_separated_list(types_string, language_description):
+    """
+    Sends all comma-separated items in a single prompt, telling GPT explicitly
+    to output the translation as a comma-separated list with the same number of items.
+    """
+    if not types_string.strip():
+        return ""
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "You are an expert translator. "
+                f"Translate the following comma-separated list into {language_description}. "
+                "Preserve the same number of items and their order. "
+                "Return them as a comma-separated list. Do not omit anything."
+            )
+        },
+        {
+            "role": "user",
+            "content": types_string
+        }
+    ]
+
+    try:
+        response = call_openai_with_retry(messages=messages, max_tokens=500, temperature=0.0)
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        logger.error(f"Error in translate_comma_separated_list: {str(e)}", exc_info=True)
+        return ""
+ 
 def process_business_translations(business, languages):
     """
     Processes translations for business descriptions.

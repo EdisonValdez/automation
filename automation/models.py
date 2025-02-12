@@ -185,6 +185,7 @@ class ActiveTaskManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(is_deleted=False)
 
+
 class ScrapingTask(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
     project_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -201,23 +202,25 @@ class ScrapingTask(models.Model):
     destination_name = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-    
+
     STATUS_CHOICES = [
         ('QUEUED', 'QUEUED'),
         ('PENDING', 'PENDING'),
         ('IN_PROGRESS', 'IN PROGRESS'),
-        ('COMPLETED', 'READY TO REVIEW'),
+        ('COMPLETED', 'READY TO REVIEW'),  # Changed display label
         ('FAILED', 'FAILED'),
-        ('DONE', 'REVIEWED'),
-        ('TASK_DONE', 'LIVE'),
+        ('DONE', 'REVIEWED'),             # Changed display label
+        ('TASK_DONE', 'LIVE'),            # Changed display label
     ]
+
     TRANSLATION_STATUS_CHOICES = [
         ('PENDING_TRANSLATION', 'Pending Translation'),
         ('IN_PROGRESS', 'In Progress'),
         ('TRANSLATED', 'Translated'),
-        ('PARTIALLY_TRANSLATED', 'Partially Translated'), 
+        ('PARTIALLY_TRANSLATED', 'Partially Translated'),
         ('TRANSLATION_FAILED', 'Translation Failed'),
     ]
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     translation_status = models.CharField(max_length=20, choices=TRANSLATION_STATUS_CHOICES, default='PENDING_TRANSLATION')
     file = models.FileField(upload_to='scraping_files/', null=True, blank=True)
@@ -230,9 +233,9 @@ class ScrapingTask(models.Model):
         verbose_name = "Sites Gathering"
         verbose_name_plural = "Sites Gatherings"
         indexes = [
-            models.Index(fields=['status']),  
-            models.Index(fields=['created_at']),   
-            models.Index(fields=['destination']),  
+            models.Index(fields=['status']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['destination']),
         ]
 
     def __str__(self):
@@ -240,16 +243,15 @@ class ScrapingTask(models.Model):
         destination = self.destination_name or 'No Destination'
         return f"{project} - {destination} (ID: {self.id})"
 
-
     def get_translatable_businesses(self):
         """Get businesses that can be translated"""
         return self.businesses.filter(
-            status='REVIEWED'   
+            status='REVIEWED'
         ).exclude(status='DISCARDED')
- 
+
     def get_level_title(self):
         return self.level.title if self.level else "No Level"
-    
+
     def get_level_type(self):
         return self.level.site_types if self.level else "No Type"
 
@@ -265,23 +267,23 @@ class ScrapingTask(models.Model):
         self.businesses.update(is_deleted=False)
 
     def save(self, *args, **kwargs):
-        is_new_instance = self.pk is None
+        is_new_instance = (self.pk is None)
         super().save(*args, **kwargs)
 
         if not is_new_instance:
-  
-            if self.status != 'DONE': 
-                businesses = self.businesses.all() 
+            if self.status not in ['DONE', 'TASK_DONE']:
+                businesses = self.businesses.all()
                 if not businesses.filter(status='PENDING').exists():
                     self.status = 'DONE'
                     self.completed_at = timezone.now()
 
+            # This portion checks translation status
             if self.translation_status == 'TRANSLATED' and self.translation_status != 'TRANSLATED':
                 self.translation_status = 'TRANSLATED'
             elif self.translation_status == 'TRANSLATION_FAILED':
                 self.translation_status = 'TRANSLATION_FAILED'
-            
-            super().save(update_fields=['status', 'completed_at'])
+
+            super().save(update_fields=['status', 'completed_at'])       
 
 class ActiveBusinessManager(models.Manager):
     def get_queryset(self):
@@ -370,7 +372,9 @@ class Business(models.Model):
 
     types_esp = models.TextField(blank=True, null=True)  
     types_eng = models.TextField(blank=True, null=True)  
+    types_uk = models.TextField(blank=True, null=True)
     types_fr = models.TextField(blank=True, null=True)  
+
 
     #comments = models.TextField(blank=True, null=True)
     is_deleted = models.BooleanField(default=False)
@@ -399,12 +403,9 @@ class Business(models.Model):
         return self.task.level.site_types if self.task and self.task.level else None
         
     def clean_types(self):
-        """Clean types field before saving"""
-        if self.types:
-            # Split, clean and deduplicate types
+        if isinstance(self.types, str):  
             types_list = [t.strip() for t in self.types.split(',') if t.strip()]
-            unique_types = list(dict.fromkeys(types_list))
-            self.types = ','.join(unique_types)
+            self.types = ', '.join(types_list)
  
     def delete(self, *args, **kwargs):
         self.is_deleted = True
@@ -452,7 +453,7 @@ class Business(models.Model):
             models.Index(fields=['scraped_at']),    
             models.Index(fields=['form_destination_id']),   
             models.Index(fields=['main_category']),   
-            models.Index(fields=['city']),   
+            models.Index(fields=['city']),    
         ]
         verbose_name_plural = "Businesses"
 
@@ -675,7 +676,6 @@ class HourlyBusyness(models.Model):
 
     def __str__(self):
         return f"{self.popular_times.business.title} - {self.popular_times.day} - {self.time}"
-    
 
 class UserPreference(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -691,4 +691,22 @@ class UserPreference(models.Model):
 
     def __str__(self):
         return f"Preferences for {self.user.username}"
+ 
+class TagMapping(models.Model):
+    english_tag = models.CharField(max_length=120, unique=True)
+    uk_tag = models.CharField(max_length=120, null=True)
+    spanish_tag = models.CharField(max_length=120, null=True)
+    french_tag = models.CharField(max_length=120, null=True)
+    tag_ls_id = models.CharField(max_length=50, null=True, blank=True)  
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['english_tag']),
+            models.Index(fields=['uk_tag']),
+            models.Index(fields=['spanish_tag']),
+            models.Index(fields=['french_tag']),
+            models.Index(fields=['tag_ls_id']),  
+        ]
 

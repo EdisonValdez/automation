@@ -1,4 +1,4 @@
-//automation/static/ls_backend.js
+//static/ls_backend.js
 $(document).ready(function() {
 
     // On page load, fetch levels from the local automation endpoint

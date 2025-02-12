@@ -4,6 +4,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
+
+from automation.api.views import DestinationListAPI, TaskFilterOptionsView, TaskFilterView, TaskListAPI, TaskTimelineView
  
 from . import views
 
@@ -11,8 +13,10 @@ router = DefaultRouter()
 router.register(r'businesses', views.BusinessViewSet)
 
 app_name = 'automation'
-
+router = DefaultRouter()
+router.register(r'dashboard', views.DashboardViewSet, basename='dashboard')
 urlpatterns = [
+    path('api/', include('automation.api.urls')), 
     path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
  
@@ -31,13 +35,11 @@ urlpatterns = [
     path('update-image-approval/', views.update_image_approval, name='update_image_approval'),
     path('update-businesses/', views.update_businesses, name='update_businesses'),            
     path('update-business-hours/', views.update_business_hours, name='update_business_hours'),
-
+ 
     path('tasks/<int:id>/delete/', views.delete_task, name='delete_task'),
 
     path('feedbacks/', views.FeedbackListView.as_view(), name='feedback_list'),
-    path('feedbacks/<int:feedback_id>/update-status/', 
-         views.update_feedback_status, 
-         name='update_feedback_status'),
+    path('feedbacks/<int:feedback_id>/update-status/', views.update_feedback_status, name='update_feedback_status'),
          
     path('businesses/', views.business_list, name='business_list'),
     path('update-business/<int:business_id>/', views.update_business, name='update_business'),
@@ -50,7 +52,7 @@ urlpatterns = [
     path('admin-view/', views.admin_view, name='admin_view'),
     
     path('dashboard', views.DashboardView.as_view(), name='dashboard'),     
-    path('get-business-status-data/', views.BusinessStatusDataView.as_view(), name='business_status_data'),
+    
     
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
@@ -110,7 +112,14 @@ urlpatterns = [
     path('api/levels/', views.get_levels, name='get_levels'), 
     path('api/destination-categories/', views.DestinationCategoriesView.as_view(), name='destination_categories'),
  
+    path('api/dashboard/business-stats/',  views.get_business_stats, name='business_stats'),
+    path('api/dashboard/tasks-timeline/',  views.get_tasks_timeline, name='tasks_timeline'),   
+    path('api/dashboard/task-timeline/', TaskTimelineView.as_view(), name='task-timeline'),
 
+    path('api/tasks/filters/',  TaskFilterOptionsView.as_view(), name='task-filter-options'),
+    path('api/tasks/filter/',  TaskFilterView.as_view(), name='task-filter'),
+    path('api/tasks/list/', TaskListAPI.as_view(), name='task-list'), 
+        
     path('task-status/<int:task_id>/', views.task_status, name='task_status'),
     path('tasks/', views.task_list, name='task_list'),
     path('search-destinations/', views.search_destinations, name='search_destinations'),
@@ -118,8 +127,6 @@ urlpatterns = [
     path('health/', views.health_check, name='health_check'),
     path('', views.welcome_view, name='welcome'),
 
-
- 
  
     path('load-categories/', views.load_categories, name='load_categories'),  
     #path('categories/', views.get_categories, name='get_categories'),         
@@ -130,7 +137,9 @@ urlpatterns = [
     path('events/save_selected/', views.save_selected_events, name='save_selected_events'),
  
     path('get-destinations-tasks/', views.get_destinations_tasks, name='get_destinations_tasks'),
- 
+    path('api/destinations/', DestinationListAPI.as_view(), name='business-destinations'),
+
+
 
 ]
  

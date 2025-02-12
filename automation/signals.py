@@ -5,7 +5,7 @@ from django.contrib.admin.models import LogEntry
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
-from automation.models import Business, CustomUser, UserRole, Feedback, Country, Level, Destination, Category
+from automation.models import Business, CustomUser, ScrapingTask, UserRole, Feedback, Country, Level, Destination, Category
 from django.db.models.signals import pre_save
 import logging
 from django.core.mail import send_mail
@@ -174,7 +174,6 @@ def after_business_save(sender, instance, created, **kwargs):
         if tailored_removed:
             logger.debug(f"Post-save: Tailored Categories Removed from Business '{instance.title}': {', '.join(tailored_removed)}")
 
-
 @receiver(pre_save, sender=Country)
 @receiver(pre_save, sender=Level)
 @receiver(pre_save, sender=Destination)
@@ -185,83 +184,101 @@ def ensure_primary_key(sender, instance, **kwargs):
         instance.id = max_id + 1
 # in signals.py
 
-@receiver(post_save, sender=Business)
-def business_status_changed(sender, instance, **kwargs):
-    """Signal handler for business status changes"""
-    logger.info(f"Signal triggered for Business ID: {instance.id}")
-    
-    task = instance.task
-    if not task:
-        logger.warning(f"Business ID {instance.id} has no associated task.")
-        return
-
-    try:
-        update_task_status_signal(task, instance)
-    except Exception as e:
-        logger.error(f"Error updating task status for business {instance.id}: {str(e)}", exc_info=True)
-
 def update_task_status_signal(task, instance):
     """Signal handler version - requires instance"""
     return _update_task_status_core(task)
-
-def update_task_status(task):
-    """Utility function for direct task status updates"""
-    return _update_task_status_core(task)
-
-def _update_task_status_core(task):
-    """Core logic for updating task status"""
-    logger.info(f"Updating task status for Task ID: {task.id}")
-    
-    # Get all non-discarded businesses
-    businesses = task.businesses.exclude(status='DISCARDED')
-    total_count = businesses.count()
-    
-    if total_count == 0:
+ 
+@receiver(post_save, sender=Business)
+@receiver(post_delete, sender=Business)
+def business_status_changed(sender, instance, **kwargs):
+    """
+    Signal handler triggered whenever a Business is saved or deleted.
+    Ensures the parent Task's status is recalculated in real time.
+    """
+    if not instance.task:
+        logger.debug(f"Business {instance.id} has no associated task.")
         return
 
-    # Get status counts
-    status_counts = {
-        'in_production': businesses.filter(status='IN_PRODUCTION').count(),
-        'pending': businesses.filter(status='PENDING').count(),
-        'reviewed': businesses.filter(status='REVIEWED').count()
-    }
-
-    logger.info(f"Task {task.id} status counts: {status_counts}")
-
+    task = instance.task
+    logger.info(f"[SIGNAL] Recalculating Task {task.id} due to Business {instance.id} change.")
+    
     try:
-        # Determine new status
-        new_status = None
-        
-        # Check if all businesses are in production
-        if status_counts['in_production'] == total_count:
-            new_status = 'TASK_DONE'
-            logger.info(f"Task {task.id}: All businesses in production, marking as TASK_DONE")
-        
-        # If not all in production but no pending/reviewed
-        elif status_counts['pending'] == 0 and status_counts['reviewed'] == 0:
-            if businesses.filter(status='IN_PRODUCTION').exists():
-                new_status = 'TASK_DONE'
-                logger.info(f"Task {task.id}: Some businesses in production, none pending/reviewed, marking as TASK_DONE")
-        
-        # Other status checks
-        elif status_counts['pending'] > 0:
-            new_status = 'IN_PROGRESS'
-            logger.info(f"Task {task.id}: Has pending businesses, marking as IN_PROGRESS")
-        elif status_counts['reviewed'] > 0:
-            new_status = 'DONE'
-            logger.info(f"Task {task.id}: Has reviewed businesses, marking as DONE")
-
-        # Update task if status should change
-        if new_status and new_status != task.status:
-            old_status = task.status
-            task.status = new_status
-            if new_status in ['DONE', 'TASK_DONE']:
-                task.completed_at = timezone.now()
-            task.save(update_fields=['status', 'completed_at'])
-            logger.info(f"Task {task.id} status updated: {old_status} -> {new_status}")
-
-        return new_status
-
+        update_task_status(task)
     except Exception as e:
-        logger.error(f"Error updating status for task {task.id}: {str(e)}", exc_info=True)
-        raise
+        logger.error(f"Error updating task status for business {instance.id}: {str(e)}", exc_info=True)
+
+
+def update_task_status(task):
+    """
+    Public function to recalc a task's status from its businesses.
+    This can also be called manually whenever desired (e.g. in a mgmt command).
+    """
+    try:
+        _update_task_status_core(task)
+    except Exception as e:
+        logger.error(f"Error while recalculating status for Task {task.id}: {str(e)}", exc_info=True)
+
+
+def _update_task_status_core(task: ScrapingTask):
+    """
+    Core logic to determine if a task is 'TASK_DONE', 'DONE', 'IN_PROGRESS', etc.
+    
+    1) Excludes DISCARDED businesses (the user has effectively removed them).
+    2) If all active businesses are 'IN_PRODUCTION', we set 'TASK_DONE'.
+    3) If some are 'PENDING', we set 'IN_PROGRESS'.
+    4) If some are 'REVIEWED' (and none are pending), we set 'DONE'.
+    5) If the Task was 'TASK_DONE' but a previously discarded business was
+       moved to PENDING/REVIEWED, revert it to 'IN_PROGRESS' or 'DONE' accordingly.
+    """
+    active_biz = task.businesses.exclude(status='DISCARDED')
+    total_active = active_biz.count()
+    if total_active == 0:
+        logger.info(f"Task {task.id} has no active businesses. Not changing status.")
+        return
+
+    # Count each key status
+    pending_count = active_biz.filter(status='PENDING').count()
+    reviewed_count = active_biz.filter(status='REVIEWED').count()
+    in_production_count = active_biz.filter(status='IN_PRODUCTION').count()
+    
+    logger.info(f"Task {task.id} counts: total={total_active}, pending={pending_count}, reviewed={reviewed_count}, in_production={in_production_count}")
+
+    # Decide new status
+    new_status = None
+
+    # Condition 1: All active businesses are IN_PRODUCTION => 'TASK_DONE'
+    if in_production_count == total_active:
+        new_status = 'TASK_DONE'
+        logger.info(f"Task {task.id} => all active businesses in production => TASK_DONE")
+
+    # Condition 2: If any are pending => 'IN_PROGRESS'
+    elif pending_count > 0:
+        new_status = 'IN_PROGRESS'
+        logger.info(f"Task {task.id} => at least one pending => IN_PROGRESS")
+
+    # Condition 3: If no pending, but some are reviewed => 'DONE'
+    elif reviewed_count > 0:
+        new_status = 'DONE'
+        logger.info(f"Task {task.id} => no pending but has reviewed => DONE")
+
+    # Otherwise, fallback or remain the same if we haven't determined a new one
+    # (e.g. if there's businesses in other statuses that you haven't enumerated).
+    # But let's assume new_status must be at least 'IN_PROGRESS'
+    if not new_status:
+        new_status = 'IN_PROGRESS'  # or something else
+
+    # Save the new status on the Task if changed
+    if new_status != task.status:
+        old_status = task.status
+        task.status = new_status
+
+        # If status is a final/done type, set completed_at
+        if new_status in ['DONE', 'TASK_DONE']:
+            task.completed_at = timezone.now()
+
+        # If reverting from 'TASK_DONE' to something else
+        elif old_status == 'TASK_DONE' and new_status in ['IN_PROGRESS', 'DONE']:
+            task.completed_at = None  # or keep the old completed date if desired
+
+        task.save(update_fields=['status', 'completed_at'])
+        logger.info(f"Task {task.id} => {old_status} -> {new_status}")

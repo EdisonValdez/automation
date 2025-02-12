@@ -1,4 +1,4 @@
-// automation/staticfiles/js/category_handler.js
+// static/js/category_handler.js
 document.addEventListener('DOMContentLoaded', function() {
     const levelSelect = document.getElementById('id_level');
     const categorySelect = document.getElementById('id_main_category');
