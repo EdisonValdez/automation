@@ -293,7 +293,7 @@ $(document).ready(function() {
                     if (results.length > 0) {
                         results.forEach(function(category) {
                             let $option = $('<option></option>')
-                                .attr('value', category.id)
+                                .attr('value', category.hasOwnProperty('category__id') ? category.category__id : category.id)
                                 .data('category_name', category.title)
                                 .text(category.title);
 
@@ -341,7 +341,7 @@ $(document).ready(function() {
                     if (results.length > 0) {
                         results.forEach(function(subcategory) {
                             $subcategory.append($('<option></option>').
-                            attr('value', subcategory.id).
+                            attr('value', subcategory.hasOwnProperty('subcategory__id') ? subcategory.subcategory__id : subcategory.id).
                             data('sub_category_name', subcategory.title).
                             text(subcategory.title));
                         });
@@ -414,7 +414,7 @@ $(document).ready(function() {
                     results.forEach(function(destination) {
                         $destination.append(
                             $('<option></option>').
-                            attr('value', destination.id).
+                            attr('value', destination.hasOwnProperty('city__id') ? destination.city__id : destination.id).
                             data('city_name', destination.name).
                             data('city_cp', destination.cp).
                             data('city_province', destination.province).
@@ -461,7 +461,7 @@ $(document).ready(function() {
                     //  If the key does not exist, then the record is not translated.
 
                     let $option = $('<option></option>')
-                        .attr('value', country.id)
+                        .attr('value', country.hasOwnProperty('country__id') ? country.country__id : country.id)
                         .text(country.name)
                         .data('country_name', country.name)
                         .data('country_code', country.code)
@@ -522,7 +522,7 @@ $(document).ready(function() {
             if (results.length > 0) {
                 results.forEach(function(level) {
                     let $option = $('<option></option>')
-                    .attr('value', level.id)
+                    .attr('value',  level.hasOwnProperty('level__id') ? level.level__id : level.id)
                     .data('level_name', level.title)
                     .text(level.title);
 
