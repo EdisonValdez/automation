@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style> .main-title {font-size: 24px;font-weight: 600;color: #2c3e50;margin-bottom: 1.5rem;padding-bottom: 0.5rem;border-bottom: 2px solid #eee;}.box {background: #fff;border-radius: 8px;box-shadow: 0 2px 4px rgba(0,0,0,0.1);padding: 1.5rem;margin-bottom: 1.5rem;}.box-body {padding: 1rem 0;}.form-group {margin-bottom: 1.5rem;}.form-label {display: block;margin-bottom: 0.5rem;font-weight: 500;color: #2c3e50;}.form-control {width: 100%;padding: 0.75rem;border: 1px solid #ddd;border-radius: 4px;transition: border-color 0.2s ease;}.form-control:focus {border-color: #3498db;box-shadow: 0 0 0 2px rgba(52,152,219,0.2);outline: none;}.text-danger {color: #e74c3c;font-size: 0.875rem;margin-top: 0.25rem;}.action-buttons {display: flex;flex-wrap: wrap;gap: 1rem;justify-content: center;padding: 1.5rem;background: #f8f9fa;border-radius: 0 0 8px 8px;}.action-buttons .btn {flex: 1;min-width: 200px;max-width: 300px;padding: 0.75rem 1.5rem;font-size: 1rem;font-weight: 500;text-align: center;border-radius: 6px;transition: all 0.3s ease;text-decoration: none;border: none;cursor: pointer;display: inline-flex;align-items: center;justify-content: center;gap: 0.5rem;}.btn-primary {background-color: #3498db;color: white;}.btn-primary:hover {background-color: #2980b9;transform: translateY(-1px);}.btn-secondary {background-color: #95a5a6;color: white;}.btn-secondary:hover {background-color: #7f8c8d;transform: translateY(-1px);}.btn-warning {background-color: #f1c40f;color: #2c3e50;}.btn-warning:hover {background-color: #f39c12;transform: translateY(-1px);}@media (max-width: 768px) {.box {padding: 1rem;}.action-buttons {flex-direction: column;align-items: stretch;gap: 0.75rem;}.action-buttons .btn {max-width: 100%;width: 100%;}.mb-24 {margin-bottom: 1rem;}}.btn.loading {position: relative;color: transparent;}.btn.loading::after {content: "";position: absolute;width: 20px;height: 20px;border: 2px solid;border-radius: 50%;border-color: #fff #fff #fff transparent;animation: button-loading-spinner 1s linear infinite;}@keyframes button-loading-spinner {from {transform: rotate(0turn);}to {transform: rotate(1turn);}}</style>
+
 <div class="main-content project"> 
     <div class="row">
         <div class="col-12">
@@ -105,9 +107,10 @@
                 </span>
             </div>
     </div>
-    
-    <div class="text-center mt-3">
-        <a href="{% url 'create_user' %}" class="btn btn-primary btn-lg fs-16">Create User</a>
+    <div class="action-buttons">  
+    <div class="text-center mt-3"> 
+        <a href="{% url 'create_user' %}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Create User</a>
+    </div>
     </div>
  </div>
  

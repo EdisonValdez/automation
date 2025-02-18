@@ -217,31 +217,47 @@ def update_task_status(task):
         _update_task_status_core(task)
     except Exception as e:
         logger.error(f"Error while recalculating status for Task {task.id}: {str(e)}", exc_info=True)
-
-
 def _update_task_status_core(task: ScrapingTask):
     """
     Core logic to determine if a task is 'TASK_DONE', 'DONE', 'IN_PROGRESS', etc.
-    
-    1) Excludes DISCARDED businesses (the user has effectively removed them).
-    2) If all active businesses are 'IN_PRODUCTION', we set 'TASK_DONE'.
-    3) If some are 'PENDING', we set 'IN_PROGRESS'.
-    4) If some are 'REVIEWED' (and none are pending), we set 'DONE'.
-    5) If the Task was 'TASK_DONE' but a previously discarded business was
-       moved to PENDING/REVIEWED, revert it to 'IN_PROGRESS' or 'DONE' accordingly.
     """
+    # First check total businesses including discarded
+    total_businesses = task.businesses.count()
+    
+    if total_businesses == 0:
+        logger.info(f"Task {task.id} has no businesses at all => FAILED")
+        if task.status != 'FAILED':
+            old_status = task.status
+            task.status = 'FAILED'
+            task.completed_at = timezone.now()
+            task.save(update_fields=['status', 'completed_at'])
+            logger.info(f"Task {task.id} => {old_status} -> FAILED")
+        return 'FAILED'
+
+    # Continue with active businesses logic
     active_biz = task.businesses.exclude(status='DISCARDED')
     total_active = active_biz.count()
+    
     if total_active == 0:
-        logger.info(f"Task {task.id} has no active businesses. Not changing status.")
-        return
+        logger.info(f"Task {task.id} has no active businesses => FAILED")
+        if task.status != 'FAILED':
+            old_status = task.status
+            task.status = 'FAILED'
+            task.completed_at = timezone.now()
+            task.save(update_fields=['status', 'completed_at'])
+            logger.info(f"Task {task.id} => {old_status} -> FAILED")
+        return 'FAILED'  # Changed from just return to return 'FAILED'
 
     # Count each key status
     pending_count = active_biz.filter(status='PENDING').count()
     reviewed_count = active_biz.filter(status='REVIEWED').count()
     in_production_count = active_biz.filter(status='IN_PRODUCTION').count()
     
-    logger.info(f"Task {task.id} counts: total={total_active}, pending={pending_count}, reviewed={reviewed_count}, in_production={in_production_count}")
+    logger.info(
+        f"Task {task.id} counts: total={total_active}, "
+        f"pending={pending_count}, reviewed={reviewed_count}, "
+        f"in_production={in_production_count}"
+    )
 
     # Decide new status
     new_status = None
@@ -251,21 +267,25 @@ def _update_task_status_core(task: ScrapingTask):
         new_status = 'TASK_DONE'
         logger.info(f"Task {task.id} => all active businesses in production => TASK_DONE")
 
-    # Condition 2: If any are pending => 'IN_PROGRESS'
+    # Condition 2: All active businesses are PENDING => 'COMPLETED'
+    elif pending_count == total_active:
+        new_status = 'COMPLETED'
+        logger.info(f"Task {task.id} => all businesses pending => COMPLETED")
+
+    # Condition 3: Some businesses are pending => 'IN_PROGRESS'
     elif pending_count > 0:
         new_status = 'IN_PROGRESS'
         logger.info(f"Task {task.id} => at least one pending => IN_PROGRESS")
 
-    # Condition 3: If no pending, but some are reviewed => 'DONE'
+    # Condition 4: If no pending, but some are reviewed => 'DONE'
     elif reviewed_count > 0:
         new_status = 'DONE'
         logger.info(f"Task {task.id} => no pending but has reviewed => DONE")
 
-    # Otherwise, fallback or remain the same if we haven't determined a new one
-    # (e.g. if there's businesses in other statuses that you haven't enumerated).
-    # But let's assume new_status must be at least 'IN_PROGRESS'
+    # Otherwise, fallback to IN_PROGRESS
     if not new_status:
-        new_status = 'IN_PROGRESS'  # or something else
+        new_status = 'IN_PROGRESS'
+        logger.info(f"Task {task.id} => fallback => IN_PROGRESS")
 
     # Save the new status on the Task if changed
     if new_status != task.status:
@@ -273,12 +293,16 @@ def _update_task_status_core(task: ScrapingTask):
         task.status = new_status
 
         # If status is a final/done type, set completed_at
-        if new_status in ['DONE', 'TASK_DONE']:
+        if new_status in ['DONE', 'TASK_DONE', 'COMPLETED', 'FAILED']:
             task.completed_at = timezone.now()
 
-        # If reverting from 'TASK_DONE' to something else
-        elif old_status == 'TASK_DONE' and new_status in ['IN_PROGRESS', 'DONE']:
-            task.completed_at = None  # or keep the old completed date if desired
+        # If reverting from a final status to something else
+        elif old_status in ['TASK_DONE', 'COMPLETED', 'FAILED'] and new_status in ['IN_PROGRESS', 'DONE']:
+            task.completed_at = None
 
         task.save(update_fields=['status', 'completed_at'])
         logger.info(f"Task {task.id} => {old_status} -> {new_status}")
+
+    return new_status
+
+ 
