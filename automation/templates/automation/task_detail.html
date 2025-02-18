@@ -4,6 +4,33 @@
 {% block title %}{{ task.project_title }}{% endblock %}
 {% block content %}
 <style>
+    .alert-info {
+    background-color: #f8f9fa;
+    border-left: 4px solid #0dcaf0;
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.alert-info .alert-heading {
+    color: #0dcaf0;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.alert-info p {
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.font-size-24 {
+    font-size: 24px;
+}
+
+.me-2 {
+    margin-right: 0.5rem;
+}
+
     .main-content{
     height: 100%;
     margin: 0;
@@ -118,6 +145,7 @@
             </div>
         </div>
         <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+          
             <button id="generateDescriptionsBtn"
             class="btn btn-primary {% if empty_descriptions_count == 0 %}disabled{% endif %}"
             {% if empty_descriptions_count == 0 %}disabled{% endif %}
@@ -184,6 +212,20 @@
         </div>
     </div>
 </div>
+        {% if user.is_ambassador and task.status == 'TASK_DONE' %}
+            <div class="alert alert-info" role="alert" style="margin: 20px;">
+                <div class="d-flex align-items-center">
+                    
+                    <div>
+                        <h4 class="alert-heading"><i class="fas fa-tasks"></i> Task Completed!</h4>
+                        <h6 class="mb-0 mt-25"><i class="bx bx-check-circle me-2 font-size-24"></i>
+                            The businesses are being processed for the live app. 
+                            Thank you!
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        {% else %}
  
 
         <div class="kanban-cont">
@@ -269,6 +311,8 @@
             {% endif %}
             {% endfor %}
         </div>
+
+        {% endif %}
     </div>
 </div>
 
@@ -378,43 +422,79 @@ function updateBusinessStatus(businessId, newStatus, oldStatus) {
             userId: userId
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw response;
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.status === 'success') {
-            // Actualizar los contadores
+            // Update counters
             updateStatusCount(oldStatus, -1);
             updateStatusCount(newStatus, 1);
-            // Actualizar el atributo data-status del elemento movido
+            // Update the status attribute of the moved element
             document.querySelector(`.panel[data-id="${businessId}"]`).dataset.status = newStatus;
             location.reload();
-        } else if (data.status === 'move-to-app-error'){
+        } else {
+            // Handle error cases
+            let errorMessage = data.message || 'An unexpected error occurred';
+            
             Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message,
-                    confirmButtonText: 'OK'
-                });
-                revertToOldColumn(businessId, oldStatus);
-
-        }else {   
-            Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Cannot move to the next column. Business description is missing.',
-                    confirmButtonText: 'OK'
-                });
-                revertToOldColumn(businessId, oldStatus);
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                confirmButtonText: 'OK'
+            });
+            
+            revertToOldColumn(businessId, oldStatus);
         }
     })
     .catch(error => {
+        if (error instanceof Response) {
+            error.json().then(errorData => {
+                let errorMessage = errorData.message || 'Unable to validate business details. Please try again.';
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage,
+                    confirmButtonText: 'OK'
+                });
+            });
+        } else {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
                 text: 'Unable to validate business details. Please try again.',
                 confirmButtonText: 'OK'
             });
-            revertToOldColumn(businessId, oldStatus);
-        });
+        }
+        revertToOldColumn(businessId, oldStatus);
+    });
+}
+
+// Helper function to revert the card to its original position
+function revertToOldColumn(businessId, oldStatus) {
+    const card = document.querySelector(`.panel[data-id="${businessId}"]`);
+    const originalColumn = document.querySelector(`.kanban-column[data-status="${oldStatus}"]`);
+    
+    if (card && originalColumn) {
+        const container = originalColumn.querySelector('.panel-container');
+        if (container) {
+            container.appendChild(card);
+            card.dataset.status = oldStatus;
+        }
+    }
+}
+
+// Helper function to update status count
+function updateStatusCount(status, change) {
+    const countElement = document.querySelector(`.status-count[data-status="${status}"]`);
+    if (countElement) {
+        const currentCount = parseInt(countElement.textContent);
+        countElement.textContent = currentCount + change;
+    }
 }
 
 function moveBulkBusinesses(selectElement, currentStatus) {
@@ -1309,5 +1389,21 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('scrollPosition');
     }
 });
-</script>       
+</script>    
+
+<script>
+    // Add this to your JavaScript file
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide the alert after 10 seconds (optional)
+    setTimeout(function() {
+        const alert = document.querySelector('.alert-info');
+        if (alert) {
+            alert.style.transition = 'opacity 0.5s ease-out';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 500);
+        }
+    }, 20000);
+});
+
+</script>
 {% endblock %}
