@@ -328,7 +328,7 @@ $(document).ready(function() {
         console.log("Final category: ", categoryId)
 
         const $subcategory = $('#id_subcategory');
-        const savedSubcategoryId = '{{ user_preferences.last_subcategory.id|default:"" }}';
+        const savedSubcategoryId = '{{ user_preferences.last_subcategory.ls_id|default:"" }}';
         $subcategory.empty().append('<option value="">Select a subcategory (optional)</option>');
 
         if (categoryId) {
