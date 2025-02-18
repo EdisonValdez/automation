@@ -60,8 +60,10 @@ class DataSyncer:
             self.destination = (
                 Destination.objects.filter(
                     Q(ls_id=city_lsid) |
-                    (Q(name__iexact=city_name) &
-                     Q(country=self.country.id))).last())
+                    (
+                        Q(name__iexact=city_name) &
+                        Q(country=self.country.id)
+                    )).last())
 
             if not self.destination:
                 self.destination = Destination.objects.create(
@@ -113,15 +115,21 @@ class DataSyncer:
         If the category doesn't exist, it creates a new one and returns the newly created object.
         """
         try:
-            self.category, _ = Category.objects.get_or_create(
-                ls_id=category_lsid,
-                level=self.level.id,
-                defaults={
-                    'title': self.request_data.get('category_name'),
-                    'value': self.request_data.get('category_name'),
-                    'level': self.level
-                }
-            )
+            category_name = self.request_data.get('category_name')
+            self.category = Category.objects.filter(
+                Q(ls_id=category_lsid) |
+                (
+                    Q(title__iexact=category_name) &
+                    Q(level=self.level.id)
+                )).last()
+
+            if not self.category:
+                self.category = Category.objects.create(
+                    ls_id=category_lsid,
+                    title=category_name,
+                    value=category_name,
+                    level=self.level
+                )
             return self.category
         except Exception as e:
             logger.error(
