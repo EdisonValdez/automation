@@ -70,10 +70,13 @@ def update_task_status_core(task, force_update=False):
         f"pending={pending_count}, reviewed={reviewed_count}, "
         f"in_production={in_production_count}"
     )
-
-    # Determine new status
-    if in_production_count == total_active:
-        new_status = 'TASK_DONE'
+ 
+    # In update_task_status_core function
+    if in_production_count > 0:  # If any business is in production
+        if in_production_count == total_active:  # All businesses in production
+            new_status = 'TASK_DONE'
+        else:  # Mixed status
+            new_status = 'IN_PROGRESS'
     elif pending_count == total_active:
         new_status = 'COMPLETED'
     elif pending_count > 0:
@@ -82,6 +85,7 @@ def update_task_status_core(task, force_update=False):
         new_status = 'DONE'
     else:
         new_status = 'IN_PROGRESS'
+
 
     # Update if status changed
     if new_status != task.status:
