@@ -12,7 +12,10 @@ from django.contrib import messages
 from django.db import transaction
 from django import forms
 import openpyxl
-from .models import Country, CustomUser, Feedback, UserRole, Destination, Business, BusinessCategory, OpeningHours, AdditionalInfo, Image, Review, ScrapingTask, Category, Level, UserPreference
+from .models import (
+    Country, CustomUser, Feedback, UserRole, Destination, Business,
+    BusinessCategory, OpeningHours, AdditionalInfo, Image, Review,
+    ScrapingTask, Category, Level)
 
 logger = logging.getLogger(__name__)
 SITE_TYPES_CHOICES = [
@@ -547,7 +550,6 @@ admin.site.register(OpeningHours)
 admin.site.register(AdditionalInfo)
 admin.site.register(Image)
 admin.site.register(BusinessCategory)
-admin.site.register(UserPreference)
 
 
 admin.site.site_header = "Discovery Tool Administration"
