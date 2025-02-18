@@ -359,7 +359,7 @@
                         'FAILED': 'FAILED',
                         'COMPLETED': 'READY TO REVIEW',
                         'DONE': 'REVIEWED',
-                        'TASK_DONE': 'LIVE'
+                        'TASK_DONE': 'LIVE ON APP'
                     };
 
                     optionsData.statuses.forEach(st => {
@@ -581,6 +581,11 @@
                         const businessCount = typeof task.business_count === 'number'
                             ? task.business_count
                             : (Array.isArray(task.businesses) ? task.businesses.length : 0);
+                            // Add status computation logic
+                            let computedStatus = task.status;
+                            if (businessCount === 0) {
+                                computedStatus = 'FAILED';
+                            }
 
                         // Status mapping for display
                         const statusDisplayMap = {
@@ -589,12 +594,12 @@
                             'FAILED': 'FAILED',
                             'COMPLETED': 'READY TO REVIEW',
                             'DONE': 'REVIEWED',
-                            'TASK_DONE': '🚀 LIVE'
+                            'TASK_DONE': '🚀 LIVE ON APP'
                         };
 
                         // Get the display status
                         const isLive = task.computed_status === 'TASK_DONE';
-                        const displayStatus = isLive ? '🚀 LIVE' : (statusDisplayMap[task.status] || task.status);
+                        const displayStatus = isLive ? '🚀 LIVE ON APP' : (statusDisplayMap[task.status] || task.status);
                         const statusBadgeClass = isLive ? 'orange' : this.getStatusBadgeColor(task.status);
 
                         return `

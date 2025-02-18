@@ -210,7 +210,7 @@ class ScrapingTask(models.Model):
         ('COMPLETED', 'READY TO REVIEW'),  # Changed display label
         ('FAILED', 'FAILED'),
         ('DONE', 'REVIEWED'),             # Changed display label
-        ('TASK_DONE', 'LIVE'),            # Changed display label
+        ('TASK_DONE', 'LIVE ON APP'),            # Changed display label
     ]
 
     TRANSLATION_STATUS_CHOICES = [
