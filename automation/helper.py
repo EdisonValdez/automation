@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 from django.core.exceptions import ValidationError
+from django.db.models import Q
 from automation.models import Country, Level, Category, Destination
 
 logger = logging.getLogger(__name__)
@@ -29,14 +30,18 @@ class DataSyncer:
         If the country doesn't exist, it creates a new one and returns the newly created object.
         """
         try:
-            self.country, _ = Country.objects.get_or_create(
-                ls_id=country_lsid,
-                defaults={
-                    'name': self.request_data.get('country_name'),
-                    'code': self.request_data.get('country_code'),
-                    'phone_code': self.request_data.get('country_phone_code'),
-                }
-            )
+            country_name = self.request_data.get('country_name')
+            self.country = Country.objects.filter(
+                Q(ls_id=country_lsid) |
+                Q(name__iexact=country_name)).last()
+
+            if not self.country:
+                self.country = Country.objects.create(
+                    ls_id=country_lsid,
+                    name=country_name,
+                    code=self.request_data.get('country_code'),
+                    phone_code=self.request_data.get('country_phone_code')
+                )
             return self.country
         except Exception as e:
             logger.error(
@@ -51,20 +56,25 @@ class DataSyncer:
         If the destination doesn't exist, it creates a new one and returns the newly created object.
         """
         try:
-            self.destination, _ = Destination.objects.get_or_create(
-                ls_id=city_lsid,
-                country=self.country.id,
-                defaults={
-                    'name': self.request_data.get('city_name'),
-                    'cp': self.request_data.get('city_cp'),
-                    'province': self.request_data.get('city_province'),
-                    'description': self.request_data.get('city_description'),
-                    'link': self.request_data.get('city_link'),
-                    'latitude': self.request_data.get('city_latitude'),
-                    'longitude': self.request_data.get('city_longitude'),
-                    'country': self.country,
-                }
-            )
+            city_name = self.request_data.get("city_name")
+            self.destination = (
+                Destination.objects.filter(
+                    Q(ls_id=city_lsid) |
+                    (Q(name__iexact=city_name) &
+                     Q(country=self.country.id))).last())
+
+            if not self.destination:
+                self.destination = Destination.objects.create(
+                    ls_id=city_lsid,
+                    name=city_name,
+                    cp=self.request_data.get('city_cp'),
+                    province=self.request_data.get('city_province'),
+                    description=self.request_data.get('city_description'),
+                    link=self.request_data.get('city_link'),
+                    latitude=self.request_data.get('city_latitude'),
+                    longitude=self.request_data.get('city_longitude'),
+                    country=self.country
+                )
             return self.destination
         except Exception as e:
             logger.error(
@@ -79,12 +89,16 @@ class DataSyncer:
         If the level doesn't exist, it creates a new one and returns the newly created object.
         """
         try:
-            self.level, _ = Level.objects.get_or_create(
-                ls_id=level_lsid,
-                defaults={
-                    'title': self.request_data.get('level_name')
-                }
-            )
+            level_name = self.request_data.get('level_name')
+            self.level = Level.objects.filter(
+                Q(ls_id=level_lsid) |
+                Q(title__iexact=level_name)).last()
+
+            if not self.level:
+                self.level = Level.objects.create(
+                    ls_id=level_lsid,
+                    title=level_name
+                )
             return self.level
         except Exception as e:
             logger.error(
