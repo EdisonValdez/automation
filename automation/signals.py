@@ -1,3 +1,4 @@
+# automation/signals.py
 from django.conf import settings
 from django.utils import timezone
 from django.apps import apps
@@ -5,6 +6,7 @@ from django.contrib.admin.models import LogEntry
 from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
+from automation.common import update_task_status_core
 from automation.models import Business, CustomUser, ScrapingTask, UserRole, Feedback
 from django.db.models.signals import pre_save
 import logging
@@ -25,59 +27,6 @@ def update_logentry_user(sender, **kwargs):
 def create_user_role(sender, instance, created, **kwargs):
     pass
 
-@receiver(post_save, sender=Business)
-@receiver(post_delete, sender=Business)
-def update_task_status(sender, instance, **kwargs):
-    logger.info(f"Signal triggered for Business ID: {instance.id}")
-    task = instance.task
-    if not task:
-        logger.warning(f"Business ID {instance.id} has no associated task.")
-        return  # Safety check
-
-    logger.info(f"Updating task status for Task ID: {task.id}")
-    pending_businesses = task.businesses.filter(status='PENDING').exists()
-    logger.info(f"Pending businesses exist: {pending_businesses}")
-
-    if not pending_businesses:
-        # If there are no pending businesses, mark task as DONE
-        if task.status != 'DONE':
-            task.status = 'DONE'
-            task.completed_at = now()
-            task.save(update_fields=['status', 'completed_at'])
-            logger.info(f"Task ID {task.id} status updated to 'DONE'")
-
-            # Notify the user via Django Messages if request context is available
-            request = kwargs.get('request', None)
-            if request:
-                add_message(request, SUCCESS, f"Task {task.id} is now marked as DONE.")
- 
-            try:
-                email_context = {
-                    'task_id': task.id,
-                    'task_name': task.project_title,  
-                    'completed_at': task.completed_at 
-                }
-
-                # Render HTML and plain text email content
-                html_message = render_to_string('emails/task_completed.html', email_context)
-                plain_message = f'The task "{task.project_title}" (ID: {task.id}) has been marked as DONE.'
- 
-                send_mail(
-                    subject='Task Completed: Local Secrets',
-                    message=plain_message,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=['evaldez@localsecrets.travel', 'jvasquez@localsecrets.travel', 'azottu@localsecrets.travel'],  # Add recipient(s)
-                    fail_silently=False,
-                    html_message=html_message,  
-                )
-            except Exception as e:
-                logger.error(f"Failed to send email for Task ID {task.id}: {str(e)}")
-
-    else: 
-        if task.status == 'DONE':
-            task.status = 'IN_PROGRESS'  
-            task.save(update_fields=['status'])
-            logger.info(f"Task ID {task.id} status updated to 'IN_PROGRESS'")
 
 @receiver(pre_save, sender=Business)
 def enforce_description_validation(sender, instance, **kwargs):
@@ -182,18 +131,54 @@ def update_task_status_signal(task, instance):
 @receiver(post_delete, sender=Business)
 def business_status_changed(sender, instance, **kwargs):
     """
-    Signal handler triggered whenever a Business is saved or deleted.
-    Ensures the parent Task's status is recalculated in real time.
+    Single unified handler for business status changes
     """
     if not instance.task:
         logger.debug(f"Business {instance.id} has no associated task.")
         return
 
     task = instance.task
+    previous_status = task.status
     logger.info(f"[SIGNAL] Recalculating Task {task.id} due to Business {instance.id} change.")
-    
+   
     try:
-        update_task_status(task)
+        new_status, was_updated = update_task_status_core(task, force_update=True)
+        
+        # Log the status change
+        logger.info(
+            f"Task {task.id} status update: "
+            f"previous_status={previous_status}, "
+            f"businesses={task.businesses.count()}, "
+            f"pending={task.businesses.filter(status='PENDING').count()}, "
+            f"reviewed={task.businesses.filter(status='REVIEWED').count()}, "
+            f"in_production={task.businesses.filter(status='IN_PRODUCTION').count()}, "
+            f"discarded={task.businesses.filter(status='DISCARDED').count()}, "
+            f"new_status={new_status}"
+        )
+
+        if was_updated and new_status == 'DONE':
+            # Handle completion notifications
+            try:
+                email_context = {
+                    'task_id': task.id,
+                    'task_name': task.project_title,
+                    'completed_at': task.completed_at
+                }
+
+                html_message = render_to_string('emails/task_completed.html', email_context)
+                plain_message = f'The task "{task.project_title}" (ID: {task.id}) has been marked as DONE.'
+
+                send_mail(
+                    subject='Task Completed: Local Secrets',
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=['evaldez@localsecrets.travel', 'jvasquez@localsecrets.travel', 'azottu@localsecrets.travel'],
+                    fail_silently=False,
+                    html_message=html_message,
+                )
+            except Exception as e:
+                logger.error(f"Failed to send email for Task ID {task.id}: {str(e)}")
+
     except Exception as e:
         logger.error(f"Error updating task status for business {instance.id}: {str(e)}", exc_info=True)
 
@@ -207,92 +192,7 @@ def update_task_status(task):
         _update_task_status_core(task)
     except Exception as e:
         logger.error(f"Error while recalculating status for Task {task.id}: {str(e)}", exc_info=True)
+
 def _update_task_status_core(task: ScrapingTask):
-    """
-    Core logic to determine if a task is 'TASK_DONE', 'DONE', 'IN_PROGRESS', etc.
-    """
-    # First check total businesses including discarded
-    total_businesses = task.businesses.count()
-    
-    if total_businesses == 0:
-        logger.info(f"Task {task.id} has no businesses at all => FAILED")
-        if task.status != 'FAILED':
-            old_status = task.status
-            task.status = 'FAILED'
-            task.completed_at = timezone.now()
-            task.save(update_fields=['status', 'completed_at'])
-            logger.info(f"Task {task.id} => {old_status} -> FAILED")
-        return 'FAILED'
-
-    # Continue with active businesses logic
-    active_biz = task.businesses.exclude(status='DISCARDED')
-    total_active = active_biz.count()
-    
-    if total_active == 0:
-        logger.info(f"Task {task.id} has no active businesses => FAILED")
-        if task.status != 'FAILED':
-            old_status = task.status
-            task.status = 'FAILED'
-            task.completed_at = timezone.now()
-            task.save(update_fields=['status', 'completed_at'])
-            logger.info(f"Task {task.id} => {old_status} -> FAILED")
-        return 'FAILED'  # Changed from just return to return 'FAILED'
-
-    # Count each key status
-    pending_count = active_biz.filter(status='PENDING').count()
-    reviewed_count = active_biz.filter(status='REVIEWED').count()
-    in_production_count = active_biz.filter(status='IN_PRODUCTION').count()
-    
-    logger.info(
-        f"Task {task.id} counts: total={total_active}, "
-        f"pending={pending_count}, reviewed={reviewed_count}, "
-        f"in_production={in_production_count}"
-    )
-
-    # Decide new status
-    new_status = None
-
-    # Condition 1: All active businesses are IN_PRODUCTION => 'TASK_DONE'
-    if in_production_count == total_active:
-        new_status = 'TASK_DONE'
-        logger.info(f"Task {task.id} => all active businesses in production => TASK_DONE")
-
-    # Condition 2: All active businesses are PENDING => 'COMPLETED'
-    elif pending_count == total_active:
-        new_status = 'COMPLETED'
-        logger.info(f"Task {task.id} => all businesses pending => COMPLETED")
-
-    # Condition 3: Some businesses are pending => 'IN_PROGRESS'
-    elif pending_count > 0:
-        new_status = 'IN_PROGRESS'
-        logger.info(f"Task {task.id} => at least one pending => IN_PROGRESS")
-
-    # Condition 4: If no pending, but some are reviewed => 'DONE'
-    elif reviewed_count > 0:
-        new_status = 'DONE'
-        logger.info(f"Task {task.id} => no pending but has reviewed => DONE")
-
-    # Otherwise, fallback to IN_PROGRESS
-    if not new_status:
-        new_status = 'IN_PROGRESS'
-        logger.info(f"Task {task.id} => fallback => IN_PROGRESS")
-
-    # Save the new status on the Task if changed
-    if new_status != task.status:
-        old_status = task.status
-        task.status = new_status
-
-        # If status is a final/done type, set completed_at
-        if new_status in ['DONE', 'TASK_DONE', 'COMPLETED', 'FAILED']:
-            task.completed_at = timezone.now()
-
-        # If reverting from a final status to something else
-        elif old_status in ['TASK_DONE', 'COMPLETED', 'FAILED'] and new_status in ['IN_PROGRESS', 'DONE']:
-            task.completed_at = None
-
-        task.save(update_fields=['status', 'completed_at'])
-        logger.info(f"Task {task.id} => {old_status} -> {new_status}")
-
+    new_status, _ = update_task_status_core(task, force_update=False)
     return new_status
-
- 
