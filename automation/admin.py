@@ -1,12 +1,17 @@
 import csv
+from datetime import datetime
+from django.db.models import Q
+import json
 import logging
 from io import StringIO
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
 from django import forms
+import openpyxl
 from .models import Country, CustomUser, Feedback, UserRole, Destination, Business, BusinessCategory, OpeningHours, AdditionalInfo, Image, Review, ScrapingTask, Category, Level
 
 logger = logging.getLogger(__name__)
@@ -68,7 +73,6 @@ def move_to_pending(modeladmin, request, queryset):
     ).update(status='PENDING')
     modeladmin.message_user(request, f"{updated_count} businesses moved to PENDING")
  
-
 @admin.register(Business)
 class BusinessAdmin(admin.ModelAdmin):
     list_display = (
@@ -87,17 +91,13 @@ class BusinessAdmin(admin.ModelAdmin):
         'task',
         'scraped_at'
     )
-
+    
     list_filter = (
         'status',
         'main_category',
         'level',
         'country',
         'city',
-        'address',
-        'street',
-        'postal_code',
-        'task',
         'destination'
     )
  
@@ -124,6 +124,164 @@ class BusinessAdmin(admin.ModelAdmin):
     ]
 
     actions = [move_to_pending]
+    
+    change_list_template = "admin/business/admin_export.html"
+
+    def get_export_filename(self, format_type):
+        """Generate filename with timestamp and applied filters"""
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        return f"businesses_export_{timestamp}.{format_type}"
+ 
+    def get_export_fields(self):
+        """Define all fields to be exported"""
+        return [
+            'title',
+            'destination',
+            'level',
+            'level_title',
+            'level_type',
+            'address',
+            'street',
+            'postal_code',
+            'main_category',
+            'status',
+            'country',
+            'city',
+            'task',
+            'scraped_at',
+            'rating',
+            'reviews_count',
+            'price',
+            'website',
+            'phone',
+            'description',
+            'latitude',
+            'longitude'
+        ]
+
+    def get_export_data(self, obj):
+        """Get formatted data for each field"""
+        return {
+            'title': obj.title,
+            'destination': str(obj.destination) if obj.destination else 'N/A',
+            'level': str(obj.level) if obj.level else 'N/A',
+            'level_title': self.level_title(obj),
+            'level_type': self.level_type(obj),
+            'address': obj.address,
+            'street': obj.street,
+            'postal_code': obj.postal_code,
+            'main_category': str(obj.main_category) if obj.main_category else 'N/A',
+            'status': obj.status,
+            'country': obj.country,
+            'city': obj.city,
+            'task': str(obj.task) if obj.task else 'N/A',
+            'scraped_at': obj.scraped_at.strftime('%Y-%m-%d %H:%M:%S') if obj.scraped_at else 'N/A',
+            'rating': str(obj.rating) if obj.rating else 'N/A',
+            'reviews_count': str(obj.reviews_count) if obj.reviews_count else '0',
+            'price': obj.price if obj.price else 'N/A',
+            'website': obj.website if obj.website else 'N/A',
+            'phone': obj.phone if obj.phone else 'N/A',
+            'description': obj.description if obj.description else 'N/A',
+            'latitude': str(obj.latitude) if obj.latitude else 'N/A',
+            'longitude': str(obj.longitude) if obj.longitude else 'N/A'
+        }
+
+    def export_as_csv(self, queryset):
+        """Export as CSV with all fields"""
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{self.get_export_filename("csv")}"'
+
+        fields = self.get_export_fields()
+        writer = csv.DictWriter(response, fieldnames=fields)
+        writer.writeheader()
+
+        for obj in queryset:
+            writer.writerow(self.get_export_data(obj))
+
+        return response
+
+    def export_as_excel(self, queryset):
+        """Export as Excel with all fields"""
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{self.get_export_filename("xlsx")}"'
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        
+        # Write headers
+        fields = self.get_export_fields()
+        ws.append(fields)
+
+        # Write data
+        for obj in queryset:
+            data = self.get_export_data(obj)
+            ws.append([data[field] for field in fields])
+
+        wb.save(response)
+        return response
+
+    def export_as_json(self, queryset):
+        """Export as JSON with all fields"""
+        response = HttpResponse(content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename="{self.get_export_filename("json")}"'
+
+        data = [self.get_export_data(obj) for obj in queryset]
+        json.dump(data, response, indent=2)
+        
+        return response
+
+    def export_queryset(self, queryset, format_type):
+        """Handle export based on format type"""
+        try:
+            if format_type == "csv":
+                return self.export_as_csv(queryset)
+            elif format_type == "excel":
+                return self.export_as_excel(queryset)
+            elif format_type == "json":
+                return self.export_as_json(queryset)
+        except Exception as e:
+            logger.error(f"Export error: {str(e)}", exc_info=True)
+            raise
+
+    def changelist_view(self, request, extra_context=None):
+        """Override changelist view to handle export requests"""
+        export_format = request.GET.get('export_format')
+        
+        if export_format:
+            # Get the filtered queryset
+            qs = self.get_queryset(request)
+            
+            # Apply filters from request.GET
+            for key, value in request.GET.items():
+                # Skip non-filter parameters
+                if key in ['export_format', 'e', '_changelist_filters']:
+                    continue
+                    
+                # Handle country filter specifically
+                if key == 'country' and value:
+                    qs = qs.filter(country=value)
+                # Handle other filters
+                elif key in self.list_filter:
+                    qs = qs.filter(**{key: value})
+
+            # Apply search if present
+            search_term = request.GET.get('q')
+            if search_term:
+                or_filter = Q()
+                for field in self.search_fields:
+                    or_filter |= Q(**{f"{field}__icontains": search_term})
+                qs = qs.filter(or_filter)
+
+            try:
+                return self.export_queryset(qs, export_format)
+            except Exception as e:
+                self.message_user(request, f"Export failed: {str(e)}", level='ERROR')
+                logger.error(f"Export failed: {str(e)}", exc_info=True)
+                return redirect('admin:automation_business_changelist')
+
+        return super().changelist_view(request, extra_context)
 
     def level_title(self, obj):
         return obj.task.level.title if obj.task and obj.task.level else "No Level"
@@ -140,7 +298,7 @@ class BusinessAdmin(admin.ModelAdmin):
             'destination',
     
         )
-
+ 
 @admin.register(ScrapingTask)
 class ScrapingTaskAdmin(admin.ModelAdmin):
     list_display = (
@@ -161,9 +319,7 @@ class ScrapingTaskAdmin(admin.ModelAdmin):
 
     level_name.short_description = "Level Name"
     level_type.short_description = "Level Type"
-
-
-
+ 
 class BaseCsvImportAdmin(admin.ModelAdmin):
     change_list_template = "admin/change_list_with_import.html"
 
@@ -276,8 +432,7 @@ class BaseCsvImportAdmin(admin.ModelAdmin):
 
     def process_row(self, row):
         raise NotImplementedError("Subclasses must implement this method")
-
-
+ 
 @admin.register(Category)
 class CategoryAdmin(BaseCsvImportAdmin):
     list_display = ('title', 'ls_id', 'level', 'value')  
