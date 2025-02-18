@@ -12,7 +12,7 @@ import json
 from rest_framework.viewsets import ViewSet 
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
-
+from django.views.generic import TemplateView
 import requests 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import TruncDate
@@ -33,7 +33,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import JsonResponse
-from django.views import View 
+from django.views import View
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.views.decorators.csrf import csrf_exempt
@@ -57,7 +57,7 @@ from .models import Event
 from automation.request.client import RequestClient
 from automation import constants as const
 from automation.helper import datetime_serializer
-from django.views.generic import ListView 
+from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
  
 from automation.signals import update_task_status_signal
@@ -1827,7 +1827,18 @@ class BusinessViewSet(viewsets.ModelViewSet):
         elif user.roles.filter(role='AMBASSADOR').exists():
             return Business.objects.filter(city=user.destination)
         return Business.objects.none()
+
  
+class BusinessAnalyticsView(LoginRequiredMixin, TemplateView):
+    template_name = 'automation/business_analytics.html'
+    login_url = '/login/'  
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Business Analytics'
+        return context
+
+
 @require_GET
 def business_details(request, business_id):
     try:

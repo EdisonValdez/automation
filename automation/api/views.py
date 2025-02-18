@@ -235,7 +235,73 @@ class BusinessViewSet(viewsets.ModelViewSet):
         instance.is_deleted = True
         instance.deleted_at = timezone.now()
         instance.save()
- 
+
+    @action(detail=False, methods=['GET'])
+    def analytics(self, request):
+        """
+        Get business analytics by category and destination
+        GET /api/businesses/analytics/?destination_id=1,2&category=Food&status=IN_PRODUCTION
+        """
+        try:
+            queryset = self.get_queryset()
+            
+            # Get filter parameters
+            destination_ids = request.query_params.get('destination_id', '').split(',')
+            category = request.query_params.get('category', '').strip()
+            status_filter = request.query_params.get('status', '').strip()
+
+            # Apply filters
+            if destination_ids and destination_ids[0]:
+                try:
+                    ids = [int(id) for id in destination_ids if id.isdigit()]
+                    if ids:
+                        queryset = queryset.filter(destination_id__in=ids)
+                except ValueError:
+                    pass
+
+            if category:
+                queryset = queryset.filter(
+                    Q(main_category__icontains=category) |
+                    Q(tailored_category__icontains=category)
+                )
+
+            if status_filter:
+                queryset = queryset.filter(status=status_filter)
+
+            # Get category distribution
+            category_stats = queryset.values('main_category').annotate(
+                count=Count('id')
+            ).order_by('-count')
+
+            # Get destination distribution
+            destination_stats = queryset.values(
+                'destination__name'
+            ).annotate(
+                count=Count('id')
+            ).order_by('-count')
+
+            # Get status distribution
+            status_stats = queryset.values('status').annotate(
+                count=Count('id')
+            ).order_by('-count')
+
+            return Response({
+                'status': 'success',
+                'data': {
+                    'categories': list(category_stats),
+                    'destinations': list(destination_stats),
+                    'statuses': list(status_stats),
+                    'total_businesses': queryset.count()
+                }
+            })
+
+        except Exception as e:
+            logger.error(f"Error in analytics: {str(e)}", exc_info=True)
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class BusinessFilterView(APIView):
     permission_classes = [IsAuthenticated]
 
