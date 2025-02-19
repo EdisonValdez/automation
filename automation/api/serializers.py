@@ -24,17 +24,6 @@ class UserSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['is_active', 'roles']
 
-""" 
-class UserSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = CustomUser
-        fields = ['id', 'username', 'email', 'full_name']
-
-    def get_full_name(self, obj):
-        return obj.get_full_name()
-"""
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image

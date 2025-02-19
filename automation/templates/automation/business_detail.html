@@ -877,6 +877,7 @@ function handleStatusUpdateResponse(data, statusDisplay, statusDropdown) {
         updateStatusDisplay(data, statusDisplay);
         updateStatusCounts(data);
         toastr.success(`Status updated to ${data.new_status}`);
+        location.reload();
     } else if (data.status === 'move-to-app-error') {
         handleError(`Error moving to production: ${data.message}`, statusDropdown);
     } else {

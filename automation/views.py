@@ -12,7 +12,7 @@ import json
 from rest_framework.viewsets import ViewSet 
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
-
+from django.views.generic import TemplateView
 import requests 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import TruncDate
@@ -33,7 +33,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import JsonResponse
-from django.views import View 
+from django.views import View
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.views import PasswordChangeView, PasswordChangeDoneView
 from django.views.decorators.csrf import csrf_exempt
@@ -57,9 +57,8 @@ from .models import Event
 from automation.request.client import RequestClient
 from automation import constants as const
 from automation.helper import datetime_serializer, DataSyncer
-from django.views.generic import ListView 
+from django.views.generic import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
- 
 from automation.signals import update_task_status_signal
 
 User = get_user_model()
@@ -1872,7 +1871,18 @@ class BusinessViewSet(viewsets.ModelViewSet):
         elif user.roles.filter(role='AMBASSADOR').exists():
             return Business.objects.filter(city=user.destination)
         return Business.objects.none()
+
  
+class BusinessAnalyticsView(LoginRequiredMixin, TemplateView):
+    template_name = 'automation/business_analytics.html'
+    login_url = '/login/'  
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Business Analytics'
+        return context
+
+
 @require_GET
 def business_details(request, business_id):
     try:
@@ -2030,11 +2040,20 @@ def update_business_status(request, business_id):
                 'status': 'error',
                 'message': f"Cannot move to {new_status}: {', '.join(missing_descriptions)} is missing."
             }, status=400)
-
+ 
         # Proceed with status change if validations pass
         if new_status in dict(Business.STATUS_CHOICES):
             old_status = business.status
+            business.status = new_status
+            business.save()
 
+            try:
+                if business.task:
+                    update_task_status_signal(business.task, business)
+                    logger.info(f"Task status updated for business {business_id} status change")
+            except Exception as e:
+                    logger.error(f"Error updating task status for business {business_id}: {str(e)}", exc_info=True)
+ 
             # Handle IN_PRODUCTION specific logic
             if new_status == 'IN_PRODUCTION':
                 business_data = model_to_dict(business)
@@ -2059,7 +2078,10 @@ def update_business_status(request, business_id):
 
                 # Category handling
                 try:
+                    # Get the level from the task
                     task_level = business.task.level
+                    
+                    # Handle main category
                     main_category = get_category_by_title(
                         title=business.main_category,
                         level=task_level
@@ -2073,6 +2095,7 @@ def update_business_status(request, business_id):
                         
                     business_data["category_id"] = main_category.ls_id
                     
+                    # Handle tailored category (subcategory)
                     if business.tailored_category:
                         sub_category = get_category_by_title(
                             title=business.tailored_category,
@@ -2121,12 +2144,9 @@ def update_business_status(request, business_id):
                 logger.info(f"Preparing to move business {business_id} to app with data: {app_data}")
 
                 original_types = business_data.get('types', '')
-                move_to_app_success = False
-
                 try:
                     logger.info(f"First attempt to move business {business_id} with types: {original_types}")
                     RequestClient().request('move-to-app', app_data)
-                    move_to_app_success = True
                     
                     return JsonResponse({
                         'status': 'success',
@@ -2142,15 +2162,14 @@ def update_business_status(request, business_id):
                         logger.info(f"Second attempt to move business {business_id} without types")
                         
                         RequestClient().request('move-to-app', app_data_without_types)
-                        move_to_app_success = True
                         
-                        response_data = {
+                        return JsonResponse({
                             'status': 'success-with-warning',
                             'message': 'Business moved to LS successfully, but without types',
                             'removed_types': removed_types,
                             'warning': ('The following types were removed to complete the move: '
                                     f'{removed_types}. Please add them manually in the LS backend.')
-                        }
+                        })
                         
                     except Exception as second_error:
                         logger.error(f"Both attempts failed. Second error: {str(second_error)}")
@@ -2158,47 +2177,17 @@ def update_business_status(request, business_id):
                             'status': 'error',
                             'message': f"{const.MOVE_TO_APP_FAILED_MESSAGE}{str(second_error)}"
                         }, status=400)
-
-                # Only update status if move-to-app was successful
-                if move_to_app_success:
-                    business.status = new_status
-                    business.save()
-                    
-                    try:
-                        if business.task:
-                            update_task_status_signal(business.task, business)
-                            logger.info(f"Task status updated for business {business_id} status change")
-                    except Exception as e:
-                        logger.error(f"Error updating task status for business {business_id}: {str(e)}", exc_info=True)
-
-                    response_data = {
-                        'status': 'success',
-                        'message': 'Business successfully moved to LS',
-                        'new_status': new_status,
-                        'old_status': old_status,
-                        'old_status_count': Business.objects.filter(status=old_status).count(),
-                        'new_status_count': Business.objects.filter(status=new_status).count()
-                    }
-                    return JsonResponse(response_data)
-            else:
-                # For non-IN_PRODUCTION status changes
-                business.status = new_status
-                business.save()
-                
-                try:
-                    if business.task:
-                        update_task_status_signal(business.task, business)
-                        logger.info(f"Task status updated for business {business_id} status change")
-                except Exception as e:
-                    logger.error(f"Error updating task status for business {business_id}: {str(e)}", exc_info=True)
-
-                return JsonResponse({
-                    'status': 'success',
-                    'new_status': new_status,
-                    'old_status': old_status,
-                    'old_status_count': Business.objects.filter(status=old_status).count(),
-                    'new_status_count': Business.objects.filter(status=new_status).count()
-                })
+ 
+            old_status_count = Business.objects.filter(status=old_status).count()
+            new_status_count = Business.objects.filter(status=new_status).count()
+            
+            return JsonResponse({
+                'status': 'success',
+                'new_status': new_status,
+                'old_status': old_status,
+                'old_status_count': old_status_count,
+                'new_status_count': new_status_count
+            })
 
         else:
             logger.error(f"Invalid status attempted: {new_status}")
@@ -2206,7 +2195,7 @@ def update_business_status(request, business_id):
                 'status': 'error',
                 'message': 'Invalid status'
             }, status=400)
-            
+         
     except json.JSONDecodeError as e:
         logger.error(f"JSON decode error: {str(e)}")
         return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
@@ -2217,7 +2206,10 @@ def update_business_status(request, business_id):
             debugger = f"Error in file: {last_traceback.filename}, line number: {last_traceback.lineno}, cause: {last_traceback.line}"
             logger.error(f"Traceback Error: {debugger}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
- 
+
+
+
+
 @csrf_exempt
 def update_business_statuses(request):
     if request.method == 'POST':
