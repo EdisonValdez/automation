@@ -116,12 +116,8 @@ class DataSyncer:
         """
         try:
             category_name = self.request_data.get('category_name')
-            self.category = Category.objects.filter(
-                Q(ls_id=category_lsid) |
-                (
-                    Q(title__iexact=category_name) &
-                    Q(level=self.level.id)
-                )).last()
+            self.category = Category.objects.filter(Q(parent__isnull=True) & (
+                Q(ls_id=category_lsid) | (Q(title__iexact=category_name) & Q(level=self.level.id)))).last()
 
             if not self.category:
                 self.category = Category.objects.create(
