@@ -1580,12 +1580,11 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'uk': r'\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b', 
         'united kingdom': r'\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b', 
         'ireland': r'\b[A-Z]\d{2} ?[A-Z\d]{4}\b',
-
         'usa': r'\b\d{5}(?:-\d{4})?\b',
         'united states of america': r'\b\d{5}(?:-\d{4})?\b',
         'us': r'\b\d{5}(?:-\d{4})?\b',
         'canada': r'\b[A-Z]\d[A-Z] ?\d[A-Z]\d\b', 
-
+        'San Carlos de Bariloche': r'\b[R]?8[4-5][0-9][0-9][A-Z]{3}\b',   
         'australia': r'\b\d{4}\b',
         'new zealand': r'\b\d{4}\b',
         'japan': r'\b\d{3}-?\d{4}\b',
@@ -1593,11 +1592,10 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'india': r'\b\d{6}\b',
         'singapore': r'\b\d{6}\b',
         'belgium': r'\b\d{4}\b',
-        
         'morocco': r'\b\d{5}\b',  
         'south africa': r'\b\d{4}\b',   
         'brazil': r'\b\d{5}-?\d{3}\b',  
-        'argentina': r'\b[ABCEGHJLNPQRSTVWXY]\d{4}[A-Z]{3}\b',   
+        'argentina': r'\b[R]?\d{4}[A-Z]{3}\b',   
         'mexico': r'\b\d{5}\b',  
         'russia': r'\b\d{6}\b',   
         'switzerland': r'\b\d{4}\b',  
@@ -1605,13 +1603,12 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'denmark': r'\b\d{4}\b',  
         'sweden': r'\b\d{3} ?\d{2}\b',  
         'norway': r'\b\d{4}\b',  
-        'finland': r'\b\d{5}\b', 
-
+        'finland': r'\b\d{5}\b',
         'default': r'\b\d{5}\b'
     }
     
     return patterns.get(country.lower(), patterns['default'])
- 
+
 def extract_address_components(address_string: string, country: str = None):
     """
     Extract address components from a full address string with country-specific postal code formats.

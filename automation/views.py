@@ -1,7 +1,7 @@
 import threading
 import traceback
 from django.conf import settings
-from django.db import DatabaseError
+from django.db import DatabaseError, IntegrityError
 from django.views import View
 from django.http import FileResponse, Http404, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -276,7 +276,14 @@ class UploadFileView(View):
                 return JsonResponse({
                     'status': 'error',
                     'message': "There was an error with your submission. Please check the form.",
-                    'errors': e.message_dict   # Return form errors to the frontend
+                    'errors': e.messages if hasattr(e, 'messages') else [str(e)] 
+                })
+            except IntegrityError as e:
+                logger.warning(f"Integrity error during sync: {str(e)}")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': "A subcategory with this name already exists in the selected main category. Please use a different name or select a different main category.",
+                    'errors': ['Duplicate subcategory name detected. Each subcategory must have a unique name within its main category.']
                 })
             
             country = sync_objects.get("country")
@@ -1524,6 +1531,7 @@ class GetTimelineDataView(View):
             return JsonResponse({
                 'error': 'Failed to fetch timeline data'
             }, status=400)
+
 from rest_framework.pagination import PageNumberPagination
 class CustomPagination(PageNumberPagination):
     page_size = 50  # Default page size
