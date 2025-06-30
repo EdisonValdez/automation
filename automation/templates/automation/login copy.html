@@ -48,44 +48,9 @@
                                     </div>
 
                                     <div class="input-group auth-pass-inputgroup">
-                                        <input type="password" 
-                                               class="form-control" 
-                                               id="id_password" 
-                                               name="password" 
-                                               placeholder="Enter password" 
-                                               aria-label="Password" 
-                                               aria-describedby="password-addon">
-                                        <button class="btn btn-outline-secondary" 
-                                                type="button" 
-                                                id="password-addon" 
-                                                onclick="togglePassword()">
-                                            <i class="far fa-eye" id="toggleIcon"></i>
-                                        </button>
+                                        <input type="password" class="form-control" id="id_password" name="password" placeholder="Enter password" aria-label="Password" aria-describedby="password-addon">
+                                        <button class="btn shadow-none ms-0" type="button" id="password-addon"><i class="far fa-eye-slash"></i></button>
                                     </div>
-                                    <script>
-                                        function togglePassword() {
-                                            const passwordInput = document.getElementById('id_password');
-                                            const toggleIcon = document.getElementById('toggleIcon');
-                                            
-                                            // Toggle password visibility
-                                            if (passwordInput.type === 'password') {
-                                                passwordInput.type = 'text';
-                                                toggleIcon.classList.remove('fa-eye');
-                                                toggleIcon.classList.add('fa-eye-slash');
-                                            } else {
-                                                passwordInput.type = 'password';
-                                                toggleIcon.classList.remove('fa-eye-slash');
-                                                toggleIcon.classList.add('fa-eye');
-                                            }
-                                        }
-                                        
-                                        // Prevent form submission when clicking the toggle button
-                                        document.getElementById('password-addon').addEventListener('click', function(e) {
-                                            e.preventDefault();
-                                        });
-                                        </script>
-                                        
-                                    
                                 </div>
                                 <div class="row mb-29">
                                     <div class="col">
