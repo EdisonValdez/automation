@@ -13,7 +13,98 @@
         </div>
     </div>
 </div>
- 
+
+<div class="progress-container d-none">
+    <div class="progress">
+        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%">
+            0%
+        </div>
+    </div>
+    <p id="status-text">Initializing...</p>
+    
+    <div id="serp-results" class="mt-3">
+        <pre>Waiting for results...</pre>
+    </div>
+</div>
+
+<script>
+    function checkTaskProgress(taskId) {
+        const progressContainer = document.querySelector('.progress-container');
+        const progressElement = document.getElementById('progress-bar');
+        const statusElement = document.getElementById('status-text');
+        const resultsElement = document.getElementById('serp-results');
+
+        // Show the progress container
+        progressContainer.classList.remove('d-none');
+
+        function updateProgress() {
+            fetch(`/tasks/${taskId}/results/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update progress bar
+                    const progress = Math.round(data.progress || 0);
+                    progressElement.style.width = `${progress}%`;
+                    progressElement.textContent = `${progress}%`;
+
+                    // Update status text
+                    statusElement.textContent = data.current_query 
+                        ? `Processing: ${data.current_query}` 
+                        : `Status: ${data.status}`;
+
+                    // Display SerpAPI results if available
+                    if (data.serp_results) {
+                        let formattedResults = '';
+                        try {
+                            formattedResults = JSON.stringify(data.serp_results, null, 2);
+                        } catch (e) {
+                            formattedResults = 'Error formatting results';
+                        }
+                        resultsElement.innerHTML = `<pre class="results-pre">${formattedResults}</pre>`;
+                    }
+
+                    // Check if task is complete
+                    if (data.status === 'COMPLETED' || data.status === 'FAILED') {
+                        clearInterval(progressInterval);
+                        if (data.status === 'COMPLETED') {
+                            statusElement.textContent = 'Task completed successfully!';
+                            // Optionally hide after completion:
+                            // setTimeout(() => progressContainer.classList.add('d-none'), 3000);
+                        } else {
+                            statusElement.textContent = 'Task failed. Please check logs.';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusElement.textContent = 'Error checking progress';
+                });
+        }
+
+        const progressInterval = setInterval(updateProgress, 2000);
+        updateProgress(); // Initial update
+    }
+
+    // Add some basic styling
+    document.head.insertAdjacentHTML('beforeend', `
+        <style>
+            .results-pre {
+                max-height: 300px;
+                overflow-y: auto;
+                background: #f5f5f5;
+                padding: 10px;
+                border-radius: 4px;
+            }
+            .progress {
+                height: 25px;
+            }
+            .progress-bar {
+                transition: width 0.5s ease-in-out;
+            }
+        </style>
+    `);
+</script>
+
+
 <!-- Success Modal -->
 <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
     <div class="modal-dialog">
