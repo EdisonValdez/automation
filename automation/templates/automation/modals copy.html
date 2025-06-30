@@ -1,0 +1,46 @@
+<div class="overlay" ></div>  
+<div id="log-container"></div>
+ 
+<!-- Overlay -->
+<div class="overlay d-none" id="loader" style="position: fixed; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 9999;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+        <div class="spinner-border text-light" role="status">
+            <span class="visually-hidden">Please wait it is loading...</span>
+        </div>
+        <div style="margin-top: 20px;">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-light mx-2">Dashboard</a>
+            <a href="{% url 'upload_file' %}" class="btn btn-outline-light">Upload Content</a>
+        </div>
+    </div>
+</div>
+ 
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">Your file has been successfully uploaded! We will process your request in the background.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="errorMessage">An unexpected error occurred. Please try again.</p>
+            </div>
+        </div>
+    </div>
+</div>
+ 

@@ -1,0 +1,573 @@
+<!-- templates/automation/dashboard.html -->
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="main-content project">
+    <div class="row">
+   
+     {% if is_admin == True %}
+        <div class="col-9 col-xl-7 col-md-8 col-sm-12">
+    {% else %}
+    <div class="col-12 col-xl-12 col-md-12 col-sm-12">
+    {% endif %}
+            <div class="box card-box">
+                <div class="icon-box bg-color-6 d-block">
+                    <div class="content text-center color-6">
+                        <h5 class="title-box fs-17 font-w500">Total Project</h5>
+                        <div class="themesflat-counter fs-18 font-wb">
+                            <span class="number" data-from="0" data-to="{{ total_projects }}" data-speed="2500" data-inviewport="yes">{{ total_projects }} +</span>
+                        </div>
+                    </div>
+                </div>      
+                <div class="icon-box bg-color-7 d-block">
+                    <div class="content text-center color-7">
+                        <h5 class="title-box fs-17 font-w500">Pending Project</h5>
+                        <div class="themesflat-counter fs-18 font-wb">
+                            <span class="number" data-from="0" data-to="{{ pending_projects }}" data-speed="2500" data-inviewport="yes">{{ pending_projects }} +</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="icon-box bg-color-8 d-block">
+                    <div class="content text-center color-8">
+                        <h5 class="title-box fs-17 font-w500">On Going project</h5>
+                        <div class="themesflat-counter fs-18 font-wb">
+                            <span class="number" data-from="0" data-to="{{ ongoing_projects }}" data-speed="2500" data-inviewport="yes">{{ ongoing_projects }} +</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="icon-box bg-color-9 d-block">
+                    <div class="content text-center color-9">
+                        <h5 class="title-box fs-17 font-w500">Complete Project</h5>
+                        <div class="themesflat-counter fs-18 font-wb">
+                            <span class="number" data-from="0" data-to="{{ completed_projects }}" data-speed="2500" data-inviewport="yes">{{ completed_projects }} +</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+     {% if is_admin == True %}
+        <div class="col-3 col-xl-5 col-md-4 col-sm-12">
+            <div class="box h-100 d-flex align-items-center">
+                <a class="create d-flex bg-primary justify-content-center" href="{% url 'upload_file' %}">
+                    <div class="icon color-white pt-4 pr-8">
+                        <i class='bx bx-plus-circle'></i>
+                    </div>
+                    <div class="content">
+                        <h5 class="color-white">Create New Project</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="row">
+        <div class="">
+            <div class="box-header pt-0 pl-0 ms-0 mb-4 mt-4 border-bottom-0 responsive-header">
+                <h4 class="box-title fs-22">Recent Project Update</h4>
+                <div class="card-options">
+                    <div class="btn-list d-flex">
+                        <a href="#" class="btn btn-light d-flex align-items-center mr-5">
+                            <i class="fas fa-eye mr-5"></i>View All Projects
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                {% for project in projects %}
+                <div class="col-3 col-xl-6 col-md-6 col-sm-12">
+                    <div class="box left-dot">
+                        <div class="box-body">
+                            <div class="row">
+                                <div class="col-12 mb-10">
+                                    <div class="mt-0 text-start">
+                                        <a href="#" class="box-title mb-0 mt-1 mb-3 font-w600 fs-18">{{ project.project_title }}</a>
+                                        <p class="fs-14 font-w500 text-muted mb-6">{{ project.main_category }} Department</p>
+                                        <span class="fs-13 mt-2 text-muted">{{ project.description }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                         
+                        <div class="box-footer">
+                            <div class="d-flex align-items-center">
+                                <div class="d-flex mb-3 mb-md-0">
+                                    <div class="task-btn {{ project.status_class }} text-muted fs-14" data-bs-toggle="tooltip" data-bs-placement="top" title="Project Status">
+                                        {{ project.status }}
+                                    </div>
+                                </div>
+                                <div class="ms-auto mt-3 mt-sm-0">
+                                    <button class="btn btn-outline-light text-muted pd-0 fs-14 start-scraping-btn"
+                                            data-project-id="{{ project.project_id }}">
+                                        <i class="fas fa-sync"></i> BUsiness Acquisition
+                                    </button>
+                                </div>
+                                
+                                <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const scrapingButtons = document.querySelectorAll('.start-scraping-btn');
+                                    
+                                    scrapingButtons.forEach(button => {
+                                        button.addEventListener('click', function(e) {
+                                            e.preventDefault();
+                                            
+                                            if (this.classList.contains('disabled')) {
+                                                return;
+                                            }
+                                            
+                                            this.classList.add('disabled');
+                                            this.textContent = 'Starting...';
+                                            
+                                            const projectId = this.getAttribute('data-project-id');
+                                            
+                                            fetch(`/start-scraping/${projectId}/`, {
+                                                method: 'GET',
+                                                headers: {
+                                                    'X-Requested-With': 'XMLHttpRequest',
+                                                    'X-CSRFToken': getCookie('csrftoken')
+                                                }
+                                            })
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.status === 'success') {
+                                                    this.textContent = 'Started';
+                                                } else if (data.status === 'warning') {
+                                                    this.textContent = 'Already In Progress';
+                                                    this.classList.remove('disabled');
+                                                } else {
+                                                    this.textContent = 'Error Starting';
+                                                    this.classList.remove('disabled');
+                                                }
+                                                console.log(data.message);
+                                            })
+                                            .catch(error => {
+                                                console.error('Error:', error);
+                                                this.textContent = 'Error Starting';
+                                                this.classList.remove('disabled');
+                                            });
+                                        });
+                                    });
+
+                                    function getCookie(name) {
+                                        let cookieValue = null;
+                                        if (document.cookie && document.cookie !== '') {
+                                            const cookies = document.cookie.split(';');
+                                            for (let i = 0; i < cookies.length; i++) {
+                                                const cookie = cookies[i].trim();
+                                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        return cookieValue;
+                                    }
+                                });
+                                </script>
+
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-6 col-md-12">
+            <!-- PROJECTS CHART -->
+            <div class="box f-height">
+                <div class="box-header d-flex justify-content-between">
+                    <h3 class="mt-9 fs-22">Project Statistics</h3>
+                    <ul class="card-list mb-0">
+                        <li class="custom-label"><span class="bg-success"></span>Completed</li>
+                        <li class="custom-label"><span class="bg-warning"></span>In Progress</li>
+                        <li class="custom-label"><span class="bg-danger"></span>Failed</li>
+                        <li class="custom-label"><span class="bg-info"></span>Pending</li>
+                    </ul>
+                </div>
+                <div class="box-body pt-20">
+                    <div id="project-status-chart"></div>
+                </div>
+            </div>
+            <!-- END PROJECTS CHART -->
+        </div>
+        <div class="col-6 col-md-12">
+            <div class="box">
+                <div class="box-header">
+                    <div class="me-auto">
+                        <h4 class="card-title fs-22">Main Categories</h4>
+                        <p class="fs-14 mt-4">Distribution of projects by main category</p>
+                    </div>
+                </div>
+                <div class="box-body pt-0">
+                    <div class="row">
+                        <div class="col-6 col-xl-12 col-md-6 col-sm-12 w-sm-100 mb-0">
+                            <ul class="box-list mt-25 pr-60" id="category-list">
+                                <!-- This will be populated dynamically -->
+                            </ul>
+                        </div>
+                        <div class="col-6 col-xl-12 col-md-6 col-sm-12 w-sm-100 mb-0">
+                            <div class="canvas-container">
+                                <canvas id="category-chart" class="chartjs" width="100" height="100"></canvas>
+                                <div class="chart-data" id="category-data">
+                                    <!-- This will be populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="box">
+    <div class="box-header pt-0">
+        <div class="me-auto">
+            <h4 class="card-title mb-0 fs-22">Recent Activity</h4>
+        </div>
+        <div class="card-options pr-3">
+            <div class="dropdown">
+                <a href="#" class="btn ripple btn-outline-light dropdown-toggle fs-14" data-bs-toggle="dropdown" aria-expanded="false">
+                    See All
+                    <i class="feather feather-chevron-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end" role="menu">
+                    <li><a href="#">Monthly</a></li>
+                    <li><a href="#">Yearly</a></li>
+                    <li><a href="#">Weekly</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="box-body pb-0 table-responsive activity mt-18">
+        <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100" id="task-profile" role="grid">
+            <thead>
+                <tr class="top">
+                    <th class="border-bottom-0 sorting fs-14 font-w500">Project</th>
+                    <th class="border-bottom-0 sorting fs-14 font-w500">Team</th>
+                    <th class="border-bottom-0 sorting fs-14 font-w500">Start</th>
+                    <th class="border-bottom-0 sorting fs-14 font-w500">Deadline</th>
+                    <th class="border-bottom-0 sorting fs-14 font-w500">Progress</th>
+                    <th class="border-bottom-0 sorting fs-14 font-w500">Work Status</th>
+                    <th class="border-bottom-0 sorting_disabled fs-14 font-w500">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>
+                        <a href="{% url 'task_detail' task.id %}" class="d-flex">
+                            <span>{{ task.project_title }}</span>
+                        </a>
+                    </td>
+                    <td>
+                        <ul class="user-list mb-0">
+                            {% for member in task.team_members %}
+                            <li><img src="{{ member.avatar_url }}" alt="{{ member.name }}"></li>
+                            {% endfor %}
+                        </ul>
+                    </td>
+                    <td>{{ task.created_at|date:"d-m-Y" }}</td>
+                    <td>{{ task.deadline|date:"d-m-Y" }}</td>
+                    <td>
+                        <div class="progress progress-sm">
+                            <div class="progress-bar bg-primary" style="width: {{ task.progress }}%"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge {% if task.status == 'IN_PROGRESS' %} badge-success {% elif task.status == 'PENDING' %} badge-warning {% elif task.status == 'FAILED' %} badge-danger {% elif task.status == 'COMPLETED' %} badge-primary {% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <a href="#" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bx bx-dots-horizontal-rounded"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right">
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#delete_client"><i class="bx bx-trash"></i> Delete</a>
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#edit_client" style="margin-left:20px"><i class="bx bx-edit"></i> Edit</a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No projects yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div id="add_project" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Project</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+           
+                    <form method="post"> 
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Project Name</label>
+                                <input class="form-control" value="" type="text" name="project_name">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Client</label>
+                                <select class="form-control" name="client">
+                                    <option>Client 1</option>
+                                    <option>Client 2</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Start Date</label>
+                                <input class="form-control" type="date" name="start_date">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>End Date</label>
+                                <input class="form-control" type="date" name="end_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Rate</label>
+                                <input placeholder="$50" class="form-control" type="text" name="rate">
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select class="form-control" name="rate_type">
+                                    <option>Hourly</option>
+                                    <option selected>Fixed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Priority</label>
+                                <select class="form-control" name="priority">
+                                    <option selected>High</option>
+                                    <option>Medium</option>
+                                    <option>Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea rows="4" class="form-control" placeholder="Enter your message here" name="description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Files</label>
+                        <input class="form-control" type="file" name="files">
+                    </div>
+                    <div class="submit-section">
+                        <button class="btn btn-primary submit-btn">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal custom-modal fade" id="delete_project" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="form-header">
+                    <h3>Delete Project</h3>
+                    <p>Are you sure you want to delete this project?</p>
+                </div>
+                <div class="modal-btn delete-action">
+                    <div class="row">
+                        <div class="col-6 mb-0">
+                            <a href="javascript:void(0);" class="btn btn-primary continue-btn">Delete</a>
+                        </div>
+                        <div class="col-6 mb-0">
+                            <a href="javascript:void(0);" data-dismiss="modal" class="btn btn-primary cancel-btn">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="edit_card_modal" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Card</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Image Card</label>
+                        <input class="form-control" type="file">
+                    </div>
+                    <div class="form-group">
+                        <label>Card Name</label>
+                        <input type="text" class="form-control" value="Food Website hero area">
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <div class="cal-icon">
+                            <input class="form-control" type="date" value="">
+                        </div>
+                    </div>
+                    <div class="submit-section text-center">
+                        <button class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="add_card_modal" class="modal custom-modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Card</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Image Card</label>
+                        <input class="form-control" type="file">
+                    </div>
+                    <div class="form-group">
+                        <label>Card Name</label>
+                        <input type="text" class="form-control" value="">
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <div class="cal-icon">
+                            <input class="form-control" type="date" value="">
+                        </div>
+                    </div>
+                    <div class="submit-section text-center">
+                        <button class="btn btn-primary submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add additional modals if needed -->
+
+<div class="overlay"></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup and render the Project Status Chart
+        var statusCtx = document.getElementById('project-status-chart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Failed', 'Pending'],
+                datasets: [{
+                    data: [
+                        {{ status_counts.COMPLETED|default:0 }},
+                        {{ status_counts.IN_PROGRESS|default:0 }},
+                        {{ status_counts.FAILED|default:0 }},
+                        {{ status_counts.PENDING|default:0 }}
+                    ],
+                    backgroundColor: ['#00BC8B', '#FFB800', '#FF0000', '#3C21F7']
+                }]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        });
+
+        // Prepare and render Main Category Chart
+        var categoryCtx = document.getElementById('category-chart').getContext('2d');
+        var categoryData = [
+            {% for category in category_counts %}
+            {
+                value: {{ category.count }},
+                color: getRandomColor(),
+                label: "{{ category.main_category }}"
+            },
+            {% endfor %}
+        ];
+
+        var categoryChart = new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: categoryData.map(item => item.value),
+                    backgroundColor: categoryData.map(item => item.color)
+                }],
+                labels: categoryData.map(item => item.label)
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'bottom',
+                }
+            }
+        });
+
+        // Populate category list
+        var categoryList = document.getElementById('category-list');
+        var categoryDataDiv = document.getElementById('category-data');
+        var totalProjects = categoryData.reduce((sum, item) => sum + item.value, 0);
+
+        categoryData.forEach(function(category) {
+            var percentage = ((category.value / totalProjects) * 100).toFixed(2);
+
+            var li = document.createElement('li');
+            li.innerHTML = `<span class="square" style="background-color: ${category.color}"></span>${category.label}<span>${percentage}%</span>`;
+            categoryList.appendChild(li);
+
+            var div = document.createElement('div');
+            div.setAttribute('data-percent', percentage);
+            div.setAttribute('data-color', category.color);
+            div.setAttribute('data-label', category.label);
+            categoryDataDiv.appendChild(div);
+        });
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+    });
+</script>
+
+{% endblock %}
+                 
+
+
