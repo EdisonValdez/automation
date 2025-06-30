@@ -1,0 +1,722 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>.filter-container{background-color:#fff;transition:all 0.3s ease}.filter-label{display:block;font-size:.875rem;font-weight:bolder;margin-bottom:.5rem;color:#495057}.search-input-group{position:relative}.search-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#6c757d}.search-control{padding-left:2rem}.date-range-group{position:relative;gap:.5rem}.calendar-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#6c757d}.date-input{padding-left:2rem}.date-separator{color:#6c757d;padding:0 .25rem}.select2-container{width:100%!important}.select2-multi .select2-selection--multiple{min-height:38px;border:1px solid #ced4da}.input-group-text{background-color:#f8f9fa;border:1px solid #ced4da;border-radius:.5rem 0 0 .5rem;box-shadow:none;height:auto}.form-control{border:1px solid #ced4da;border-radius:0 .5rem .5rem 0;box-shadow:none}.form-control:focus{border-color:#212d94;box-shadow:0 0 0 .2rem rgb(0 123 255 / .25)}.btn-primary{border-radius:0 .5rem .5rem 0;transition:background-color 0.2s}.btn-primary:hover{background-color:#0056b3;border-color:#0056b3}</style>
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-building"></i>
+                    </span>
+                    <span class="title-text">Search Places</span>
+                </h1>
+            </div> 
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Businesses list</h5>
+                    </div>
+                <div class="card-body">
+                    <div class="filter-container shadow-sm border rounded p-3 mb-4">
+                        <form id="businessFilterForm" class="needs-validation" novalidate>
+                          <!-- Quick Search Row -->
+                          <div class="row">
+                            <div class="col-12 col-md-4 col-lg-5">
+                              <div class="search-input-group position-relative">
+                           
+                                <input 
+                                  type="text"
+                                  id="searchQuery"
+                                  name="searchQuery"
+                                  class="form-control search-control"
+                                  placeholder="Search by text..."
+                                  data-persist="searchQuery"
+                                />
+                              </div>
+                            </div>
+                            <!-- Date Range -->
+                            <div class="col-12 col-md-5 col-lg-5">
+                              <div class="date-range-group position-relative d-flex align-items-center">
+                                <i class="far fa-calendar-alt calendar-icon"></i>
+                                <input 
+                                  type="date"
+                                  id="dateFrom"
+                                  name="dateFrom"
+                                  class="form-control date-input me-1"
+                                  data-persist="dateFrom"
+                                />
+                                <span class="date-separator mx-2">to</span>
+                                <i class="far fa-calendar-alt calendar-icon"></i>
+
+                                <input 
+                                  type="date"
+                                  id="dateTo"
+                                  name="dateTo"
+                                  class="form-control date-input ms-1"
+                                  data-persist="dateTo"
+                                />
+                                
+                              </div>
+                            </div>
+                            <!-- APPLY BUTTON -->
+                            <div class="col-12 col-md-3 col-lg-2">
+                              <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter me-2"></i>Apply
+                              </button>
+                            </div>
+                          </div>
+                      
+                          <!-- Collapsible Advanced Filters -->
+                          <div class="collapse" id="advancedFilters">
+                            <div class="row g-3">
+                              <div class="col-12 col-md-4">
+                                <label class="filter-label" for="categoryFilter">Category</label>
+                                <input 
+                                  type="text"
+                                  id="categoryFilter"
+                                  name="categoryFilter"
+                                  class="form-control"
+                                  placeholder="Hotels, Hostels..."
+                                  data-persist="categoryFilter"
+                                />
+                              </div>
+                      
+                              <div class="col-12 col-md-4">
+                                <label class="filter-label" for="statusFilter">Status (multi)</label>
+                                <select
+                                  id="statusFilter"
+                                  name="statusFilter[]"
+                                  class="form-select select2-multi"
+                                  multiple
+                                  data-persist="statusFilter"
+                                >
+                                  <!-- Populated dynamically or inline -->
+                                </select>
+                              </div>
+                      
+                              <div class="col-12 col-md-4">
+                                <label class="filter-label" for="destinationFilter">Destinations (multi)</label>
+                                <select
+                                  id="destinationFilter"
+                                  name="destinationFilter[]"
+                                  class="form-select select2-multi"
+                                  multiple
+                                  data-persist="destinationFilter"
+                                >
+                                  <!-- Populated dynamically or inline -->
+                                </select>
+                              </div>
+                      
+                              <div class="col-12 col-md-4">
+                                <label class="filter-label" for="taskFilter">Tasks (multi)</label>
+                                <select
+                                  id="taskFilter"
+                                  name="taskFilter[]"
+                                  class="form-select select2-multi"
+                                  multiple
+                                  data-persist="taskFilter"
+                                >
+                                  <!-- Populated dynamically or inline -->
+                                </select>
+                              </div>
+                      
+                              <div class="col-12 col-md-4">
+                                <label class="filter-label" for="sortBy">Sort By</label>
+                                <select 
+                                  id="sortBy" 
+                                  name="sortBy" 
+                                  class="form-select" 
+                                  data-persist="sortBy"
+                                >
+                                  <option value="-scraped_at">Newest First</option>
+                                  <option value="scraped_at">Oldest First</option>
+                                  <option value="title">Title (A-Z)</option>
+                                  <option value="-title">Title (Z-A)</option>
+                                  <option value="status">Status (Asc)</option>
+                                  <option value="-status">Status (Desc)</option>
+                                </select>
+                              </div>
+                      
+                              <div class="col-12 col-md-4">
+                                <label class="filter-label" for="limit">Show entries</label>
+                                <input
+                                  type="number"
+                                  id="limit"
+                                  name="limit"
+                                  class="form-control"
+                                  value="12"
+                                  data-persist="limit"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                      
+                          <!-- ADVANCED TOGGLE & RESET -->
+                          <div class="row mt-3">
+                            <div class="col-12">
+                              <div class="d-flex justify-content-between align-items-center">
+                                <button
+                                  type="button"
+                                  class="btn btn-outline-primary"
+                                  data-bs-toggle="collapse"
+                                  data-bs-target="#advancedFilters"
+                                  aria-expanded="False"
+                                >
+                                  <i class="fas fa-cog me-1"></i> Advanced Filters
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary text-danger">
+                                  <i class="fas fa-undo-alt me-1"></i> Reset All
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </form>
+                      </div>
+        
+ 
+                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+                    <script>
+                    class BusinessFilter {
+                        constructor() {
+                            // Page starts at 1
+                            this.currentPage = 1;
+                            this.initEvents();
+                    
+                            // Load data for multi-select fields
+                            this.loadDestinationOptions();
+                            this.loadTaskOptions();
+                            this.loadStatusOptions();
+                    
+                            // After a short delay => load localStorage => highlight => apply
+                            setTimeout(() => {
+                                this.loadSavedFilters();
+                                this.initSelectBackgrounds();
+                                this.applyFilters();
+                            }, 250);
+                        }
+                    
+                        /* =========== LOAD MULTI-SELECT DATA =========== */
+                        async loadDestinationOptions() {
+                            try {
+                                const resp = await fetch('/api/destinations/');
+                                if (!resp.ok) throw new Error(`Dest fetch error: ${resp.status}`);
+                                const data = await resp.json();
+                                const sel = document.getElementById('destinationFilter');
+                                if (!sel) return;
+                                sel.innerHTML = ''; 
+                                data.forEach(d => {
+                                    const opt = document.createElement('option');
+                                    opt.value = String(d.id);
+                                    opt.textContent = d.name;
+                                    sel.appendChild(opt);
+                                });
+                            } catch (err) {
+                                console.error('Failed loading destinations:', err);
+                            }
+                        }
+                    
+                        async loadTaskOptions() {
+                            try {
+                                // e.g. /api/tasks/list/ if you mapped it
+                                const resp = await fetch('/api/tasks/list/');
+                                if (!resp.ok) throw new Error(`Tasks fetch error: ${resp.status}`);
+                                const data = await resp.json();
+                                const sel = document.getElementById('taskFilter');
+                                if (!sel) return;
+                                sel.innerHTML = '';
+                                data.forEach(t => {
+                                    const opt = document.createElement('option');
+                                    opt.value = String(t.id);
+                                    opt.textContent = t.project_title || `Task #${t.id}`;
+                                    sel.appendChild(opt);
+                                });
+                            } catch (err) {
+                                console.error('Failed loading tasks:', err);
+                            }
+                        }
+                    
+                        async loadStatusOptions() {
+                            try {
+                                // e.g. /api/businesses/by_status/
+                                const resp = await fetch('/api/businesses/by_status/');
+                                if (!resp.ok) throw new Error(`Status fetch error: ${resp.status}`);
+                                const data = await resp.json();
+                                const sel = document.getElementById('statusFilter');
+                                if (!sel) return;
+                                sel.innerHTML = '';
+                                data.forEach(item => {
+                                    if (item.status) {
+                                        const opt = document.createElement('option');
+                                        opt.value = item.status;
+                                        opt.textContent = item.status;
+                                        sel.appendChild(opt);
+                                    }
+                                });
+                            } catch (err) {
+                                console.error('Failed loading statuses:', err);
+                            }
+                        }
+                    
+                        /* =========== FORM & EVENTS =========== */
+                        initEvents() {
+                            const form = document.getElementById('businessFilterForm');
+                            if (form) {
+                                form.addEventListener('submit', (e) => {
+                                    e.preventDefault();
+                                    this.currentPage = 1;
+                                    this.applyFilters();
+                                });
+                                form.addEventListener('reset', () => {
+                                    localStorage.removeItem('myBusinessFilters');
+                                    this.currentPage = 1;
+                                    setTimeout(() => {
+                                        this.initSelectBackgrounds();
+                                        this.applyFilters();
+                                    }, 0);
+                                });
+                            }
+                    
+                            // Listen for delete
+                            document.addEventListener('click', (evt) => {
+                                const delBtn = evt.target.closest('.delete-business-btn');
+                                if (!delBtn) return;
+                                evt.preventDefault();
+                    
+                                const businessId = delBtn.dataset.businessId;
+                                Swal.fire({
+                                    title: 'Delete Business?',
+                                    text: 'Are you sure you want to remove this business?',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#d33',
+                                    cancelButtonColor: '#888',
+                                    confirmButtonText: 'Yes, delete it!'
+                                }).then((res) => {
+                                    if (res.isConfirmed) {
+                                        this.deleteBusiness(businessId);
+                                    }
+                                });
+                            });
+                        }
+                    
+                        /* =========== LOCALSTORAGE =========== */
+                        loadSavedFilters() {
+                            const saved = localStorage.getItem('myBusinessFilters');
+                            if (!saved) return;
+                            try {
+                                const obj = JSON.parse(saved);
+                                document.getElementById('searchQuery').value = obj.search || '';
+                                document.getElementById('categoryFilter').value = obj.category || '';
+                                document.getElementById('dateFrom').value = obj.date_from || '';
+                                document.getElementById('dateTo').value = obj.date_to || '';
+                                document.getElementById('sortBy').value = obj.sort_by || '-scraped_at';
+                                document.getElementById('limit').value = obj.limit || '12';
+                    
+                                // Multi (status, destination, tasks)
+                                if (obj.status) {
+                                    const stArr = obj.status.split(',');
+                                    const sel = document.getElementById('statusFilter');
+                                    if (sel) {
+                                        Array.from(sel.options).forEach(opt => {
+                                            if (stArr.includes(opt.value)) opt.selected = true;
+                                        });
+                                    }
+                                }
+                                if (obj.destination) {
+                                    const dArr = obj.destination.split(',');
+                                    const sel = document.getElementById('destinationFilter');
+                                    if (sel) {
+                                        Array.from(sel.options).forEach(opt => {
+                                            if (dArr.includes(opt.value)) opt.selected = true;
+                                        });
+                                    }
+                                }
+                                if (obj.task) {
+                                    const tArr = obj.task.split(',');
+                                    const sel = document.getElementById('taskFilter');
+                                    if (sel) {
+                                        Array.from(sel.options).forEach(opt => {
+                                            if (tArr.includes(opt.value)) opt.selected = true;
+                                        });
+                                    }
+                                }
+                    
+                                this.currentPage = obj.page || 1;
+                            } catch (err) {
+                                console.warn('Failed to parse myBusinessFilters:', err);
+                            }
+                        }
+                    
+                        saveFilters(obj) {
+                            localStorage.setItem('myBusinessFilters', JSON.stringify(obj));
+                        }
+                    
+                        /* =========== SELECT HIGHLIGHT =========== */
+                        hasSelection(sel) {
+                            if (!sel) return false;
+                            if (sel.multiple) {
+                                return sel.selectedOptions.length > 0;
+                            }
+                            return sel.value !== '';
+                        }
+                    
+                        updateSelectBackground(sel) {
+                            if (this.hasSelection(sel)) {
+                                sel.classList.add('select-active');
+                            } else {
+                                sel.classList.remove('select-active');
+                            }
+                        }
+                    
+                        initSelectBackgrounds() {
+                            const form = document.getElementById('businessFilterForm');
+                            if (!form) return;
+                            const selects = form.querySelectorAll('select');
+                            selects.forEach(s => {
+                                this.updateSelectBackground(s);
+                                s.addEventListener('change', () => this.updateSelectBackground(s));
+                            });
+                        }
+                    
+                        /* =========== BUILD FILTER QUERY & CALL =========== */
+                        getFilterValues() {
+                            // multi statuses
+                            let statuses = '';
+                            const statusSel = document.getElementById('statusFilter');
+                            if (statusSel) {
+                                const stArr = Array.from(statusSel.selectedOptions).map(opt => opt.value);
+                                statuses = stArr.join(',');
+                            }
+                            // multi destinations
+                            let destinations = '';
+                            const destSel = document.getElementById('destinationFilter');
+                            if (destSel) {
+                                const dArr = Array.from(destSel.selectedOptions).map(opt => opt.value);
+                                destinations = dArr.join(',');
+                            }
+                            // multi tasks
+                            let tasks = '';
+                            const taskSel = document.getElementById('taskFilter');
+                            if (taskSel) {
+                                const tArr = Array.from(taskSel.selectedOptions).map(opt => opt.value);
+                                tasks = tArr.join(',');
+                            }
+                    
+                            return {
+                                search: document.getElementById('searchQuery')?.value || '',
+                                category: document.getElementById('categoryFilter')?.value || '',
+                                date_from: document.getElementById('dateFrom')?.value || '',
+                                date_to: document.getElementById('dateTo')?.value || '',
+                                sort_by: document.getElementById('sortBy')?.value || '-scraped_at',
+                                limit: document.getElementById('limit')?.value || '12',
+                                status: statuses,
+                                destination: destinations,
+                                task: tasks,
+                                page: this.currentPage
+                            };
+                        }
+                    
+                        async applyFilters() {
+                            try {
+                                const filters = this.getFilterValues();
+                                this.saveFilters(filters);
+                    
+                                // build repeated query
+                                let params = [];
+                                // single fields
+                                if (filters.search) params.push('search=' + encodeURIComponent(filters.search));
+                                if (filters.category) params.push('category=' + encodeURIComponent(filters.category));
+                                if (filters.date_from) params.push('date_from=' + encodeURIComponent(filters.date_from));
+                                if (filters.date_to)   params.push('date_to=' + encodeURIComponent(filters.date_to));
+                                if (filters.sort_by)   params.push('sort_by=' + encodeURIComponent(filters.sort_by));
+                                if (filters.limit)     params.push('limit=' + encodeURIComponent(filters.limit));
+                                if (filters.page)      params.push('page=' + encodeURIComponent(filters.page));
+                                console.log('Search Value:', filters.search);
+
+                                // multi statuses => ?status=IN_PRODUCTION&status=REVIEWED
+                                if (filters.status) {
+                                    const stArr = filters.status.split(',');
+                                    stArr.forEach(s => {
+                                        params.push('status=' + encodeURIComponent(s));
+                                    });
+                                }
+                                // multi destinations => ?destination_id=1&destination_id=5
+                                if (filters.destination) {
+                                    const dArr = filters.destination.split(',');
+                                    dArr.forEach(d => {
+                                        params.push('destination_id=' + encodeURIComponent(d));
+                                    });
+                                }
+                                // multi tasks => ?task=146&task=200
+                                if (filters.task) {
+                                    const tArr = filters.task.split(',');
+                                    tArr.forEach(t => {
+                                        params.push('task=' + encodeURIComponent(t));
+                                    });
+                                }
+                    
+                                const qs = params.length ? '?' + params.join('&') : '';
+                                const url = '/api/businesses/advanced_filter/' + qs;
+                                console.log('Filtering => GET:', url);
+                    
+                                const resp = await fetch(url);
+                                const result = await resp.json();
+                                if (result.status === 'success') {
+                                    this.renderResults(result.data);
+                                    if (result.page && result.total_pages) {
+                                        this.renderPagination(result.page, result.total_pages);
+                                    } else {
+                                        document.getElementById('pagination').innerHTML = '';
+                                    }
+                                } else {
+                                    console.error('Filter error:', result);
+                                }
+                            } catch (err) {
+                                console.error('applyFilters error:', err);
+                            }
+                        }
+                    
+                        renderResults(businesses) {
+                            const container = document.getElementById('businessResults');
+                            if (!container) return;
+                            if (!Array.isArray(businesses) || businesses.length===0) {
+                                container.innerHTML = '<p>No businesses found.</p>';
+                                return;
+                            }
+                            container.innerHTML = this.generateResultsHTML(businesses);
+                        }
+                    
+                        generateResultsHTML(businesses) {
+                            return `
+                                <table class="table table-hover table-striped align-middle">
+                        <thead class="table">
+                                    <tr>
+                                    <th>BUSINESS TITLE</th>
+                                    <th>STATUS</th>
+                                    <th>COUNTRY</th>
+                                    <th>DESTINATION</th>
+                                    <th>CREATED AT</th>
+                                    <th>ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${businesses.map(b => this.generateRow(b)).join('')}
+                                </tbody>
+                                </table>
+                            `;
+                        }
+                    
+                        generateRow(b) {
+                            // Use b.scraped_at
+                            const dateStr = b.scraped_at ? new Date(b.scraped_at).toLocaleDateString() : '';
+                            // If status is "IN_PRODUCTION," add rocket
+                            let statusText = b.status || '';
+                            if (statusText === 'IN_PRODUCTION') {
+                                statusText = '🚀 ' + statusText;
+                            }
+                            // If b.destination is an object => {id, name}
+                            // If the server only returns an int => "N/A"
+                            // const destName = (b.destination && b.destination.name) ? b.destination.name : 'N/A';
+                    
+                            return `
+                                <tr>
+                                <td>
+                                    <a href="/business/${b.id}/" class="fw-semibold">
+                                    ${this.escapeHtml(b.title || '')}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge badge-${this.mapStatusColor(b.status)}">
+                                    ${this.escapeHtml(statusText)}
+                                    </span>
+                                </td>
+                                <td>${this.escapeHtml(b.country)}</td>
+                                <td>${this.escapeHtml(b.form_destination_name)}</td>
+                                <td>${dateStr}</td>
+                                <td>
+                                    <!-- Actions dropdown -->
+                                    <div class="dropdown">
+                                    <button 
+                                        class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                        type="button" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false"
+                                    >
+                                        <i class="bx bx-dots-horizontal-rounded"></i>
+                                    </button>
+                                   
+
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                        <a class="dropdown-item" href="/business/${b.id}/">
+                                            <i class="fas fa-eye me-2"></i> View
+                                        </a>
+                                        </li>
+                                        
+                                    </ul>
+
+
+                                    </div>
+                                </td>
+                                <td>
+                                   
+                                </td>
+                                </tr>
+                            `;
+                        }
+                    
+                        mapStatusColor(status) {
+                            const map = {
+                                'IN_PRODUCTION': 'production',
+                                'REVIEWED': 'success',
+                                'PENDING': 'warning',
+                                'DISCARDED': 'danger'
+                            };
+                            return map[status] || 'secondary';
+                        }
+                    
+                        /* =========== PAGINATION WITH ELLIPSES =========== */
+                        renderPagination(currentPage, totalPages) {
+                            const pagDiv = document.getElementById('pagination');
+                            if (!pagDiv) return;
+                            if (totalPages <= 1) {
+                                pagDiv.innerHTML = '';
+                                return;
+                            }
+                    
+                            const pages = this.buildPaginationPages(currentPage, totalPages, 2);
+                            let html = '<nav><ul class="pagination">';
+                    
+                            // Prev
+                            if (currentPage>1) {
+                                html += `<li class="page-item">
+                                    <a class="page-link" href="#" data-page="${currentPage-1}">Prev</a>
+                                </li>`;
+                            }
+                            // pages or ellipses
+                            pages.forEach(p => {
+                                if (p === '...') {
+                                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                                } else {
+                                    const active = (p===currentPage) ? 'active' : '';
+                                    html += `<li class="page-item ${active}">
+                                        <a class="page-link" href="#" data-page="${p}">${p}</a>
+                                    </li>`;
+                                }
+                            });
+                            // Next
+                            if (currentPage<totalPages) {
+                                html += `<li class="page-item">
+                                    <a class="page-link" href="#" data-page="${currentPage+1}">Next</a>
+                                </li>`;
+                            }
+                            html += '</ul></nav>';
+                    
+                            pagDiv.innerHTML = html;
+                            // attach events
+                            pagDiv.querySelectorAll('a.page-link').forEach(link => {
+                                link.addEventListener('click', e => {
+                                    e.preventDefault();
+                                    const newPage = parseInt(link.dataset.page,10);
+                                    if (!isNaN(newPage)) {
+                                        this.goToPage(newPage);
+                                    }
+                                });
+                            });
+                        }
+                    
+                        buildPaginationPages(current, total, delta=2) {
+                            if (total<=7) {
+                                return Array.from({length:total},(_,i)=>i+1);
+                            }
+                            const pages=[];
+                            const left = current-delta;
+                            const right= current+delta;
+                            let last;
+                            for (let p=1;p<=total;p++){
+                                if(p<=2||p>total-2||(p>=left && p<=right)){
+                                    if(last){
+                                        if(p-last===2){
+                                            pages.push(last+1);
+                                        } else if (p-last>2){
+                                            pages.push('...');
+                                        }
+                                    }
+                                    pages.push(p);
+                                    last=p;
+                                }
+                            }
+                            return pages;
+                        }
+                    
+                        goToPage(p) {
+                            this.currentPage=p;
+                            this.applyFilters();
+                        }
+                    
+                        /* =========== DELETE BUSINESS =========== */
+                        async deleteBusiness(businessId){
+                            try {
+                                const resp=await fetch(`/api/businesses/${businessId}/delete/`,{
+                                    method:'POST',
+                                    headers:{
+                                        'X-CSRFToken':this.getCSRFToken(),
+                                        'X-Requested-With':'XMLHttpRequest'
+                                    }
+                                });
+                                const result=await resp.json();
+                                if(result.status==='success'){
+                                    this.applyFilters();
+                                    Swal.fire('Deleted!','Business removed.','success');
+                                } else {
+                                    Swal.fire('Error!', result.message||'Failed to delete.', 'error');
+                                }
+                            } catch(err){
+                                console.error('deleteBusiness error:',err);
+                                Swal.fire('Error!','Something went wrong.','error');
+                            }
+                        }
+                    
+                        getCSRFToken(){
+                            const name='csrftoken';
+                            const c=document.cookie.split('; ').find(r=>r.startsWith(name+'='));
+                            return c?decodeURIComponent(c.split('=')[1]):'';
+                        }
+                    
+                        escapeHtml(unsafe){
+                            if(!unsafe)return '';
+                            return unsafe
+                                .replace(/&/g,"&amp;")
+                                .replace(/</g,"&lt;")
+                                .replace(/>/g,"&gt;")
+                                .replace(/"/g,"&quot;")
+                                .replace(/'/g,"&#039;");
+                        }
+                    }
+                    
+                    // Initialize
+                    document.addEventListener('DOMContentLoaded',()=>{
+                        new BusinessFilter();
+                    });
+                    </script>
+                                        
+                    <!-- Results -->
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <div id="businessResults" class="table-responsive"></div>
+                            <div id="pagination" class="mt-3"></div>
+                        </div>
+                    </div> 
+
+                </div>
+              </div>
+              
+        </div>  
+              
+    </div>
+</div>
+ 
+ 
+
+{% endblock %}

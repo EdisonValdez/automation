@@ -1,0 +1,403 @@
+<!-- templates/business_analytics.html -->
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>/* Summary Cards Styling */
+    .summary-item {
+        text-align: center;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        background: linear-gradient(145deg, #ffffff, #e6e6e6);
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1), -5px -5px 15px rgba(255, 255, 255, 0.8);
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .summary-item:hover {
+        background: linear-gradient(145deg, #f0f0f0, #dcdcdc);
+        box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.15), -8px -8px 20px rgba(255, 255, 255, 0.85);
+        transform: scale(1.05);
+    }
+    
+    .summary-item h5 {
+        color: #6c757d;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1rem;
+    }
+    
+    .summary-item h2 {
+        color: #212d94;
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    }
+     
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .summary-item {
+            margin: 1rem 0;
+            padding: 1rem;
+        }
+    
+        .summary-item h2 {
+            font-size: 2.5rem;
+        }
+    
+        .summary-item h5 {
+            font-size: 1rem;
+        }
+    }
+    .modern-card{background:#fff;border-radius:.5rem;box-shadow:0 .15rem 1.75rem 0 rgb(58 59 69 / .15);transition:transform 0.2s ease-in-out}.modern-card:hover{transform:translateY(-3px)}.card-content{padding:1.25rem}.card-header-flex{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}.task-id{font-size:.875rem;color:#858796;font-weight:600}.status-badge{padding:.25rem .75rem;border-radius:1rem;font-size:.75rem;font-weight:600;text-transform:uppercase}.status-review{background:#f6c23e;color:#fff}.status-live{background:#1cc88a;color:#fff}.status-progress{background:#4e73df;color:#fff}.status-complete{background:#36b9cc;color:#fff}.status-failed{background:#e74a3b;color:#fff}.status-default{background:#858796;color:#fff}.task-title{display:block;color:#5a5c69;font-weight:600;font-size:1rem;margin-bottom:1rem;text-decoration:none;line-height:1.4;min-height:2.8em}.task-title:hover{color:#4e73df;text-decoration:none}.info-grid{display:grid;gap:.5rem}.info-row{display:flex;justify-content:space-between;align-items:center;font-size:.875rem}.info-label{color:#858796}.info-value{color:#5a5c69;font-weight:600}.text-truncate{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media (max-width:576px){.modern-card{margin-bottom:1rem}}.task-item {transition: transform 0.2s;}.task-item:hover {transform: translateY(-2px);box-shadow: 0 4px 8px rgba(0,0,0,0.1);}.badge {font-size: 0.75rem;padding: 0.25em 0.6em;}.card-header {background-color: #f8f9fc;border-bottom: 1px solid #e3e6f0;}.task-link {text-decoration: none; color: inherit;}.task-link:hover {text-decoration: none; color: #4e73df;}.modern-card {background: white;border-radius: 0.5rem;border: 1px solid rgba(0, 0, 0, 0.1);transition: all 0.2s ease;height: 100%;}.modern-card:hover {transform: translateY(-2px);box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);}.card-content {padding: 0.75rem;}.card-header-flex {display: flex;justify-content: space-between;align-items: center;margin-bottom: 0.5rem;}.task-id {font-size: 0.75rem;color: #6b7280;}.status-badge {font-size: 0.65rem;padding: 0.25rem 0.5rem;border-radius: 9999px;font-weight: 500;}.status-live {background-color: #ecfdf5;color: #059669;border: 1px solid #34d399;}.status-review {background-color: #fffbeb;color: #d97706;border: 1px solid #fbbf24;}.status-active {background-color: #eff6ff;color: #2563eb;border: 1px solid #60a5fa;}.status-pending {background-color: #f3f4f6;color: #4b5563;border: 1px solid #9ca3af;}.status-failed {background-color: #fef2f2;color: #dc2626;border: 1px solid #f87171;}.task-title {display: block;font-size: 0.875rem;font-weight: 500;color: #111827;text-decoration: none;margin-bottom: 0.75rem;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;line-height: 1.25;}.task-title:hover {color: #2563eb;}.info-grid {display: grid;gap: 0.25rem;font-size: 0.75rem;}.info-row {display: grid;grid-template-columns: 1fr 1fr;gap: 0.5rem;}.info-label {color: #6b7280;}.info-value {text-align: right;color: #111827;font-weight: 500;}@media (prefers-color-scheme: dark) {.modern-card {background: #1f2937;border-color: rgba(255, 255, 255, 0.1);}.task-id {color: #9ca3af;}.task-title {color: #f3f4f6;}.task-title:hover {color: #60a5fa;}.info-label {color: #9ca3af;}.info-value {color: #f3f4f6;}}.chart-summary-container{margin-top:2rem;padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgb(0 0 0 / .08)}.summary-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgb(0 0 0 / .1)}.summary-title{font-size:1.1rem;font-weight:600;color:#333;margin:0}.total-count{display:flex;flex-direction:column;align-items:flex-end}.total-label{font-size:.875rem;color:#666;margin-bottom:.25rem}.total-number{font-size:1.25rem;font-weight:600;color:#333}.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}.status-card{padding:1rem;background:rgb(0 0 0 / .02);border-radius:6px;transition:transform 0.2s ease,box-shadow 0.2s ease}.status-card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgb(0 0 0 / .05)}.status-info{display:flex;align-items:center;margin-bottom:.75rem}.status-dot{width:10px;height:10px;border-radius:50%;margin-right:8px}.status-label{font-size:.9rem;color:#555}.status-numbers{display:flex;justify-content:space-between;align-items:baseline}.status-count{font-size:1.25rem;font-weight:600;color:#333}.status-percentage{font-size:.875rem;color:#666}@media (max-width:768px){.status-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.summary-header{flex-direction:column;align-items:flex-start}.total-count{margin-top:1rem;align-items:flex-start}}</style>
+<div class="main-content project">   
+    <div class="overlay"></div>   
+        <!-- Dashboard Overview -->
+        <div class="container-fluid">
+            <!-- Page Title -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-wrapper">
+                        <h1 class="page-title">
+                            <span class="title-icon">
+                                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                            </span>
+                            <span class="title-text">Analytics Overview</span>
+                        </h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-container"> 
+                <!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="filter-container shadow-sm border rounded p-3 mb-4">
+            <h5 class="card-title">Business Analytics</h5>
+            <form id="analyticsForm" class="row g-3">
+                <!-- Destination Filter -->
+                <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                    <label for="destinationSelect" class="form-label">Destinations</label>
+                    <select class="form-select" id="destinationSelect" multiple>
+                        <!-- Dynamic options -->
+                    </select>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                    <label for="categorySelect" class="form-label">Category</label>
+                    <select class="form-select" id="categorySelect">
+                        <option value="">All Categories</option>
+                        <!-- Additional categories -->
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                    <label for="statusSelect" class="form-label">Status</label>
+                    <select class="form-select" id="statusSelect">
+                        <option value="">All</option>
+                        <option value="PENDING">Pending</option>
+                        <option value="REVIEWED">Reviewed</option>
+                        <option value="IN_PRODUCTION">In Production</option>
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 d-flex justify-content-between">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <button type="button" id="resetFilters" class="btn btn-secondary">Reset Filters</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+                <div id="chartSummary" class="mt-4">
+                    <div class="chart-summary-container">
+                        <div class="summary-header">
+                            <h6 class="summary-title">Status Distribution</h6>
+                            
+                        </div>
+                
+                        <div class="status-grid">
+                            <!-- Total Businesses -->
+                            <div class="status-card">
+                                <div class="status-info">
+                                    <div class="status-dot" style="background: rgba(0, 123, 255, 0.8);"></div>
+                                    <span class="status-label">Total Businesses</span>
+                                </div>
+                                <div class="status-numbers">
+                                    <span id="totalCount" class="status-count">0</span>
+                                    <span class="status-percentage"></span> <!-- Empty for total -->
+                                </div>
+                            </div>
+                
+                            <!-- Active Categories -->
+                            <div class="status-card">
+                                <div class="status-info">
+                                    <div class="status-dot" style="background: rgba(40, 167, 69, 0.8);"></div>
+                                    <span class="status-label">Active Categories</span>
+                                </div>
+                                <div class="status-numbers">
+                                    <span id="categoryCount" class="status-count">0</span>
+                                    <span class="status-percentage"></span> <!-- Empty for total -->
+                                </div>
+                            </div>
+                
+                            <!-- Total Destinations -->
+                            <div class="status-card">
+                                <div class="status-info">
+                                    <div class="status-dot" style="background: rgba(220, 53, 69, 0.8);"></div>
+                                    <span class="status-label">Total Destinations</span>
+                                </div>
+                                <div class="status-numbers">
+                                    <span id="destinationCount" class="status-count">0</span>
+                                    <span class="status-percentage"></span> <!-- Empty for total -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+
+
+                <!-- Charts -->
+                <div class="row">
+
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Businesses by Destination</h5>
+                                <canvas id="destinationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Status Distribution</h5>
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Businesses by Category</h5>
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+let categoryChart, destinationChart, statusChart;
+
+// Initialize form
+document.addEventListener('DOMContentLoaded', function() {
+    fetchDestinations();
+    fetchCategories();
+    fetchAnalytics();
+});
+
+// Fetch and populate categories
+async function fetchCategories() {
+    try {
+        const response = await fetch('/api/businesses/analytics/');
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            const categories = data.data.categories;
+            const select = document.getElementById('categorySelect');
+            select.innerHTML = '<option value="">All Categories</option>'; // Reset and add default option
+            
+            categories.forEach(category => {
+                if (category.main_category) {
+                    const option = new Option(category.main_category, category.main_category);
+                    select.add(option);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+    }
+}
+
+document.getElementById('analyticsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    fetchAnalytics();
+});
+
+ 
+function updateDestinationChart(destinations) {
+    const ctx = document.getElementById('destinationChart');
+    if (destinationChart) destinationChart.destroy();
+    
+    destinationChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: destinations.map(d => d.destination__name),
+            datasets: [{
+                data: destinations.map(d => d.count),
+                backgroundColor: generateColors(destinations.length)
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+}
+
+function updateStatusChart(statuses) {
+    const ctx = document.getElementById('statusChart');
+    if (statusChart) statusChart.destroy();
+    
+    statusChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: statuses.map(s => s.status),
+            datasets: [{
+                label: 'Number of Businesses',
+                data: statuses.map(s => s.count),
+                backgroundColor: 'rgba(75, 192, 192, 0.6)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function updateCategoryChart(categories) {
+    const ctx = document.getElementById('categoryChart');
+    if (categoryChart) categoryChart.destroy();
+    
+    categoryChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: categories.map(c => c.main_category),
+            datasets: [{
+                label: 'Number of Businesses',
+                data: categories.map(c => c.count),
+                backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+ 
+async function fetchDestinations() {
+    try {
+        const response = await fetch('/api/destinations/');
+        const data = await response.json();
+        
+        const select = document.getElementById('destinationSelect');
+        select.innerHTML = ''; // Clear existing options
+        
+        data.forEach(destination => {
+            const option = new Option(destination.name, destination.id);
+            select.add(option);
+        });
+    } catch (error) {
+        console.error('Error fetching destinations:', error);
+    }
+}
+
+async function fetchAnalytics() {
+    const destinations = Array.from(document.getElementById('destinationSelect').selectedOptions)
+        .map(option => option.value)
+        .join(',');
+    const category = document.getElementById('categorySelect').value;
+    const status = document.getElementById('statusSelect').value;
+
+    const params = new URLSearchParams();
+    if (destinations) params.append('destination_id', destinations);
+    if (category) params.append('category', category);
+    if (status) params.append('status', status);
+
+    try {
+        const response = await fetch(`/api/businesses/analytics/?${params}`);
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            updateCharts(data.data);
+            updateSummary(data.data);
+        }
+    } catch (error) {
+        console.error('Error fetching analytics:', error);
+    }
+}
+
+function updateSummary(data) {
+    // Add null checks to prevent errors
+    const totalCount = document.getElementById('totalCount');
+    const categoryCount = document.getElementById('categoryCount');
+    const destinationCount = document.getElementById('destinationCount');
+
+    if (totalCount) totalCount.textContent = data.total_businesses || 0;
+    if (categoryCount) categoryCount.textContent = data.categories?.length || 0;
+    if (destinationCount) destinationCount.textContent = data.destinations?.length || 0;
+}
+ 
+function updateCharts(data) {
+    updateCategoryChart(data.categories);
+    updateDestinationChart(data.destinations);
+    updateStatusChart(data.statuses);
+}
+ 
+function generateColors(count) {
+    return Array.from({ length: count }, (_, i) => 
+        `hsl(${(i * 360) / count}, 70%, 50%)`
+    );
+}
+</script>
+<script>
+    document.getElementById('resetFilters').addEventListener('click', function () {
+    const form = document.getElementById('analyticsForm');
+
+    // Reset all form inputs
+    form.reset();
+
+    // Reset the multi-select (if using bootstrap/x-select plugin for better rendering)
+    const destinationSelect = document.getElementById('destinationSelect');
+    if (destinationSelect) Array.from(destinationSelect.options).forEach(option => option.selected = false);
+
+    // Resetting any other dynamically populated fields or charts
+    fetchAnalytics(); // Re-fetch data with default filters.
+});
+
+</script>
+{% endblock %}

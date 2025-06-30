@@ -1,0 +1,872 @@
+{
+  "search_metadata": {
+    "id": "673f163d76079de8b1d31918",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/cd1ce43511eeaa9f/673f163d76079de8b1d31918.json",
+    "created_at": "2024-11-21 11:15:09 UTC",
+    "processed_at": "2024-11-21 11:15:09 UTC",
+    "google_maps_url": "https://www.google.com/maps/search/Espana%2C+Barcelona%2C+Laundromat?hl=en",
+    "raw_html_file": "https://serpapi.com/searches/cd1ce43511eeaa9f/673f163d76079de8b1d31918.html",
+    "total_time_taken": 0.99
+  },
+  "search_parameters": {
+    "engine": "google_maps",
+    "type": "search",
+    "q": "Espana, Barcelona, Laundromat",
+    "google_domain": "google.com",
+    "hl": "en"
+  },
+  "search_information": {
+    "local_results_state": "Results for exact spelling",
+    "query_displayed": "Espana, Barcelona, Laundromat"
+  },
+  "local_results": [
+    {
+      "position": 1,
+      "title": "Splash Laundry Bugaderia d'Autoservei",
+      "place_id": "ChIJX5p1doyipBIROBKL1Yvi5VQ",
+      "data_id": "0x12a4a28c76759a5f:0x54e5e28bd58b1238",
+      "data_cid": "6117544759063679544",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a28c76759a5f%3A0x54e5e28bd58b1238&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a28c76759a5f%3A0x54e5e28bd58b1238&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3861189,
+        "longitude": 2.1611845
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJX5p1doyipBIROBKL1Yvi5VQ",
+      "provider_id": "/g/12hkzkjr7",
+      "rating": 4.5,
+      "reviews": 368,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Carrer de la Diputació, 199, L'Eixample, 08011 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 629 33 06 01",
+      "website": "http://www.splashlaundry.es/",
+      "user_review": "\"Easy to use, lots of washers and dryers so no need to wait.\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipMkN83_C8x7GNDf1DwNORcpJc2TDGl3elAorRR7=w163-h92-k-no"
+    },
+    {
+      "position": 2,
+      "title": "Lavandería Autoservicio La Wash Londres 81 BCN",
+      "place_id": "ChIJdaXl07qjpBIRzcVMypfVopA",
+      "data_id": "0x12a4a3bad3e5a575:0x90a2d597ca4cc5cd",
+      "data_cid": "10422127335599556045",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3bad3e5a575%3A0x90a2d597ca4cc5cd&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3bad3e5a575%3A0x90a2d597ca4cc5cd&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.392806199999995,
+        "longitude": 2.149683
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJdaXl07qjpBIRzcVMypfVopA",
+      "provider_id": "/g/11j8rcg9nt",
+      "rating": 4.9,
+      "reviews": 221,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Carrer de Londres, 81, Eixample, 08036 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "7 AM–10 PM",
+        "friday": "7 AM–10 PM",
+        "saturday": "7 AM–10 PM",
+        "sunday": "7 AM–10 PM",
+        "monday": "7 AM–10 PM",
+        "tuesday": "7 AM–10 PM",
+        "wednesday": "7 AM–10 PM"
+      },
+      "phone": "+34 664 14 49 65",
+      "website": "http://www.lawash-londresbcn.es/",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNVMqJotr-fDoSCPtBhtUMZ5CGcIFMKDlpW8zWH=w122-h92-k-no"
+    },
+    {
+      "position": 3,
+      "title": "Bugaderia Merlín",
+      "place_id": "ChIJ6feFo7mjpBIRVyVJvmEKkRw",
+      "data_id": "0x12a4a3b9a385f7e9:0x1c910a61be492557",
+      "data_cid": "2058437919605597527",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3b9a385f7e9%3A0x1c910a61be492557&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3b9a385f7e9%3A0x1c910a61be492557&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3840212,
+        "longitude": 2.179621
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ6feFo7mjpBIRVyVJvmEKkRw",
+      "provider_id": "/g/11qc30frfk",
+      "rating": 4.9,
+      "reviews": 109,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Carrer dels Vigatans, 2, Ciutat Vella, 08003 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 660 17 56 53",
+      "website": "https://lavanderiamerlin.com/",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipMypWMHOHR10zmnPTgThjL5P9YPquOXIsxvUOB6=w80-h142-k-no"
+    },
+    {
+      "position": 4,
+      "title": "Bugaderia Autoservei / Self-Service Laundry \"SpeedyWash Roma\"",
+      "place_id": "ChIJR3oo1XmjpBIRFsDo-zX_ovc",
+      "data_id": "0x12a4a379d5287a47:0xf7a2ff35fbe8c016",
+      "data_cid": "17844105280920010774",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a379d5287a47%3A0xf7a2ff35fbe8c016&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a379d5287a47%3A0xf7a2ff35fbe8c016&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.383471799999995,
+        "longitude": 2.1475836999999998
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJR3oo1XmjpBIRFsDo-zX_ovc",
+      "provider_id": "/g/11lg2vcntd",
+      "rating": 4.7,
+      "reviews": 108,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Carrer de Rocafort, 197, L'Eixample, 08029 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 9:30 PM",
+      "hours": "Open ⋅ Closes 9:30 PM",
+      "operating_hours": {
+        "thursday": "9:30 AM–9:30 PM",
+        "friday": "9:30 AM–9:30 PM",
+        "saturday": "10 AM–9 PM",
+        "sunday": "10 AM–9 PM",
+        "monday": "9:30 AM–9:30 PM",
+        "tuesday": "9:30 AM–9:30 PM",
+        "wednesday": "9:30 AM–9:30 PM"
+      },
+      "phone": "+34 644 61 64 00",
+      "website": "https://speedywashroma.wixsite.com/speedywashroma",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipO6FXiaHaZv2aIu6eKgTaJqCT-ecybsuI9xSH63=w122-h92-k-no"
+    },
+    {
+      "position": 5,
+      "title": "Bugaderia Speed Queen",
+      "place_id": "ChIJW_mbvrWjpBIRVt_3IaQpYlA",
+      "data_id": "0x12a4a3b5be9bf95b:0x506229a421f7df56",
+      "data_cid": "5792237855673147222",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3b5be9bf95b%3A0x506229a421f7df56&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3b5be9bf95b%3A0x506229a421f7df56&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.382742799999995,
+        "longitude": 2.1712428999999998
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJW_mbvrWjpBIRVt_3IaQpYlA",
+      "provider_id": "/g/11f65h3kd6",
+      "rating": 4.2,
+      "reviews": 87,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat",
+        "Dry cleaner",
+        "Laundry",
+        "Laundry service"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat",
+        "dry_cleaner",
+        "laundry",
+        "laundry_service"
+      ],
+      "address": "Carrer del Carme, 5, Ciutat Vella, 08001 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 681 35 14 75",
+      "website": "https://speedqueeninvestor.com/our-laundry-stores/locations/spain/barcelona/lavanderia-autoservicio-speed-queen/138542",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipP_rFb8f1n9FbRHliURO_sf1js11J4oDOF1POv0=w80-h106-k-no"
+    },
+    {
+      "position": 6,
+      "title": "La Wash",
+      "place_id": "ChIJSU-DSf-ipBIRwvMMk-LYZfY",
+      "data_id": "0x12a4a2ff49834f49:0xf665d8e2930cf3c2",
+      "data_cid": "17754835573619356610",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a2ff49834f49%3A0xf665d8e2930cf3c2&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a2ff49834f49%3A0xf665d8e2930cf3c2&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3817582,
+        "longitude": 2.1797250999999997
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJSU-DSf-ipBIRwvMMk-LYZfY",
+      "provider_id": "/g/11c5bxgzn0",
+      "rating": 4.3,
+      "reviews": 143,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat",
+        "Laundry",
+        "Laundry service"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat",
+        "laundry",
+        "laundry_service"
+      ],
+      "address": "Carrer del Correu Vell, 7, Ciutat Vella, 08002 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "7 AM–10 PM",
+        "friday": "7 AM–10 PM",
+        "saturday": "7 AM–10 PM",
+        "sunday": "7 AM–10 PM",
+        "monday": "7 AM–10 PM",
+        "tuesday": "7 AM–10 PM",
+        "wednesday": "7 AM–10 PM"
+      },
+      "phone": "+34 666 24 24 60",
+      "website": "https://lawash.es/",
+      "user_review": "\"The machines have an English setting and they are fast.\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNA2sutRGH0oxE2hT0WYyI5byE3cW_AJ3SwNzSi=w122-h92-k-no"
+    },
+    {
+      "position": 7,
+      "title": "Fresh Laundry Bugaderia Tetuan",
+      "place_id": "ChIJa-j1GuaipBIRQ1kGXWCdQxo",
+      "data_id": "0x12a4a2e61af5e86b:0x1a439d605d065943",
+      "data_cid": "1892529305628858691",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a2e61af5e86b%3A0x1a439d605d065943&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a2e61af5e86b%3A0x1a439d605d065943&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3965135,
+        "longitude": 2.1750202
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJa-j1GuaipBIRQ1kGXWCdQxo",
+      "provider_id": "/g/11b88ktcj7",
+      "rating": 4.3,
+      "reviews": 138,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Carrer de la Diputació, 369, Eixample, 08009 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 606 76 56 39",
+      "website": "http://www.freshlaundry.es/lavanderia-en-diputacio-barcelona--41-es.html",
+      "user_review": "\"Excellent price, fast laundry and great customer support over the phone.\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipM4bFegVebCGCDjtMtZ8NvJcnajq5S4F7EorunT=w122-h92-k-no"
+    },
+    {
+      "position": 8,
+      "title": "El Safareig del Barri - Bugaderia / Laundry / Lavandería / Laverie",
+      "place_id": "ChIJrf6bNIaipBIRW6uyWZdeBRE",
+      "data_id": "0x12a4a286349bfead:0x11055e9759b2ab5b",
+      "data_cid": "1226490477666282331",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a286349bfead%3A0x11055e9759b2ab5b&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a286349bfead%3A0x11055e9759b2ab5b&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.383733,
+        "longitude": 2.1539036
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJrf6bNIaipBIRW6uyWZdeBRE",
+      "provider_id": "/g/11c3k9xhl3",
+      "rating": 4.2,
+      "reviews": 203,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat",
+        "Laundry",
+        "Laundry service"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat",
+        "laundry",
+        "laundry_service"
+      ],
+      "address": "Carrer d'Aragó, 104, Eixample, 08015 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 934 61 68 78",
+      "website": "https://elsafareigdelbarri.com/",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNxgWHAgMYJE54I9gK8AT87mzoISX6WYVT5WBeI=w115-h92-k-no"
+    },
+    {
+      "position": 9,
+      "title": "LaBar - Laundry Bar",
+      "place_id": "ChIJx73lnMujpBIR6zbPAx03Ri8",
+      "data_id": "0x12a4a3cb9ce5bdc7:0x2f46371d03cf36eb",
+      "data_cid": "3406470765909849835",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3cb9ce5bdc7%3A0x2f46371d03cf36eb&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3cb9ce5bdc7%3A0x2f46371d03cf36eb&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3981539,
+        "longitude": 2.1754197
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJx73lnMujpBIR6zbPAx03Ri8",
+      "provider_id": "/g/11g0vzc6kg",
+      "rating": 4.6,
+      "reviews": 554,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat",
+        "Bar"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat",
+        "bar"
+      ],
+      "address": "Carrer del Consell de Cent, 442, Eixample, 08013 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 12 AM",
+      "hours": "Open ⋅ Closes 12 AM",
+      "operating_hours": {
+        "thursday": "9 AM–12 AM",
+        "friday": "10 AM–1 AM",
+        "saturday": "10 AM–1 AM",
+        "sunday": "9 AM–12 AM",
+        "monday": "9 AM–12 AM",
+        "tuesday": "9 AM–12 AM",
+        "wednesday": "9 AM–12 AM"
+      },
+      "phone": "+34 934 20 50 76",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipOxcL80oHkam-aMGr4QmTZnYHuZkws4dYHLbrqX=w122-h92-k-no"
+    },
+    {
+      "position": 10,
+      "title": "La Wash",
+      "place_id": "ChIJWfpcL5ejpBIRNBKp6cwBre0",
+      "data_id": "0x12a4a3972f5cfa59:0xedad01cce9a91234",
+      "data_cid": "17126346937564992052",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3972f5cfa59%3A0xedad01cce9a91234&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3972f5cfa59%3A0xedad01cce9a91234&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3825785,
+        "longitude": 2.1577186999999998
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJWfpcL5ejpBIRNBKp6cwBre0",
+      "provider_id": "/g/11v_5jjq33",
+      "rating": 5,
+      "reviews": 45,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Carrer del Comte d'Urgell, 67, Eixample, 08015 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "7 AM–10 PM",
+        "friday": "7 AM–10 PM",
+        "saturday": "7 AM–10 PM",
+        "sunday": "7 AM–10 PM",
+        "monday": "7 AM–10 PM",
+        "tuesday": "7 AM–10 PM",
+        "wednesday": "7 AM–10 PM"
+      },
+      "phone": "+34 666 24 24 60",
+      "website": "https://lawash.es/donde/comte-durgell-67-barcelona/",
+      "user_review": "\"Modern, functional, clean and affordable!!\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipN8ZpkzsaPgXvQiw8rfE31HSyzxG8aTB8MCKXwt=w122-h92-k-no"
+    },
+    {
+      "position": 11,
+      "title": "Bugaderia autoservei Bloomest Miele Barcelona",
+      "place_id": "ChIJ5x2ccFOjpBIRyEh8LOUda3w",
+      "data_id": "0x12a4a353709c1de7:0x7c6b1de52c7c48c8",
+      "data_cid": "8965292353342163144",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a353709c1de7%3A0x7c6b1de52c7c48c8&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a353709c1de7%3A0x7c6b1de52c7c48c8&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3962937,
+        "longitude": 2.1693563
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ5x2ccFOjpBIRyEh8LOUda3w",
+      "provider_id": "/g/11ncm16z41",
+      "rating": 4.5,
+      "reviews": 83,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat",
+        "Laundry",
+        "Laundry service"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat",
+        "laundry",
+        "laundry_service"
+      ],
+      "address": "Carrer de Girona, 98, L'Eixample, 08009 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 11 PM",
+      "hours": "Open ⋅ Closes 11 PM",
+      "operating_hours": {
+        "thursday": "7 AM–11 PM",
+        "friday": "7 AM–11 PM",
+        "saturday": "7 AM–11 PM",
+        "sunday": "7 AM–11 PM",
+        "monday": "7 AM–11 PM",
+        "tuesday": "7 AM–11 PM",
+        "wednesday": "7 AM–11 PM"
+      },
+      "phone": "+34 696 79 20 45",
+      "website": "http://barcelonamercatconcepcio.bloomest.es/",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipPKOrcw4b6_aRgnR3tjPPOix74k77Ih1SPzqewI=w80-h173-k-no"
+    },
+    {
+      "position": 12,
+      "title": "Lavomatic",
+      "place_id": "ChIJgQw4rv-ipBIRuJvRB2FTvtU",
+      "data_id": "0x12a4a2ffae380c81:0xd5be536107d19bb8",
+      "data_cid": "15401839451861785528",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a2ffae380c81%3A0xd5be536107d19bb8&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a2ffae380c81%3A0xd5be536107d19bb8&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3826505,
+        "longitude": 2.1823685
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJgQw4rv-ipBIRuJvRB2FTvtU",
+      "provider_id": "/g/11c5hyrxqf",
+      "rating": 4.6,
+      "reviews": 57,
+      "type": "Laundry service",
+      "types": [
+        "Laundry service"
+      ],
+      "type_id": "laundry_service",
+      "type_ids": [
+        "laundry_service"
+      ],
+      "address": "Carrer del Consolat de Mar, 43, 45, Ciutat Vella, 08003 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 8 PM",
+      "hours": "Open ⋅ Closes 8 PM",
+      "operating_hours": {
+        "thursday": "9 AM–8 PM",
+        "friday": "9 AM–8 PM",
+        "saturday": "9 AM–2 PM",
+        "sunday": "Closed",
+        "monday": "9 AM–8 PM",
+        "tuesday": "9 AM–8 PM",
+        "wednesday": "9 AM–8 PM"
+      },
+      "phone": "+34 936 02 69 99",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipOV38bz6gnmqvMQrn-LTOuJ3398KEsjC9EOh0vB=w80-h106-k-no"
+    },
+    {
+      "position": 13,
+      "title": "Laundromat Lavaxpres",
+      "place_id": "ChIJoz5_tVeipBIR40bkxcv5ESU",
+      "data_id": "0x12a4a257b57f3ea3:0x2511f9cbc5e446e3",
+      "data_cid": "2671190707601164003",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a257b57f3ea3%3A0x2511f9cbc5e446e3&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a257b57f3ea3%3A0x2511f9cbc5e446e3&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3794368,
+        "longitude": 2.1768519
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJoz5_tVeipBIR40bkxcv5ESU",
+      "provider_id": "/g/11bxf_j3xt",
+      "rating": 4,
+      "reviews": 119,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Carrer Nou de Sant Francesc, 5, Ciutat Vella, 08002 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 933 18 30 18",
+      "website": "http://www.lavaxpres.com/",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNbT_K5MlDhl9D-Qj_HJaiVEWRLQ-U4J1aQh7xK=w92-h92-k-no"
+    },
+    {
+      "position": 14,
+      "title": "Lavandería Speed Queen",
+      "place_id": "ChIJVVWVAoaYpBIRd_5zArSOH9g",
+      "data_id": "0x12a4988602955555:0xd81f8eb40273fe77",
+      "data_cid": "15573322940256878199",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4988602955555%3A0xd81f8eb40273fe77&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4988602955555%3A0xd81f8eb40273fe77&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3769971,
+        "longitude": 2.1353923999999997
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJVVWVAoaYpBIRd_5zArSOH9g",
+      "provider_id": "/g/11d_ttf59r",
+      "rating": 4.8,
+      "reviews": 104,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat",
+        "Dry cleaner",
+        "Laundry",
+        "Laundry service"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat",
+        "dry_cleaner",
+        "laundry",
+        "laundry_service"
+      ],
+      "address": "Carrer de Galileu, 23, Sants-Montjuïc, 08028 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 644 31 01 77",
+      "website": "https://speedqueeninvestor.com/our-laundry-stores/locations/spain/barcelona/lavanderia-autoservicio-speed-queen/138752",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNiVihIKDkrM8YzxBKyuhYw34TBJloyxQbCRd45=w122-h92-k-no"
+    },
+    {
+      "position": 15,
+      "title": "Bugaderia Speed Queen El Clot",
+      "place_id": "ChIJv0iea3ejpBIRvUUvutUjpAI",
+      "data_id": "0x12a4a3776b9e48bf:0x2a423d5ba2f45bd",
+      "data_cid": "190316485115069885",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3776b9e48bf%3A0x2a423d5ba2f45bd&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3776b9e48bf%3A0x2a423d5ba2f45bd&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.407491799999995,
+        "longitude": 2.1872825
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJv0iea3ejpBIRvUUvutUjpAI",
+      "provider_id": "/g/11rt9crz9f",
+      "rating": 4.8,
+      "reviews": 71,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Avinguda Meridiana, 100, Sant Martí, 08018 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 600 84 32 02",
+      "website": "https://instagram.com/speedqueenelclot?igshid=YmMyMTA2M2Y=",
+      "user_review": "\"This is a beautiful and clean laundry, but there is a QR code to pay by app.\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipMpdtPqQCNy5F7aMDKa4fTzOgag9xUGeuv9OgpP=w80-h142-k-no"
+    },
+    {
+      "position": 16,
+      "title": "Self-Service Laundromat",
+      "place_id": "ChIJ249ScL2ipBIR4VxLAQh28aA",
+      "data_id": "0x12a4a2bd70528fdb:0xa0f17608014b5ce1",
+      "data_cid": "11597180292209269985",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a2bd70528fdb%3A0xa0f17608014b5ce1&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a2bd70528fdb%3A0xa0f17608014b5ce1&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.4018857,
+        "longitude": 2.156829
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJ249ScL2ipBIR4VxLAQh28aA",
+      "provider_id": "/g/11xbtjs90",
+      "rating": 4.3,
+      "reviews": 46,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Plaça del Sol, 11, Gracia, 08012 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "7 AM–10 PM",
+        "friday": "7 AM–10 PM",
+        "saturday": "7 AM–10 PM",
+        "sunday": "7 AM–10 PM",
+        "monday": "7 AM–10 PM",
+        "tuesday": "7 AM–10 PM",
+        "wednesday": "7 AM–10 PM"
+      },
+      "phone": "+34 616 77 43 73",
+      "website": "https://www.lalaundrybcn.com/",
+      "user_review": "\"Super clean, cheep, fast and efficient.\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipPFDQfutXvqEFk1Qtl5K5v9KQQjwBhsywgHwzrC=w80-h106-k-no"
+    },
+    {
+      "position": 17,
+      "title": "Lacolada Barceloneta",
+      "place_id": "ChIJW_i936mjpBIRd5akaqOlwCc",
+      "data_id": "0x12a4a3a9dfbdf85b:0x27c0a5a36aa49677",
+      "data_cid": "2864471484295059063",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3a9dfbdf85b%3A0x27c0a5a36aa49677&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3a9dfbdf85b%3A0x27c0a5a36aa49677&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3803876,
+        "longitude": 2.1905476
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJW_i936mjpBIRd5akaqOlwCc",
+      "provider_id": "/g/11f11lgjwp",
+      "rating": 4.7,
+      "reviews": 55,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat"
+      ],
+      "address": "Carrer d'Andrea Dòria, 37, Ciutat Vella, 08003 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 11 PM",
+      "hours": "Open ⋅ Closes 11 PM",
+      "operating_hours": {
+        "thursday": "7 AM–11 PM",
+        "friday": "7 AM–11 PM",
+        "saturday": "7 AM–11 PM",
+        "sunday": "7 AM–11 PM",
+        "monday": "7 AM–11 PM",
+        "tuesday": "7 AM–11 PM",
+        "wednesday": "7 AM–11 PM"
+      },
+      "phone": "+34 698 68 36 18",
+      "website": "https://lavanderiabarceloneta.com/",
+      "user_review": "\"This laundromat was in the heart of the city very clean and safe.\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipMfn_qSunkGB77vkprqmj6C3Hh_Rc_Yql2HKD6X=w138-h92-k-no"
+    },
+    {
+      "position": 18,
+      "title": "Lavandería Molino",
+      "place_id": "ChIJJzU-LVujpBIRgyaGwotLbxk",
+      "data_id": "0x12a4a35b2d3e3527:0x196f4b8bc2862683",
+      "data_cid": "1832766636999190147",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a35b2d3e3527%3A0x196f4b8bc2862683&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a35b2d3e3527%3A0x196f4b8bc2862683&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3747267,
+        "longitude": 2.1667045
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJJzU-LVujpBIRgyaGwotLbxk",
+      "provider_id": "/g/11rd8f4dwl",
+      "rating": 4.9,
+      "reviews": 203,
+      "type": "Laundry",
+      "types": [
+        "Laundry",
+        "Laundry service"
+      ],
+      "type_id": "laundry",
+      "type_ids": [
+        "laundry",
+        "laundry_service"
+      ],
+      "address": "Av. del Paral·lel, 81, Sants-Montjuïc, 08004 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8:30 AM–10 PM",
+        "friday": "8:30 AM–10 PM",
+        "saturday": "8:30 AM–10 PM",
+        "sunday": "8:30 AM–10 PM",
+        "monday": "8:30 AM–10 PM",
+        "tuesday": "8:30 AM–10 PM",
+        "wednesday": "8:30 AM–10 PM"
+      },
+      "phone": "+34 620 16 25 99",
+      "user_review": "\"Great laundromat, easy to use, super clean and fair price.\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipP7KhezDd3uA4TV9Bx9wfPNxPtx_6VGVUcZVNAL=w137-h92-k-no"
+    },
+    {
+      "position": 19,
+      "title": "Lavandería Speed Queen",
+      "place_id": "ChIJY6JgDimjpBIRMS6XL3cRYDI",
+      "data_id": "0x12a4a3290e60a263:0x326011772f972e31",
+      "data_cid": "3629920503257837105",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3290e60a263%3A0x326011772f972e31&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3290e60a263%3A0x326011772f972e31&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.4143392,
+        "longitude": 2.1874539
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJY6JgDimjpBIRMS6XL3cRYDI",
+      "provider_id": "/g/11b77d66xg",
+      "rating": 3.6,
+      "reviews": 65,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat",
+        "Dry cleaner",
+        "Laundry",
+        "Laundry service"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat",
+        "dry_cleaner",
+        "laundry",
+        "laundry_service"
+      ],
+      "address": "Carrer de Múrcia, 1, Sant Martí, 08027 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "8 AM–10 PM",
+        "friday": "8 AM–10 PM",
+        "saturday": "8 AM–10 PM",
+        "sunday": "8 AM–10 PM",
+        "monday": "8 AM–10 PM",
+        "tuesday": "8 AM–10 PM",
+        "wednesday": "8 AM–10 PM"
+      },
+      "phone": "+34 934 79 54 10",
+      "website": "https://speedqueeninvestor.com/our-laundry-stores/locations/spain/barcelona/lavanderia-autoservicio-speed-queen/138691",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNv5YJ3ebDJ_Io1f456Q_tY01NFy9f-o3Aqi03e=w144-h92-k-no"
+    },
+    {
+      "position": 20,
+      "title": "La Wash",
+      "place_id": "ChIJZ1EoHWCjpBIRScahjeqYkrk",
+      "data_id": "0x12a4a3601d285167:0xb99298ea8da1c649",
+      "data_cid": "13371918376782382665",
+      "reviews_link": "https://serpapi.com/search.json?data_id=0x12a4a3601d285167%3A0xb99298ea8da1c649&engine=google_maps_reviews&hl=en",
+      "photos_link": "https://serpapi.com/search.json?data_id=0x12a4a3601d285167%3A0xb99298ea8da1c649&engine=google_maps_photos&hl=en",
+      "gps_coordinates": {
+        "latitude": 41.3876534,
+        "longitude": 2.150185
+      },
+      "place_id_search": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&place_id=ChIJZ1EoHWCjpBIRScahjeqYkrk",
+      "provider_id": "/g/11hdyzzl4h",
+      "rating": 4.6,
+      "reviews": 66,
+      "type": "Laundromat",
+      "types": [
+        "Laundromat",
+        "Laundry",
+        "Laundry service"
+      ],
+      "type_id": "laundromat",
+      "type_ids": [
+        "laundromat",
+        "laundry",
+        "laundry_service"
+      ],
+      "address": "Carrer del Rosselló, 100, Eixample, 08029 Barcelona, Spain",
+      "open_state": "Open ⋅ Closes 10 PM",
+      "hours": "Open ⋅ Closes 10 PM",
+      "operating_hours": {
+        "thursday": "7 AM–10 PM",
+        "friday": "7 AM–10 PM",
+        "saturday": "7 AM–10 PM",
+        "sunday": "7 AM–10 PM",
+        "monday": "7 AM–10 PM",
+        "tuesday": "7 AM–10 PM",
+        "wednesday": "7 AM–10 PM"
+      },
+      "phone": "+34 666 24 24 60",
+      "website": "https://lawash.es/",
+      "user_review": "\"The laundromat is very clean and I would recommend everyone to come here.\"",
+      "thumbnail": "https://lh5.googleusercontent.com/p/AF1QipNl_ilpRLhA5K5R1fcgnS5X54Zo1PWZQefo3B5W=w122-h92-k-no"
+    }
+  ],
+  "serpapi_pagination": {
+    "next": "https://serpapi.com/search.json?engine=google_maps&google_domain=google.com&hl=en&q=Espana%2C+Barcelona%2C+Laundromat&start=20&type=search"
+  }
+}

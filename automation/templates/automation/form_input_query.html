@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Gather Sites (Form Input)</h1>
+
+<form id="form-input-query" method="post">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-4 col-sm-12 mb-24">
+            <div class="form-group">
+                <label for="country">Country</label>
+                <select class="form-control" id="country" name="country" required>
+                    <option value="">Select a country</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12 mb-24">
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <select class="form-control" id="destination" name="destination" required>
+                    <option value="">Select a destination</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12 mb-24">
+            <div class="form-group">
+                <label for="level">Level</label>
+                <select class="form-control" id="level" name="level" required>
+                    <option value="">Select a level</option>
+                    {% for level in levels %}
+                    <option value="{{ level.id }}">{{ level.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12 mb-24">
+            <div class="form-group">
+                <label for="main_category">Main Category</label>
+                <select class="form-control" id="main_category" name="main_category" required>
+                    <option value="">Select a main category</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12 mb-24">
+            <div class="form-group">
+                <label for="subcategory">Subcategory (optional)</label>
+                <select class="form-control" id="subcategory" name="subcategory">
+                    <option value="">Select a subcategory (optional)</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12 mb-24"></div>
+    </div>
+    <button type="submit" class="btn btn-primary">Start Process</button>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Load initial data
+    loadCountries();
+    loadLevels();
+
+    // Handle Country and Destination changes
+    $('#country').change(function() {
+        var countryId = $(this).val();
+        loadDestinations(countryId);
+    });
+
+    // Handle Level and Main Category changes
+    $('#level').change(function() {
+        var levelId = $(this).val();
+        loadMainCategories(levelId);
+    });
+
+    // Handle Main Category and Subcategory changes
+    $('#main_category').change(function() {
+        var categoryId = $(this).val();
+        loadSubcategories(categoryId);
+    });
+
+    // Handle form submission
+    $('#form-input-query').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+        $.ajax({
+            url: '{% url "process_query" %}',
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                // Handle success response
+                console.log(response);
+            },
+            error: function(xhr, status, error) {
+                // Handle error response
+                console.error(error);
+            }
+        });
+    });
+});
+
+function loadCountries() {
+    $.ajax({
+        url: '{% url "get_countries" %}',
+        method: 'GET',
+        success: function(data) {
+            $('#country').empty().append('<option value="">Select a country</option>');
+            if (data.length > 0) {
+                data.forEach(function(country) {
+                    $('#country').append($('<option></option>').attr('value', country.id).text(country.name));
+                });
+            } else {
+                $('#country').append('<option value="">No countries available</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching countries: ' + error);
+        }
+    });
+}
+
+function loadDestinations(countryId) {
+    $('#destination').empty().append('<option value="">Select a destination</option>');
+    if (countryId) {
+        $.ajax({
+            url: '{% url "get_destinations_by_country" %}',
+            data: { 'country_id': countryId },
+            success: function(data) {
+                if (data.length > 0) {
+                    data.forEach(function(destination) {
+                        $('#destination').append($('<option></option>').attr('value', destination.id).text(destination.name));
+                    });
+                } else {
+                    $('#destination').append('<option value="">No destinations available for this country</option>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching destinations: ' + error);
+            }
+        });
+    }
+}
+
+function loadLevels() {
+    // Fetch levels and populate the level dropdown
+    // This is similar to the loadCountries function
+}
+
+function loadMainCategories(levelId) {
+    $('#main_category').empty().append('<option value="">Select a category</option>');
+    $('#subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+    if (levelId) {
+        $.ajax({
+            url: '{% url "get_categories" %}',
+            data: { 'level_id': levelId },
+            success: function(data) {
+                if (data.length > 0) {
+                    data.forEach(function(category) {
+                        $('#main_category').append($('<option></option>').attr('value', category.id).text(category.title));
+                    });
+                } else {
+                    $('#main_category').append('<option value="">No categories available</option>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching categories: ' + error);
+            }
+        });
+    }
+}
+
+function loadSubcategories(categoryId) {
+    $('#subcategory').empty().append('<option value="">Select a subcategory (optional)</option>');
+    if (categoryId) {
+        $.ajax({
+            url: '{% url "get_subcategories" %}',
+            data: { 'category_id': categoryId },
+            success: function(data) {
+                if (data.length > 0) {
+                    data.forEach(function(subcategory) {
+                        $('#subcategory').append($('<option></option>').attr('value', subcategory.id).text(subcategory.title));
+                    });
+                } else {
+                    $('#subcategory').append('<option value="">No subcategories available</option>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching subcategories: ' + error);
+            }
+        });
+    }
+}
+</script>
+
+<!-- API LOAD 
+// templates/automation/upload.html
+function loadCountries() {
+    $.ajax({
+        url: '/api/countries/',
+        method: 'GET',
+        headers: {
+            'language': 'en' // Or get from user preferences
+        },
+        success: function(response) {
+            const select = $('#country_select');
+            select.empty();
+            select.append('<option value="">Select Country</option>');
+            
+            response.results.forEach(function(country) {
+                select.append(`<option value="${country.id}">${country.name}</option>`);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading countries:', error);
+        }
+    });
+}
+
+function loadCities(countryId) {
+    if (!countryId) return;
+    
+    $.ajax({
+        url: '/api/cities/',
+        method: 'GET',
+        data: {
+            country_id: countryId
+        },
+        headers: {
+            'language': 'en' // Or get from user preferences
+        },
+        success: function(response) {
+            const select = $('#city_select');
+            select.empty();
+            select.append('<option value="">Select City</option>');
+            
+            response.results.forEach(function(city) {
+                select.append(`<option value="${city.id}">${city.name}</option>`);
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading cities:', error);
+        }
+    });
+}
+
+// Event listeners
+$(document).ready(function() {
+    loadCountries();
+    
+    $('#country_select').change(function() {
+        loadCities($(this).val());
+    });
+});
+
+-->
+{% endblock %}

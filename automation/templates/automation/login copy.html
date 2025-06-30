@@ -1,0 +1,97 @@
+{% extends "base_login.html" %}
+{% load static %}
+ <style>
+    .alert-error{ background-color: #eb4343;
+        color: white;}
+ </style>
+{% block content %}
+<div class="main-content">
+    <section class="login" style="display: block;">
+        <div class="row">
+            <div class="col-12">
+                 
+                    <div class="box-header d-flex justify-content-between"> 
+                        <div class="action-reg">
+                            <h4 class="fs-30">Login</h4>
+                            <a href="{% url 'login' %}">Sign in to your account</a>
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="box-body">
+                        <div class="auth-content my-auto">
+                            <form class="mt-5 pt-2" method="post" action="{% url 'login' %}">
+                                {% csrf_token %}
+ 
+                                {% if form.errors %}
+                                <div class="alert alert-danger">
+                                    <strong>Error:</strong> Please correct the error{{ form.errors|pluralize }} below.
+                                </div>
+                            {% endif %}
+                        
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} {% if message.tags == error %} alert-error {% endif %}">
+                                        <strong><i class="fa fa-exclamation-triangle"></i> {{ message }}</strong>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                                <div class="mb-24">
+                                    <label class="form-label mb-14" for="id_username">Username or Email</label>
+                                    <input type="text" class="form-control" id="id_username" name="username" placeholder="Enter your username or email">
+                                </div>
+                                <div class="mb-16">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-grow-1">
+                                            <label class="form-label mb-14" for="id_password">Password</label>
+                                        </div>
+                                       
+                                    </div>
+
+                                    <div class="input-group auth-pass-inputgroup">
+                                        <input type="password" class="form-control" id="id_password" name="password" placeholder="Enter password" aria-label="Password" aria-describedby="password-addon">
+                                        <button class="btn shadow-none ms-0" type="button" id="password-addon"><i class="far fa-eye-slash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="row mb-29">
+                                    <div class="col">
+                                        <div class="form-check">
+                        
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <button class="btn bg-primary color-white w-100 waves-effect waves-light fs-18 font-w500" type="submit">Sign in</button>
+                                </div>
+                            </form>
+
+                            <div class="mt-20 pt-2 text-center">
+                                <div class="signin-other-title">
+                                    <a href="{% url 'login' %}" class="text-muted fs-14">Forgot password?</a>
+                                </div>
+                            </div>
+ 
+                        </div>
+                    </div>
+                 
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+ 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('id_password');
+        const toggleButton = document.getElementById('password-addon');
+
+        toggleButton.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.innerHTML = '<i class="far fa-eye"></i>';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.innerHTML = '<i class="far fa-eye-slash"></i>';
+            }
+        });
+    });
+</script> 

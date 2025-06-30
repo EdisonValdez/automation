@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="main-content client box"> 
+ 
+        <h2>Create Destination</h2>
+ 
+
+        <form id="createDestinationForm" method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_name">Destination Name</label>
+                <input type="text" class="form-control" id="id_name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_description">Description</label>
+                <textarea class="form-control" id="id_description" name="description" rows="4" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="id_cp">Postal Code (CP)</label>
+                <input type="text" class="form-control" id="id_cp" name="cp" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_province">Province</label>
+                <input type="text" class="form-control" id="id_province" name="province" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_slogan">Slogan</label>
+                <input type="text" class="form-control" id="id_slogan" name="slogan">
+            </div>
+
+            <div class="form-group">
+                <label for="id_latitude">Latitude</label>
+                <input type="number" step="any" class="form-control" id="id_latitude" name="latitude" required>
+            </div>
+
+            <div class="form-group">
+                <label for="id_longitude">Longitude</label>
+                <input type="number" step="any" class="form-control" id="id_longitude" name="longitude" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_country">Country</label>
+                <select class="form-control" id="id_country" name="country" required>
+                    <option value="" disabled selected>Select your country</option>
+                    {% for country in countries %}
+                        <option value="{{ country.id }}">{{ country.name }}</option>
+                    {% endfor %}
+                </select>  
+            </div>
+
+            <div class="form-group">
+                <label for="id_ambassador">Ambassador</label>
+                <select class="form-control" id="id_ambassador" name="ambassador">
+                    <option value="">Select Ambassador (Optional)</option>
+                    {% for ambassador in all_ambassadors %}
+                        <option value="{{ ambassador.id }}">{{ ambassador.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <br />
+            <button type="submit" class="btn btn-primary" id="createDestinationBtn">Create Destination</button>
+        </form>
+
+        <div id="message"></div> <!-- This is where success/error messages will appear -->
+      
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('createDestinationForm');
+        const messageDiv = document.getElementById('message');
+        const createBtn = document.getElementById('createDestinationBtn');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(form);
+
+            // Log all the form data entries
+            for (var pair of formData.entries()) {
+                console.log(pair[0]+ ': ' + pair[1]); 
+            }
+
+            createBtn.disabled = true;  // Disable button to prevent multiple submissions
+
+            fetch("{% url 'create_destination' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                createBtn.disabled = false;  // Re-enable button
+
+                if (data.status === 'success') {
+                    messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                    form.reset(); // Reset form after successful creation
+                } else {
+                    messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                createBtn.disabled = false;
+                console.error('Fetch Error:', error); 
+                messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred. Please try again.</div>`;
+            });
+        });
+
+    });
+</script>
+{% endblock %}

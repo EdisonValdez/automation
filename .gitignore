@@ -1,0 +1,50 @@
+# Ignore .env file with sensitive information
+.env
+
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore log files
+*.log
+
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+
+# Environments 
+env/ 
+venv/ 
+ENV/ 
+myenv/
+env.bak/ 
+venv.bak/ 
+
+# Ignore virtual environment directories
+scrapin-env/
+.env/
+
+# Ignore database files
+*.sqlite3
+
+# Ignore IDE-specific settings (optional)
+.vscode/
+.idea/
+
+# Ignore node_modules if using Node.js in your project
+node_modules/
+
+# Ignore coverage reports
+coverage/
+*.cover
+*.coverage
+*.lcov
+
+# ignore others
+OLD-AUTOMATION
+selenium
+jeh-scraping
+
+media
+
+txt_files/

@@ -1,0 +1,786 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style> .modal-dialog.modal-lg {max-width: 900px;}.card-header.bg-light {background-color: #f8f9fa;}.form-label {font-weight: 500;}.select2-container {z-index: 1056;}.modal-body {max-height: calc(100vh - 210px);overflow-y: auto;}.dataTables_wrapper .filters input {width: 100%;padding: 3px;box-sizing: border-box;}.dataTables_wrapper .filters th {padding: 6px 3px;}.table > :not(caption) > * > * {padding: 0.75rem;vertical-align: middle;}.dropdown-toggle::after {display: none;}.btn-link {color: #333;padding: 0;}.btn-link:hover {color: #000;}</style>
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-plane"></i>
+                    </span>
+                    <span class="title-text"> Destination Management
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div> 
+    <div class="destination-management">
+        <!-- Header Section -->
+        <div class="page-header">
+            <div class="header-wrapper">
+    
+                {% if user.is_admin %}
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="newDestinationBtn">
+                        <i class="fas fa-plus"></i>
+                        Add Destination
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="destination-content">
+            <div id="destinationResults"></div>
+        
+            <!-- Destination Form Modal -->
+            <div class="modal fade" id="destinationFormModal" tabindex="-1" aria-labelledby="destinationFormModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="formTitle">Add New Destination</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        
+                        <div class="modal-body">
+                            <form id="destinationForm" class="needs-validation" novalidate>
+                                {% csrf_token %}
+                                <input type="hidden" id="destinationId" name="id">
+        
+                                <!-- Basic Information -->
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Basic Information</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="destinationName" class="form-label">Destination Name*</label>
+                                                <input type="text"
+                                                    class="form-control"
+                                                    id="destinationName"
+                                                    name="name"
+                                                    required>
+                                                <div class="invalid-feedback">
+                                                    Please provide a destination name.
+                                                </div>
+                                            </div>
+        
+                                            <div class="col-md-4 mb-3">
+                                                <label for="destinationLsId" class="form-label">LS ID</label>
+                                                <input type="number"
+                                                    class="form-control"
+                                                    id="destinationLsId"
+                                                    name="ls_id"
+                                                    min="0">
+                                                <div class="form-text">
+                                                    Unique identifier for LS backend mapping
+                                                </div>
+                                            </div>
+        
+                                            <div class="col-md-4 mb-3">
+                                                <label for="destinationCountry" class="form-label">Country*</label>
+                                                <select class="form-select"
+                                                        id="destinationCountry"
+                                                        name="country"
+                                                        required>
+                                                    <option value="">Select Country</option>
+                                                    {% for country in all_countries %}
+                                                    <option value="{{ country.id }}">{{ country.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <div class="invalid-feedback">
+                                                    Please select a country.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+        
+                                <!-- Location Details -->
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Location Details</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="destinationCp" class="form-label">Postal Code</label>
+                                                <input type="text" class="form-control" id="destinationCp" name="cp">
+                                            </div>
+        
+                                            <div class="col-md-6 mb-3">
+                                                <label for="destinationProvince" class="form-label">Province</label>
+                                                <input type="text" class="form-control" id="destinationProvince" name="province">
+                                            </div>
+                                        </div>
+        
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="destinationLatitude" class="form-label">Latitude</label>
+                                                <input type="number"
+                                                    step="any"
+                                                    class="form-control"
+                                                    id="destinationLatitude"
+                                                    name="latitude">
+                                            </div>
+        
+                                            <div class="col-md-4 mb-3">
+                                                <label for="destinationLongitude" class="form-label">Longitude</label>
+                                                <input type="number"
+                                                    step="any"
+                                                    class="form-control"
+                                                    id="destinationLongitude"
+                                                    name="longitude">
+                                            </div>
+        
+                                            <div class="col-md-4 mb-3">
+                                                <label for="destinationAmbassador" class="form-label">Ambassador</label>
+                                                <select class="form-select" id="destinationAmbassador" name="ambassador">
+                                                    <option value="">Select Ambassador</option>
+                                                    {% for ambassador in all_ambassadors %}
+                                                    <option value="{{ ambassador.id }}">{{ ambassador.username }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+        
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" form="destinationForm" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        
+    </div>
+    <br />  <br />
+    <table id="destinationTable" class="table table-striped table-bordered dataTable no-footer mw-100">
+        <thead>
+            <tr>
+                <th>Destination Name</th>
+                <th>Country</th>
+                <th>Ambassador</th>
+                <th>LS ID</th>
+                <th>Actions</th>              
+            </tr>
+            <tr class="filters">
+                <th><input type="text" class="form-control" placeholder="Search Name"></th>
+                <th><input type="text" class="form-control" placeholder="Search Country"></th>
+                <th><input type="text" class="form-control" placeholder="Search Ambassador"></th>
+                <th><input type="text" class="form-control" placeholder="Search LS ID"></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+        
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this destination?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>  <!-- main-content project -->  
+ 
+<!-- JavaScript to handle the modal -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const destinationModal = new bootstrap.Modal(document.getElementById('destinationFormModal'));
+    
+    // Show modal for new destination
+    document.getElementById('newDestinationBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('formTitle').textContent = 'Add New Destination';
+        document.getElementById('destinationForm').reset();
+        document.getElementById('destinationId').value = '';
+        destinationModal.show();
+    });
+
+    // Show modal for editing
+    document.querySelectorAll('.editDestinationBtn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const data = this.dataset;
+            document.getElementById('formTitle').textContent = 'Edit Destination';
+            document.getElementById('destinationId').value = data.id;
+            document.getElementById('destinationName').value = data.name;
+            document.getElementById('destinationCountry').value = data.country;
+            document.getElementById('destinationLsId').value = data.lsId;
+ 
+            destinationModal.show();
+        });
+    });
+
+    // Initialize Select2 for dropdowns
+    $('#destinationCountry, #destinationAmbassador').select2({
+        theme: 'bootstrap-5',
+        dropdownParent: $('#destinationFormModal'),
+        width: '100%'
+    });
+});
+</script>
+
+<script>
+ 
+const DestinationTable = {
+    init() {
+        this.initializeDataTable();
+        this.bindSearchEvents();
+    },
+
+    initializeDataTable() {
+        this.table = $('#destinationTable').DataTable({
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+                 '<"row"<"col-sm-12"tr>>' +
+                 '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            order: [[0, 'asc']],
+            responsive: true,
+            processing: true,
+            serverSide: false,  
+            data: this.getDestinationData(),  
+            columns: [
+                { 
+                    data: 'name',
+                    render: function(data, type, row) {
+                        return `<span class="fw-bold">${DestinationTable.escapeHtml(data)}</span>`;
+                    }
+                },
+                { 
+                    data: 'country_name',
+                    render: function(data) {
+                        return DestinationTable.escapeHtml(data);
+                    }
+                },
+                { 
+                    data: 'ambassador_name',
+                    render: function(data) {
+                        return DestinationTable.escapeHtml(data) || 'No ambassador assigned';
+                    }
+                },
+                { 
+                    data: 'ls_id',
+                    render: function(data) {
+                        return data || 'Not assigned';
+                    }
+                },
+                {
+                    data: null,
+                    orderable: false,
+                    className: 'text-center',
+                    render: function(data, type, row) {
+                        return `
+                            <div class="dropdown">
+                                <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="bx bx-dots-horizontal-rounded"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="/destinations/${row.id}">
+                                            <i class="bx bx-show me-2"></i>View Details
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item editDestinationBtn" href="#" 
+                                           data-id="${row.id}"
+                                           data-name="${DestinationTable.escapeHtml(row.name)}"
+                                           data-country="${row.country_id}"
+                                           data-ls_id="${row.ls_id || ''}"
+                                           data-ambassador="${row.ambassador_id || ''}">
+                                            <i class="bx bx-edit me-2"></i>Edit
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger deleteDestinationBtn" href="#" 
+                                           data-id="${row.id}">
+                                            <i class="bx bx-trash me-2"></i>Delete
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>`;
+                    }
+                }
+            ],
+            language: {
+                search: "",
+                searchPlaceholder: "Search...",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ destinations",
+                emptyTable: "No destinations available",
+                zeroRecords: "No matching destinations found"
+            },
+            rowCallback: function(row, data) {
+                $(row).attr('data-id', data.id);
+            }
+        });
+    },
+
+    bindSearchEvents() {
+        // Individual column searching
+        $('#destinationTable .filters th input').on('keyup change', function() {
+            const colIndex = $(this).parent().index();
+            DestinationTable.table
+                .column(colIndex)
+                .search(this.value)
+                .draw();
+        });
+
+        // Bind edit and delete events
+        $('#destinationTable').on('click', '.editDestinationBtn', function(e) {
+            e.preventDefault();
+            const data = $(this).data();
+            DestinationManager.showForm('edit', data);
+        });
+
+        $('#destinationTable').on('click', '.deleteDestinationBtn', function(e) {
+            e.preventDefault();
+            const destinationId = $(this).data('id');
+            DestinationManager.handleDelete(destinationId);
+        });
+    },
+
+    getDestinationData() { 
+        return destinationData || [];
+    },
+
+    refreshTable() {
+        this.table.ajax.reload(null, false);
+    },
+
+    escapeHtml(unsafe) {
+        return unsafe
+            ? unsafe.replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            })[char])
+            : '';
+    }
+};
+</script> 
+
+<script> 
+    const destinationData = [
+        {% for item in destination_data %}
+            {
+                id: "{{ item.destination.id }}",
+                name: "{{ item.destination.name|escapejs }}",
+                country_name: "{{ item.destination.country.name|escapejs }}",
+                country_id: "{{ item.destination.country.id }}",
+                ambassador_name: "{{ item.ambassador_name|escapejs }}",
+                ambassador_id: "{{ item.destination.ambassador.id|default:'' }}",
+                ls_id: "{{ item.destination.ls_id|default:'' }}",   
+                detail_url: "{% url 'destination_detail' item.destination.id %}"
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // Initialize when document is ready
+    $(document).ready(() => {
+        DestinationTable.init();
+    });
+</script> 
+
+<!--// JavaScript for adding and editing destinations--> 
+<script>
+// Destination Management Module
+const DestinationManager = {
+    modal: null,
+    form: null,
+    table: null,
+    
+    init() {
+        this.modal = new bootstrap.Modal(document.getElementById('destinationFormModal'));
+        this.form = document.getElementById('destinationForm');
+        this.table = $('#destinationTable').DataTable();
+        
+        this.initializeSelects();
+        this.bindEvents();
+        this.setupFormValidation();
+    },
+
+    initializeSelects() {
+        // Initialize Select2 for dropdowns
+        $('.select2-control').select2({
+            theme: 'bootstrap-5',
+            dropdownParent: $('#destinationFormModal'),
+            width: '100%',
+            placeholder: 'Select an option'
+        });
+    },
+
+    bindEvents() {
+        // New Destination Button
+        $('#newDestinationBtn').on('click', (e) => {
+            e.preventDefault();
+            this.showForm('new');
+        });
+
+        // Edit Button
+        $(document).on('click', '.editDestinationBtn', (e) => {
+            e.preventDefault();
+            this.showForm('edit', $(e.currentTarget).data());
+        });
+
+        // Form Submit
+        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+
+        // Cancel Button
+        $('#cancelBtn').on('click', () => this.hideForm());
+
+        // Modal Events
+        $('#destinationFormModal').on('hidden.bs.modal', () => this.resetForm());
+    },
+
+    setupFormValidation() {
+        // Custom form validation
+        $(this.form).validate({
+            rules: {
+                name: "required",
+                country: "required",
+                ls_id: {
+                    number: true,
+                    min: 0
+                },
+                latitude: {
+                    number: true,
+                    range: [-90, 90]
+                },
+                longitude: {
+                    number: true,
+                    range: [-180, 180]
+                }
+            },
+            messages: {
+                name: "Please enter destination name",
+                country: "Please select a country",
+                ls_id: {
+                    number: "Please enter a valid ID",
+                    min: "ID must be positive"
+                },
+                latitude: {
+                    number: "Please enter a valid latitude",
+                    range: "Latitude must be between -90 and 90"
+                },
+                longitude: {
+                    number: "Please enter a valid longitude",
+                    range: "Longitude must be between -180 and 180"
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: (error, element) => {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: (element) => {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: (element) => {
+                $(element).removeClass('is-invalid');
+            }
+        });
+    },
+
+    showForm(type, data = {}) {
+        const title = type === 'new' ? 'Add New Destination' : 'Edit Destination';
+        $('#formTitle').text(title);
+        
+        if (type === 'edit') {
+            this.populateForm(data);
+        } else {
+            this.resetForm();
+        }
+        
+        this.modal.show();
+    },
+
+    populateForm(data) {
+        const fields = [
+            'id', 'name', 'country', 'cp', 'province', 'description',
+            'link', 'slogan', 'ls_id', 'latitude', 'longitude', 'ambassador'
+        ];
+
+        fields.forEach(field => {
+            const element = $(`#destination${field.charAt(0).toUpperCase() + field.slice(1)}`);
+            if (element.length) {
+                element.val(data[field]).trigger('change');
+            }
+        });
+    },
+
+    resetForm() {
+        this.form.reset();
+        $('.is-invalid').removeClass('is-invalid');
+        $('.select2-control').val(null).trigger('change');
+        $('#destinationId').val('');
+    },
+
+    hideForm() {
+        this.modal.hide();
+    },
+
+    async handleSubmit(event) {
+        event.preventDefault();
+
+        if (!$(this.form).valid()) return;
+
+        const submitBtn = this.form.querySelector('[type="submit"]');
+        submitBtn.disabled = true;
+        
+        try {
+            const formData = new FormData(this.form);
+            const url = $('#destinationId').val() 
+                ? '{% url "edit_destination" %}'
+                : '{% url "create_destination" %}';
+
+            const response = await this.submitForm(url, formData);
+            
+            if (response.status === 'success') {
+                this.handleSuccess(response);
+            } else {
+                this.handleError(response.message);
+            }
+        } catch (error) {
+            this.handleError('An error occurred while saving the destination.');
+            console.error('Submit error:', error);
+        } finally {
+            submitBtn.disabled = false;
+        }
+    },
+
+    async submitForm(url, formData) {
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        });
+        return response.json();
+    },
+
+    handleSuccess(response) {
+        toastr.success(response.message);
+        
+        if (!$('#destinationId').val()) {
+            this.appendNewDestination(response.data);
+        } else {
+            this.updateDestinationRow(response.data);
+        }
+        
+        this.hideForm();
+        this.table.ajax.reload();
+    },
+
+    handleError(message) {
+        toastr.error(message);
+    },
+
+    appendNewDestination(data) {
+        const newRow = this.createDestinationRow(data);
+        this.table.row.add($(newRow)).draw();
+    },
+
+    updateDestinationRow(data) {
+        const updatedRow = this.createDestinationRow(data);
+        const row = this.table.row(`[data-id="${data.id}"]`);
+        row.data($(updatedRow)).draw();
+    },
+
+    createDestinationRow(data) {
+        return `
+            <tr data-id="${data.id}">
+                <td>
+                    <a href="${data.url}" class="destination-link">
+                        ${this.escapeHtml(data.name)}
+                    </a>
+                </td>
+                <td>${this.escapeHtml(data.country_name)}</td>
+                <td>${this.escapeHtml(data.ambassador_name || 'No ambassador assigned')}</td>
+                <td>
+                    <a href="${data.url}" class="btn btn-sm btn-primary">
+                        <i class="bx bx-show"></i> View
+                    </a>
+                </td>
+                <td>${data.ls_id || ''}</td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item editDestinationBtn" href="#" 
+                               data-id="${data.id}" 
+                               data-name="${this.escapeHtml(data.name)}"
+                               data-country="${data.country}"
+                               data-ls_id="${data.ls_id || ''}"
+                               data-ambassador="${data.ambassador || ''}">
+                                <i class="bx bx-edit"></i> Edit
+                            </a>
+                            <a class="dropdown-item text-danger deleteDestinationBtn" href="#" 
+                               data-id="${data.id}">
+                                <i class="bx bx-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                </td>
+            </tr>`;
+    },
+
+    escapeHtml(unsafe) {
+        return unsafe
+            ? unsafe.replace(/[&<"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            })[char])
+            : '';
+    },
+    // Add this method to the DestinationManager object
+    createDestinationCard(data) {
+        return `
+            <div class="col-3 col-md-6 col-sm-12 mb-25" data-id="${data.id}">
+                <div class="box destination client">
+                    <div class="dropdown">
+                        <a href="javascript:void(0);" class="btn-link" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bx bx-dots-horizontal-rounded"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a class="dropdown-item editDestinationBtn" href="#" 
+                            data-id="${data.id}" 
+                            data-name="${this.escapeHtml(data.name)}" 
+                            data-country="${data.country}" 
+                            data-ambassador="${data.ambassador || ''}">
+                                <i class="bx bx-edit mr-5"></i>Edit
+                            </a>
+                            <a class="dropdown-item deleteDestinationBtn" href="#" data-id="${data.id}">
+                                <i class="bx bx-trash"></i> Delete
+                            </a>
+                        </div>
+                    </div>
+                    <div class="box-body pt-5 pb-0">
+                        <a href="${data.url}">
+                            <h5 class="mt-17">${this.escapeHtml(data.name)}</h5>
+                        </a>
+                        <p class="fs-14 font-w400 font-main">Ambassadors:
+                            <span class="text-clo-primary font-w500 pl-4">
+                                ${this.escapeHtml(data.ambassador) || 'No ambassador assigned'}
+                            </span>
+                        </p>
+                        <div class="group-btn d-flex justify-content-between">
+                            <a class="bg-btn-pri color-white" href="${data.url}">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+    },
+
+    // Modify the appendNewDestination method in DestinationManager
+    appendNewDestination(data) {
+        if (this.table) {
+            // If using DataTable
+            this.table.row.add($(this.createDestinationRow(data))).draw();
+        } else {
+            // If using card view
+            const newCard = this.createDestinationCard(data);
+            $('#destinationResults').prepend(newCard);
+        }
+    }
+
+    };
+
+    // Initialize when document is ready
+    $(document).ready(() => DestinationManager.init());
+
+</script> 
+
+<!--// JavaScript for adding and editing destinations-->
+ 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageDiv = document.getElementById('message'); // Assuming you have a message div to show messages
+
+        // Add event listener for delete buttons
+        document.querySelectorAll('.deleteDestinationBtn').forEach(function(btn) {
+            btn.addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent default anchor behavior
+
+                const destinationId = this.getAttribute('data-id');
+
+                // Confirm deletion
+                if (confirm("Are you sure you want to delete this destination?")) {
+                    fetch(`/destinations/${destinationId}/delete`, {  // Use your URL path for deletion
+                        method: 'DELETE',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCookie('csrftoken'), // CSRF token for safety
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                            // Optionally, remove the deleted item from the UI
+                            // For example, you can find the parent element and remove it
+                            btn.closest('li').remove(); // Remove the parent <li> of the button
+                        } else {
+                            messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        messageDiv.innerHTML = `<div class="alert alert-danger">An error occurred while deleting. Please try again.</div>`;
+                    });
+                }
+            });
+        });
+
+        // Function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Check if this cookie string begins with the desired name
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+ 
+{% endblock %}

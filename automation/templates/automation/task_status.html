@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Task Status</h1>
+<p>Task ID: {{ task.id }}</p>
+<p>Status: <span id="task-status">{{ task.get_status_display }}</span></p>
+<div id="log-container" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;"></div>
+
+<script>/*
+    const taskId = "{{ task.id }}";
+    const logContainer = document.getElementById('log-container');
+    const statusElement = document.getElementById('task-status');
+    
+    const socket = new WebSocket(
+        'wss://' + window.location.host + 
+        '/ws/logs/' + taskId + '/'
+    );
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'log_update') {
+            logContainer.innerHTML = data.message;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        } else if (data.type === 'status_update') {
+            statusElement.textContent = data.status;
+            if (data.status === 'COMPLETED' || data.status === 'FAILED') {
+                socket.close();
+            }
+        }
+    };
+
+    socket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };*/
+</script>
+{% endblock %}

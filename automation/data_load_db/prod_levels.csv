@@ -1,0 +1,18 @@
+ID,Title,Type,Order
+20,¿Qué ver?,Event,1
+16,¿Qué ver?,Place,1
+6,¿Qué hacer?,Place,2
+23,¿Qué hacer?,Event,4
+13,¿Dónde Comprar?,Place,7
+1,¿Dónde Comer?,Place,3
+22,Vida Nocturna,Event,3
+3,Vida Nocturna,Place,5
+29,Transporte,Place,6
+28,Servicios de Alquiler,Place,4
+11,Salud y Bienestar,Place,10
+21,Eventos Gastronómicos,Event,2
+10,Estancia de larga duración,Place,8
+26,Estancia Larga Duración,Event,6
+19,Contratiempos de Viaje,Place,11
+25,Compras,Event,5
+12,Alojamiento,Place,0

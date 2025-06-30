@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="main-content project">
+    <div class="container mt-5">
+        <h2>Upload Tasks Results</h2>
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if error %}
+        <div class="icon-box bg-color-9" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        <div class="row">
+            <div class="col-12">
+                <div class="box">
+                    <div class="box-body">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="task_option">Task Option</label>
+                                <select class="form-control" id="task_option" name="task_option" required aria-label="Select task option">
+                                    <option value="existing">Select Existing Task</option>
+                                    <option value="new">Create New Task</option>
+                                </select>
+                            </div>
+                            <div id="existing_task_div" class="form-group">
+                                <label for="existing_task">Select Existing Task</label>
+                                <select class="form-control" id="existing_task" name="existing_task" aria-label="Select an existing task">
+                                    <option value="">Select a task</option>
+                                    {% for task in tasks %}
+                                    <option value="{{ task.id }}">{{ task.project_title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="submitted_country">Country</label>
+                                <select class="form-control" id="submitted_country" name="submitted_country" required>
+                                    <option value="">Select Country</option>
+                                    {% if countries %}
+                                        {% for country in countries %}
+                                            <option value="{{ country.id }}">{{ country.name }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="" disabled>No countries available</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="submitted_city">Select Destination/City</label>
+                                <select class="form-control" id="submitted_city" name="submitted_city" required>
+                                    <option value="">Select a destination</option>
+                                    {% if destinations %}
+                                        {% for destination in destinations %}
+                                            <option value="{{ destination.id }}">{{ destination.name }}</option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="" disabled>No destinations available</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            
+                            
+                            <div id="new_task_div" class="form-group" style="display: none;">
+                                <label for="new_task_title">New Task Title</label>
+                                <input type="text" class="form-control" id="new_task_title" name="new_task_title" aria-label="Enter new task title">
+                            </div>
+                            <div class="form-group">
+                                <label for="results_file">Upload Results File</label>
+                                <input type="file" class="form-control-file" id="results_file" name="results_file" required accept=".json" aria-label="Upload results file">
+                                <small class="form-text text-muted">Please upload a JSON file.</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('task_option').addEventListener('change', function() {
+    var existingTaskDiv = document.getElementById('existing_task_div');
+    var newTaskDiv = document.getElementById('new_task_div');
+    var existingTaskSelect = document.getElementById('existing_task');
+    var newTaskInput = document.getElementById('new_task_title');
+
+    if (this.value === 'existing') {
+        existingTaskDiv.style.display = 'block';
+        newTaskDiv.style.display = 'none';
+        existingTaskSelect.required = true;
+        newTaskInput.required = false;
+    } else {
+        existingTaskDiv.style.display = 'none';
+        newTaskDiv.style.display = 'block';
+        existingTaskSelect.required = false;
+        newTaskInput.required = true;
+    }
+});
+</script>
+
+{% endblock %}

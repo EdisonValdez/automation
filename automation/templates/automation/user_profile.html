@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load business_filters %}
+
+{% block title %}{{ user.get_full_name|default:user.username }} - Profile{% endblock %}
+
+{% block content %}
+<style>
+    .profile-container {max-width: 1200px;margin: 0 auto;padding: 2rem;}.profile-header {background: linear-gradient(145deg, #F4C031 0%, #F4C031 100%);border-radius: 15px;padding: 2rem;margin-bottom: 2rem;color: white;box-shadow: 0 4px 20px rgba(155, 141, 255, 0.2);}.header-content {display: flex;align-items: center;gap: 2rem;}.profile-avatar {position: relative;width: 120px;height: 120px;}.profile-avatar img, .avatar-placeholder {width: 100%;height: 100%;border-radius: 50%;border: 4px solid rgba(255, 255, 255, 0.2);}.avatar-placeholder {background: rgba(255, 255, 255, 0.2);display: flex;align-items: center;justify-content: center;font-size: 2.5rem;font-weight: 600;}.status-indicator {position: absolute;bottom: 5px;right: 5px;width: 12px;height: 12px;background: #4CAF50;border-radius: 50%;border: 2px solid white;}.profile-info h1 {font-size: 1.8rem;margin: 0;font-weight: 600;}.user-role {font-size: 1rem;opacity: 0.9;}.profile-stats {display: flex;gap: 2rem;margin-top: 1rem;}.stat-item {display: flex;flex-direction: column;align-items: center;background: rgba(255, 255, 255, 0.1);padding: 1rem;border-radius: 10px;min-width: 100px;}.stat-value {font-size: 1.5rem;font-weight: 600;}.stat-label {font-size: 0.9rem;opacity: 0.9;}.profile-grid {display: grid;grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));gap: 1.5rem;}.profile-card {background: white;border-radius: 12px;box-shadow: 0 2px 12px rgba(0,0,0,0.05);overflow: hidden;}.card-header {padding: 1.25rem;background: #f8f9fa;border-bottom: 1px solid #e9ecef;display: flex;align-items: center;gap: 0.75rem;}.card-header i {font-size: 1.5rem;color: #F4C031;}.card-header h3 {margin: 0;font-size: 1.1rem;font-weight: 600;color: #2c3e50;}.card-content {padding: 1.25rem;}.info-grid {display: grid;gap: 1rem;}.info-item {display: flex;justify-content: space-between;align-items: center;padding: 0.5rem 0;border-bottom: 1px solid #e9ecef;}.info-item:last-child {border-bottom: none;}.info-item label {color: #6c757d;font-size: 0.9rem;}.status-badge, .role-badge {padding: 0.25rem 0.75rem;border-radius: 15px;font-size: 0.85rem;font-weight: 500;}.status-badge.active {background: #E8F5E9;color: #4CAF50;}.status-badge.inactive {background: #FFEBEE;color: #F44336;}.role-badge {background: #E3F2FD;color: #2196F3;}.destinations-grid {display: grid;gap: 0.75rem;}.destination-item {display: flex;align-items: center;gap: 0.75rem;padding: 0.75rem;background: #f8f9fa;border-radius: 8px;}.no-destinations {text-align: center;padding: 2rem;color: #6c757d;}@media (prefers-color-scheme: dark) {.profile-card {background: #1a1d20;}.card-header {background: #242830;border-bottom-color: #2d3436;}.card-header h3 {color: #e9ecef;}.info-item {border-bottom-color: #2d3436;}.info-item label {color: #adb5bd;}.destination-item {background: #242830;}}
+</style>
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <span class="title-text"> User Profile
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div> 
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="header-content">
+                <div class="profile-avatar">
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" alt="Profile Image">
+                    {% else %}
+                        <div class="avatar-placeholder">
+                            {{ user.username|make_list|first|upper }}
+                        </div>
+                    {% endif %}
+                    <div class="status-indicator"></div>
+                </div>
+                <div class="profile-info">
+                    <h1>{{ user.get_full_name|default:user.username }}</h1>
+                    <span class="user-role">{{ user_role }}</span>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <i class='bx bx-briefcase'></i>
+                            <span class="stat-value">{{ total_projects }}</span>
+                            <span class="stat-label">Projects</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class='bx bx-check-circle'></i>
+                            <span class="stat-value">{{ completed_projects }}</span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-grid">
+                <!-- User Information Card -->
+                <div class="profile-card">
+                    <div class="card-header">
+                        <i class='bx bx-user-circle'></i>
+                        <h3>Basic Information</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>User ID</label>
+                                <span>#{{ user.id }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Username</label>
+                                <span>{{ user.username }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Email</label>
+                                <span>{{ user.email }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Status</label>
+                                <span class="status-badge {% if user.is_active %}active{% else %}inactive{% endif %}">
+                                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Details Card -->
+                <div class="profile-card">
+                    <div class="card-header">
+                        <i class='bx bx-detail'></i>
+                        <h3>Account Details</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Join Date</label>
+                                <span>{{ user.date_joined|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Last Login</label>
+                                <span>{{ user.last_login|date:"M d, Y H:i" }}</span>
+                            </div>
+                            <div class="info-item">
+                                <label>Role</label>
+                                <span class="role-badge">{{ user_role }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Destinations Card -->
+                <div class="profile-card">
+                    <div class="card-header">
+                        <i class='bx bx-map-alt'></i>
+                        <h3>Assigned Destinations</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="destinations-grid">
+                            {% for destination in user.destinations.all %}
+                                <div class="destination-item">
+                                    <i class='bx bx-location-plus'></i>
+                                    <span>{{ destination.name }}</span>
+                                </div>
+                            {% empty %}
+                                <div class="no-destinations">
+                                    <i class='bx bx-map-alt'></i>
+                                    <span>No destinations assigned</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

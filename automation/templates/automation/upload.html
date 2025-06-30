@@ -1,0 +1,1145 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Upload File{% endblock %}
+
+{% block content %}
+<style>.messages-container{position:fixed;top:20px;right:20px;z-index:1050;max-width:350px}.alert{margin-bottom:1rem;padding:1rem;border:none;border-radius:8px;box-shadow:0 2px 5px rgb(0 0 0 / .2);animation:slideIn 0.3s ease-out}.alert-success{background-color:#d4edda;color:#155724;border-left:4px solid #28a745}.alert-warning{background-color:#fff3cd;color:#856404;border-left:4px solid #ffc107}.alert-error,.alert-danger{background-color:#f8d7da;color:#721c24;border-left:4px solid #dc3545}.alert-info{background-color:#d1ecf1;color:#0c5460;border-left:4px solid #17a2b8}.btn-close{padding:.5rem;margin:-.5rem -.5rem -.5rem auto;background:#fff0;border:0;float:right;font-size:1.5rem;font-weight:700;line-height:1;color:inherit;opacity:.5;cursor:pointer}.btn-close:hover{opacity:1}.icon-box{display:flex;align-items:center}@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes fadeOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}.alert.fade-out{animation:fadeOut 0.3s ease-out forwards} .image-count-selection {margin-top: 10px;}.form-check-inline {margin-right: 20px;}.form-check-input:checked {background-color: #F4C031;border-color: #F4C031;}.form-check-label {cursor: pointer;}.sidebar-expand.active .sidebar {transition: transform 0.3s ease-in-out;max-width: 100%;z-index: 1111;}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.badge-info {color: rgb(255, 255, 255);background-color: rgb(10, 153, 46);}.loader {border: 5px solid #f3f3f3;border-top: 5px solid #3498db;border-radius: 50%;width: 50px;height: 50px;animation: spin 1s linear infinite;display: none;}@keyframes spin {0% {transform: rotate(0deg);}100% {transform: rotate(360deg);}}.overlay {position: fixed;top: 0;left: 0;width: 100%;height: 100%;background-color: rgba(0, 0, 0, 0.5);z-index: 1000;display: none;}#loading-spinner {position: fixed;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index: 1001;display: none;}</style>
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-tasks"></i>
+                    </span>
+                    <span class="title-text">Add New Content</span>
+                </h1>
+            </div>
+        </div>
+    </div> 
+<div class="row">
+<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+    <div class="box">
+        <div class="box-body">
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="icon-box">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ error }}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+ 
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Auto-dismiss messages after 5 seconds
+                const messages = document.querySelectorAll('.alert');
+                messages.forEach(message => {
+                    setTimeout(() => {
+                        message.classList.add('fade-out');
+                        setTimeout(() => {
+                            message.remove();
+                        }, 300);
+                    }, 5000);
+                });
+
+                // Click to dismiss
+                document.querySelectorAll('.btn-close').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const alert = this.closest('.alert');
+                        alert.classList.add('fade-out');
+                        setTimeout(() => {
+                            alert.remove();
+                        }, 300);
+                    });
+                });
+            });
+            </script>
+
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <!-- Country Dropdown -->
+                <div class="col-md-4 col-sm-12 mb-24">
+                    <div class="form-group">
+                        <label for="id_country" class="form-label mt-1 fs-18 font-w500 color-primary">Country</label>
+                        <select name="country" class="form-control" id="id_country">
+                            <option value="">Select a country</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Destination Dropdown -->
+                <div class="col-md-4 col-sm-12 mb-24">
+                    <div class="form-group">
+                        <label for="id_destination" class="form-label mt-1 fs-18 font-w500 color-primary">Destination</label>
+                        <select name="destination" class="form-control" id="id_destination">
+                            <option value="">Select a destination</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- <div class="col-md-4 col-sm-12 mb-24">
+                    <div class="form-group">
+                        <label for="{{ form.level.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
+                        {{ form.level }}
+                    </div>
+                </div> -->
+
+                <div class="col-md-4 col-sm-12 mb-24">
+                    <div class="form-group">
+                        <label for="id_level" class="form-label mt-1 fs-18 font-w500 color-primary">Level</label>
+                        <select name="level" class="form-control" id="id_level">
+                            <option value="">Select a level</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        
+            <div class="row">
+                <!-- Main Category Dropdown -->
+                <div class="col-md-4 col-sm-12 mb-24">
+                    <div class="form-group">
+                        <label for="id_main_category" class="form-label mt-1 fs-18 font-w500 color-primary">Main Category</label>
+                        <select name="main_category" class="form-control" required id="id_main_category">
+                            <option value="">Select a category</option>
+                            <!-- {% for category in main_categories %}
+                                <option value="{{ category.id }}">{{ category.title }}</option>
+                            {% endfor %} -->
+                        </select>
+                    </div>
+                </div>
+        
+                <!-- Subcategory Dropdown -->
+                <div class="col-md-4 col-sm-12 mb-24">
+                    <div class="form-group">
+                        <label for="id_subcategory" class="form-label mt-1 fs-18 font-w500 color-primary">Subcategory (optional)</label>
+                        <select name="subcategory" class="form-control" id="id_subcategory">
+                            <option value="">Select a subcategory (optional)</option>
+                        </select>
+                    </div>
+                </div>
+                
+            <div class="col-md-4 col-sm-12 mb-24">
+                <div class="form-group">
+                    <label for="images_count" class="form-label mt-1 fs-18 font-w500 color-primary">Images to download:</label>
+
+                    <div class="custom-controls-stacked d-lg-flex align-items-center"> 
+                        <label class="custom-control custom-radio me-4 px-3">
+                            <input type="radio" 
+                                class="custom-control-input" 
+                                name="image_count" 
+                                value="3"
+                                {% if default_image_count == 3 %}checked{% endif %}>
+                            <span class="custom-control-label">3</span>
+                        </label>
+                        <label class="custom-control custom-radio me-4 px-3">
+                            <input type="radio" 
+                                class="custom-control-input" 
+                                name="image_count" 
+                                value="4"
+                                {% if default_image_count == 4 or not default_image_count %}checked{% endif %}>
+                            <span class="custom-control-label">4</span>
+                        </label>
+                        <label class="custom-control custom-radio me-4 px-3">
+                            <input type="radio" 
+                                class="custom-control-input" 
+                                name="image_count" 
+                                value="5"
+                                {% if default_image_count == 5 %}checked{% endif %}>
+                            <span class="custom-control-label">5</span>
+                        </label>
+                        <label class="custom-control custom-radio me-4 px-3">
+                            <input type="radio" 
+                                class="custom-control-input" 
+                                name="image_count" 
+                                value="6"
+                                {% if default_image_count == 6 %}checked{% endif %}>
+                            <span class="custom-control-label">6</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            </div>    
+            <div class="row">  
+            <div class="col-xl-8 col-lg-8 col-md-6 col-sm-12">
+            <!-- Toggleable Description Field-->
+            <div class="form-group mb-24">
+               <!-- <label class="form-label mt-1 fs-18 font-w500 color-primary">
+                    <a href="#" id="toggle-description" class="btn btn-outline-primary">+ Add Google Maps URL (optional)</a>
+                </label>
+                <div id="description-container" style="display: none;">-->
+                <div id="description-container">
+                    <div class="form-group">
+                        <!--<label for="id_description">Paste one URL</label>--> 
+                        <label for="{{ form.description.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Paste one URL</label>
+                        <div class="input-group">
+                            <input type="text"
+                                id="id_description"
+                                name="description"
+                                class="form-control"
+                                placeholder="https://maps.google.com/maps/place/...">
+                            <div class="input-group-append">
+                                <span class="input-group-text validation-indicator" style="display: none;">
+                                    <i class="fas"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <small id="urlHelp" class="form-text text-muted">
+                            Paste Google Maps URL (one url only)
+                        </small>
+                        <div id="urlFeedback" class="invalid-feedback" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+            </div>
+                <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                    {% if user.is_admin %}
+                <div class="row mb-3">
+                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12">
+                        <label for="{{ form.file.id_for_label }}" class="form-label mt-1 fs-18 font-w500 color-primary">Upload File</label>
+                        <div class="input-group file-browser">
+                            {{ form.file }}
+                        </div>
+                        <div class="form-text">{{ form.file.help_text }}</div>
+                    </div>
+                </div>    
+                {% endif %} 
+                
+            </div>
+             </div>  
+            
+            
+            <div class="row">
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12"> 
+                    <div class="input-group file-browser">
+                        <button type="submit" class="btn btn-primary btn-lg">Start Businesses Acquisition <i class="fas fa-rocket"></i></button>
+                    </div>
+                </div>
+            
+            </div>
+        </form>
+                
+<!-- JavaScript to toggle the description field -->
+   
+
+<!--Categories and Levels-->
+<script>
+$(document).ready(function() {
+    // Initialize select for all select elements
+  
+    // Function to set initial values and trigger changes
+    function initializeForm() {
+        // Get saved values from the server
+        const savedPreferences = {
+            level_id: '{{ user_preferences.last_level.ls_id|default:"" }}',
+            main_category_id: '{{ user_preferences.last_main_category.ls_id|default:"" }}',
+            subcategory_id: '{{ user_preferences.last_subcategory.ls_id|default:"" }}',
+            country_id: '{{ user_preferences.last_country.ls_id|default:"" }}',
+            destination_id: '{{ user_preferences.last_destination.ls_id|default:"" }}'
+        };
+
+        // Set initial values and trigger changes
+        if (savedPreferences.level_id) {
+            $('#id_level').val(savedPreferences.level_id).trigger('change');
+        }
+        if (savedPreferences.country_id) {
+            $('#id_country').val(savedPreferences.country_id).trigger('change');
+        }
+    }
+
+    // Handle Level and Main Category changes
+    $('#id_level').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+
+        // if value for level_id exist in the data, then that would be the parent level id
+        // and the val() will be the translated level id (child level id) and vice versa
+        const levelId = selectedOption.data('level_id') !== '' ? selectedOption.data('level_id') : $(this).val();
+        
+        console.log("Level <val>: ", $(this).val())
+        console.log("Level <level_id>: ", selectedOption.data('level_id'))
+        console.log("Final level: ", levelId)
+
+        const $mainCategory = $('#id_main_category');
+        const $subcategory = $('#id_subcategory');
+        const savedMainCategoryId = '{{ user_preferences.last_main_category.ls_id|default:"" }}';
+
+        $mainCategory.empty().append('<option value="">Select a category</option>');
+        $subcategory.empty().append('<option value="">Select a subcategory (optional)</option>');
+
+        if (levelId) {
+            $.ajax({
+                url: '{% url "get_categories" %}',
+                data: { 'level_id': levelId },
+                success: function(data) {
+                    var results = data["results"]
+
+                    // If the category__id key exists, it means the record is a translated category. 
+                    // The category__id contains the original parent key ID, while id holds the translated category ID.
+                    //  If the key does not exist, then the record is not translated.
+
+                    if (results.length > 0) {
+                        results.forEach(function(category) {
+                            let $option = $('<option></option>')
+                                .attr('value', category.hasOwnProperty('category__id') ? category.category__id : category.id)
+                                .data('category_name', category.title)
+                                .text(category.title);
+
+                            $option.data('category_id', category.hasOwnProperty('category__id') ? category.category__id : '');  
+                            $mainCategory.append($option);
+                        });
+                        
+                        // Set saved main category if it exists
+                        if (savedMainCategoryId) {
+                            $mainCategory.val(savedMainCategoryId).trigger('change');
+                        }
+                    }
+                    $mainCategory.trigger('change.select');
+                },
+                error: function(error) {
+                    console.error('Error fetching categories:', error);
+                }
+            });
+        }
+    });
+
+    // Handle Main Category and Subcategory changes
+    $('#id_main_category').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+
+        // if value for category_id exist in the data, then that would be the parent category id
+        // and the val() will be the translated category id (child category id) and vice versa
+        const categoryId = selectedOption.data('category_id') !== '' ? selectedOption.data('category_id') : $(this).val();
+        
+        console.log("Category <val>: ", $(this).val())
+        console.log("Category <category_id>: ", selectedOption.data('category_id'))
+        console.log("Final category: ", categoryId)
+
+        const $subcategory = $('#id_subcategory');
+        const savedSubcategoryId = '{{ user_preferences.last_subcategory.ls_id|default:"" }}';
+        $subcategory.empty().append('<option value="">Select a subcategory (optional)</option>');
+
+        if (categoryId) {
+            $.ajax({
+                url: '{% url "get_subcategories" %}',
+                data: { 'category_id': categoryId },
+                success: function(data) {
+                    var results = data["results"]
+
+                    if (results.length > 0) {
+                        results.forEach(function(subcategory) {
+                            $subcategory.append($('<option></option>').
+                            attr('value', subcategory.hasOwnProperty('subcategory__id') ? subcategory.subcategory__id : subcategory.id).
+                            data('sub_category_name', subcategory.title).
+                            text(subcategory.title));
+                        });
+                        
+                        // Set saved subcategory if it exists
+                        if (savedSubcategoryId) {
+                            $subcategory.val(savedSubcategoryId);
+                        }
+                    }
+                    $subcategory.trigger('change.select');
+                },
+                error: function(error) {
+                    console.error('Error fetching subcategories:', error);
+                }
+            });
+        }
+    });
+ 
+    // Initialize the form with saved values
+    initializeForm();
+});
+</script>
+<!--Categories and Levels-->
+ 
+<!--Country and City-->
+<script>
+$(document).ready(function() {
+    // Initialize select
+    $('#id_country, #id_destination').select({
+        width: '100%',
+        placeholder: 'Select an option',
+        allowClear: true
+    });
+
+    // Function to load and set saved preferences
+    function loadCountryPreferences() {
+        const savedCountryId = '{{ user_preferences.last_country.ls_id|default:"" }}';
+        const savedDestinationId = '{{ user_preferences.last_destination.ls_id|default:"" }}';
+
+        // If we have a saved country, select it and load its destinations
+        if (savedCountryId) {
+            $('#id_country').val(savedCountryId).trigger('change');
+        }
+    }
+
+    // Function to load and set saved preferences
+    function loadLevelPreferences() {
+        const savedLevelId = '{{ user_preferences.last_level.ls_id|default:"" }}';
+
+        // If we have a saved level
+        if (savedLevelId) {
+            $('#id_level').val(savedLevelId).trigger('change');
+        }
+    }
+
+    // Function to load destinations for a country
+    function loadDestinations(countryId, callback) {
+        const $destination = $('#id_destination');
+        $destination.empty().append('<option value="">Select a destination</option>');
+
+        if (!countryId) return;
+
+        $.ajax({
+            url: '{% url "get_destinations_by_country" %}',
+            data: { 'country_id': countryId },
+            method: 'GET',
+            success: function(data) {
+                var results = data["results"]
+                if (results.length > 0) {
+                    results.forEach(function(destination) {
+                        $destination.append(
+                            $('<option></option>').
+                            attr('value', destination.hasOwnProperty('city__id') ? destination.city__id : destination.id).
+                            data('city_name', destination.name).
+                            data('city_cp', destination.cp).
+                            data('city_province', destination.province).
+                            data('city_description', destination.description).
+                            data('city_link', destination.link).
+                            data('city_latitude', destination.latitude).
+                            data('city_longitude', destination.longitude).
+                            text(destination.name)
+                        );
+                    });
+                    
+                    // If callback provided, execute it
+                    if (callback) callback();
+                } else {
+                    $destination.append('<option value="">No destinations available</option>');
+                }
+                $destination.trigger('change.select');
+            },
+            error: function(error) {
+                console.error('Error fetching destinations:', error);
+                $destination.append('<option value="">Error loading destinations</option>');
+                $destination.trigger('change.select');
+            }
+        });
+    }
+
+    // Load countries when page loads
+    $.ajax({
+        url: '{% url "get_countries" %}',
+        method: 'GET',
+        success: function(data) {
+
+            const $country = $('#id_country');
+            $country.empty().append('<option value="">Select a country</option>');
+            var results = data["results"]
+
+            console.log(results)
+
+            if (results.length > 0) {
+                results.forEach(function(country) {
+
+                    // If the country__id key exists, it means the record is a translated country. 
+                    // The country__id contains the original parent key ID, while id holds the translated country ID.
+                    //  If the key does not exist, then the record is not translated.
+
+                    let $option = $('<option></option>')
+                        .attr('value', country.hasOwnProperty('country__id') ? country.country__id : country.id)
+                        .text(country.name)
+                        .data('country_name', country.name)
+                        .data('country_code', country.code)
+                        .data('country_phone_code', country.phone_code);
+
+                    $option.data('country_id', country.hasOwnProperty('country__id') ? country.country__id : '');  
+                    $country.append($option);
+                });
+
+                // After loading countries, load saved preferences
+                loadCountryPreferences();
+            } else {
+                $country.append('<option value="">No countries available</option>');
+            }
+            $country.trigger('change.select');
+        },
+        error: function(error) {
+            console.error('Error fetching countries:', error);
+            $('#id_country').append('<option value="">Error loading countries</option>');
+            $('#id_country').trigger('change.select');
+        }
+    });
+
+    // Handle country change
+    $('#id_country').on('change', function() {
+        
+        const selectedOption = $(this).find('option:selected');
+
+        // if value for country_id exist in the data, then that would be the parent country id
+        // and the val() will be the translated country id (child country id) and vice versa
+        const countryId = selectedOption.data('country_id') !== '' ? selectedOption.data('country_id') : $(this).val();
+        
+        console.log("Country <val>: ", $(this).val())
+        console.log("Country <country_id>: ", selectedOption.data('country_id'))
+        console.log("Final country: ", countryId)
+
+        const savedDestinationId = '{{ user_preferences.last_destination.ls_id|default:"" }}';
+        
+        loadDestinations(countryId, function() {
+            // After loading destinations, set the saved destination if it exists
+            if (savedDestinationId) {
+                $('#id_destination').val(savedDestinationId).trigger('change.select');
+            }
+        });
+    });
+    $.ajax({
+        url: '{% url "get_levels" %}',
+        method: 'GET',
+        success: function(data) {
+            const $level = $('#id_level');
+            $level.empty().append('<option value="">Select a level</option>');
+            var results = data["results"]
+
+            // If the level__id key exists, it means the record is a translated level. 
+            // The level__id contains the original parent key ID, while id holds the translated level ID.
+            //  If the key does not exist, then the record is not translated.
+
+            if (results.length > 0) {
+                results.forEach(function(level) {
+                    let $option = $('<option></option>')
+                    .attr('value',  level.hasOwnProperty('level__id') ? level.level__id : level.id)
+                    .data('level_name', level.title)
+                    .text(level.title);
+
+                $option.data('level_id', level.hasOwnProperty('level__id') ? level.level__id : '');  
+                $level.append($option);
+                });
+                loadLevelPreferences()
+            } else {
+                $level.append('<option value="">No levels available</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching levels: ' + error);
+        }
+    });
+});
+</script>
+<!--Country and City-->
+
+
+<div class="overlay" ></div>                 
+<div id="log-container"></div>
+ 
+{% include 'automation/modals.html' %}
+ 
+<!--Messages-->
+<script>
+    $(document).ready(function() {
+        $('#upload-form').on('submit', function(e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+            
+            // Country
+            var selectedCountry = $('#id_country option:selected');
+            formData.append('country_code', selectedCountry.data('country_code'));
+            formData.append('country_phone_code', selectedCountry.data('country_phone_code'));
+            formData.append('country_name', selectedCountry.data('country_name'));
+            
+            // Destination
+            var selectedDestination = $('#id_destination option:selected');
+            formData.append('city_name', selectedDestination.data('city_name'));
+            formData.append('city_cp', selectedDestination.data('city_cp'));
+            formData.append('city_province', selectedDestination.data('city_province'));
+            formData.append('city_description', selectedDestination.data('city_description'));
+            formData.append('city_link', selectedDestination.data('city_link'));
+            formData.append('city_latitude', selectedDestination.data('city_latitude'));
+            formData.append('city_longitude', selectedDestination.data('city_longitude'));
+     
+            // Level
+            var selectedLevel = $('#id_level option:selected');
+            formData.append('level_name', selectedLevel.data('level_name'));
+
+            // Category
+            var selectedCategory = $('#id_main_category option:selected');
+            formData.append('category_name', selectedCategory.data('category_name'));
+
+            // Sub Category
+            var selectedSubCategory = $('#id_subcategory option:selected');
+            formData.append('sub_category_name', selectedSubCategory.data('sub_category_name'));
+
+            // Clear previous messages
+            $('#successMessage').text('');
+            $('#errorMessage').text('');
+            $('#form-errors').html('');  // Clear form error container if exists
+
+            function showLoader() {
+                $('#loader').removeClass('d-none'); // Show loader
+            }
+
+            function hideLoader() {
+                $('#loader').addClass('d-none'); // Hide loader
+            }
+
+            // Disable the submit button, show loading spinner, and display overlay
+            $('#submit-button').attr('disabled', true);
+            showLoader(); // Use the showLoader function
+            $('.overlay').show();
+
+            $.ajax({
+                url: "{% url 'upload_file' %}",  // Django URL template tag
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+
+                success: function(response) {
+                    hideLoader(); // Use the hideLoader function
+                    $('.overlay').hide(); // Hide the overlay
+                    $('#submit-button').attr('disabled', false);
+
+                    if (response.status === 'success') {
+                        $('#successMessage').text(response.message);
+                        $('#successModal').modal('show');
+                        var seconds = 10;
+                        var countdownTimer = setInterval(function() {
+                            seconds--;
+                            $('#countdown').text(seconds);
+                            if (seconds <= 0) {
+                                clearInterval(countdownTimer);
+                                window.location.href = response.redirect_url;
+                            }
+                        }, 1000);
+                    } else {
+                        // Display detailed error messages from the server
+                        $('#errorMessage').text(response.message || "An error occurred. Please check the form and try again.");
+                        if (response.errors) {
+                            var errorList = '<ul>';
+                            $.each(response.errors, function(field, errors) {
+                                errorList += '<li><strong>' + field + ':</strong> ' + errors.join(', ') + '</li>';
+                            });
+                            errorList += '</ul>';
+                            $('#form-errors').html(errorList);
+                        }
+                        $('#errorModal').modal('show');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    hideLoader(); // Use the hideLoader function
+                    $('.overlay').hide(); // Hide the overlay on error
+                    $('#submit-button').attr('disabled', false);
+
+                    var errorMessage = "An unexpected error occurred.";
+
+                    if (xhr.status === 0) {
+                        errorMessage = "Network error: Please check your internet connection.";
+                    } else if (xhr.status >= 500) {
+                        errorMessage = "Server error (" + xhr.status + "): The server failed to perform a typical action in the background, however the task might continue....comeback later.";
+                    } else if (xhr.status >= 400) {
+                        errorMessage = "Client error (" + xhr.status + "): Please check your input.";
+                    }
+
+                    // Attempt to parse and display server-side validation errors
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                        if (response.errors) {
+                            var errorList = '<ul>';
+                            $.each(response.errors, function(field, errors) {
+                                errorList += '<li><strong>' + field + ':</strong> ' + errors.join(', ') + '</li>';
+                            });
+                            errorList += '</ul>';
+                            $('#form-errors').html(errorList);
+                        }
+                    } catch (e) {
+                        // If response is not JSON, display the default error message
+                    }
+
+                    $('#errorMessage').text(errorMessage);
+                    $('#errorModal').modal('show');
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        });
+    });
+</script>
+<!--Messages-->
+
+
+<!--Translate Tasks-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const translatingButtons = document.querySelectorAll('.start-translating-btn');
+    
+        translatingButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+    
+            if (this.classList.contains('disabled')) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Process in Progress',
+                    text: 'Please wait for the current operation to complete.'
+                });
+                return;
+            }
+    
+            const taskId = this.getAttribute('data-task-id');
+            const originalText = this.innerHTML;
+            handleTranslation(this, taskId, originalText);
+        });
+    });
+    
+        async function handleTranslation(button, taskId, originalText) {
+        try {
+            // Show loading state
+            Swal.fire({
+                title: 'Translation in Progress',
+                html: 'Please wait while we process your request...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+    
+            // Disable button
+            button.classList.add('disabled');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+    
+            const response = await fetch(`/tasks/${taskId}/translate/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            });
+    
+            const data = await response.json();
+    
+            // Close loading dialog
+            Swal.close();
+    
+            if (!response.ok) {
+                throw new Error(data.message || 'Translation process failed');
+            }
+    
+            handleTranslationResponse(data, button, originalText);
+    
+        } catch (error) {
+            console.error('Translation error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Translation Failed',
+                text: error.message || 'An unexpected error occurred'
+            });
+            resetButton(button, originalText);
+        }
+    }
+        function handleTranslationResponse(response) {
+        const data = response.details || {};
+        
+        let message = `
+            <div class="translation-status">
+                <p>${response.message}</p>
+                ${data.reason ? `<p class="reason">${data.reason}</p>` : ''}
+                
+                <div class="stats">
+                    <p>Total businesses: ${data.total || 0}</p>
+                    <p>Pending: ${data.pending || 0}</p>
+                    <p>Reviewed: ${data.reviewed || 0}</p>
+                    <p>Discarded: ${data.discarded || 0}</p>
+                </div>
+    
+                ${data.error_details && data.error_details.length > 0 ? `
+                    <div class="errors">
+                        <h4>Issues Found:</h4>
+                        <ul>
+                            ${data.error_details.map(error => 
+                                `<li>Business ${error.business_id}: ${error.issue}</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    
+        Swal.fire({
+            icon: response.status === 'success' ? 'success' : 
+                response.status === 'warning' ? 'warning' : 'error',
+            title: response.status === 'success' ? 'Translation Complete' : 
+                response.status === 'warning' ? 'Warning' : 'Translation Failed',
+            html: message,
+            confirmButtonText: 'OK'
+        });
+    }
+        
+        function handleSuccess(data, button) {
+        button.innerHTML = '<i class="fas fa-check"></i> Translation Complete';
+        
+        const taskId = button.getAttribute('data-task-id');
+        const taskUrl = `/tasks/${taskId}/details/`; // Adjust this URL according to your routing
+    
+        Swal.fire({
+            icon: 'success',
+            title: 'Translation Successful',
+            html: `
+                <div class="translation-summary">
+                    ${createSuccessMessage(data)}
+                    <div class="mt-3">
+                        <a href="${taskUrl}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> View Task Details
+                        </a>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Refresh Page',
+            cancelButtonText: 'View Task',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                location.reload();
+            } else {
+                window.location.href = taskUrl;
+            }
+        });
+    }
+    
+        function handleWarning(data, button, originalText) {
+            button.innerHTML = originalText;
+            button.classList.remove('disabled');
+    
+            Swal.fire({
+                icon: 'warning',
+                title: 'Cannot Proceed',
+                html: createWarningMessage(data),
+                confirmButtonText: 'OK'
+            });
+        }
+    
+        function handleError(data, button, originalText) {
+            button.innerHTML = originalText;
+            button.classList.remove('disabled');
+    
+            Swal.fire({
+                icon: 'error',
+                title: 'Translation Error',
+                html: createErrorMessage(data),
+                confirmButtonText: 'OK',
+                showCancelButton: true,
+                cancelButtonText: 'Report Issue'
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    reportIssue(data);
+                }
+            });
+        }
+    
+        function handleUnknownStatus(data, button, originalText) {
+            button.innerHTML = originalText;
+            button.classList.remove('disabled');
+    
+            Swal.fire({
+                icon: 'question',
+                title: 'Unexpected Response',
+                text: 'Received an unexpected response from the server.',
+                confirmButtonText: 'OK'
+            });
+        }
+    
+        function createSuccessMessage(data) {
+            return `
+                <div class="translation-results">
+                    <p>${data.message || 'Translation completed successfully'}</p>
+                    ${data.details ? `
+                        <div class="translation-details">
+                            <p>Successfully processed: ${data.details.success || 0}</p>
+                            <p>Failed: ${data.details.failed || 0}</p>
+                            <p>Total: ${data.details.total || 0}</p>
+                            ${data.details.status_updates?.pending_to_reviewed > 0 ? 
+                                `<p>Updated from pending: ${data.details.status_updates.pending_to_reviewed}</p>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+    
+        function createWarningMessage(data) {
+            return `
+                <div class="warning-message">
+                    <p>${data.message}</p>
+                    ${data.details ? `
+                        <div class="status-breakdown">
+                            <p>Current Status: ${data.details.current_status || 'Unknown'}</p>
+                            ${data.details.suggestion ? `<p>Suggestion: ${data.details.suggestion}</p>` : ''}
+                            <div class="business-stats">
+                                <p>Total Businesses: ${data.details.total || 0}</p>
+                                <p>Pending: ${data.details.pending || 0}</p>
+                                <p>Reviewed: ${data.details.reviewed || 0}</p>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+    
+        function createErrorMessage(data) {
+            return `
+                <div class="error-message">
+                    <p>${data.message}</p>
+                    ${data.details ? `
+                        <div class="business-stats">
+                            ${data.details.total ? `<p>Total Businesses: ${data.details.total}</p>` : ''}
+                            ${data.details.pending ? `<p>Pending Review: ${data.details.pending}</p>` : ''}
+                            ${data.details.reviewed ? `<p>Reviewed: ${data.details.reviewed}</p>` : ''}
+                            ${data.details.discarded ? `<p>Discarded: ${data.details.discarded}</p>` : ''}
+                        </div>
+                    ` : ''}
+                    ${data.suggestion ? `
+                        <p class="suggestion">${data.suggestion}</p>
+                    ` : ''}
+                </div>
+            `;
+        }
+    
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        function reportIssue(errorData) {
+            console.log('Reporting issue:', errorData);
+            // Implement your issue reporting logic here
+            Swal.fire({
+                icon: 'info',
+                title: 'Issue Reported',
+                text: 'The issue has been logged for investigation.',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+</script>
+<!--Translate Tasks-->
+ 
+<!--Validator Google URL format-->       
+<script>
+$(document).ready(function() { 
+    $('#toggle-description').click(function(e) {
+        e.preventDefault();
+        $('#description-container').slideToggle();
+    });
+    
+    const urlInput = $('#id_description');
+    const indicator = $('.validation-indicator');
+    const feedback = $('#urlFeedback'); 
+    const clearIcon = $('.clear-input');
+    const validPatterns = [
+    /^https:\/\/(www\.)?google\.com\/maps\/place\/.+/i,
+    /^https:\/\/(www\.)?google\.es\/maps\/place\/.+/i,  // Added google.es pattern
+    /^https:\/\/maps\.google\.com\/maps\?q=.+/i,
+    /^https:\/\/maps\.google\.es\/maps\?q=.+/i,
+    /^https:\/\/maps\.google\.com\/maps\/dir\/.+/i,
+    /^https:\/\/maps\.google\.es\/maps\/dir\/.+/i,
+    /^https:\/\/(www\.)?google\.com\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,
+    /^https:\/\/(www\.)?google\.es\/maps\/@[-\d.]+,[-\d.]+,\d+z/i,  // Added google.es pattern
+    /^https:\/\/maps\.app\.goo\.gl\/.+/i
+];
+clearIcon.on('click', function() {
+            urlInput.val('').removeClass('is-valid is-invalid');
+            indicator.hide();
+            feedback.hide();
+            $('#description-container').slideUp();
+            $('#toggle-description').removeClass('active');
+        }); 
+
+function validateGoogleMapsUrl(url) {
+    url = url.trim();
+    if (!url) {
+        return {
+            isValid: false,
+            message: 'URL cannot be empty'
+        };
+    }
+
+    if (!url.match(/^https?:\/\//i)) {
+        return {
+            isValid: false,
+            message: 'URL must start with http:// or https://'
+        };
+    }
+
+    const isValidPattern = validPatterns.some(pattern => pattern.test(url));
+    if (!isValidPattern) {
+        return {
+            isValid: false,
+            message: 'Invalid Google Maps URL format'
+        };
+    }
+
+    try {
+        const urlObj = new URL(url);
+        const hostname = urlObj.hostname.toLowerCase();
+        
+        if (!hostname.includes('google.com') &&
+            !hostname.includes('google.es') &&    
+            !hostname.includes('maps.google.com') &&
+            !hostname.includes('maps.google.es') &&
+            !hostname.includes('maps.app.goo.gl')) {
+            return {
+                isValid: false,
+                message: 'URL must be from Google Maps'
+            };
+        }
+
+        return {
+            isValid: true,
+            message: 'Valid Google Maps URL',
+            trimmedUrl: url
+        };
+    } catch (e) {
+        return {
+            isValid: false,
+            message: 'Invalid URL format'
+        };
+    }
+}
+
+    function updateValidationUI(validationResult) {
+        const icon = indicator.find('i');
+        indicator.show();
+        feedback.show();
+
+        if (validationResult.isValid) {
+            urlInput.removeClass('is-invalid').addClass('is-valid');
+            icon.removeClass('fa-times').addClass('fa-check');
+            indicator.removeClass('bg-danger').addClass('bg-success');
+            feedback.removeClass('invalid-feedback').addClass('valid-feedback');
+            urlInput.val(validationResult.trimmedUrl);
+        } else {
+            urlInput.removeClass('is-valid').addClass('is-invalid');
+            icon.removeClass('fa-check').addClass('fa-times');
+            indicator.removeClass('bg-success').addClass('bg-danger');
+            feedback.removeClass('valid-feedback').addClass('invalid-feedback');
+        }            
+        feedback.text(validationResult.message);
+    }     
+    $('<style>')
+        .prop('type', 'text/css')
+        .html(`
+            .validation-indicator {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                transition: all 0.3s ease;
+            }
+            .validation-indicator i {
+                color: white;
+            }
+            .input-group-text.bg-success {
+                background-color: #28a745 !important;
+                border-color: #28a745;
+            }
+            .input-group-text.bg-danger {
+                background-color: #dc3545 !important;
+                border-color: #dc3545;
+            }
+            .valid-feedback, .invalid-feedback {
+                display: none;
+                margin-top: 0.25rem;
+                font-size: 80%;
+            }
+            .valid-feedback {
+                color: #28a745;
+            }
+            .invalid-feedback {
+                color: #dc3545;
+            }
+            .is-valid {
+                border-color: #28a745 !important;
+            }
+            .is-invalid {
+                border-color: #dc3545 !important;
+            }
+        
+                .clear-input {
+                    cursor: pointer;
+                    transition: opacity 0.3s ease;
+                }
+                .clear-input:hover {
+                    opacity: 0.7;
+                }
+                .validation-indicator {
+                    cursor: pointer;
+                }
+                /* Rest of your previous styles */
+            `)
+            .appendTo('head');
+    
+        // Optional: Add tooltip for clear icon
+        clearIcon.attr('title', 'Clear URL');
+        
+
+
+    let typingTimer;
+    const doneTypingInterval = 500;  
+
+    urlInput.on('input', function() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            const result = validateGoogleMapsUrl($(this).val());
+            updateValidationUI(result);
+        }, doneTypingInterval);
+    });
+
+    urlInput.on('keydown', function() {
+        clearTimeout(typingTimer);
+    }); 
+    $('form').on('submit', function(e) {
+        const url = urlInput.val();
+        if (url) {  
+            const result = validateGoogleMapsUrl(url);
+            if (!result.isValid) {
+                e.preventDefault();
+                updateValidationUI(result);
+            }
+        }
+    });
+});
+</script>
+<!--Validator Google URL format-->
+{% endblock %}
+
+ 
+ 

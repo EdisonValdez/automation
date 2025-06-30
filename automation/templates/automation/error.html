@@ -1,0 +1,72 @@
+<!-- templates/error.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .error-container {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #dc3545;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: #F4C031;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .home-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #F4C031;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .home-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>Oops! Something went wrong.</h1>
+        <p>We're sorry, but the page you're looking for cannot be found.</p>
+        <p>Please check the URL, or {% if user.is_admin %} <a href="{% url 'dashboard' %}">go back to the dashboard</a>{% else %} <a href="{% url 'ambassador_dashboard' %}">go back to the dashboard</a> {% endif %}.</p>
+        {% if user.is_admin %} <a  class="home-btn" href="{% url 'dashboard' %}">Return Home</a>{% else %} <a class="home-btn" href="{% url 'ambassador_dashboard' %}">Return Home</a> {% endif %}
+ 
+    </div>
+</body>
+</html>

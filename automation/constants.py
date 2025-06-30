@@ -1,0 +1,1 @@
+MOVE_TO_APP_FAILED_MESSAGE = "Unable to transfer business data to the application."

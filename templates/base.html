@@ -1,0 +1,393 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token }}">
+<title>
+Local Secrets - Content Curation Management Admin Dashboard  
+</title> 
+<link rel="apple-touch-icon" sizes="180x180" href="{% static '/images/apple-touch-icon.png' %}">
+<link rel="icon" type="image/png" sizes="32x32" href="{% static '/images/favicon-32x32.png' %}">
+<link rel="icon" type="image/png" sizes="16x16" href="{% static '/images/favicon-16x16.png' %}">
+<link rel="manifest" href="{% static '/images/site.webmanifest' %}">
+
+
+<!-- GOOGLE FONT -->
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+<!-- BOXICONS -->
+<link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="{% static 'css/icons.min.css' %}">
+
+<link rel="stylesheet" href="{% static 'libs/date-picker/datepicker.css' %}">
+<!-- APP CSS -->
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+<link rel="stylesheet" href="{% static 'css/grid.css' %}">
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+
+<!-- Add SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- jQuery (required for DataTables) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://kit.fontawesome.com/e8b7cdfcf9.js" crossorigin="anonymous"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/select/1.3.3/css/select.dataTables.min.css">
+<script src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" /> <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+ <style>.mobile-toggle{margin-top: 20px;border: 1px solid #dbe0e5;padding: 1px;width: 150px;border-radius: calc(.25rem - 1px) calc(.25rem - 1px) 0 0;
+    background-color: #f8f9fc;border-bottom: 1px solid #e3e6f0;position: relative;}
+ .user-profile-dropdown{position:relative;display:inline-block}.profile-dropdown-btn{display:flex;align-items:center;padding:8px 16px;background:#fff0;border:none;border-radius:8px;cursor:pointer;transition:all 0.3s ease}.profile-dropdown-btn:hover{background:rgb(155 141 255 / .1)}.user-avatar{position:relative;width:40px;height:40px;margin-right:12px}.user-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}.avatar-placeholder{width:100%;height:100%;background:#F4C031;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:1.2rem}.status-indicator{position:absolute;bottom:2px;right:2px;width:8px;height:8px;background:#4CAF50;border-radius:50%;border:2px solid #fff}.user-info{text-align:left;margin-right:8px}.user-name{display:block;font-size:.95rem;font-weight:600;color:#2c3e50}.user-role{display:block;font-size:.8rem;color:#6c757d}.profile-dropdown-menu{width:280px;padding:0;border:none;border-radius:12px;box-shadow:0 5px 25px rgb(0 0 0 / .1)}.dropdown-header{background:#f8f9fa;padding:16px;border-radius:12px 12px 0 0;border-bottom:1px solid #e9ecef}.welcome-text{font-size:.85rem;color:#6c757d}.dropdown-section{padding:8px 0;border-bottom:1px solid #e9ecef}.dropdown-section:last-child{border-bottom:none}.dropdown-section-title{display:block;padding:8px 16px;font-size:.75rem;color:#6c757d;text-transform:uppercase;letter-spacing:.5px}.dropdown-item{display:flex;align-items:center;padding:10px 16px;color:#2c3e50}.dropdown-item i{font-size:1.1rem;margin-right:12px;width:20px;text-align:center}.notification-badge{background:#4CAF50;color:#fff;padding:2px 8px;border-radius:12px;font-size:.75rem;margin-left:auto}.logout-item{color:#dc3545}.logout-item i{color:#dc3545}@media (prefers-color-scheme:dark){.profile-dropdown-btn:hover{background:rgb(155 141 255 / .2)}.user-name{color:#e9ecef}.user-role{color:#adb5bd}.profile-dropdown-menu{background:#1a1d20;border:1px solid #2d3436}.dropdown-header{background:#242830;border-bottom-color:#2d3436}.dropdown-section{border-bottom-color:#2d3436}.dropdown-item{color:#e9ecef}.dropdown-item:hover{background:#242830}}.page-title-wrapper{margin:1.5rem 0;padding:.5rem 0;border-bottom:2px solid #e9ecef}.page-title{display:flex;align-items:center;font-size:1.5rem;font-weight:600;color:#2c3e50;margin:0;padding:0}.title-icon{display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:#F4C031;border-radius:6px;margin-right:.75rem}.title-icon i{color:#fff;font-size:.875rem}.title-text{position:relative;padding-bottom:3px}.title-text::after{content:'';position:absolute;left:0;bottom:0;width:40px;height:3px;background:#F4C031;border-radius:2px}@keyframes slideIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}.page-title{animation:slideIn 0.3s ease-out forwards}@media (prefers-color-scheme:dark){.page-title-wrapper{border-bottom-color:#2d3436}.page-title{color:#6b6b6b}.title-icon{background:#0984e3}.title-text::after{background:#0984e3}}@media (max-width:768px){.page-title{font-size:1.25rem}.title-icon{width:25px;height:25px}.title-icon i{font-size:.75rem}}.sidebar-menu>li>a{width:100%;padding:30px 20px;height:25px;display:flex;align-items:center;font-size:16px;font-weight:600;text-transform:capitalize;color:var(--text-second-color);transition:color 0.2s ease-in-out}.sidebar-menu.sidebar-menu-dropdown-content>li>a{font-size:14px;font-weight:600;height:20px}body{font-family:sans-serif;color:var(--text-color);position:relative;font-size:14px}.sidebar-expand.active .sidebar{border:1px solid #f2f2f2;max-width:100%;z-index:1111}.badge-info{color:#fff;background-color:#0a992e}.loader{border:5px solid #f3f3f3;border-top:5px solid #3498db;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;display:none}@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgb(0 0 0 / .5);z-index:1000;display:none}#loading-spinner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;display:none}.alert-error{color:#eceff1;background-color:#dc3545;border-color:#ffeeba}.success{color:#111;background-color:#8feccd;border-color:#ffeeba;padding:10px}select.form-control:not([size]):not([multiple]){height:calc(2.75rem + 2px)}.translation-summary,.warning-message,.error-message,.translation-status{text-align:left;padding:1rem;margin:1rem 0;border-radius:.375rem;box-shadow:0 .125rem .25rem rgb(0 0 0 / .075)}.dataTables_wrapper{padding:1rem;background:#fff;border-radius:.5rem;box-shadow:0 .125rem .25rem rgb(0 0 0 / .075)}.dataTables_wrapper .dataTable{border-collapse:separate;border-spacing:0;width:100%!important;margin:1rem 0!important;border:1px solid #dee2e6}.dataTables_wrapper .dataTable thead th{background-color:#f8f9fa;border-bottom:2px solid #dee2e6;padding:1rem;font-weight:600;color:#495057}.dataTables_wrapper .dataTable td{padding:.75rem 1rem;vertical-align:middle;border-top:1px solid #dee2e6}.dataTables_wrapper .dataTable tbody tr:nth-of-type(odd){background-color:rgb(0 0 0 / .02)}.dataTables_wrapper .dataTable tbody tr:hover{background-color:rgb(0 0 0 / .075);transition:background-color 0.2s ease-in-out}.dataTables_wrapper .dataTables_paginate .paginate_button{padding:.375rem .75rem;margin:0 .25rem;border-radius:.375rem;border:1px solid #dee2e6;background-color:#fff;color:#F4C031!important;transition:all 0.2s ease-in-out}.dataTables_wrapper .dataTables_paginate .paginate_button:hover{background-color:#F4C031!important;border-color:#F4C031;color:#fff!important}.dataTables_wrapper .dataTables_paginate .paginate_button.current{background-color:#F4C031!important;border-color:#F4C031;color:#fff!important}.dataTables_wrapper .dataTables_filter input,.dataTables_wrapper .dataTables_length select{padding:.375rem .75rem;font-size:.875rem;line-height:1.5;border:1px solid #ced4da;border-radius:.375rem;transition:border-color 0.15s ease-in-out,box-shadow 0.15s ease-in-out}.dataTables_wrapper .dataTables_filter input:focus,.dataTables_wrapper .dataTables_length select:focus{border-color:#80bdff;outline:0;box-shadow:0 0 0 .2rem rgb(0 123 255 / .25)}.translation-details,.error-details,.status-breakdown,.business-stats,.translation-status .stats{margin-top:1rem;padding:1rem;background:#f8f9fa;border-radius:.375rem;border:1px solid #dee2e6}.translation-status .reason,.suggestion{color:#856404;background-color:#fff3cd;border-left:4px solid #ffeeba;padding:1rem;margin:1rem 0;border-radius:.375rem}.translation-status .errors li{color:#721c24;background-color:#f8d7da;border:1px solid #f5c6cb;padding:.75rem;margin:.5rem 0;border-radius:.375rem}.btn-info{color:#fff;background-color:#17a2b8;border-color:#17a2b8;padding:.375rem .75rem;border-radius:.375rem;font-weight:500;text-decoration:none;display:inline-block;transition:all 0.15s ease-in-out}.btn-info:hover{background-color:#138496;border-color:#117a8b;color:#fff;box-shadow:0 .125rem .25rem rgb(0 0 0 / .075)}.disabled{opacity:.65;pointer-events:none;cursor:not-allowed}.fa-spinner,.btn-info i{margin-right:.5rem}@media (max-width:768px){.dataTables_wrapper .dataTables_filter input,.dataTables_wrapper .dataTables_length select{width:100%;margin-bottom:1rem}.dataTables_wrapper .dataTables_paginate .paginate_button{padding:.25rem .5rem}}input[type="text"],input[type="search"],input[type="email"],input[type="number"],select{width:100%;padding:.625rem 1rem;font-size:.875rem;line-height:1.5;color:#495057;background-color:#fff;background-clip:padding-box;border:1px solid #ced4da;border-radius:.375rem;transition:border-color 0.15s ease-in-out,box-shadow 0.15s ease-in-out;margin-bottom:1rem}input::placeholder{color:#6c757d;opacity:.65;font-size:.875rem}input[type="text"]:focus,input[type="search"]:focus,input[type="email"]:focus,input[type="number"]:focus,select:focus{color:#495057;background-color:#fff;border-color:#80bdff;outline:0;box-shadow:0 0 0 .2rem rgb(0 123 255 / .25)}input[type="text"]:hover,input[type="search"]:hover,input[type="email"]:hover,input[type="number"]:hover,select:hover{border-color:#b3d7ff}input[type="text"]:disabled,input[type="search"]:disabled,input[type="email"]:disabled,input[type="number"]:disabled,select:disabled{background-color:#e9ecef;opacity:1;cursor:not-allowed}.search-input-wrapper{position:relative;margin-bottom:1rem}.search-input-wrapper input[type="text"]{padding-right:2.5rem}.search-input-wrapper::after{content:"\f002";font-family:"Font Awesome 5 Free";font-weight:900;position:absolute;right:1rem;top:50%;transform:translateY(-50%);color:#6c757d;opacity:.5}@media (max-width:768px){input[type="text"],input[type="search"],input[type="email"],input[type="number"],select{font-size:16px;padding:.5rem .75rem}}.dataTables_wrapper .dataTables_filter input{width:100%;margin-left:0!important}.table-search-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}.input-lg{padding:.75rem 1rem;font-size:1rem}.input-sm{padding:.25rem .5rem;font-size:.875rem}.is-valid{border-color:#28a745;padding-right:calc(1.5em + 0.75rem);background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");background-repeat:no-repeat;background-position:right calc(0.375em + 0.1875rem) center;background-size:calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)}.is-invalid{border-color:#dc3545;padding-right:calc(1.5em + 0.75rem);background-image:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='%23dc3545' viewBox='-2 -2 7 7'%3e%3cpath stroke='%23dc3545' d='M0 0l3 3m0-3L0 3'/%3e%3ccircle r='.5'/%3e%3ccircle cx='3' r='.5'/%3e%3ccircle cy='3' r='.5'/%3e%3ccircle cx='3' cy='3' r='.5'/%3e%3c/svg%3E");background-repeat:no-repeat;background-position:right calc(0.375em + 0.1875rem) center;background-size:calc(0.75em + 0.375rem) calc(0.75em + 0.375rem)}.kanban-container{display:flex;flex-wrap:nowrap;gap:1rem;overflow-x:auto;padding:1rem;min-height:0;max-height:calc(100vh - 200px);margin-bottom:2rem}.kanban-column{flex:0 0 300px;max-height:100%;display:flex;flex-direction:column}.kanban-wrap{flex:1;overflow-y:auto;min-height:0;padding:.5rem}.kanban-box{background:#fff;border-radius:8px;box-shadow:0 2px 4px rgb(0 0 0 / .1);margin-bottom:1rem;padding:1rem;break-inside:avoid}.page-content{height:100%;max-height:100vh;overflow:hidden;display:flex;flex-direction:column}.content-wrapper{flex:1;overflow:auto;padding:1rem}.kanban-wrap::-webkit-scrollbar{width:6px}.kanban-wrap::-webkit-scrollbar-track{background:#f1f1f1;border-radius:3px}.kanban-wrap::-webkit-scrollbar-thumb{background:#888;border-radius:3px}@media (max-width:768px){.kanban-container{flex-direction:column;max-height:none;overflow-x:hidden}.kanban-column{flex:1 1 auto;width:100%;margin-bottom:1rem}.kanban-wrap{max-height:500px;overflow-y:auto}.kanban-box{margin:.5rem 0}}@media (max-width:480px){.kanban-box{font-size:14px}.business-stats{display:flex;flex-wrap:wrap;gap:.5rem;font-size:12px}.content-wrapper{padding:.5rem}}
+</style>
+
+ </head>
+
+<body class="sidebar-expand counter-scroll">
+<!-- SIDEBAR -->
+<div class="sidebar" style="border: 1px solid #f2f2f2;">
+    <div class="sidebar-logo">
+        <a href="{% if user.is_admin %}{% url 'dashboard' %}{% else %}{% url 'ambassador_dashboard' %}{% endif %}">
+            <img src="https://www.localsecrets.travel/wp-content/uploads/2024/08/cropped-cropped-logo-web-1.png" alt="Local Secrets Logo">
+        </a>
+        <div class="sidebar-close" id="sidebar-close">
+            <i class='bx bx-dock-left mr-10 text-muted'></i>
+        </div>
+    </div>
+<!-- SIDEBAR MENU -->
+<div class="simplebar-sc" data-simplebar>
+    <ul class="sidebar-menu tf">
+        <!-- Content Curation Section -->
+        <li class="sidebar-submenu active">
+            <a href="#" class="sidebar-menu-dropdown current-menu-item">
+                <i class='bx bxs-bolt'></i>
+                <span>CONTENT CURATION</span>
+                <div class="dropdown-icon">
+                    <i class='bx bx-chevron-down'></i>
+                </div>
+            </a>
+            <ul class="sidebar-menu sidebar-menu-dropdown-content active">
+                {% if user.is_admin %}
+                <li>
+                    <a href="{% url 'dashboard' %}">
+                        <i class="bx bxs-dashboard"></i>
+                            <span>Dashboard</span>
+                    </a>
+                </li> 
+                    <li>
+                        <a href="{% url 'task_list' %}">
+                            <i class="fas fa-tasks"></i>
+                                <span>Content List</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'upload_file' %}"><i class='bx bx-upload'></i> Add New Content</a>
+                    </li> 
+                    <li>
+                        <a href="{% url 'business_list' %}"><i class='bx bxs-business'></i> Business Search</a>
+                    </li>
+                {% elif user.is_ambassador %}
+                
+                    <li>
+                        <a href="{% url 'ambassador_dashboard' %}">
+                            <i class="bx bxs-dashboard"></i>
+                                <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'task_list' %}">
+                            <i class="fas fa-comments"></i>
+                                <span>Content List</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'upload_file' %}"><i class='bx bx-upload'></i> Add New Content</a>
+                    </li> 
+                    <li>
+                        <a href="{% url 'business_list' %}"><i class='bx bxs-business'></i> Business Search</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </li>
+
+        
+ 
+        {% if user.is_admin %}
+            <!-- Events Section -->
+            <li class="sidebar-submenu active">
+                <a href="#" class="sidebar-menu-dropdown">
+                    <i class='bx bxs-calendar-event'></i>
+                    <span>Events</span>
+                    <div class="dropdown-icon">
+                        <i class='bx bx-chevron-down'></i>
+                    </div>
+                </a>
+                <ul class="sidebar-menu sidebar-menu-dropdown-content active">
+                    <li>
+                        <a href="{% url 'search_events' %}">Suggested by Travellers</a>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Content Comments -->
+            <li>
+                <a href="{% url 'feedback_list' %}">
+                    <i class="fas fa-comments"></i>
+                    <span>Content Comments</span>
+                </a>
+            </li>
+
+            <!-- Admin Tools -->
+            <li>
+                <a href="{% url 'admin:index' %}" target="_blank">
+                    <i class='fas fa-cog'></i>
+                    <span>Admin Tools</span>
+                </a>
+            </li>
+        {% endif %}
+
+        <!-- Logout -->
+        <li>
+            <a href="{% url 'logout' %}">
+                <i class='bx bxs-log-out'></i>
+                <span>Logout</span>
+            </a>
+        </li>
+
+        <!-- Dark Mode Toggle -->
+        <li>
+            <a id="darkmode-toggle" onclick="switchTheme()">
+                <i class='bx bx-cog mr-10'></i>
+                <span>Dark Mode</span>
+                <span class="darkmode-switch ml-10"></span>
+            </a>
+        </li>
+    </ul>
+</div>
+<!-- END SIDEBAR MENU -->
+
+</div>
+<!-- END SIDEBAR -->
+
+    <!-- END SIDEBAR -->
+    <!-- Main Header -->
+    <div class="main-header">
+        <div class="d-flex">
+            <div class="mobile-toggle" id="mobile-toggle">
+                <i class='bx bx-menu'></i>
+            </div>
+            <div class="main-title">
+                
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center">
+
+            <div class="dropdown d-inline-block d-lg-none ms-2">
+
+                    <form class="p-3">
+                        <div class="form-group m-0">
+                            
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="user-profile-dropdown mt-25">
+                <button type="button" class="profile-dropdown-btn" id="page-header-user-dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <div class="user-avatar">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" alt="Profile">
+                        {% else %}
+                            <div class="avatar-placeholder">
+                                {{ user.username|make_list|first|upper }}
+                            </div>
+                        {% endif %}
+                        <span class="status-indicator"></span>
+                    </div>
+                    
+                    <div class="user-info">
+                        <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                        <span class="user-role">{{ user.roles.first.get_role_display }}</span>
+                    </div>
+                    <i class="bx bx-chevron-down"></i>
+                </button>
+            
+                <div class="dropdown-menu profile-dropdown-menu">
+                    <div class="dropdown-header">
+                        <div class="header-info">
+                            <span class="welcome-text">Welcome,</span>
+                            <h6 class="user-name">{{ user.get_full_name|default:user.username }}</h6>
+                            <span class="user-role">{{ user.roles.first.get_role_display }}</span>
+                        </div>
+                    </div>
+            
+                    {% if user.is_authenticated %}
+                        <div class="dropdown-items-wrapper">
+                            <!-- Quick Actions Section -->
+                            <div class="dropdown-section">
+                                <span class="dropdown-section-title">Quick Actions</span>
+                                <a class="dropdown-item" href="{% url 'user_profile' %}">
+                                    <i class="bx bx-user"></i>
+                                    <span>My Profile</span>
+                                </a>
+                                <a class="dropdown-item" href="{% url 'user_profile' %}">
+                                    <i class="bx bx-wrench"></i>
+                                    <span>Settings</span>
+                                    {% if user.unread_notifications_count > 0 %}
+                                        <span class="notification-badge">{{ user.unread_notifications_count }}</span>
+                                    {% endif %}
+                                </a>
+                            </div>
+            
+                            <!-- Admin Section -->
+                            {% if user.is_admin %}
+                            <div class="dropdown-section">
+                                <span class="dropdown-section-title">Administration</span>
+                                <a class="dropdown-item" href="{% url 'admin:index' %}">
+                                    <i class="bx bx-cog"></i>
+                                    <span>Admin Panel</span>
+                                </a>
+                                <a class="dropdown-item" href="{% url 'user_management' %}">
+                                    <i class="bx bx-group"></i>
+                                    <span>User Management</span>
+                                </a>
+                                <a class="dropdown-item" href="{% url 'destination_management' %}">
+                                    <i class="bx bx-map"></i>
+                                    <span>Destinations</span>
+                                </a>
+                            </div>
+                            {% endif %}
+            
+                            <!-- Ambassador Section -->
+                            {% if user.is_ambassador %}
+                            <div class="dropdown-section">
+                                <span class="dropdown-section-title">Ambassador Tools</span>
+                                <a class="dropdown-item" href="{% url 'ambassador_dashboard' %}">
+                                    <i class="bx bx-chart"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                            </div>
+                            {% endif %}
+            
+                            <!-- Account Section -->
+                            <div class="dropdown-section">
+                                <span class="dropdown-section-title">Account</span>
+                                <a class="dropdown-item" href="{% url 'password_change' %}">
+                                    <i class="bx bx-lock-alt"></i>
+                                    <span>Change Password</span>
+                                </a>
+                                <a class="dropdown-item logout-item" href="{% url 'logout' %}">
+                                    <i class="bx bx-power-off"></i>
+                                    <span>Sign Out</span>
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a class="dropdown-item" href="{% url 'login' %}">
+                            <i class="bx bx-log-in"></i>
+                            <span>Login</span>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+    </div> 
+        </div>
+        <!-- End Main Header -->
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        {% block content %}
+        <div class="col-12">
+            {% if messages %}
+                <div class="alert alert-info">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+        </div>
+
+        {% endblock %} 
+    </div>
+    <!-- END MAIN CONTENT -->
+
+    <div class="overlay"></div>
+    <div id="scraping-status" style="display: none;">
+        <p id="status-message">Business data is in progress. Please wait...</p>
+    </div>
+    
+<!-- SCRIPT -->
+{{ task_id }}  {% if task_id %}   
+<script>     
+const taskId = "{{ task_id }}";
+function checkTaskStatus() {
+$.ajax({
+    url: "{% url 'check_task_status' task_id=taskId %}",
+    method: 'GET',
+    success: function(response) {
+        if (response.status === 'IN_PROGRESS') {
+            $('#scraping-status').show();
+            $('#status-message').text('Sites Gathering is in progress. Please wait...');
+        } else if (response.status === 'COMPLETED') {
+            $('#scraping-status').hide();
+            alert('Sites Gathering completed successfully!');
+        } else if (response.status === 'FAILED') {
+            $('#scraping-status').hide();
+            alert('Sites Gathering failed. Please try again later.');
+        }
+    },
+    error: function(xhr, status, error) {
+        console.error('Error checking task status:', error);
+        $('#scraping-status').hide();
+    }
+});
+}
+
+setInterval(checkTaskStatus, 5000);
+
+</script>
+{% endif %}
+
+    <!-- APEX CHART 
+ 
+    <script src="{% static '/libs/jquery/jquery.min.js' %}"></script>
+    <script src="{% static '/libs/jquery/jquery-ui.min.js' %}"></script>-->
+    <!-- jQuery (required by Select2) -->
+
+<!-- Select2 JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
+
+<script src="{% static '/libs/moment/min/moment.min.js' %}"></script>
+<script src="{% static '/libs/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static '/libs/peity/jquery.peity.min.js' %}"></script>
+<script src="{% static '/libs/chart.js/Chart.bundle.min.js' %}"></script>
+<script src="{% static '/libs/owl.carousel/owl.carousel.min.js' %}"></script>
+<script src="{% static '/js/countto.js' %}"></script>
+<script src="{% static '/libs/date-picker/datepicker.js' %}"></script>
+<script src="{% static '/libs/simplebar/simplebar.min.js' %}"></script>
+<script src="{% static '/libs/apexcharts/apexcharts.js' %}"></script>
+
+<!-- APP JS -->
+<script src="{% static '/js/main.js' %}"></script>
+<script src="{% static '/js/shortcode.js' %}"></script>
+<script src="{% static '/js/pages/datepicker.js' %}"></script>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>
+

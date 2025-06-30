@@ -1,0 +1,47 @@
+/* static/css/dashboard.css */
+
+.dashboard-container {
+    padding: 20px;
+}
+
+.task-item .card {
+    transition: transform 0.2s;
+}
+
+.task-item .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.task-details {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+#businessStatusChart {
+    height: 300px !important;
+}
+
+.alert {
+    margin-bottom: 20px;
+}
+
+.card {
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.125);
+}
+
+.card-header {
+    background-color: rgba(0,0,0,0.03);
+    border-bottom: 1px solid rgba(0,0,0,0.125);
+    padding: 1rem;
+    font-weight: 500;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+}

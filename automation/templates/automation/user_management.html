@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style> .main-title {font-size: 24px;font-weight: 600;color: #2c3e50;margin-bottom: 1.5rem;padding-bottom: 0.5rem;border-bottom: 2px solid #eee;}.box {background: #fff;border-radius: 8px;box-shadow: 0 2px 4px rgba(0,0,0,0.1);padding: 1.5rem;margin-bottom: 1.5rem;}.box-body {padding: 1rem 0;}.form-group {margin-bottom: 1.5rem;}.form-label {display: block;margin-bottom: 0.5rem;font-weight: 500;color: #2c3e50;}.form-control {width: 100%;padding: 0.75rem;border: 1px solid #ddd;border-radius: 4px;transition: border-color 0.2s ease;}.form-control:focus {border-color: #3498db;box-shadow: 0 0 0 2px rgba(52,152,219,0.2);outline: none;}.text-danger {color: #e74c3c;font-size: 0.875rem;margin-top: 0.25rem;}.action-buttons {display: flex;flex-wrap: wrap;gap: 1rem;justify-content: center;padding: 1.5rem;background: #f8f9fa;border-radius: 0 0 8px 8px;}.action-buttons .btn {flex: 1;min-width: 200px;max-width: 300px;padding: 0.75rem 1.5rem;font-size: 1rem;font-weight: 500;text-align: center;border-radius: 6px;transition: all 0.3s ease;text-decoration: none;border: none;cursor: pointer;display: inline-flex;align-items: center;justify-content: center;gap: 0.5rem;}.btn-primary {background-color: #3498db;color: white;}.btn-primary:hover {background-color: #2980b9;transform: translateY(-1px);}.btn-secondary {background-color: #95a5a6;color: white;}.btn-secondary:hover {background-color: #7f8c8d;transform: translateY(-1px);}.btn-warning {background-color: #f1c40f;color: #2c3e50;}.btn-warning:hover {background-color: #f39c12;transform: translateY(-1px);}@media (max-width: 768px) {.box {padding: 1rem;}.action-buttons {flex-direction: column;align-items: stretch;gap: 0.75rem;}.action-buttons .btn {max-width: 100%;width: 100%;}.mb-24 {margin-bottom: 1rem;}}.btn.loading {position: relative;color: transparent;}.btn.loading::after {content: "";position: absolute;width: 20px;height: 20px;border: 2px solid;border-radius: 50%;border-color: #fff #fff #fff transparent;animation: button-loading-spinner 1s linear infinite;}@keyframes button-loading-spinner {from {transform: rotate(0turn);}to {transform: rotate(1turn);}}</style>
+
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </span>
+                    <span class="title-text">User Management
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div> 
+    <div class="box-body pb-0 table-responsive activity">
+        <table class="table table-vcenter text-nowrap table-bordered dataTable no-footer mw-100"  id="user-management">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Destinations</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+            
+                        {% for role in user.roles.all %}
+                            {{ role.get_role_display }}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% for destination in user.destinations.all %}
+                            {{ destination.name }}<br>
+                        {% empty %}
+                            -
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <div class="dropdown">
+                            <a href="#" class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bx bx-dots-horizontal-rounded"></i>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a class="dropdown-item" href="{% url 'edit_user' user.id %}">Edit</a>
+                                <a class="dropdown-item" href="{% url 'delete_user' user.id %}" data-bs-toggle="modal" data-bs-target="#deleteUserModal_{{ user.id }}">Delete</a>
+                            </div>
+                        </div>
+
+                        <!-- Delete User Modal -->
+                        <div class="modal fade" id="deleteUserModal_{{ user.id }}" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to delete the user <strong>{{ user.username }}</strong>?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <form action="{% url 'delete_user' user.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+                <!-- Paginator with Custom Styling -->
+                <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1" class="btn btn-outline-primary">&laquo; First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-primary">Previous</a>
+                    {% endif %}
+        
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                    </span>
+        
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-primary">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-outline-primary">Last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+    </div>
+    <div class="action-buttons">  
+    <div class="text-center mt-3"> 
+        <a href="{% url 'create_user' %}" class="btn btn-primary"><i class="fas fa-user-plus"></i> Create User</a>
+    </div>
+    </div>
+ </div>
+ 
+<script>
+    $(document).ready(function() {
+        $('#user-management').DataTable({
+            "pageLength": 12,  // Number of records per page
+            "lengthChange": true,  // Allow user to change the number of records per page
+            "searching": true,     // Enable search filter
+            "ordering": true,      // Enable column ordering
+            "info": true,          // Show page info
+            "autoWidth": false     // Disable auto width adjustment
+        });
+    });
+</script>
+{% endblock %}

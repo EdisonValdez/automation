@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style> .ambassador-card {transition: all 0.3s ease;border: none;box-shadow: 0 0 20px rgba(0,0,0,0.05);}.ambassador-card:hover {transform: translateY(-5px);box-shadow: 0 5px 20px rgba(0,0,0,0.1);}.avatar-lg {width: 100px;height: 100px;object-fit: cover;border: 3px solid #fff;box-shadow: 0 0 10px rgba(0,0,0,0.1);}.ambassador-avatar {position: relative;}.avatar-status {position: absolute;bottom: 0;right: 50%;transform: translateX(50%);width: 12px;height: 12px;background-color: #28a745;border: 2px solid #fff;border-radius: 50%;}.contact-item {display: flex;align-items: center;justify-content: center;color: #6c757d;}.contact-item a {color: inherit;}.contact-item:hover {color: var(--bs-primary);}.ambassador-destinations .badge {font-size: 0.85rem;padding: 0.5rem 1rem;}.dropdown-toggle::after {display: none;}.card-header .btn-link {padding: 0;color: #6c757d;}.card-header .btn-link:hover {color: var(--bs-primary);}.avatar-circle {display: flex;align-items: center;justify-content: center;background: linear-gradient(45deg, #F4C031, #F4C031);color: white;font-weight: bold;font-size: 2.5rem;border-radius: 50%;}.placeholder-card {opacity: 0.8;background: linear-gradient(145deg, #ffffff, #f8f9fa);}.placeholder-card:hover {opacity: 1;}.placeholder-avatar {background: #e9ecef;color: #adb5bd;}.placeholder-avatar i {font-size: 2rem;}.placeholder-card .card-body {display: flex;flex-direction: column;justify-content: center;}.placeholder-card .ambassador-name {color: #6c757d;}.placeholder-card .btn-outline-primary:hover {transform: translateY(-2px);box-shadow: 0 4px 12px rgba(115, 103, 240, 0.15);}@media (prefers-color-scheme: dark) {.placeholder-card {background: linear-gradient(145deg, #2d3436, #1a1d20);}.placeholder-avatar {background: #2d3436;color: #6c757d;}.placeholder-card .ambassador-name {color: #adb5bd;}}
+</style>
+    
+<div class="main-content project">
+ 
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-wrapper">
+                    <h1 class="page-title">
+                        <span class="title-icon">
+                            <i class="fas fa-plane"></i>
+                        </span>
+                        <span class="title-text"> Destination Management - {{ destination.name }}
+                        </span>
+                    </h1>
+                </div>
+            </div>
+        </div> 
+    <div class="container-fluid mt-4">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+ 
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'destination_management' %}">Destinations</a></li>
+                        <li class="breadcrumb-item active">Details</li>
+                    </ol>
+                </nav>
+            </div>
+            <a href="{% url 'destination_management' %}" class="btn btn-outline-primary">
+                <i class="bx bx-arrow-back me-2"></i>Back to List
+            </a>
+        </div>
+
+ <!-- Ambassadors Grid -->
+<div class="row g-4">
+    {% if ambassador_details %}
+        {% for ambassador in ambassador_details %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card ambassador-card h-100">
+                <!-- Card Header with Actions -->
+                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                    <div class="ambassador-status">
+                        <span class="badge bg-success">Active</span>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-link dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bx bx-dots-horizontal-rounded"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editModal{{ ambassador.user_id }}">
+                                    <i class="bx bx-edit me-2"></i>Edit
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#messageModal{{ ambassador.user_id }}">
+                                    <i class="bx bx-message-square-dots me-2"></i>Message
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteModal{{ ambassador.user_id }}">
+                                    <i class="bx bx-trash me-2"></i>Delete
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body text-center">
+                    <div class="ambassador-avatar mb-3">
+                        <div class="avatar-circle avatar-lg">
+                            {{ ambassador.username|make_list|first|upper }}
+                        </div>
+                        <div class="avatar-status"></div>
+                    </div>
+                    
+                    <h5 class="ambassador-name mb-1">{{ ambassador.username }}</h5>
+                    <p class="text-muted mb-3">Ambassador at {{ destination.name }}</p>
+
+                    <!-- Contact Information -->
+                    <div class="ambassador-contact">
+                        {% if ambassador.mobile %}
+                        <div class="contact-item mb-2">
+                            <i class="bx bxs-phone me-2"></i>
+                            <a href="tel:{{ ambassador.mobile }}">{{ ambassador.mobile }}</a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if ambassador.email %}
+                        <div class="contact-item mb-2">
+                            <i class="bx bxs-envelope me-2"></i>
+                            <a href="mailto:{{ ambassador.email }}">{{ ambassador.email }}</a>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Destinations Badge -->
+                    <div class="ambassador-destinations mt-3">
+                        <span class="badge bg-light text-dark">
+                            <i class="bx bx-map-alt me-1"></i>
+                            {{ ambassador.dest }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="card-footer bg-transparent border-0 pt-0">
+                    <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#messageModal{{ ambassador.user_id }}">
+                        <i class="bx bx-message-square-dots me-2"></i>Send Message
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Placeholder Card when no ambassador is assigned -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card ambassador-card h-100 placeholder-card">
+                <div class="card-header bg-transparent border-0">
+                    <div class="ambassador-status">
+                        <span class="badge bg-secondary">No Ambassador</span>
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <div class="ambassador-avatar mb-3">
+                        <div class="avatar-circle avatar-lg placeholder-avatar">
+                            <i class="bx bx-user"></i>
+                        </div>
+                    </div>
+                    
+                    <h5 class="ambassador-name mb-1">No Ambassador Assigned</h5>
+                    <p class="text-muted mb-3">This destination needs an ambassador</p>
+
+                    <div class="ambassador-contact">
+                        <div class="contact-item mb-2 text-muted">
+                            <i class="bx bx-info-circle me-2"></i>&nbsp;
+                            Assign an ambassador to manage this destination
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-transparent border-0 pt-0">
+                    <a href="{% url 'destination_management' %}" class="btn btn-outline-primary">
+                        <i class="bx bx-arrow-back me-2"></i>Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+ 
+        <!-- Message Modal -->
+        {% for ambassador in ambassador_details %}
+        <div class="modal fade" id="messageModal{{ ambassador.user_id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Message {{ ambassador.username }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="messageForm{{ ambassador.user_id }}" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label class="form-label">Subject</label>
+                                <input type="text" class="form-control" name="subject" required>
+                                <div class="invalid-feedback">Please enter a subject</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Message</label>
+                                <textarea class="form-control" name="message" rows="5" required></textarea>
+                                <div class="invalid-feedback">Please enter your message</div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="sendMessage({{ ambassador.user_id }})">
+                            Send Message
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+ 
+<!-- Enhanced JavaScript -->
+<script>
+async function sendMessage(ambassadorId) {
+    const form = document.getElementById(`messageForm${ambassadorId}`);
+    
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+    }
+
+    const submitButton = event.target;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+
+    try {
+        const formData = new FormData(form);
+        const response = await fetch('/send-message/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                ambassadorId,
+                subject: formData.get('subject'),
+                message: formData.get('message')
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success toast
+            toastr.success('Message sent successfully');
+            bootstrap.Modal.getInstance(document.getElementById(`messageModal${ambassadorId}`)).hide();
+            form.reset();
+        } else {
+            toastr.error(data.message || 'Failed to send message');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        toastr.error('An error occurred while sending the message');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Send Message';
+    }
+}
+
+// Initialize toastr options
+toastr.options = {
+    closeButton: true,
+    progressBar: true,
+    positionClass: "toast-top-right",
+    timeOut: 3000
+};
+</script>
+{% endblock %}

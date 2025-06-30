@@ -1,0 +1,1147 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load project_tags %}
+{% load custom_tags %}
+{% block content %}
+<style>.filter-container{background-color:#fff;transition:all 0.3s ease}.filter-label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.5rem;color:#495057}.search-input-group{position:relative}.search-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#6c757d}.search-control{padding-left:2rem}.date-range-group{position:relative;gap:.5rem}.calendar-icon{position:absolute;top:50%;left:10px;transform:translateY(-50%);color:#6c757d}.date-input{padding-left:2rem}.date-separator{color:#6c757d;padding:0 .25rem}.select2-container{width:100%!important}.select2-multi .select2-selection--multiple{min-height:38px;border:1px solid #ced4da}@media (max-width:768px){.date-range-group{flex-direction:column}.date-separator{text-align:center;margin:.5rem 0}.calendar-icon{display:none}}
+.page-item.active.page-link{z-index:1;color:#fff;background-color:#212d94;border-color:#212d94}.select-active{background-color:#e7f3ff!important}.input-group-text{background-color:#f8f9fa;border:1px solid #ced4da;border-radius:0.5rem 0 0 0.5rem;box-shadow:none;height:auto}.form-control{border:1px solid #ced4da;border-radius:0 0.5rem 0.5rem 0;box-shadow:none}.form-control:focus{border-color:#212d94;box-shadow:0 0 0 0.2rem rgba(0,123,255,.25)}.btn-primary{border-radius:0 0.5rem 0.5rem 0;transition:background-color 0.2s}.btn-primary:hover{background-color:#0056b3;border-color:#0056b3}.btn-generate-descriptions{display:inline-flex;align-items:center;gap:8px;width:100%;padding:8px 12px;transition: all 0.3s ease;}.btn-generate-descriptions:not(.disabled):hover { background-color: #f8f9fa;}.btn-generate-descriptions.disabled {opacity: 0.6;cursor: not-allowed;}.progress { margin-top: 1rem;border-radius: 0.25rem;}
+</style>
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-tasks"></i>
+                    </span>
+                    <span class="title-text">Content List</span>
+                </h1>
+            </div> 
+
+        <!-- task_filter  --> 
+        <div class="card">
+            <div class="card-header">
+            <h5 class="card-title mb-0">Search content list</h5>
+            </div>
+            <div class="card-body">
+                <div class="filter-container shadow-sm border rounded p-3 mb-4">
+                    <form id="taskFilterForm" class="needs-validation" novalidate>
+                        <!-- Quick Search Row -->
+                        <div class="row">
+                            <div class="col-12 col-md-4 col-lg-5">
+                                <div class="search-input-group position-relative">
+                                    <input type="text" 
+                                           id="searchQuery" 
+                                           name="searchQuery" 
+                                           class="form-control search-control" 
+                                           placeholder="Search tasks..." 
+                                           data-persist="searchQuery">
+                                </div>
+                            </div>
+                
+                            <!-- Date Range -->
+                            <div class="col-12 col-md-5 col-lg-5">
+                                <div class="date-range-group position-relative d-flex align-items-center">
+                                    <i class="far fa-calendar-alt calendar-icon"></i>
+                                    <input type="date" 
+                                           id="dateFrom" 
+                                           name="dateFrom" 
+                                           class="form-control date-input me-1" 
+                                           data-persist="dateFrom">
+                                    <span class="date-separator mx-2">to</span>
+                                    <i class="far fa-calendar-alt calendar-icon"></i>
+                                    <input type="date" 
+                                           id="dateTo" 
+                                           name="dateTo" 
+                                           class="form-control date-input ms-1" 
+                                           data-persist="dateTo">
+                                </div>
+                            </div>
+                
+                            <!-- Apply Button -->
+                            <div class="col-12 col-md-3 col-lg-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-2"></i>Apply
+                                </button>
+                            </div>
+                        </div>
+                
+                        <!-- Collapsible Advanced Filters -->
+                        <div class="collapse" id="advancedFilters">
+                            <div class="row g-3">
+                                <!-- User Filter -->
+                                <div class="col-12 col-md-4">
+                                    <label class="filter-label" for="userFilter">User</label>
+                                    <select id="userFilter" 
+                                            name="userFilter" 
+                                            class="form-select select2-multi" 
+                                            data-persist="userFilter">
+                                        <option value="">All Users</option>
+                                    </select>
+                                </div>
+                
+                                <!-- Category Filter -->
+                                <div class="col-12 col-md-4">
+                                    <label class="filter-label" for="categoryFilter">Category</label>
+                                    <select id="categoryFilter" 
+                                            name="categoryFilter" 
+                                            class="form-select select2-multi" 
+                                            data-persist="categoryFilter">
+                                        <option value="">All Categories</option>
+                                    </select>
+                                </div>
+                
+                                <!-- Destination Filter -->
+                                <div class="col-12 col-md-4">
+                                    <label class="filter-label" for="destinationFilter">Destination</label>
+                                    <select id="destinationFilter" 
+                                            name="destinationFilter" 
+                                            class="form-select select2-multi" 
+                                            data-persist="destinationFilter">
+                                        <option value="">All Destinations</option>
+                                    </select>
+                                </div>
+                
+                                <!-- Status Filter -->
+                                <div class="col-12 col-md-4">
+                                    <label class="filter-label" for="statusFilter">Status (multi)</label>
+                                    <select id="statusFilter" 
+                                            name="statusFilter[]" 
+                                            class="form-select select2-multi" 
+                                            multiple 
+                                            data-persist="statusFilter">
+                                        <!-- Populated dynamically -->
+                                    </select>
+                                </div>
+                
+                                <!-- Sort By -->
+                                <div class="col-12 col-md-4">
+                                    <label class="filter-label" for="sortBy">Sort By</label>
+                                    <select id="sortBy" 
+                                            name="sortBy" 
+                                            class="form-select" 
+                                            data-persist="sortBy">
+                                        <option value="-created_at">Newest First</option>
+                                        <option value="created_at">Oldest First</option>
+                                        <option value="project_title">Project Title</option>
+                                        <option value="status">Status</option>
+                                    </select>
+                                </div>
+                
+                                <!-- Show Entries -->
+                                <div class="col-12 col-md-4">
+                                    <label class="filter-label" for="limit">Show entries</label>
+                                    <input type="number" 
+                                           id="limit" 
+                                           name="limit" 
+                                           class="form-control" 
+                                           min="1" 
+                                           value="12" 
+                                           data-persist="limit">
+                                </div>
+                            </div>
+                        </div>
+                
+                        <!-- Advanced Toggle & Reset -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button type="button" 
+                                            class="btn btn-outline-primary"
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#advancedFilters">
+                                        <i class="fas fa-cog me-1"></i> Advanced Filters
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary text-danger">
+                                        <i class="fas fa-undo-alt me-1"></i> Reset All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div> 
+                       
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="card mt-4">
+            <div class="card-body">
+            <div id="taskResults" class="table-responsive"></div>
+            <div id="pagination" class="mt-3"></div>  
+            </div>
+        </div>
+        <!-- Results Section -->
+        
+        <!-- Results JS -->
+        <script>
+            class TaskFilter {
+                constructor() {
+                    // Always begin on page 1
+                    this.currentPage = 1;
+            
+                    // Initialize form events, load filter dropdowns, etc.
+                    this.attachEventListeners();
+                    this.loadFilters();  // populates filter <select> data
+                }
+            
+                attachEventListeners() {
+                    // 1) Filter form "Apply" button
+                    const form = document.getElementById('taskFilterForm');
+                    if (form) {
+                        form.addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            // Reset page to 1 whenever user applies filters
+                            this.currentPage = 1;
+                            this.applyFilters();
+                        });
+                    }
+                    
+                    // 2) Listen for clicks on delete-task-btn => use SweetAlert
+                    document.addEventListener('click', (e) => {
+                        const deleteBtn = e.target.closest('.delete-task-btn');
+                        if (!deleteBtn) return;
+            
+                        e.preventDefault();
+                        const taskId = deleteBtn.dataset.taskId;
+                        const row = deleteBtn.closest('tr');
+            
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: 'Do you really want to delete this task?',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete it!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.deleteTask(taskId, row);
+                            }
+                        });
+                    });
+                }
+            
+                async deleteTask(taskId, row) {
+                    try {
+                        const response = await fetch(`/tasks/${taskId}/delete/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': this.getCSRFToken()
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.status === 'success') {
+                            row.remove();
+                            Swal.fire('Deleted!', data.message || 'Task has been deleted.', 'success');
+                        } else {
+                            Swal.fire('Error!', data.message || 'An error occurred while deleting the task.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire('Error!', 'An error occurred while deleting the task.', 'error');
+                    }
+                }
+            
+                getCSRFToken() {
+                    const name = 'csrftoken';
+                    const cookie = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+                    return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
+                }
+            
+                // ---------------------------
+                // SELECT BACKGROUND LOGIC
+                // ---------------------------
+                hasSelection(selectEl) {
+                    if (selectEl.multiple) {
+                        return selectEl.selectedOptions.length > 0;
+                    } else {
+                        return selectEl.value !== '';
+                    }
+                }
+            
+                updateSelectBackground(selectEl) {
+                    if (this.hasSelection(selectEl)) {
+                        selectEl.classList.add('select-active');
+                    } else {
+                        selectEl.classList.remove('select-active');
+                    }
+                }
+            
+                initSelectBackgrounds() {
+                    const form = document.getElementById('taskFilterForm');
+                    if (!form) return;
+                    const selects = form.querySelectorAll('select');
+                    selects.forEach((selectEl) => {
+                        // Mark them on load
+                        this.updateSelectBackground(selectEl);
+                        // Mark them on change
+                        selectEl.addEventListener('change', () => {
+                            this.updateSelectBackground(selectEl);
+                        });
+                    });
+                }
+                // ---------------------------
+                // END SELECT BACKGROUND LOGIC
+                // ---------------------------
+            
+                async loadFilters() {
+                    try {
+                        const response = await fetch('/api/tasks/filters/');
+                        const result = await response.json();
+                        if (result.status === 'success' && result.data) {
+                            this.populateFilterOptions(result.data);
+            
+                            // Then load user’s saved filters
+                            this.loadSavedFilters();
+            
+                            // Then highlight any selected fields
+                            this.initSelectBackgrounds();
+            
+                            // Finally auto-apply filters on page load
+                            this.applyFilters();
+                        } else {
+                            console.error('Failed to load filters:', result.message);
+                        }
+                    } catch (error) {
+                        console.error('Error loading filters:', error);
+                        this.showError('Failed to load filter options');
+                    }
+                }
+            
+                populateFilterOptions(optionsData) {
+                // userFilter
+                const userFilter = document.getElementById('userFilter');
+                if (userFilter && optionsData.users) {
+                    userFilter.innerHTML = '<option value="">All Users</option>';
+                    optionsData.users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.username;
+                        userFilter.appendChild(option);
+                    });
+                }
+
+                // categoryFilter
+                const categoryFilter = document.getElementById('categoryFilter');
+                if (categoryFilter && optionsData.categories) {
+                    categoryFilter.innerHTML = '<option value="">All Categories</option>';
+                    optionsData.categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        option.textContent = cat.title;
+                        categoryFilter.appendChild(option);
+                    });
+                }
+
+                // destinationFilter
+                const destinationFilter = document.getElementById('destinationFilter');
+                if (destinationFilter && optionsData.destinations) {
+                    destinationFilter.innerHTML = '<option value="">All Destinations</option>';
+                    optionsData.destinations.forEach(dest => {
+                        const option = document.createElement('option');
+                        option.value = dest.id;
+                        option.textContent = dest.name;
+                        destinationFilter.appendChild(option);
+                    });
+                }
+
+                // statusFilter (multi-select)
+                const statusFilter = document.getElementById('statusFilter');
+                if (statusFilter && optionsData.statuses) {
+                    statusFilter.innerHTML = '';
+
+                    // Status display mapping
+                    const statusDisplayMap = {
+                        'PENDING': 'PENDING',
+                        'IN_PROGRESS': 'IN PROGRESS',
+                        'FAILED': 'FAILED',
+                        'COMPLETED': 'READY TO REVIEW',
+                        'DONE': 'REVIEWED',
+                        'TASK_DONE': 'LIVE ON APP'
+                    };
+
+                    optionsData.statuses.forEach(st => {
+                        const option = document.createElement('option');
+                        option.value = st;
+                        option.textContent = statusDisplayMap[st] || st; // Use mapped status display
+                        statusFilter.appendChild(option);
+                    });
+                }
+            }
+
+            loadSavedFilters() {
+                const saved = localStorage.getItem('taskFilters');
+                if (!saved) {
+                    const limitInput = document.getElementById('limit');
+                    if (limitInput) limitInput.value = '12';
+                    return;
+                }
+                try {
+                    const filterObj = JSON.parse(saved);
+                    document.getElementById('searchQuery').value = filterObj.search || '';
+                    document.getElementById('userFilter').value = filterObj.user || '';
+                    document.getElementById('categoryFilter').value = filterObj.category || '';
+                    document.getElementById('destinationFilter').value = filterObj.destination || '';
+                    document.getElementById('dateFrom').value = filterObj.date_from || '';
+                    document.getElementById('dateTo').value = filterObj.date_to || '';
+                    document.getElementById('sortBy').value = filterObj.sort_by || '-created_at';
+                    
+                    // For multi-status
+                    if (filterObj.status) {
+                        const statuses = filterObj.status.split(',');
+                        const statusSelect = document.getElementById('statusFilter');
+                        if (statusSelect) {
+                            Array.from(statusSelect.options).forEach(opt => {
+                                if (statuses.includes(opt.value)) {
+                                    opt.selected = true;
+                                }
+                            });
+                        }
+                    }
+                    // Limit
+                    const limitEl = document.getElementById('limit');
+                    if (limitEl) {
+                        limitEl.value = filterObj.limit || '12';
+                    }
+                } catch (err) {
+                    console.warn('Failed to parse saved filters:', err);
+                }
+            }
+        
+            saveFilters(filters) {
+                localStorage.setItem('taskFilters', JSON.stringify(filters));
+            }
+        
+                    getFilterValues() {
+                const statusSelect = document.getElementById('statusFilter');
+                let statuses = '';
+                if (statusSelect) {
+                    const selectedOptions = Array.from(statusSelect.selectedOptions);
+                    statuses = selectedOptions.map(opt => opt.value).join(',');
+                }
+                // We need a page param => either store it in local property or localStorage
+                return {
+                    search: document.getElementById('searchQuery')?.value || '',
+                    user: document.getElementById('userFilter')?.value || '',
+                    category: document.getElementById('categoryFilter')?.value || '',
+                    destination: document.getElementById('destinationFilter')?.value || '',
+                    status: statuses,
+                    date_from: document.getElementById('dateFrom')?.value || '',
+                    date_to: document.getElementById('dateTo')?.value || '',
+                    sort_by: document.getElementById('sortBy')?.value || '-created_at',
+                    limit: document.getElementById('limit')?.value || '12',
+        
+                    // page => from our property
+                    page: this.currentPage
+                };
+            }
+        
+                    async applyFilters() {
+                        try {
+                            const filters = this.getFilterValues();
+                            this.saveFilters(filters);
+                
+                            const queryParams = new URLSearchParams(filters);
+                            const response = await fetch(`/api/tasks/filter/?${queryParams}`);
+                            const result = await response.json();
+                
+                            if (result.status === 'success') {
+                                this.updateResults(result.data);
+                                this.updateTotalCount(result.total_count);
+                
+                                // If your server returns { page, total_pages }, do this:
+                                if (result.page && result.total_pages) {
+                                    this.renderPagination(result.page, result.total_pages);
+                                }
+                            } else {
+                                this.showError(result.message || 'Failed to fetch results');
+                            }
+                        } catch (error) {
+                            console.error('Error applying filters:', error);
+                            this.showError('Failed to apply filters');
+                        }
+                    }
+                
+                    updateResults(data) {
+                const resultsContainer = document.getElementById('taskResults');
+                if (!Array.isArray(data) || data.length === 0) {
+                    resultsContainer.innerHTML = '<p class="text-center">No results found.</p>';
+                    return;
+                }
+                resultsContainer.innerHTML = this.generateResultsHTML(data);
+            }
+        
+                    /* =========== PAGINATION WITH ELLIPSES =========== */
+                    renderPagination(currentPage, totalPages) {
+                                                const pagDiv = document.getElementById('pagination');
+                                                if (!pagDiv) return;
+                                                if (totalPages <= 1) {
+                                                    pagDiv.innerHTML = '';
+                                                    return;
+                                                }
+                                        
+                                                const pages = this.buildPaginationPages(currentPage, totalPages, 2);
+                                                let html = '<nav><ul class="pagination">';
+                                        
+                                                // Prev
+                                                if (currentPage>1) {
+                                                    html += `<li class="page-item">
+                                                        <a class="page-link" href="#" data-page="${currentPage-1}">Prev</a>
+                                                    </li>`;
+                                                }
+                                                // pages or ellipses
+                                                pages.forEach(p => {
+                                                    if (p === '...') {
+                                                        html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                                                    } else {
+                                                        const active = (p===currentPage) ? 'active' : '';
+                                                        html += `<li class="page-item ${active}">
+                                                            <a class="page-link" href="#" data-page="${p}">${p}</a>
+                                                        </li>`;
+                                                    }
+                                                });
+                                                // Next
+                                                if (currentPage<totalPages) {
+                                                    html += `<li class="page-item">
+                                                        <a class="page-link" href="#" data-page="${currentPage+1}">Next</a>
+                                                    </li>`;
+                                                }
+                                                html += '</ul></nav>';
+                                        
+                                                pagDiv.innerHTML = html;
+                                                // attach events
+                                                pagDiv.querySelectorAll('a.page-link').forEach(link => {
+                                                    link.addEventListener('click', e => {
+                                                        e.preventDefault();
+                                                        const newPage = parseInt(link.dataset.page,10);
+                                                        if (!isNaN(newPage)) {
+                                                            this.goToPage(newPage);
+                                                        }
+                                                    });
+                                                });
+                                            }
+                                        
+                    buildPaginationPages(current, total, delta=2) {
+                        if (total<=7) {
+                            return Array.from({length:total},(_,i)=>i+1);
+                        }
+                        const pages=[];
+                        const left = current-delta;
+                        const right= current+delta;
+                        let last;
+                        for (let p=1;p<=total;p++){
+                            if(p<=2||p>total-2||(p>=left && p<=right)){
+                                if(last){
+                                    if(p-last===2){
+                                        pages.push(last+1);
+                                    } else if (p-last>2){
+                                        pages.push('...');
+                                    }
+                                }
+                                pages.push(p);
+                                last=p;
+                            }
+                        }
+                        return pages;
+                    }
+                
+                    goToPage(p) {
+                        this.currentPage=p;
+                        this.applyFilters();
+                    }
+        
+                    generateResultsHTML(data) {
+                    return `
+                        <table class="table table-hover table-striped align-middle">
+                        <thead class="table">
+                            <tr>
+                            <th scope="col">PROJECT TITLE</th>
+                            <th scope="col">BUSINESSES</th>
+                            <th scope="col">USERNAME</th>
+                            <th scope="col">DESTINATION</th>
+                            <th scope="col">STATUS</th>
+                            <th scope="col">CREATED AT</th>
+                            <th scope="col">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(task => this.generateTaskRow(task)).join('')}
+                        </tbody>
+                        </table>
+                    `;
+                    }
+                    
+                    isTaskLive(task) {
+                            return task.computed_status === 'TASK_DONE';
+                        }
+
+                    generateTaskRow(task) {
+                        const businessCount = typeof task.business_count === 'number'
+                            ? task.business_count
+                            : (Array.isArray(task.businesses) ? task.businesses.length : 0);
+                            // Add status computation logic
+                            let computedStatus = task.status;
+                            if (businessCount === 0) {
+                                computedStatus = 'FAILED';
+                            }
+
+                        // Status mapping for display
+                        const statusDisplayMap = {
+                            'PENDING': 'PENDING',
+                            'IN_PROGRESS': 'IN PROGRESS',
+                            'FAILED': 'FAILED',
+                            'COMPLETED': 'READY TO REVIEW',
+                            'DONE': 'REVIEWED',
+                            'TASK_DONE': '🚀 LIVE ON APP'
+                        };
+
+                        // Get the display status
+                        const isLive = task.computed_status === 'TASK_DONE';
+                        const displayStatus = isLive ? '🚀 LIVE ON APP' : (statusDisplayMap[task.status] || task.status);
+                        const statusBadgeClass = isLive ? 'orange' : this.getStatusBadgeColor(task.status);
+
+                        return `
+                            <tr>
+                                <td>
+                                    <a href="/task/${task.id}/" class="text-decoration-none fw-semibold">
+                                        ${task.id} - ${this.escapeHtml(task.project_title)}
+                                    </a>
+                                    <div class="small text-muted">
+                                        ${this.escapeHtml(task.main_category || '')}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">${businessCount}</span>
+                                </td>
+                                <td>
+                                    <a href="/task/${task.id}/" class="text-decoration-none">
+                                        ${this.escapeHtml(task.user?.username || 'N/A')}
+                                    </a>
+                                </td>
+                                <td>${this.escapeHtml(task.destination?.name || 'N/A')}</td>
+                                <td>
+                                    <span class="badge badge-${statusBadgeClass}">
+                                        ${this.escapeHtml(displayStatus)}
+                                    </span>
+                                </td>
+                                <td class="text-nowrap">
+                                    ${new Date(task.created_at).toLocaleDateString()}
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button
+                                            class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                            type="button"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                        >
+                                            <i class="bx bx-dots-horizontal-rounded"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item" href="/task/${task.id}/">
+                                                    <i class="fas fa-eye me-2"></i> View
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a
+                                                    href="#"
+                                                    class="dropdown-item delete-task-btn"
+                                                    data-task-id="${task.id}"
+                                                >
+                                                    <i class="fas fa-trash me-2"></i> Delete
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                    }
+
+                    getStatusBadgeColor(status) {
+                            const statusMap = {
+                                'PENDING': 'warning',
+                                'IN_PROGRESS': 'pink-light',
+                                'FAILED': 'danger',
+                                'COMPLETED': 'primary',
+                                'DONE': 'success',
+                                'TASK_DONE': 'production',
+                            };
+                            return statusMap[status] || 'secondary';
+                        }
+                    
+                    escapeHtml(unsafe) {
+                        if (!unsafe) return '';
+                        return unsafe
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/"/g, "&quot;")
+                            .replace(/'/g, "&#039;");
+                    }
+                
+                    updateTotalCount(count) {
+                        const countElement = document.getElementById('totalCount');
+                        if (countElement) {
+                            countElement.textContent = `Total Results: ${count}`;
+                        }
+                    }
+                
+                    showError(message) {
+                        console.error(message);
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'alert alert-danger alert-dismissible fade show';
+                        errorDiv.innerHTML = `
+                            ${message}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        const container = document.querySelector('.container');
+                        if (container) {
+                            container.insertBefore(errorDiv, container.firstChild);
+                        }
+                        setTimeout(() => errorDiv.remove(), 5000);
+                    }
+                }
+                
+            document.addEventListener('DOMContentLoaded', () => {
+                new TaskFilter();
+            });
+        </script>            
+        <!-- Results JS -->
+            
+        </div>
+    </div>
+</div>
+
+
+<!--Translate Tasks-->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const translatingButtons = document.querySelectorAll('.start-translating-btn');
+
+    translatingButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        if (this.classList.contains('disabled')) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Process in Progress',
+                text: 'Please wait for the current operation to complete.'
+            });
+            return;
+        }
+
+        const taskId = this.getAttribute('data-task-id');
+        const originalText = this.innerHTML;
+        handleTranslation(this, taskId, originalText);
+    });
+});
+
+    async function handleTranslation(button, taskId, originalText) {
+    try {
+        // Show loading state
+        Swal.fire({
+            title: 'Translation in Progress',
+            html: 'Please wait while we process your request...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Disable button
+        button.classList.add('disabled');
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+
+        const response = await fetch(`/tasks/${taskId}/translate/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        // Close loading dialog
+        Swal.close();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Translation process failed');
+        }
+
+        handleTranslationResponse(data, button, originalText);
+
+    } catch (error) {
+        console.error('Translation error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Translation Failed',
+            text: error.message || 'An unexpected error occurred'
+        });
+        resetButton(button, originalText);
+    }
+}
+    function handleTranslationResponse(response) {
+    const data = response.details || {};
+    
+    let message = `
+        <div class="translation-status">
+            <p>${response.message}</p>
+            ${data.reason ? `<p class="reason">${data.reason}</p>` : ''}
+            
+            <div class="stats">
+                <p>Total businesses: ${data.total || 0}</p>
+                <p>Pending: ${data.pending || 0}</p>
+                <p>Reviewed: ${data.reviewed || 0}</p>
+                <p>Discarded: ${data.discarded || 0}</p>
+            </div>
+
+            ${data.error_details && data.error_details.length > 0 ? `
+                <div class="errors">
+                    <h4>Issues Found:</h4>
+                    <ul>
+                        ${data.error_details.map(error => 
+                            `<li>Business ${error.business_id}: ${error.issue}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+
+    Swal.fire({
+        icon: response.status === 'success' ? 'success' : 
+            response.status === 'warning' ? 'warning' : 'error',
+        title: response.status === 'success' ? 'Translation Complete' : 
+            response.status === 'warning' ? 'Warning' : 'Translation Failed',
+        html: message,
+        confirmButtonText: 'OK'
+    });
+}
+    
+    function handleSuccess(data, button) {
+    button.innerHTML = '<i class="fas fa-check"></i> Translation Complete';
+    
+    const taskId = button.getAttribute('data-task-id');
+    const taskUrl = `/tasks/${taskId}/details/`; // Adjust this URL according to your routing
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Translation Successful',
+        html: `
+            <div class="translation-summary">
+                ${createSuccessMessage(data)}
+                <div class="mt-3">
+                    <a href="${taskUrl}" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye"></i> View Task Details
+                    </a>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Refresh Page',
+        cancelButtonText: 'View Task',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            location.reload();
+        } else {
+            window.location.href = taskUrl;
+        }
+    });
+}
+
+    function handleWarning(data, button, originalText) {
+        button.innerHTML = originalText;
+        button.classList.remove('disabled');
+
+        Swal.fire({
+            icon: 'warning',
+            title: 'Cannot Proceed',
+            html: createWarningMessage(data),
+            confirmButtonText: 'OK'
+        });
+    }
+
+    function handleError(data, button, originalText) {
+        button.innerHTML = originalText;
+        button.classList.remove('disabled');
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Translation Error',
+            html: createErrorMessage(data),
+            confirmButtonText: 'OK',
+            showCancelButton: true,
+            cancelButtonText: 'Report Issue'
+        }).then((result) => {
+            if (!result.isConfirmed) {
+                reportIssue(data);
+            }
+        });
+    }
+
+    function handleUnknownStatus(data, button, originalText) {
+        button.innerHTML = originalText;
+        button.classList.remove('disabled');
+
+        Swal.fire({
+            icon: 'question',
+            title: 'Unexpected Response',
+            text: 'Received an unexpected response from the server.',
+            confirmButtonText: 'OK'
+        });
+    }
+
+    function createSuccessMessage(data) {
+        return `
+            <div class="translation-results">
+                <p>${data.message || 'Translation completed successfully'}</p>
+                ${data.details ? `
+                    <div class="translation-details">
+                        <p>Successfully processed: ${data.details.success || 0}</p>
+                        <p>Failed: ${data.details.failed || 0}</p>
+                        <p>Total: ${data.details.total || 0}</p>
+                        ${data.details.status_updates?.pending_to_reviewed > 0 ? 
+                            `<p>Updated from pending: ${data.details.status_updates.pending_to_reviewed}</p>` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    function createWarningMessage(data) {
+        return `
+            <div class="warning-message">
+                <p>${data.message}</p>
+                ${data.details ? `
+                    <div class="status-breakdown">
+                        <p>Current Status: ${data.details.current_status || 'Unknown'}</p>
+                        ${data.details.suggestion ? `<p>Suggestion: ${data.details.suggestion}</p>` : ''}
+                        <div class="business-stats">
+                            <p>Total Businesses: ${data.details.total || 0}</p>
+                            <p>Pending: ${data.details.pending || 0}</p>
+                            <p>Reviewed: ${data.details.reviewed || 0}</p>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    function createErrorMessage(data) {
+        return `
+            <div class="error-message">
+                <p>${data.message}</p>
+                ${data.details ? `
+                    <div class="business-stats">
+                        ${data.details.total ? `<p>Total Businesses: ${data.details.total}</p>` : ''}
+                        ${data.details.pending ? `<p>Pending Review: ${data.details.pending}</p>` : ''}
+                        ${data.details.reviewed ? `<p>Reviewed: ${data.details.reviewed}</p>` : ''}
+                        ${data.details.discarded ? `<p>Discarded: ${data.details.discarded}</p>` : ''}
+                    </div>
+                ` : ''}
+                ${data.suggestion ? `
+                    <p class="suggestion">${data.suggestion}</p>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function reportIssue(errorData) {
+        console.log('Reporting issue:', errorData);
+        // Implement your issue reporting logic here
+        Swal.fire({
+            icon: 'info',
+            title: 'Issue Reported',
+            text: 'The issue has been logged for investigation.',
+            confirmButtonText: 'OK'
+        });
+    }
+});
+</script>
+<!--Translate Tasks-->
+ 
+<!--Delete tasks-->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ 
+<!--Delete tasks-->
+ 
+<!-- Based description task-->
+<script>
+ 
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle description generation for all tasks
+    const descriptionButtons = document.querySelectorAll('.btn-generate-descriptions');
+    
+    descriptionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (this.classList.contains('disabled')) {
+                return;
+            }
+            
+            const taskId = this.getAttribute('data-task-id');
+            handleDescriptionGeneration(taskId, this);
+        });
+    });
+    
+    function handleDescriptionGeneration(taskId, buttonElement) {
+        // Show loading state
+        Swal.fire({
+            title: 'Generating Descriptions',
+            html: `
+                <div class="text-center">
+                    <p>Please wait while we generate descriptions...</p>
+                    <div class="progress" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            `,
+            allowOutsideClick: false,
+            showConfirmButton: false
+        });
+        
+        // Make the API call
+        fetch(`/tasks/${taskId}/generate-descriptions/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFTask': taskId,
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            Swal.close();
+            
+            if (data.success) {
+                let message = data.message;
+                let warningHtml = '';
+                
+                // Format warnings if any
+                if (data.warnings && data.warnings.length > 0) {
+                    warningHtml = `
+                        <div class="alert alert-warning mt-3">
+                            <h6>Warnings:</h6>
+                            <ul class="mb-0">
+                                ${data.warnings.map(w => `<li>${w}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    html: `
+                        <div>
+                            ${message.replace(/\n/g, '<br>')}
+                            ${warningHtml}
+                        </div>
+                    `,
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload only the task row instead of full page
+                        updateTaskRow(taskId);
+                    }
+                });
+                
+                // Update button state
+                if (!data.has_empty_descriptions) {
+                    buttonElement.classList.add('disabled');
+                    buttonElement.disabled = true;
+                }
+            } else {
+                // Show error message
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    html: `
+                        <div class="alert alert-danger">
+                            ${data.error || 'An error occurred while generating descriptions'}
+                        </div>
+                    `
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: `
+                    <div class="alert alert-danger">
+                        An unexpected error occurred. Please try again later.
+                        <br><small>${error.message}</small>
+                    </div>
+                `
+            });
+        });
+    }
+    
+    // Function to update single task row
+    function updateTaskRow(taskId) {
+        fetch(`/tasks/${taskId}/row/`)
+            .then(response => response.text())
+            .then(html => {
+                const taskRow = document.querySelector(`#task-row-${taskId}`);
+                if (taskRow) {
+                    taskRow.outerHTML = html;
+                }
+            })
+            .catch(error => {
+                console.error('Error updating task row:', error);
+                window.location.reload(); // Fallback to full page reload
+            });
+    }
+    
+    // Cookie getter function
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+ 
+{% endblock %}

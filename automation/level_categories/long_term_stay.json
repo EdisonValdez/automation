@@ -1,0 +1,41 @@
+{
+  "levels": [
+      {
+          "title": "Long-term stay",
+          "categories": [
+              {
+                  "title": "Coworking spaces",
+                  "subcategories": []
+              },
+              {
+                  "title": "Language classes",
+                  "subcategories": []
+              },
+              {
+                  "title": "Luggage storage",
+                  "subcategories": []
+              },
+              {
+                  "title": "Laundromat",
+                  "subcategories": []
+              },
+              {
+                  "title": "Dry cleaner",
+                  "subcategories": []
+              },
+              {
+                  "title": "ATMs",
+                  "subcategories": []
+              },
+              {
+                  "title": "Babysitter",
+                  "subcategories": []
+              },
+              {
+                  "title": "Pet Day Care",
+                  "subcategories": []
+              }
+          ]
+      }
+  ]
+}

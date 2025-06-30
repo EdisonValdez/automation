@@ -1,0 +1,5 @@
+pydantic
+confection
+doctran
+langchain
+langchain-core

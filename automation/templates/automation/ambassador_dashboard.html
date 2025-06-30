@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load project_tags %}
+{% load custom_tags %}
+{% block content %}
+<style> .custom-progress-container {flex: 1;min-width: 200px;max-width: 600px;}.custom-progress {height: 24px;border-radius: 12px;background: #f0f0f0;overflow: hidden;display: flex;position: relative;}.progress-segment {height: 100%;display: flex;align-items: center;justify-content: center;transition: width 0.3s ease;position: relative;}.progress-label {color: white;font-size: 0.75rem;font-weight: 600;text-shadow: 0 1px 2px rgba(0,0,0,0.2);display: flex;align-items: center;gap: 4px;}.progress-percent {opacity: 0.8;font-size: 0.65rem;}.progress-stats {display: flex;flex-direction: column;min-width: 120px;}.stats-container {display: flex;flex-direction: column;align-items: flex-start;}.total-count {font-size: 1.25rem;font-weight: 600;color: #333;}.total-label {font-size: 0.875rem;color: #666;}.stats-breakdown {display: flex;flex-direction: column;gap: 4px;margin-top: 8px;font-size: 0.75rem;}.custom-progress.empty {height: 24px;display: flex;align-items: center;justify-content: center;background: #f5f5f5;border-radius: 12px;}.no-data {color: #666;font-size: 0.875rem;}.tooltip {font-size: 0.75rem;opacity: 0.9;}.progress-segment:hover {filter: brightness(1.1);}.custom-progress-container {width: 250px;padding: 5px;background: #f8f9fa;border-radius: 10px;box-shadow: 0 2px 4px rgba(0,0,0,0.1);}.custom-progress {height: 25px;display: flex;border-radius: 8px;overflow: hidden;background: #e9ecef;position: relative;transition: all 0.3s ease;}.progress-segment {display: flex;align-items: center;justify-content: center;transition: width 0.6s ease;position: relative;min-width: 30px;}.progress-segment:not(:last-child) {border-right: 1px solid rgba(255,255,255,0.3);}.progress-label {color: white;font-size: 0.75rem;font-weight: bold;text-shadow: 0 1px 1px rgba(0,0,0,0.2);z-index: 1;}.progress-stats {display: flex;flex-direction: column;align-items: center;min-width: 80px;}.total-count {font-size: 1.2rem;font-weight: bold;color: #495057;}.total-label {font-size: 0.75rem;color: #6c757d;}.bg-success {background-color: #28a745 !important;}.bg-warning {background-color: #ffc107 !important;}.bg-info {background-color: #17a2b8 !important;}.bg-primary {background-color: #0d6efd !important;}.progress-segment:hover {filter: brightness(110%);}.custom-progress.empty {height: 25px;display: flex;align-items: center;justify-content: center;background: #f8f9fa;}.no-data {color: #6c757d;font-size: 0.8rem;}@keyframes growWidth {from {width: 0;}to {width: 100%;}}.progress-segment {animation: growWidth 0.6s ease-out;}.progress {background-color: #f0f0f0;border-radius: 15px;overflow: hidden;}.progress-bar {text-align: center;line-height: 24px;font-size: 0.8rem;font-weight: bold;transition: width 0.6s ease;}.status-pill {padding: 0.5rem 1rem;border-radius: 20px;font-size: 0.9rem;display: inline-flex;align-items: center;gap: 0.5rem;}.status-pill i {font-size: 1rem;}.task-card {transition: transform 0.2s ease, box-shadow 0.2s ease;}.task-card:hover {transform: translateY(-5px);box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;}.task-card .card-title {color: #2c3e50;font-weight: 600;}.task-card .card-title a:hover {color: var(--bs-primary);}.progress {background-color: #eef2f7;border-radius: 10px;}.progress-bar {background-color: var(--bs-primary);border-radius: 10px;}.empty-state {padding: 2rem;background: #f8f9fa;border-radius: 1rem;}.empty-state i {color: #dee2e6;}.table th {font-weight: 600;background: #f8f9fa;}.table td {vertical-align: middle;}.badge {padding: 0.5em 1em;font-weight: 500;}.btn-icon {padding: 0.25rem;line-height: 1;border: none;background: transparent;}.btn-icon:hover {background: #f8f9fa;border-radius: 0.25rem;}.pagination {margin-bottom: 0;}.page-link {border: none;padding: 0.5rem 1rem;color: var(--bs-primary);}.page-link:hover {background: #f8f9fa;}@media (prefers-color-scheme: dark) {.task-card {background: #2d3436;}.empty-state {background: #2d3436;}.table th {background: #2d3436;}}</style>
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="bx bx-crown fs-3 me-2 text-primary"></i>
+                    </span>
+                    <span class="title-text"> Ambassador Dashboard
+                    </span>
+                </h1>
+            </div>
+        </div>
+    </div>  
+    <!-- Places to Review Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-transparent">
+           
+                    <div class="ms-3 d-flex align-items-center">
+                        <div class="custom-progress-container">
+                            {% if status_counts.total > 0 %}
+                                <div class="custom-progress">
+                                    <!-- Completed/Success Segment -->
+                                    {% if status_counts.completed > 0 %}
+                                        <div class="progress-segment bg-success"
+                                             style="width: {{ status_percentages.completed }}%"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="top"
+                                             title="Ready to review: {{ status_counts.completed }} ({{ status_percentages.completed|floatformat:1 }}%)">
+                                            <span class="progress-label">
+                                                {{ status_counts.completed }}
+                                                <small class="progress-percent">({{ status_percentages.completed|floatformat:1 }}%)</small>
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                    
+                                    <!-- In Progress Segment -->
+                                    {% if status_counts.in_progress > 0 %}
+                                        <div class="progress-segment bg-warning"
+                                             style="width: {{ status_percentages.in_progress }}%"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="top"
+                                             title="In Progress: {{ status_counts.in_progress }} ({{ status_percentages.in_progress|floatformat:1 }}%)">
+                                            <span class="progress-label">
+                                                {{ status_counts.in_progress }}
+                                                <small class="progress-percent">({{ status_percentages.in_progress|floatformat:1 }}%)</small>
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                    
+                                    <!-- Pending Segment -->
+                                    {% if status_counts.pending > 0 %}
+                                        <div class="progress-segment bg-info"
+                                             style="width: {{ status_percentages.pending }}%"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="top"
+                                             title="Pending: {{ status_counts.pending }} ({{ status_percentages.pending|floatformat:1 }}%)">
+                                            <span class="progress-label">
+                                                {{ status_counts.pending }}
+                                                <small class="progress-percent">({{ status_percentages.pending|floatformat:1 }}%)</small>
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                    
+                                    <!-- Done/Reviewed Segment -->
+                                    {% if status_counts.done > 0 %}
+                                        <div class="progress-segment bg-primary"
+                                             style="width: {{ status_percentages.done }}%"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="top"
+                                             title="Reviewed: {{ status_counts.done }} ({{ status_percentages.done|floatformat:1 }}%)">
+                                            <span class="progress-label">
+                                                {{ status_counts.done }}
+                                                <small class="progress-percent">({{ status_percentages.done|floatformat:1 }}%)</small>
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                      <!-- LIVE Segment -->
+                                      {% if status_counts.task_done > 0 %}
+                                      <div class="progress-segment bg-primary"
+                                           style="width: {{ status_percentages.task_done }}%"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="top"
+                                           title="LIVE: {{ status_counts.task_done }} ({{ status_percentages.task_done|floatformat:1 }}%)">
+                                          <span class="progress-label">
+                                              {{ status_counts.task_done }}
+                                              <small class="progress-percent">({{ status_percentages.task_done|floatformat:1 }}%)</small>
+                                          </span>
+                                      </div>
+                                  {% endif %}
+                    
+                                    <!-- Failed Segment (if needed) -->
+                                    {% if status_counts.failed > 0 %}
+                                        <div class="progress-segment bg-danger"
+                                             style="width: {{ status_percentages.failed }}%"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="top"
+                                             title="Failed: {{ status_counts.failed }} ({{ status_percentages.failed|floatformat:1 }}%)">
+                                            <span class="progress-label">
+                                                {{ status_counts.failed }}
+                                                <small class="progress-percent">({{ status_percentages.failed|floatformat:1 }}%)</small>
+                                            </span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="custom-progress empty">
+                                    <span class="no-data">No tasks available</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    
+                        <div class="ms-3 progress-stats">
+                            <div class="stats-container">
+                                <span class="total-count">{{ status_counts.total }}</span>
+                                <span class="total-label">Total Tasks</span>
+                            </div>
+                            
+                        </div>
+                    </div>
+                     
+                    <script>
+                    // Initialize tooltips
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+                        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                            return new bootstrap.Tooltip(tooltipTriggerEl)
+                        });
+                    });
+                    </script>
+                    <!-- Status Summary -->
+                    <div class="row mt-3">
+                        <div class="col-10">
+                            <div class="d-flex gap-3">
+                                <div class="status-pill bg-success-subtle">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    {{ status_counts.completed }} Ready to review
+                                </div>
+                                <div class="status-pill bg-warning-subtle">
+                                    <i class="fas fa-clock text-warning"></i>
+                                    {{ status_counts.in_progress }} In Progress
+                                </div>
+                                <div class="status-pill bg-info-subtle">
+                                    <i class="fas fa-hourglass-start text-info"></i>
+                                    {{ status_counts.pending }} Pending
+                                </div>
+                                {% if status_counts.done > 0 %}
+                                    <div class="status-pill bg-success-subtle">
+                                        <i class="fas fa-flag-checkered text-success"></i>
+                                        {{ status_counts.done }} Reviewed
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div> 
+                            <div class="col-2">
+                                <a href="{% url 'task_list' %}" class="btn btn-secondary">Go To Content List</a>
+                     
+                        </div>
+                    </div>
+                </div>        
+               
+            </div>
+        </div>
+    </div>
+ 
+  
+
+    <div class="card-body">
+        {% load custom_tags %}
+        {% if tasks %}
+        <div class="row g-4">
+            {% for task in tasks %}
+            {% get_business_count task 'IN_PRODUCTION' as in_production_count %}
+            {% get_total_business_count task as total_businesses %}
+            
+            {% if task.status != 'DONE' and task.status != 'TASK_DONE' and in_production_count != total_businesses %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card task-card h-100 border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div class="d-flex gap-2">
+                                <span style="color:white" class="badge {% if task.status == 'IN_PROGRESS' %}bg-success
+                                         {% elif task.status == 'PENDING' %}bg-warning
+                                         {% elif task.status == 'FAILED' %}bg-danger
+                                         {% else %}bg-secondary{% endif %}">
+                                    {{ task.status|default:"Pending" }}
+                                </span>
+                                
+                                <!-- Business Progress Badge -->
+                                <span class="badge bg-info">
+                                    {{ in_production_count }}/{{ total_businesses }} in production
+                                </span>
+                            </div>
+    
+                            <div class="dropdown">
+                                <button class="btn btn-icon" data-bs-toggle="dropdown">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'task_detail' task.id %}">
+                                            <i class="bx bx-show me-2"></i>View Details
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+    
+                        <h5 class="card-title mb-3 mt-18">
+                            <a href="{% url 'task_detail' task.id %}" class="text-decoration-none">
+                                {{ task.project_title }}
+                            </a>
+                        </h5>
+    
+                        <div class="task-meta mb-3 mt-17">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bx bx-calendar me-2 text-muted"></i>
+                                <small class="text-muted">Started: {{ task.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bx bx-time me-2 text-muted"></i>
+                                <small class="text-muted">Due: {{ task.deadline|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+    
+                        <!-- Progress Bar -->
+                        <div class="progress mt-4" style="height: 6px;">
+                            {% calculate_progress in_production_count total_businesses as progress %}
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ progress }}%" 
+                                 aria-valuenow="{{ progress }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="card-footer bg-transparent border-top-0">
+                        <a href="{% url 'task_detail' task.id %}" class="btn btn-primary w-100">
+                            Review Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-5">
+            <div class="empty-state">
+                <i class="bx bx-task-x display-4 text-muted mb-3"></i>
+                <h6>No Places to Review</h6>
+                <p class="text-muted mb-0">
+                    You're all caught up! Check back later for new places to review.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+ 
+<script>
+// Initialize DataTable
+$(document).ready(function() {
+    const businessTable = $('#business-table').DataTable({
+        pageLength: 24,
+        order: [[0, 'desc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+        },
+        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+    });
+
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Refresh table
+    $('#refreshTable').click(function() {
+        location.reload();
+    });
+});
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Setup - add a text input to each footer cell
+        $('#business-profile thead tr:eq(1) th').each(function (i) {
+            var title = $(this).text();
+            if (title !== 'Select' && title !== 'Action') {
+                $('input', this).on('keyup change', function () {
+                    if (table.column(i).search() !== this.value) {
+                        table
+                            .column(i)
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            }
+        });
+    
+ 
+    });
+    
+    </script>
+{% endblock %}

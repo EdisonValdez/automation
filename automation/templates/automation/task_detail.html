@@ -1,0 +1,1409 @@
+{% extends "base.html" %}
+{% load business_filters %}
+{% load static %}
+{% block title %}{{ task.project_title }}{% endblock %}
+{% block content %}
+<style>
+    .alert-info {
+    background-color: #f8f9fa;
+    border-left: 4px solid #0dcaf0;
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.alert-info .alert-heading {
+    color: #0dcaf0;
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.alert-info p {
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.font-size-24 {
+    font-size: 24px;
+}
+
+.me-2 {
+    margin-right: 0.5rem;
+}
+
+    .main-content{
+    height: 100%;
+    margin: 0;
+    overflow-y: hidden;
+    overflow-x: visible;
+} 
+
+    .title-box {
+        margin-bottom: 0.5rem;
+    }
+    
+    .business-title {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 0.25rem;
+        margin: 0;
+        line-height: 1.2;
+        min-height: 24px; /* Set consistent height */
+    }
+    
+    /* Icon container */
+    .status-icons {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+    
+    /* Icon styling */
+    .business-title i {
+        font-size: 14px;
+        width: 16px;
+        height: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    /* Link styling */
+    .business-title a {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+        .business-title {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+    
+        .status-icons {
+            margin-left: 0;
+        }
+    }
+    
+.status-legend{background:#fff;border:1px solid #e9ecef;border-radius:6px;padding:.75rem;margin-bottom:1.5rem}.legend-container{display:flex;align-items:center;flex-wrap:wrap;gap:1.5rem}.legend-section{display:flex;align-items:center;gap:1rem}.legend-title{font-weight:600;color:#495057;font-size:.9rem}.legend-item{display:flex;align-items:center;gap:.5rem;padding:.25rem .75rem;background:#f8f9fa;border-radius:4px}.legend-item i{font-size:1rem}.legend-item span{font-size:.875rem;color:#6c757d}.legend-divider{width:1px;height:24px;background:#dee2e6}@media (max-width:768px){.legend-container{flex-direction:column;align-items:flex-start;gap:1rem}.legend-divider{width:100%;height:1px}.legend-section{flex-wrap:wrap}}.business-title .bx{font-size:16px}.business-title{gap:4px}.task-navigation{background-color:#f8f9fa;padding:20px 0;border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;bottom:0;left:0;right:0;z-index:1000}.task-nav-btn{min-width:150px;text-align:center;position:relative;padding:10px 15px}.task-nav-btn small{font-size:.75rem;opacity:.8}.task-navigation-info{padding:0 20px}.current-task-label{font-size:.8rem;text-transform:uppercase;color:#6c757d;display:block;margin-bottom:5px}main{margin-bottom:100px}@media (max-width:768px){.task-nav-btn small{display:none!important}.task-navigation-info h5{font-size:1rem}.task-navigation-info small{font-size:.7rem}}.btn.disabled{opacity:.65;cursor:not-allowed;pointer-events:none}.business-title{font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}.business-link{display:block;color:inherit;text-decoration:none;padding:5px 0;width:100%}.business-link:hover{color:#F4C031;text-decoration:underline}small{font-size:10px}#taskDetailsContainer{transition:all 0.3s ease-in-out}.kanban-cont{display:flex;overflow-x:auto;padding-bottom:10px;gap:10px}.kanban-list{flex:1 1 30%;min-width:250px;max-width:100%;background-color:#f4f5f7;border-radius:5px;margin:5px}.kanban-box{border-radius:5px;padding:10px;box-shadow:0 1px 3px rgb(0 0 0 / .12),0 1px 2px rgb(0 0 0 / .24);display:flex;flex-direction:column;cursor:move}.image-container{position:relative;overflow:hidden;width:100%;height:auto}.thumbnail-image{width:100%;height:auto;max-height:200px;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:0.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:16px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%}.business-stats{display:flex;justify-content:space-between;margin-top:10px;font-size:10px;background-color:#f4c031}.kanban-header{background-color:#e4e6e9;border-bottom:2px solid #ccc;padding:10px;display:flex;justify-content:space-between;align-items:center}.kanban-wrap{max-height:800px;overflow-y:auto}.load-more{width:100%;margin-top:10px}@media (max-width:768px){.kanban-list{flex-basis:100%;min-width:100%;margin-right:0}.kanban-header,.kanban-box{padding:8px}.overlay-title{font-size:14px}}@media (max-width:576px){.kanban-cont{padding:0;gap:5px}.kanban-box{padding:5px}.thumbnail-image{max-height:150px}.business-stats{font-size:8px}.overlay-title{font-size:12px}}.card-title{font-weight:700;font-size:1.2rem}.bulk-move-dropdown{margin-left:10px;padding:5px 10px;width:50%;border-radius:4px;border:1px solid #212d94;background-color:#fff;cursor:pointer}.bulk-move-dropdown:hover{border-color:#0056b3}.bulk-move-dropdown:focus{outline:none;border-color:#0056b3}</style>
+<div id="loading-spinner" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</div>
+<div class="main-content project"> 
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-wrapper">
+                <h1 class="page-title">
+                    <span class="title-icon">
+                        <i class="fas fa-tasks"></i>
+                    </span>
+                    <span class="title-text"><strong>Kanban Board:</strong> {{ task.project_title }} - Total: {{ businesses|length }} 
+                       
+                    </span>
+                </h1> 
+               
+            </div>
+        </div>
+  
+    </div> 
+<div class="col-12">
+    <div class="row">         
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <div class="mb-3">
+                <input type="text" id="business-search" class="form-control" placeholder="Search businesses...">
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <div class="mb-3">
+                <select id="business-sort" class="form-control">
+                    <option value="rank">Sort by Rank</option>
+                    <option value="reviews">Sort by Number of Reviews</option>
+                    <option value="rating">Sort by Average Rating</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <div class="mb-3">
+                <select id="rating-range" class="form-control">
+                    <option value="">Todas las calificaciones</option>
+                    <option value="5.0-4.5">5.0 - 4.5</option>
+                    <option value="4.4-4.0">4.4 - 4.0</option>
+                    <option value="3.9-3.5">3.9 - 3.5</option>
+                    <option value="3.4-3.0">3.4 - 3.0</option>
+                    <option value="2.9-0">2.9 - 0</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+          
+            <button id="generateDescriptionsBtn"
+            class="btn btn-primary {% if empty_descriptions_count == 0 %}disabled{% endif %}"
+            {% if empty_descriptions_count == 0 %}disabled{% endif %}
+            data-task-id="{{ task.id }}"
+            data-bs-toggle="tooltip"
+            title="Generate descriptions for {{ empty_descriptions_count }} business{{ empty_descriptions_count|pluralize:'es' }}"
+        >
+            <i class="fas fa-language"></i> 
+            Descriptions 
+            {% if empty_descriptions_count > 0 %}
+                <span class="badge badge-secondary">{{ empty_descriptions_count }} </span>
+            {% endif %}
+        </button>
+         
+ 
+            {% if task.translation_status != 'TRANSLATED' %}
+            <a class="btn btn-outline-primary start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                <i class="fas fa-sync"></i> Translate
+            </a>
+            {% elif task.translation_status == 'PENDING_TRANSLATION' %}
+            <a class="btn btn-outline-primary start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                <i class="fas fa-sync danger"></i> Translate
+            </a>
+            {% elif task.translation_status == 'TRANSLATED' %}
+            <span class="badge badge-secondary badge-category mt-11">This project has been TRANSLATED!</span>
+            {% endif %} 
+        </div>
+        
+    </div>
+<!--KANBAN-->
+<div class="kanban-board card mb-0 pd-0">
+    <div class="box-body pd-0"> 
+        
+<div class="status-legend mb-3">
+    <div class="legend-container">
+        <div class="legend-section">
+            <span class="legend-title">DESCRIPTIONS:</span>
+            <div class="legend-item">
+                <i class="bx bxs-file-doc text-primary"></i>
+                <span>Has main description</span>
+            </div>
+            <div class="legend-item">
+                <i class="bx bxs-file text-danger"></i>
+                <span>No description</span>
+            </div>
+        </div>
+
+        <div class="legend-divider"></div> 
+
+        <div class="legend-section">
+            <span class="legend-title">TRANSLATIONS:</span>
+            <div class="legend-item">
+                <i class="fas fa-language text-primary"></i>
+                <span>All languages translated</span>
+            </div>
+            <div class="legend-item">
+                <i class="fas fa-language text-secondary"></i>
+                <span>Partially translated</span>
+            </div>
+            <div class="legend-item">
+                <i class="fas fa-language text-danger"></i>
+                <span>None</span>
+            </div>
+        </div>
+    </div>
+</div>
+        {% if user.is_ambassador and task.status == 'TASK_DONE' %}
+            <div class="alert alert-info" role="alert" style="margin: 20px;">
+                <div class="d-flex align-items-center">
+                    
+                    <div>
+                        <h4 class="alert-heading"><i class="fas fa-tasks"></i> Task Completed!</h4>
+                        <h6 class="mb-0 mt-25"><i class="bx bx-check-circle me-2 font-size-24"></i>
+                            The businesses are being processed for the live app. 
+                            Thank you!
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+ 
+
+        <div class="kanban-cont">
+            {% for status, status_name in status_choices %}
+            {% if status != 'IN_PRODUCTION' or user.is_admin %}
+            <div class="kanban-list {% if status == 'DISCARDED' %} kanban-list-discarded {% else %} {% if user.is_admin %}narrow{% else %}wide{% endif %} {% endif %}" id="{{ status }}">
+                <div id="{{status}}" class="kanban-header">
+                    <h6 id="{{ status }}" class="card-title {% if status == 'DISCARDED' %} text-danger {% endif %}">
+                        {% if status == 'IN_PRODUCTION' %}
+                        Move To APP
+                        {% else %}
+                        {{ status_name }}  (<span class="status-count" data-status="{{ status }}">{{ businesses|filter_by_status:status|length }}</span>)
+                     {% endif %}
+                    </h6> 
+                    {% if user.is_admin %}
+                    <select class="bulk-move-dropdown" onchange="moveBulkBusinesses(this, '{{ status }}')">
+                        <option value="">Move All to...</option>
+                        {% for target_status, target_name in status_choices %}
+                            {% if target_status != status %}
+                                <option value="{{ target_status }}">{{ target_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select> 
+                    {% endif %}
+                </div>
+                
+                <div class="kanban-wrap" id="kanban-wrap-{{ status }}">
+                    {% for business in businesses|filter_by_status:status %}
+                    {% if business.status == status %}
+                    <div class="panel" data-id="{{ business.id }}" data-status="{{ business.status }}">
+                        <div class="kanban-box item-box">    
+                            <div class="title-box">
+                                <h6 class="business-title">
+                                    <a href="{% url 'business_detail' business.id %}?status={{ status }}">
+                                        {{ business.title|truncatechars:50 }}
+                                    </a>
+                                    
+                                    <span class="status-icons">
+                                        <!-- Description Status Icon -->
+                                        {% if business.description and business.description|length > 0 %}
+                                            <i class="bx bxs-file-doc text-primary" title="Has main description"></i>
+                                        {% else %}
+                                            <i class="bx bxs-file text-danger" title="Missing main description"></i>
+                                        {% endif %}
+                            
+                                        <!-- Translation Status Icon --> 
+                                        {% with eng=business.description_eng|default_if_none:'' esp=business.description_esp|default_if_none:'' fr=business.description_fr|default_if_none:'' %}
+                                        {% if business.description and eng|length > 0 and eng != 'None' and esp|length > 0 and esp != 'None' and fr|length > 0 and fr != 'None' %}
+                                            <i class="fas fa-language text-primary" title="Fully translated"></i>
+                                        {% elif eng|length > 0 and eng != 'None' or esp|length > 0 and esp != 'None' or fr|length > 0 and fr != 'None' %}
+                                            <i class="fas fa-language text-secondary" title="Partially translated"></i>
+                                        {% else %}
+                                            <i class="fas fa-language text-danger" title="Not translated"></i>
+                                        {% endif %}
+                                    {% endwith %} 
+                                    </span>
+
+                                </h6>
+                            </div>
+                            
+                            <div class="content-box">
+                                <small>
+                                    <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" 
+                                       target="_blank">
+                                        <i class="bx bx-pin font-size-16 align-middle me-1"></i>
+                                        {{ business.address|truncatechars:50 }}
+                                    </a>
+                                </small>                                                                
+                                
+                                <div class="business-stats">
+                                    <span class="rank">Rank: {{ business.rank|default:"N/A" }}</span>
+                                    <span class="total-score">Total Score: {{ business.reviews_count|default:"N/A" }}</span>
+                                    <span class="total-score">Avg: {{ business.rating|default:"N/A" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        {% endif %}
+    </div>
+</div>
+
+<!--KANBAN-->
+</div>
+ 
+{% if not businesses %}
+<div class="text-center mt-4">
+    <i class="bx bxs-notification-off bold text-muted title-display" style="font-size:xx-large;" ></i>
+  
+    <p class="text-muted mt-3 bold">
+        <i class="fas fa-info-circle me-2"></i>
+        No businesses found for this project.
+    </p>
+</div>
+{% endif %}
+
+ 
+ <a href="{% url 'task_list' %}" class="btn btn-secondary mt-3 mb-4">Go To Task List</a>
+ 
+
+    <button id="scroll-to-top" class="btn btn-primary" style="display: none; position: fixed; bottom: 20px; right: 30px; z-index: 99;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+<!-- Task Navigation Section -->
+<div class="task-navigation mt-4 mb-4">
+    <div class="container">
+        <div class="row justify-content-between align-items-center">
+            <div class="col-auto">
+                {% if previous_task %}
+                <a href="{% url 'task_detail' previous_task.id %}" 
+                class="btn btn-outline-primary task-nav-btn"
+                data-task-id="{{ previous_task.id }}">
+                    <i class="fas fa-chevron-left"></i>
+                    Previous Task
+                    <small class="d-block">{{ previous_task.title|truncatechars:30 }}</small>
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="col-auto">
+                <div class="task-navigation-info text-center">
+                    <span class="current-task-label">Current Task</span>
+                    <h5 class="mb-0">{{ task.title }}</h5>
+                    <small class="text-muted">
+                        Task {{ task.id }} 
+                        {% if task.ambassador %}
+                        | Assigned to: {{ task.ambassador.get_full_name|default:task.ambassador.username }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+
+            <div class="col-auto">
+                {% if next_task %}
+                <a href="{% url 'task_detail' next_task.id %}" 
+                class="btn btn-outline-primary task-nav-btn"
+                data-task-id="{{ next_task.id }}">
+                    Next Task
+                    <i class="fas fa-chevron-right"></i>
+                    <small class="d-block">{{ next_task.title|truncatechars:30 }}</small>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+
+<!-- updateBusinessStatus - moveBulkBusinesses - revertToOldColumn - updateStatusCount -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var containers = document.querySelectorAll('.kanban-wrap');
+    containers.forEach(function(container) {
+        new Sortable(container, {
+            group: 'shared',
+            animation: 150,
+            onEnd: function(evt) {
+                var itemEl = evt.item;
+                var newStatus = evt.to.closest('.kanban-list').id;
+                var oldStatus = evt.from.closest('.kanban-list').id;
+                var businessId = itemEl.dataset.id;
+
+                // Only proceed if the status has changed
+                if (newStatus !== oldStatus) {
+                    // Update the status in the backend
+                    updateBusinessStatus(businessId, newStatus, oldStatus);
+                }
+            }
+        });
+    });
+});
+
+const userId = "{{ user.id }}"
+
+function updateBusinessStatus(businessId, newStatus, oldStatus) {
+    fetch(`/update-business-status/${businessId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            status: newStatus,
+            userId: userId
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw response;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            // Update counters
+            updateStatusCount(oldStatus, -1);
+            updateStatusCount(newStatus, 1);
+            // Update the status attribute of the moved element
+            document.querySelector(`.panel[data-id="${businessId}"]`).dataset.status = newStatus;
+            location.reload();
+        } else {
+            // Handle error cases
+            let errorMessage = data.message || 'An unexpected error occurred';
+            
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                confirmButtonText: 'OK'
+            });
+            
+            revertToOldColumn(businessId, oldStatus);
+        }
+    })
+    .catch(error => {
+        if (error instanceof Response) {
+            error.json().then(errorData => {
+                let errorMessage = errorData.message || 'Unable to validate business details. Please try again.';
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMessage,
+                    confirmButtonText: 'OK'
+                });
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Unable to validate business details. Please try again.',
+                confirmButtonText: 'OK'
+            });
+        }
+        revertToOldColumn(businessId, oldStatus);
+    });
+}
+
+// Helper function to revert the card to its original position
+function revertToOldColumn(businessId, oldStatus) {
+    const card = document.querySelector(`.panel[data-id="${businessId}"]`);
+    const originalColumn = document.querySelector(`.kanban-column[data-status="${oldStatus}"]`);
+    
+    if (card && originalColumn) {
+        const container = originalColumn.querySelector('.panel-container');
+        if (container) {
+            container.appendChild(card);
+            card.dataset.status = oldStatus;
+        }
+    }
+}
+
+// Helper function to update status count
+function updateStatusCount(status, change) {
+    const countElement = document.querySelector(`.status-count[data-status="${status}"]`);
+    if (countElement) {
+        const currentCount = parseInt(countElement.textContent);
+        countElement.textContent = currentCount + change;
+    }
+}
+
+function moveBulkBusinesses(selectElement, currentStatus) {
+    const newStatus = selectElement.value;
+
+    if (newStatus) {
+        const businessElements = document.querySelectorAll(`#kanban-wrap-${currentStatus} .panel`);
+        const businessIds = Array.from(businessElements).map(el => el.getAttribute('data-id'));
+
+        // Create a fetch request for each business to update their status
+        const updateRequests = businessIds.map(businessId =>
+            fetch(`/update-business-status/${businessId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    status: newStatus,
+                    userId: userId  // Assuming userId is defined in your context
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Successfully updated, update the UI
+                    updateStatusCount(currentStatus, -1); // Decrease old status count
+                    updateStatusCount(newStatus, 1);      // Increase new status count
+                    document.querySelector(`.panel[data-id="${businessId}"]`).dataset.status = newStatus; 
+                    location.reload(); 
+                } else {
+                    // Handle errors
+                    if (data.status === 'move-to-app-error') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message,
+                            confirmButtonText: 'OK'
+                        });
+                        revertToOldColumn(businessId, currentStatus);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Cannot move to the next column. Business description is missing.',
+                            confirmButtonText: 'OK'
+                        });
+                        revertToOldColumn(businessId, currentStatus);
+                    }
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Unable to validate business details. Please try again.',
+                    confirmButtonText: 'OK'
+                });
+                revertToOldColumn(businessId, currentStatus);
+            })
+        );
+
+        // Wait for all requests to complete
+        Promise.all(updateRequests)
+            .then(() => {
+                // After all requests, refresh the page or provide additional UI feedback
+                selectElement.value = "";  // Reset the dropdown
+                location.reload(); // Optional: refresh to show updates
+            })
+            .catch(err => {
+                console.error('Error with bulk update:', err);
+            });
+    }
+}
+
+function revertToOldColumn(businessId, oldStatus) {
+    const oldColumn = document.querySelector(`#kanban-wrap-${oldStatus}`);
+    const itemEl = document.querySelector(`.panel[data-id="${businessId}"]`);
+    if (oldColumn && itemEl) {
+        oldColumn.appendChild(itemEl);
+    }
+}
+ 
+function updateStatusCount(status, change) {
+    var countElement = document.querySelector(`.status-count[data-status="${status}"]`);
+    if (countElement) {
+        var currentCount = parseInt(countElement.textContent);
+        countElement.textContent = currentCount + change;
+    }
+}
+ 
+// Función para obtener el token CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+<!-- updateBusinessStatus - moveBulkBusinesses - revertToOldColumn - updateStatusCount -->
+ 
+<!-- updateBusinessStatus -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var kanbanLists = document.querySelectorAll('.kanban-wrap');
+        
+        kanbanLists.forEach(function(list) {
+            new Sortable(list, {
+                group: 'shared',
+                animation: 150,
+                onEnd: function(evt) {
+                var itemEl = evt.item;
+                var newStatus = evt.to.closest('.kanban-list').id;
+                var oldStatus = evt.from.closest('.kanban-list').id;
+                var businessId = itemEl.dataset.id;
+                updateBusinessStatus(businessId, newStatus, oldStatus);
+            }
+
+            });
+        });
+    
+        function updateBusinessStatus(businessId, newStatus) {
+            fetch(`/update-business-status/${businessId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `status=${newStatus}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log(`Business ${businessId} status updated to ${newStatus}`);
+                } else {
+                    console.error('Error updating business status');
+                    // You might want to move the item back to its original position here
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    
+        function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+<!-- updateBusinessStatus -->
+ 
+<!--Detail-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleButton = document.getElementById('toggleTaskDetails');
+        const taskDetailsContainer = document.getElementById('taskDetailsContainer');
+        
+        // Get the saved state from localStorage, default to true if not set
+        let isVisible = localStorage.getItem('taskDetailsVisible') !== 'false';
+        
+        // Set initial state based on saved preference
+        if (!isVisible) {
+            taskDetailsContainer.style.display = 'none';
+            toggleButton.textContent = 'Show Task Details';
+        }
+        
+        toggleButton.addEventListener('click', function() {
+            if (isVisible) {
+                taskDetailsContainer.style.display = 'none';
+                toggleButton.textContent = 'Show Task Details';
+            } else {
+                taskDetailsContainer.style.display = 'block';
+                toggleButton.textContent = 'Hide Task Details';
+            }
+            isVisible = !isVisible;
+            
+            // Save the new state to localStorage
+            localStorage.setItem('taskDetailsVisible', isVisible);
+        });
+    });
+</script>
+<!--Detail-->
+
+<!-- Sorting functionality -->
+<script>
+    $(document).ready(function() {
+        // Existing functionalities...
+    
+        // Sorting functionality
+        $('#business-sort').change(function() {
+            var sortBy = $(this).val();
+            $('.kanban-wrap').each(function() {
+                var $wrap = $(this);
+                var $businesses = $wrap.find('.panel').get();
+                $businesses.sort(function(a, b) {
+                    var aValue, bValue;
+                    if (sortBy === 'rank') {
+                        aValue = parseInt($(a).find('.rank').text().split(':')[1]) || 0;
+                        bValue = parseInt($(b).find('.rank').text().split(':')[1]) || 0;
+                    } else if (sortBy === 'reviews') {
+                        aValue = parseInt($(a).find('.total-score').first().text().split(':')[1]) || 0;
+                        bValue = parseInt($(b).find('.total-score').first().text().split(':')[1]) || 0;
+                    } else if (sortBy === 'rating') {
+                        aValue = parseFloat($(a).find('.total-score').last().text().split(':')[1]) || 0;
+                        bValue = parseFloat($(b).find('.total-score').last().text().split(':')[1]) || 0;
+                    }
+                    return bValue - aValue; // Sort in descending order
+                });
+                $.each($businesses, function(idx, item) { $wrap.append(item); });
+            });
+        });
+    });
+</script>
+<!-- Sorting functionality -->
+
+<!--loading-->
+<script>
+    $(document).ready(function() {
+        $('.load-more').click(function() {
+            var button = $(this);
+            var status = button.data('status');
+            var page = button.data('page');
+            
+            $('#loading-spinner').show();
+            
+            $.ajax({
+                url: '{% url "load_more_businesses" %}',
+                data: {
+                    'status': status,
+                    'page': page,
+                    'task_id': '{{ task.id }}'
+                },
+                success: function(data) {
+                    $('#kanban-wrap-' + status).append(data.html);
+                    if (data.has_more) {
+                        button.data('page', page + 1);
+                    } else {
+                        button.hide();
+                    }
+                    $('#loading-spinner').hide();
+                },
+                error: function() {
+                    alert('Error loading more businesses. Please try again.');
+                    $('#loading-spinner').hide();
+                }
+            });
+        });
+    });
+</script>
+<!--loading-->
+
+<!--Scroll to top functionality-->
+<script>
+$(document).ready(function() { 
+
+    // 
+    $(window).scroll(function() {
+        if ($(this).scrollTop() > 100) {
+            $('#scroll-to-top').fadeIn();
+        } else {
+            $('#scroll-to-top').fadeOut();
+        }
+    });
+
+    $('#scroll-to-top').click(function() {
+        $('html, body').animate({scrollTop : 0}, 800);
+        return false;
+    });
+
+    // Smooth scrolling for kanban lists
+    $('.kanban-wrap').scroll(function() {
+        if ($(this).scrollTop() > 100) {
+            $(this).find('.scroll-to-top').fadeIn();
+        } else {
+            $(this).find('.scroll-to-top').fadeOut();
+        }
+    });
+
+    $('.scroll-to-top').click(function() {
+        $(this).closest('.kanban-wrap').animate({scrollTop : 0}, 800);
+        return false;
+    });
+});
+</script>
+
+<!--Improved search function with debouncing -->
+<script>
+    $(document).ready(function() {
+ 
+    let searchTimeout;
+    
+    function searchBusinesses(searchTerm) {
+        searchTerm = searchTerm.toLowerCase().trim();
+        console.log('Searching for:', searchTerm); // Debugging
+
+        $('.panel').each(function() {
+            const $panel = $(this);
+            const businessTitle = $panel.find('.overlay-title').text().toLowerCase();
+            const businessAddress = $panel.find('.content-box p').text().toLowerCase();
+            
+            // Debug log
+            console.log('Business:', businessTitle);
+            console.log('Address:', businessAddress);
+
+            // More comprehensive search
+            const matchesSearch = 
+                businessTitle.includes(searchTerm) || 
+                businessAddress.includes(searchTerm) ||
+                $panel.text().toLowerCase().includes(searchTerm);
+
+            $panel.toggle(matchesSearch);
+        });
+
+        // Log number of visible results
+        console.log('Visible results:', $('.panel:visible').length);
+    }
+
+    // Enhanced filter function
+    function applyAllFilters() {
+        const searchTerm = $('#business-search').val().toLowerCase().trim();
+        const ratingRange = $('#rating-range').val();
+        const [maxRating, minRating] = ratingRange ? ratingRange.split('-').map(Number) : [5, 0];
+
+        $('.panel').each(function() {
+            const $panel = $(this);
+            const businessTitle = $panel.find('.overlay-title').text().toLowerCase();
+            const businessAddress = $panel.find('.content-box p').text().toLowerCase();
+            const avgRating = parseFloat($panel.find('.total-score').last().text().split(':')[1]) || 0;
+
+            // More comprehensive matching
+            const matchesSearch = searchTerm === '' || 
+                businessTitle.includes(searchTerm) || 
+                businessAddress.includes(searchTerm) ||
+                $panel.text().toLowerCase().includes(searchTerm);
+            
+            const matchesRating = avgRating >= minRating && avgRating <= maxRating;
+
+            $panel.toggle(matchesSearch && matchesRating);
+        });
+
+        // Log filtered results
+        console.log('Filtered results:', $('.panel:visible').length);
+    }
+
+    // Debounced search input handler
+    $('#business-search').on('input', function() {
+        clearTimeout(searchTimeout);
+        const searchTerm = $(this).val();
+        
+        // Show loading indicator if needed
+        // $('.loading-indicator').show();
+
+        searchTimeout = setTimeout(() => {
+            applyAllFilters();
+            // $('.loading-indicator').hide();
+        }, 300); // 300ms delay
+    });
+
+    // Rating range filter
+    $('#rating-range').change(function() {
+        applyAllFilters();
+    });
+
+    // Enhanced sorting function
+    $('#business-sort').change(function() {
+        const sortBy = $(this).val();
+        
+        $('.kanban-wrap').each(function() {
+            const $wrap = $(this);
+            const $businesses = $wrap.find('.panel:visible').get();
+
+            $businesses.sort(function(a, b) {
+                let aValue, bValue;
+                const $a = $(a);
+                const $b = $(b);
+
+                switch(sortBy) {
+                    case 'rank':
+                        aValue = parseInt($a.find('.rank').text().split(':')[1]) || 0;
+                        bValue = parseInt($b.find('.rank').text().split(':')[1]) || 0;
+                        break;
+                    case 'reviews':
+                        aValue = parseInt($a.find('.total-score').first().text().split(':')[1]) || 0;
+                        bValue = parseInt($b.find('.total-score').first().text().split(':')[1]) || 0;
+                        break;
+                    case 'rating':
+                        aValue = parseFloat($a.find('.total-score').last().text().split(':')[1]) || 0;
+                        bValue = parseFloat($b.find('.total-score').last().text().split(':')[1]) || 0;
+                        break;
+                }
+                return bValue - aValue;
+            });
+
+            $wrap.append($businesses);
+        });
+    });
+
+    // Add these helper functions for debugging
+    function logPanelStructure() {
+        console.log('Panel Structure:');
+        $('.panel').first().each(function() {
+            console.log('Overlay Title:', $(this).find('.overlay-title').text());
+            console.log('Content Box Text:', $(this).find('.content-box p').text());
+            console.log('Total Score:', $(this).find('.total-score').text());
+        });
+    }
+
+    // Call this on page load
+    logPanelStructure();
+});
+
+</script>
+ 
+<!--Translate Tasks-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const translatingButtons = document.querySelectorAll('.start-translating-btn');
+    
+        translatingButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+    
+            if (this.classList.contains('disabled')) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Process in Progress',
+                    text: 'Please wait for the current operation to complete.'
+                });
+                return;
+            }
+    
+            const taskId = this.getAttribute('data-task-id');
+            const originalText = this.innerHTML;
+            handleTranslation(this, taskId, originalText);
+        });
+    });
+    
+
+        async function handleTranslation(button, taskId, originalText) {
+            try {
+                Swal.fire({
+                    title: 'Translation in Progress',
+                    html: 'Please wait while we process your request...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                button.classList.add('disabled');
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+
+                const response = await fetch(`/tasks/${taskId}/translate/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.warn('Unexpected response received. Translation is continuing in the background.');
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Translation in Progress',
+                        text: 'The process is running in the background. You will be notified once completed.',
+                        timer: 5000
+                    });
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Translation process failed');
+                }
+
+                handleTranslationResponse(data, button, originalText);
+
+            } catch (error) {
+                console.error('Translation error:', error);
+
+                // Show a generic message to the user
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Translation Running',
+                    text: 'Translation is still running in the background. Please check back later for updates.'
+                });
+
+                resetButton(button, originalText);
+            }
+        }
+
+        function handleTranslationResponse(response) {
+        const data = response.details || {};
+        
+        let message = `
+            <div class="translation-status">
+                <p>${response.message}</p>
+                ${data.reason ? `<p class="reason">${data.reason}</p>` : ''}
+                
+                <div class="stats">
+                    <p>Total businesses: ${data.total || 0}</p>
+                    <p>Pending: ${data.pending || 0}</p>
+                    <p>Reviewed: ${data.reviewed || 0}</p>
+                    <p>Discarded: ${data.discarded || 0}</p>
+                </div>
+    
+                ${data.error_details && data.error_details.length > 0 ? `
+                    <div class="errors">
+                        <h4>Issues Found:</h4>
+                        <ul>
+                            ${data.error_details.map(error => 
+                                `<li>Business ${error.business_id}: ${error.issue}</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    
+        Swal.fire({
+            icon: response.status === 'success' ? 'success' : 
+                response.status === 'warning' ? 'warning' : 'error',
+            title: response.status === 'success' ? 'Translation Complete' : 
+                response.status === 'warning' ? 'Warning' : 'Translation Failed',
+            html: message,
+            confirmButtonText: 'OK'
+        }).then(() => {
+            // Force reload after dialog is closed
+            window.location.href = window.location.href;
+        });
+    }
+        
+        function handleSuccess(data, button) {
+        button.innerHTML = '<i class="fas fa-check"></i> Translation Complete';
+        
+        const taskId = button.getAttribute('data-task-id');
+        const taskUrl = `/tasks/${taskId}/details/`; // Adjust this URL according to your routing
+    
+        Swal.fire({
+            icon: 'success',
+            title: 'Translation Successful',
+            html: `
+                <div class="translation-summary">
+                    ${createSuccessMessage(data)}
+                    <div class="mt-3">
+                        <a href="${taskUrl}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> View Task Details
+                        </a>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Refresh Page',
+            cancelButtonText: 'View Task',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                location.reload();
+            } else {
+                window.location.href = taskUrl;
+            }
+        });
+    }
+    
+        function handleWarning(data, button, originalText) {
+            button.innerHTML = originalText;
+            button.classList.remove('disabled');
+    
+            Swal.fire({
+                icon: 'warning',
+                title: 'Cannot Proceed',
+                html: createWarningMessage(data),
+                confirmButtonText: 'OK'
+            });
+        }
+    
+        function handleError(data, button, originalText) {
+            button.innerHTML = originalText;
+            button.classList.remove('disabled');
+    
+            Swal.fire({
+                icon: 'error',
+                title: 'Translation Error',
+                html: createErrorMessage(data),
+                confirmButtonText: 'OK',
+                showCancelButton: true,
+                cancelButtonText: 'Report Issue'
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    reportIssue(data);
+                }
+            });
+        }
+    
+        function handleUnknownStatus(data, button, originalText) {
+            button.innerHTML = originalText;
+            button.classList.remove('disabled');
+    
+            Swal.fire({
+                icon: 'question',
+                title: 'Unexpected Response',
+                text: 'Received an unexpected response from the server.',
+                confirmButtonText: 'OK'
+            });
+        }
+    
+        function createSuccessMessage(data) {
+            return `
+                <div class="translation-results">
+                    <p>${data.message || 'Translation completed successfully'}</p>
+                    ${data.details ? `
+                        <div class="translation-details">
+                            <p>Successfully processed: ${data.details.success || 0}</p>
+                            <p>Failed: ${data.details.failed || 0}</p>
+                            <p>Total: ${data.details.total || 0}</p>
+                            ${data.details.status_updates?.pending_to_reviewed > 0 ? 
+                                `<p>Updated from pending: ${data.details.status_updates.pending_to_reviewed}</p>` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+    
+        function createWarningMessage(data) {
+            return `
+                <div class="warning-message">
+                    <p>${data.message}</p>
+                    ${data.details ? `
+                        <div class="status-breakdown">
+                            <p>Current Status: ${data.details.current_status || 'Unknown'}</p>
+                            ${data.details.suggestion ? `<p>Suggestion: ${data.details.suggestion}</p>` : ''}
+                            <div class="business-stats">
+                                <p>Total Businesses: ${data.details.total || 0}</p>
+                                <p>Pending: ${data.details.pending || 0}</p>
+                                <p>Reviewed: ${data.details.reviewed || 0}</p>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+    
+        function createErrorMessage(data) {
+            return `
+                <div class="error-message">
+                    <p>${data.message}</p>
+                    ${data.details ? `
+                        <div class="business-stats">
+                            ${data.details.total ? `<p>Total Businesses: ${data.details.total}</p>` : ''}
+                            ${data.details.pending ? `<p>Pending Review: ${data.details.pending}</p>` : ''}
+                            ${data.details.reviewed ? `<p>Reviewed: ${data.details.reviewed}</p>` : ''}
+                            ${data.details.discarded ? `<p>Discarded: ${data.details.discarded}</p>` : ''}
+                        </div>
+                    ` : ''}
+                    ${data.suggestion ? `
+                        <p class="suggestion">${data.suggestion}</p>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function resetButton(button, originalText) {
+            button.classList.remove('disabled');
+            button.innerHTML = originalText;
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+    function reportIssue(errorData) {
+            console.log('Reporting issue:', errorData);
+            // Implement your issue reporting logic here
+            Swal.fire({
+                icon: 'info',
+                title: 'Issue Reported',
+                text: 'The issue has been logged for investigation.',
+                confirmButtonText: 'OK'
+            });
+        }
+    });
+</script>
+<!--Translate Tasks-->
+ 
+<!-- Based description task-->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Constants and Elements
+    const generateBtn = document.getElementById('generateDescriptionsBtn');
+    if (!generateBtn) return; // Exit if button not found
+    
+    // Event Listeners
+    generateBtn.addEventListener('click', handleGenerateDescriptions);
+    
+    // Main handler function
+    async function handleGenerateDescriptions(e) {
+        e.preventDefault();
+        
+        // Check if button is disabled
+        if (this.classList.contains('disabled')) {
+            return;
+        }
+        
+        const taskId = this.getAttribute('data-task-id');
+        if (!taskId) {
+            showError('Task ID not found');
+            return;
+        }
+        
+        try {
+            // Show loading state
+            showLoadingState();
+            
+            // Make API call
+            const response = await makeApiCall(taskId);
+            
+            // Handle response
+            handleApiResponse(response, this);
+            
+        } catch (error) {
+            console.error('Error in description generation:', error);
+            showError('An error occurred while generating descriptions');
+        }
+    }
+    
+    // Helper Functions
+    function showLoadingState() {
+        Swal.fire({
+            title: 'Generating Descriptions',
+            html: `
+                <div class="d-flex flex-column align-items-center">
+                    <p>Please wait while we generate descriptions...</p>
+                    <p class="text-muted small">This may take a few minutes</p>
+                </div>
+            `,
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+    }
+    
+    async function makeApiCall(taskId) {
+        const response = await fetch(`/tasks/${taskId}/generate-descriptions/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return await response.json();
+    }
+    
+    function handleApiResponse(data, button) {
+        Swal.close();
+        
+        if (data.success) {
+            // Prepare success message
+            let message = data.message;
+            if (data.warnings?.length > 0) {
+                message += '<br><br><strong>Warnings:</strong><br>' + 
+                          data.warnings.join('<br>');
+            }
+            
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                html: message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.reload();
+            });
+            
+            // Update button state
+            updateButtonState(button, data.has_empty_descriptions);
+            
+        } else {
+            showError(data.error || 'An error occurred while generating descriptions');
+        }
+    }
+    
+    function updateButtonState(button, hasEmptyDescriptions) {
+        if (!hasEmptyDescriptions) {
+            button.classList.add('disabled');
+            button.disabled = true;
+            // Update badge if exists
+            const badge = button.querySelector('.badge');
+            if (badge) badge.remove();
+        }
+    }
+    
+    function showError(message) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: message,
+            confirmButtonText: 'Close'
+        });
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+</script>
+ 
+<!-- Previous - NEXT buttons -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enable keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        // Left arrow key for previous task
+        if (e.keyCode === 37) {
+            const prevBtn = document.querySelector('.task-nav-btn[href*="previous"]');
+            if (prevBtn) prevBtn.click();
+        }
+        // Right arrow key for next task
+        else if (e.keyCode === 39) {
+            const nextBtn = document.querySelector('.task-nav-btn[href*="next"]');
+            if (nextBtn) nextBtn.click();
+        }
+    });
+
+    // Add loading state to navigation buttons
+    document.querySelectorAll('.task-nav-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            this.classList.add('disabled');
+            this.innerHTML += '<span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>';
+        });
+    });
+
+    // Save current scroll position before navigation
+    window.addEventListener('beforeunload', function() {
+        localStorage.setItem('scrollPosition', window.scrollY);
+    });
+
+    // Restore scroll position after navigation
+    if (localStorage.getItem('scrollPosition')) {
+        window.scrollTo(0, localStorage.getItem('scrollPosition'));
+        localStorage.removeItem('scrollPosition');
+    }
+});
+</script>    
+
+<script>
+    // Add this to your JavaScript file
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide the alert after 10 seconds (optional)
+    setTimeout(function() {
+        const alert = document.querySelector('.alert-info');
+        if (alert) {
+            alert.style.transition = 'opacity 0.5s ease-out';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 500);
+        }
+    }, 20000);
+});
+
+</script>
+{% endblock %}

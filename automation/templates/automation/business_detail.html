@@ -1,0 +1,1658 @@
+<!-- templates/automation/business_detail.html -->
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}{{ business.title }}{% endblock %}
+{% block content %}
+<style>.title-box{font-size:1.25rem;font-weight:600;display:flex;align-items:center}.title-box .badge{margin-left:.5rem;text-transform:uppercase}#feedback-button{margin-left:1rem}.border-left-color{padding-left:1rem;border-left:4px solid #007bff}.bd-callout-info{border-left-color:#17a2b8}.btn-link.bold{font-weight:600}.mt-25{margin-top:1.5rem!important}.mt-18{margin-top:1.125rem!important}.smally{font-size:.85rem}.badge-category {font-size: 0.8rem;margin-right: 5px;margin-bottom:3px; float:left;}.card-header{background-color:#fff}.transition {transition: all 0.3s ease;}.images-wrapper {width: 100%;margin: 0 -0.5rem;}.image-card {padding: 0 0.5rem;margin-bottom: 1rem;}.smally{font-size: 10px; display: ruby-text;} .small-thumbnail {width: 100%;height: auto;aspect-ratio: 3/2;object-fit: cover;}@media (max-width: 992px) {.image-card {flex: 0 0 calc(33.33% - 1rem) !important;}}@media (max-width: 768px) {.image-card {flex: 0 0 calc(50% - 1rem) !important;}}@media (max-width: 576px) {.image-card {flex: 0 0 calc(100% - 1rem) !important;}}.card {height: 100%;display: flex;flex-direction: column;}.hover-image-overlay {position: absolute;top: 0;left: 0;width: 100%;height: 100%;background: rgba(0,0,0,0.8);display: none;justify-content: center;align-items: center;z-index: 1000;}.hover-image-overlay.show {display: flex;}.image-card {position: relative;cursor: grab;margin-bottom: 15px;}.image-card:active {cursor: grabbing;}.small-thumbnail {max-width: 100%;height: auto;transition: transform 0.2s ease;cursor: pointer;}.small-thumbnail:hover {transform: scale(1.3);z-index: 9;}.hover-image-overlay {position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);z-index: 10;display: none;background-color: rgba(0, 0, 0, 0.8);padding: 10px;border-radius: 5px;}.image-card:hover .hover-image-overlay {display: block;}.full-image {max-width: 100%;max-height: 100%;border: 2px solid #fff;}.description-content {white-space: pre-wrap;font-family: inherit;line-height: 1.6;}.card-body{-webkit-box-flex:1;-ms-flex:1 1 auto;flex:1 1 auto;padding:.25rem}.box-list li{display:flex;color:var(--text-color);margin-bottom:18px;font-size:14px;font-weight:400;align-items:center}span{font-style:bold}.checkbox-container{display:flex;align-items:center;gap:10px}.approve-checkbox{width:30px;height:30px;cursor:pointer;accent-color:#3C21F7;border:2px solid #666;border-radius:4px;outline:none;transition:all 0.3s ease}.approve-checkbox:hover{transform:scale(1.1);border-color:#4CAF50}.approve-checkbox:focus{box-shadow:0 0 0 3px rgb(76 175 80 / .3)}.checkbox-container strong{font-size:16px;color:#333;user-select:none}.image-card{padding:15px;border:1px solid #ddd;border-radius:8px;margin-bottom:15px}.translation{max-height:250px;overflow-y:auto}.form-label{text-transform:capitalize;font-weight:300;color:#060606;border-radius:calc(.25rem - 1px) calc(.25rem - 1px) 0 0;background-color:#fff;background-clip:border-box;border:1px solid rgb(0 0 0 / .125);width:100%;padding:.75rem 1rem;border-bottom:1px solid rgb(0 0 0 / .125)}.business-title{font-weight:900}.bd-callout-info{border-left-color:#5bc0de}.bd-callout{padding:1.25rem;margin-top:1.25rem;margin-bottom:1.25rem;border:1px solid #e9ecef;border-left-width:.25rem;border-radius:.25rem}.image-management-container{display:flex;justify-content:center;padding:10px}.image-container{width:100%;padding:15px;min-height:300px}.images-wrapper{display:flex;flex-wrap:wrap;gap:10px}.image-card{position:relative;display:flex;flex-direction:column;align-items:center;width:250px;min-height:200px;padding:7px;border:1px solid #ccc;border-radius:8px;background-color:#fff;cursor:grab}.thumbnail{width:100%;height:auto;object-fit:cover;border-radius:5px}.checkbox-container{margin-top:5px}.draggable.dragging{opacity:.5}.delete-image-btn{margin-top:10px;padding:5px 10px;background-color:#dc3545;border:none;color:#fff;border-radius:5px;cursor:pointer}small{font-size:10px}#taskDetailsContainer{transition:all 0.3s ease-in-out}.kanban-list.wide{min-width:32.5%;width:32.5%}.kanban-list.narrow{min-width:24.5%;width:24.5%}.edit{z-index:1;width:30px;height:30px;position:absolute;right:10px;top:10px;background:rgb(246 248 253 / .7);border-radius:4px;display:flex;justify-content:center;align-items:center;transition:.3s}.thumbnail-container{width:100%;height:150px;max-height:350px;overflow:hidden;margin-bottom:10px}.thumbnail-image{width:100%;height:150px;max-height:350px;object-fit:cover}.thumbnail-placeholder{width:100%;height:150px;max-height:350px;background-color:#f0f0f0;display:flex;justify-content:center;align-items:center;color:#888;font-size:14px}.kanban-box{display:flex;flex-direction:column;cursor:move}.content-box{flex-grow:1;display:flex;flex-direction:column}.image-container{position:relative;overflow:hidden}.thumbnail-image{width:100%;height:150px;max-height:350px;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:16px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%}.business-stats{display:flex;justify-content:space-between;margin-top:10px;font-size:10px}.rank,.total-score{background-color:#f0f0f0;padding:3px 6px;border-radius:3px}.kanban-cont{display:flex;overflow-x:auto;padding-bottom:20px}.kanban-list{min-width:25%;width:25%;margin-right:10px;background-color:#f4f5f7;border-radius:5px}.kanban-wrap{max-height:1200px;overflow-y:auto}.kanban-header{margin-bottom:10px;padding:10px;background-color:#e4e6e9;border-radius:5px}.panel{margin-bottom:10px}.kanban-box{background-color:#fff;border-radius:5px;padding:10px;box-shadow:0 1px 3px rgb(0 0 0 / .12),0 1px 2px rgb(0 0 0 / .24)}.load-more{width:100%;margin-top:10px}.image-container{position:relative;width:100%;padding-top:5%}.thumbnail-image{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:20px;position:absolute;top:50%;left:50%;-webkit-transform:translate(-50%,-50%);-ms-transform:translate(-50%,-50%);transform:translate(-50%,-50%);text-align:center}.business-title:hover::after{content:"";display:inline-block;background-image:url('');width:150px;height:150px;position:absolute;left:100%;top:-10px;background-size:cover;background-position:center;box-shadow:0 4px 8px rgb(0 0 0 / .1)}</style>
+ 
+<!--Main content--> 
+<div class="main-container">
+    
+<!--box left-dot-->
+<div class="box left-dot">
+  <div class="container-fluid mt-25">
+    <div class="row mt-25">
+      <div class="col-xl-8 col-lg-8 col-md-12 col-sm-12">
+        <div class="mt-25">
+          <div class="bd-callout bd-callout-info p-3">
+            <h4 class="title-box mb-0">
+              <label class="title-box mb-0">
+                <a href="/admin/automation/business/{{ business.id }}/change/" target="_blank">
+                  {{ business.title }}
+                </a>
+  
+                <!-- Display status badge -->
+                <span class="smally badge
+                  {% if business.status == 'PENDING' %} badge-warning
+                  {% elif business.status == 'DISCARDED' %} badge-danger
+                  {% elif business.status == 'REVIEWED' %} badge-success
+                  {% elif business.status == 'IN_PRODUCTION' %} badge-orange{% endif %}">
+                  {{ business.status }}
+                </span>
+              </label>
+  
+              <!-- Feedback button -->
+              <button id="feedback-button" class="btn btn-primary btn-sm">
+                <i class="fas fa-comments"></i> Feedback
+              </button>
+            </h4>
+          </div>
+  
+          <div class="col-12 mt-2">
+            <strong class="border-left-color">
+              {{ business.project_title }} - Total Businesses:
+              <span class="badge badge-orange">{{ business_count }}</span>
+            </strong>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Status Filter and Navigation -->
+      <div class="col-xl-4 col-lg-4 col-md-12 col-sm-12">
+        <div class="mt-25">
+          <form method="get" id="status-filter-form">
+            <div class="form-group">
+              <div id="status-options" class="form-inline">
+                {% for status_key, status_label in available_statuses.items %}
+                  <div class="form-check mr-3" style="display:inline-block;">
+                    <input
+                      type="radio"
+                      class="form-check-input"
+                      name="status"
+                      id="status_{{ status_key }}"
+                      value="{{ status_key }}"
+                      {% if status_key == status_filter %}checked{% endif %}
+                      {% if not status_availability|get_item:status_key %}disabled{% endif %}
+                    />
+                    <label
+                      class="form-check-label"
+                      for="status_{{ status_key }}"
+                    >
+                      {{ status_label }}
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="form-group">
+              <button type="button" id="filter-button" class="btn btn-primary">
+                Filter
+              </button>
+              <a
+                href="{{business_id}}?status=ALL"
+                class="btn btn-secondary"
+              >
+                Reset ALL
+              </a>
+            </div>
+          </form>
+  
+          <!-- Navigation Buttons -->
+          <div class="navigation-buttons mt-25">
+            {% if prev_url %}
+              <a href="{{ prev_url }}" class="btn btn-link bold">
+                <i class="fas fa-chevron-left"></i>
+                <i class="fas fa-chevron-left"></i> PREVIOUS
+              </a>
+            {% else %}
+              <a
+                href="#"
+                class="btn btn-link bold disabled"
+                role="button"
+                aria-disabled="true"
+              >
+                <i class="fas fa-chevron-left"></i>
+                <i class="fas fa-chevron-left"></i> PREVIOUS
+              </a>
+            {% endif %}
+  
+            {% if next_url %}
+              <a href="{{ next_url }}" class="btn btn-link bold">
+                NEXT
+                <i class="fas fa-chevron-right"></i>
+                <i class="fas fa-chevron-right"></i>
+              </a>
+            {% else %}
+              <a
+                href="#"
+                class="btn btn-link bold disabled"
+                role="button"
+                aria-disabled="true"
+              >
+                NEXT
+                <i class="fas fa-chevron-right"></i>
+                <i class="fas fa-chevron-right"></i>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+ 
+  <form id="business-form" method="post" action="{% url 'update_business' business.id %}">
+    {% csrf_token %} 
+    <div class="row">        
+        <div class="col-xl-9 col-lg-9 col-md-6 col-sm-12">
+            <div class="box left-dot">
+                <div class="row gy-3">
+                    <!-- Business Title -->
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label"> 
+                        <i class="fas fa-briefcase me-2"></i> Business Title
+                        <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('title')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </label>
+                        <div class="card-body d-flex align-items-center">
+                            <span id="title-display">{{ business.title }}</span><br>
+                            <input type="text" name="title" id="title-edit" class="form-control ms-2" value="{{ business.title }}" style="display:none;">
+                           
+                        </div>
+                    </div>
+                
+                    <!-- Status -->
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label"> 
+                        <i class="fas fa-info-circle me-2"></i> Status <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('status')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button></label>
+                        <div class="card-body d-flex align-items-center">
+                            <span id="status-display" style="display: none;">{{ business.get_status_display }}</span><br>
+                            <select name="status" id="status-edit" class="form-control" style="display:none;">
+                                {% for status_code, status_name in status_choices %}
+                                    {% if status_code != 'IN_PRODUCTION' %}
+                                        <!-- Show all statuses except 'IN_PRODUCTION' -->
+                                        <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
+                                            {{ status_name }}
+                                        </option>
+                                    {% elif is_admin %}
+                                        <!-- If user is admin, show 'IN_PRODUCTION' -->
+                                        <option value="{{ status_code }}" {% if business.status == status_code %}selected{% endif %}>
+                                            {{ status_name }}
+                                        </option>
+                                    {% elif business.status == status_code %}
+                                        <!-- If the business is already 'IN_PRODUCTION', show it but disable selection -->
+                                        <option value="{{ status_code }}" selected disabled>{{ status_name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            
+                            
+                            
+                        </div>
+                    </div>
+                
+                    <!-- City -->
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label"> 
+                        <i class="fas fa-map-marker-alt me-2"></i> Destination
+                        <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('city')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button></label>
+                        <div class="card-body d-flex align-items-center">
+                            <span id="city-display">{{ business.city|default:"N/A" }}</span><br>
+                            <input type="text" name="city" id="city-edit" class="form-control ms-2" value="{{ business.city }}" style="display:none;">
+                            
+                        </div>
+                    </div>
+                
+                    <!-- Price -->
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label">
+                            <i class="fas fa-dollar-sign me-2"></i> Price
+                            <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('price')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button></label>
+                        <div class="card-body d-flex align-items-center">
+                            <span id="price-display">{{ business.price|default:"N/A" }}</span>
+                            <input type="text" name="price" id="price-edit" class="form-control ms-2" value="{{ business.price }}" style="display:none;">
+                            
+                        </div>
+                    </div>
+                
+                    <!-- Website -->
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label">
+                            <i class="fas fa-globe me-2"></i> Website
+                            {% if business.website %}
+                            <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('website')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            {% endif %}
+                        </label>
+                        <div class="card-body d-flex align-items-center">
+                            {% if business.website %}
+                            <span id="website-display">{{ business.website|truncatechars:30  }}</span>
+                            <input type="text" name="website" id="website-edit" class="form-control ms-2" value="{{ business.website }}" style="display:none;">
+                            
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                
+                    <!-- Phone Number -->
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label">
+                            <i class="fas fa-phone me-2"></i> Phone Number
+                            {% if business.phone %}
+                            <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('phone')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            {% endif %}
+                        </label>
+                        <div class="card-body d-flex align-items-center">
+                            {% if business.phone %}
+                            <span id="phone-display">{{ business.phone }}</span>
+                            <input type="text" name="phone" id="phone-edit" class="form-control ms-2" value="{{ business.phone }}" style="display:none;">
+                             
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                     <!-- Address -->
+                     <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label">
+                            <i class="fas fa-road me-2"></i> Full Address
+                            <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('address')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </label>
+                        <div class="card-body d-flex align-items-center">
+                            {% if business.address %}
+                            <span id="address-display">{{ business.address }}</span>
+                            <input type="text" name="address" id="address-edit" class="form-control ms-2" value="{{ business.address }}" style="display:none;">
+                            
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Level Title -->
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label">
+                            <i class="fas fa-tree me-2"></i> Level Title</label>
+                        <div class="card-body d-flex align-items-center">
+                            {% if business.level_title %}
+                            <span id="level_title-display">{{ business.level_title }}</span>
+                            <input type="text" name="level_title" id="level_title-edit" class="form-control ms-2" value="{{ business.level_title }}" style="display:none;">
+                            
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                
+                
+                    <!-- Main Categories -->
+                    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 transition">
+                        <label class="form-label">
+                            <i class="fas fa-list-ul me-2"></i> Main Categories
+
+                        </label>
+                        <div class="card-body d-flex align-items-center">
+                            <!-- Display Mode -->
+                            <div id="main_category-display">
+                                {% with business.main_category|split_by_comma as selected_main_categories %}
+                                    {% if selected_main_categories %}
+                                        {% for category in selected_main_categories %}
+                                            <span class="badge badge-primary badge-category">{{ category }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">No categories selected.</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+
+                            <!-- Edit Mode -->
+                            <div id="main_category-edit-container" style="display: none; width: 100%;">
+                                <select name="main_category" id="main_category-edit" class="form-control select2" multiple>
+                                    {% with business.main_category|split_by_comma as selected_main_categories %}
+                                        {% for category in main_categories %}
+                                            <option value="{{ category.title }}" {% if category.title in selected_main_categories %}selected{% endif %}>
+                                                {{ category.title }}
+                                            </option>
+                                        {% endfor %}
+                                    {% endwith %}
+                                </select>
+                            </div>
+
+                            <!-- Toggle Button -->
+                            <button type="button" class="btn btn-link ml-2 toggle-edit-btn" data-category-type="main_category">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tailored Categories -->
+                    <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 transition">
+                        <label class="form-label">
+                            <i class="fas fa-tags me-2"></i> Sub-Categories
+                        </label>
+                        <div class="card-body d-flex align-items-center">
+                            <!-- Display Mode -->
+                            <div id="tailored_category-display">
+                                {% with business.tailored_category|split_by_comma as selected_tailored_categories %}
+                                    {% if selected_tailored_categories %}
+                                        {% for category in selected_tailored_categories %}
+                                            <span class="badge badge-success badge-category">{{ category }}</span>
+                                        {% endfor %}
+                                    {% else %}
+                                        <span class="text-muted">No sub-categories selected.</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+
+                            <!-- Edit Mode -->
+                            <div id="tailored_category-edit-container" style="display: none; width: 100%;">
+                                <select name="tailored_category" id="tailored_category-edit" class="form-control select2" multiple>
+                                    {% with business.tailored_category|split_by_comma as selected_tailored_categories %}
+                                        {% for category in subcategories %}
+                                            <option value="{{ category.title }}" {% if category.title in selected_tailored_categories %}selected{% endif %}>
+                                                {{ category.title }}
+                                            </option>
+                                        {% endfor %}
+                                    {% endwith %}
+                                </select>
+                            </div>
+
+                            <!-- Toggle Button -->
+                            <button type="button" class="btn btn-link ml-2 toggle-edit-btn" data-category-type="tailored_category">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    
+                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                  <label class="form-label">
+                    <i class="fas fa-shapes me-2"></i> Google Types
+                    <button type="button" class="btn btn-link ms-2"
+                            style="padding: 0; font-size: 0.8rem;"
+                            onclick="toggleEdit('types')">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                  </label>
+                  <div class="card-body d-flex align-items-center">
+                    <span id="types-display">
+                      {% if business.types %}
+                        {{ business.types }}
+                      {% else %}
+                        N/A
+                      {% endif %}
+                    </span>
+                    <input type="text" name="types" id="types-edit"
+                           class="form-control ms-2"
+                           value="{{ business.types }}"
+                           style="display:none;">
+                  </div>
+                  <!-- Translations Collapsible -->
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-secondary" type="button"
+                            data-bs-toggle="collapse" data-bs-target="#typesTranslations"
+                            aria-expanded="false" aria-controls="typesTranslations">
+                      Show Translations
+                    </button>
+                    <div class="collapse mt-2" id="typesTranslations">
+                      <div class="card card-body">
+                        <small>
+                          <strong>English:</strong> {{ business.types }}<br>
+                          <strong>Spanish:</strong> {{ business.types_esp }}<br>
+                          <strong>French:</strong> {{ business.types_fr }}<br>
+                          <strong>UK:</strong> {{ business.types_eng }}
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div> 
+                
+                    <!-- Latitude
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker me-2"></i> Longitude</label>
+                        <div class="card-body d-flex align-items-center">
+                            <span id="latitude-display">{{ business.latitude|default:"N/A" }}</span>
+                            <input type="text" name="latitude" id="latitude-edit" class="form-control ms-2" value="{{ business.latitude }}" style="display:none;">
+                            <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('latitude')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    -->
+                    <!-- Longitude
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker me-2"></i> Longitude</label>
+                        <div class="card-body d-flex align-items-center">
+                            <span id="longitude-display">{{ business.longitude|default:"N/A" }}</span>
+                            <input type="text" name="longitude" id="longitude-edit" class="form-control ms-2" value="{{ business.longitude }}" style="display:none;">
+                            <button type="button" class="btn btn-link ms-2" style="padding: .0rem .0rem; font-size: 0.8rem;" onclick="toggleEdit('longitude')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                     -->
+                </div>
+                
+            </div>
+        </div>         
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <div class="box left-dot">
+                <div class="box-body">
+                    <!-- Service Options Button -->
+                    <div class="row gy-3">
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="fas fa-concierge-bell me-2"></i> Service Options
+                            </label>
+                            {% if business.service_options %}
+                                <button type="button" class="btn btn-outline-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#serviceOptionsModal">
+                                    <i class="fas fa-eye me-1"></i> View Service Options
+                                </button>
+                            {% else %}
+                                <br>
+                                <p>No service options available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Service Options Modal -->
+                    {% if business.service_options %}
+                    <div class="modal fade" id="serviceOptionsModal" tabindex="-1" aria-labelledby="serviceOptionsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="serviceOptionsModalLabel">
+                                        <i class="fas fa-concierge-bell me-2"></i> Service Options for {{ business.title }}
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        {% for category in business.service_options %}
+                                            {% for category_name, options in category.items %}
+                                                <div class="col-md-3 mb-4">
+                                                    <div class="service-category">
+                                                        <h6 class="text-primary">
+                                                            <i class="fas fa-info-circle me-2"></i>
+                                                            {{ category_name|title }}
+                                                        </h6>
+                                                        <ul class="list-unstyled ms-4">
+                                                            {% for option in options %}
+                                                                <li class="mb-1">
+                                                                    <i class="fas fa-check text-success me-2"></i>
+                                                                    {{ option }}
+                                                                </li>
+                                                            {% endfor %}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Operating Hours -->
+                    <div class="row gy-3">
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="fas fa-clock me-2"></i> Operating Hours
+                                {% if business.operating_hours %}
+                                <button type="button" class="btn btn-link" onclick="editOperatingHours()">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                {% endif %}
+                            </label>
+                            {% if business.operating_hours %}
+                           
+                            <ul class="card-body box-list mt-3">
+                                {% for day, hours in business.operating_hours.items %}
+                                <li class="d-flex align-items-center">
+                                    <div id="{{ day }}_display" class="flex-grow-1">
+                                        <strong>{{ day|title }}:</strong> {{ hours }}
+                                    </div>
+                                    <input type="text" name="operating_hours[{{ day }}]" id="{{ day }}_edit" class="form-control ms-2" value="{{ hours }}" style="display:none;">
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p>No Operating Hours available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>             
+    </div>
+         
+    <div class="row">            
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+            <!-- Description (Original) -->
+            <div class="left-dot">
+                <div class="card box-body translation">
+                    <div class="card-header business-title">American <img src="{% static 'images/flags/us.jpg'%}" width="25px" />
+                        <button type="button" class="btn btn-link" onclick="toggleEdit('description')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        {% if not business.description or business.description == 'None' %}
+                            <button title="Generate description" type="button" class="btn btn-primary" id="generate-description-btn" onclick="generateDescription({{ business.id }})">
+                                <i class="fa-solid fa-indent"></i>
+                            </button>
+                        {% else %}
+                
+                            <button title="Enhance & Translate Description" type="button" class="btn btn-link" onclick="enhanceAndTranslateDescription({{ business.id }})">
+                                <i class="fas fa-language page-title"></i>  
+                            </button>
+                        {% endif %}
+                        </div>
+                        <div class="card-body">
+                    <p id="description-display" class="description-content">{{ business.description|default:"No description available." }}</p>
+                    <textarea name="description" id="description-edit" class="form-control" style="display:none;">{{ business.description }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12">
+        <!-- Description (UK) -->
+        <div class="left-dot">
+                <div class="card box-body translation">
+                    <div class="card-header business-title">UK Eng  <img src="{% static 'images/flags/uk.jpg'%}" width="25px" />
+                        <button type="button" class="btn btn-link" onclick="toggleEdit('description-eng')">
+                            <i id="description-eng-toggle-icon" class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                    <p id="description-eng-display" class="description-content">{{ business.description_eng|default:"No description available." }}</p>
+                    <textarea name="description_eng" id="description-eng-edit" class="form-control" style="display:none;">{{ business.description_eng }}</textarea>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12"> 
+            <!-- Description (Spanish) -->
+            <div class="left-dot">
+                <div class="card box-body translation">
+                    <div class="card-header business-title">Spanish  <img src="{% static 'images/flags/spain.jpg'%}" width="25px" />
+                        <button type="button" class="btn btn-link" onclick="toggleEdit('description-esp')">
+                            <i id="description-esp-toggle-icon" class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                    <p id="description-esp-display" class="description-content">{{ business.description_esp|default:"No description available." }}</p>
+                    <textarea name="description_esp" id="description-esp-edit" class="form-control" style="display:none;">{{ business.description_esp }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>    
+        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12"> 
+            <!-- Description (French) -->
+            <div class="left-dot">
+                <div class="card box-body translation">
+                    <div class="card-header business-title">French  <img src="{% static 'images/flags/fr.png'%}" width="25px" />
+                        <button type="button" class="btn btn-link" onclick="toggleEdit('description-fr')">
+                            <i id="description-fr-toggle-icon" class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                    <p id="description-fr-display" class="description-content">{{ business.description_fr|default:"No description available." }}</p>
+                    <textarea name="description_fr" id="description-fr-edit" class="form-control" style="display:none;">{{ business.description_fr }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>                
+    </div>           
+
+    <div class="box-body">
+        <button type="submit" class="btn btn-danger mt-3">
+            <i class="fas fa-save"></i> Save Changes
+        </button>
+        {% if business.place_id %}
+        <a href="https://www.google.com/maps/place/?q=place_id:{{ business.place_id }}" class="btn btn-primary mt-3" target="_blank">
+            <i class="fas fa-map-marked-alt"></i> View on Google Maps
+        </a>
+        {% endif %}
+        <a href="{% url 'task_detail' business.task.id %}" class="btn btn-secondary mt-3">
+            <i class="fas fa-arrow-left"></i> Back to Task
+        </a>
+    </div>
+    
+    <div class="navigation-buttons mt-25">
+
+        {% if prev_url %}
+            <a href="{{ prev_url }}" class="btn btn-link bold">
+                <i class="fas fa-chevron-left"></i><i class="fas fa-chevron-left"></i> PREVIOUS
+            </a>
+        {% else %}
+            <a href="#" class="btn btn-link bold disabled" role="button" aria-disabled="true">
+                <i class="fas fa-chevron-left"></i><i class="fas fa-chevron-left"></i> PREVIOUS
+            </a>
+        {% endif %}
+    
+        {% if next_url %}
+            <a href="{{ next_url }}" class="btn btn-link bold">
+                NEXT <i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i>
+            </a>
+        {% else %}
+            <a href="#" class="btn btn-link bold disabled" role="button" aria-disabled="true">
+                NEXT <i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i>
+            </a>
+        {% endif %}
+    
+    </div>
+
+    <div class="row mt-25">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>        
+    
+        <!-- Image Management Container -->
+        <div class="col-12">
+            <div class="images-wrapper d-flex flex-row flex-wrap gap-3" id="image-list">
+                {% with image_count=business.images.count %}
+                    {% for image in business.images.all %}
+                    <div class="image-card draggable"
+                         style="flex: 0 0 calc({% if image_count == 3 %}33.33%{% elif image_count == 4 %}25%{% elif image_count == 5 %}20%{% else %}16.66%{% endif %} - 1rem);"
+                         data-id="{{ image.id }}"
+                         data-approved="{{ image.is_approved }}"
+                         draggable="true">
+                        <div class="card p-2 position-relative">
+                            <!-- Approve Checkbox -->
+                            <div class="checkbox-container mb-2 py-2">
+                                <label class="title" style="display:contents; font-weight:500">
+                                    <input type="checkbox"
+                                           class="approve-checkbox"
+                                           data-id="{{ image.id }}"
+                                           {% if image.is_approved %}checked{% endif %}>
+                                    Approve
+                                </label>
+                            </div>
+    
+                            <!-- Thumbnail -->
+                            <img class="img-thumbnail small-thumbnail"
+                                 src="{% if image.local_path %}{{ MEDIA_URL }}{{ image.local_path }}{% else %}{{ image.image_url }}{% endif %}"
+                                 alt="Image">
+    
+                            <!-- Hover Full Image -->
+                            <div class="hover-image-overlay d-none">
+                                <img class="img-fluid full-image"
+                                     src="{% if image.local_path %}{{ MEDIA_URL }}{{ image.local_path }}{% else %}{{ image.image_url }}{% endif %}"
+                                     alt="Full Image">
+                            </div>
+    
+                            <!-- Delete Button -->
+                            <button class="btn btn-danger btn-sm mt-2 delete-image-btn"
+                                    data-id="{{ image.id }}">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+     
+</form>   
+</div> 
+<!--box left-dot-->      
+
+<!-- Loading Modal -->
+<div id="loading-modal" class="modal" style="display: none;">
+<div class="modal-content">
+    <div class="spinner"></div>
+    <p>Generating description, please wait...</p>
+</div>
+</div>
+<!-- Loading Modal -->
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmRemoveModal" tabindex="-1" role="dialog" aria-labelledby="confirmRemoveModalLabel" aria-hidden="true">
+<div class="modal-dialog" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="confirmRemoveModalLabel">Confirm Removal</h5>
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      Are you sure you want to remove the category "<span id="category-to-remove"></span>"?
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirm-remove-btn">Remove</button>
+    </div>
+  </div>
+</div>
+</div>
+<!-- Confirmation Modal -->
+
+</div>
+<!--Main content--> 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script>
+$(document).ready(function () {
+    $('#filter-button').click(function () {
+        $('#status-filter-form').submit();
+    });
+});
+</script>
+
+<!--UPDATE BUSINESS STATUS with change-business-status Now merged update_business_status-->
+<!-- JavaScript code for changing business status -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+const businessId = '{{ business.id }}';
+const statusDisplay = document.getElementById('status-display');
+
+// Status validation configurations
+const STATUS_VALIDATIONS = {
+    'IN_PRODUCTION': ['description', 'description_eng', 'description_esp', 'description_fr'],
+    'REVIEWED': ['description'] // Only original description required for REVIEWED
+};
+
+// Initialize event listeners
+initializeStatusListeners();
+
+function initializeStatusListeners() {
+    // For status options (buttons/links)
+    document.querySelectorAll('.status-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const newStatus = this.getAttribute('data-status');
+            updateStatus(businessId, newStatus, statusDisplay);
+        });
+    });
+
+    // For status dropdown
+    const statusDropdown = document.getElementById('status-edit');
+    if (statusDropdown) {
+        statusDropdown.addEventListener('change', function() {
+            const newStatus = this.value;
+            updateStatus(businessId, newStatus, statusDisplay, statusDropdown);
+        });
+    }
+}
+
+function validateDescriptions(newStatus) {
+    const requiredFields = STATUS_VALIDATIONS[newStatus] || [];
+    const missingDescriptions = [];
+
+    const descriptions = {
+        'description': document.querySelector('textarea[name="description"]')?.value,
+        'description_eng': document.querySelector('textarea[name="description_eng"]')?.value,
+        'description_esp': document.querySelector('textarea[name="description_esp"]')?.value,
+        'description_fr': document.querySelector('textarea[name="description_fr"]')?.value
+    };
+
+    for (const field of requiredFields) {
+        if (isDescriptionEmpty(descriptions[field])) {
+            missingDescriptions.push(
+                field === 'description' ? 'Original description' :
+                field === 'description_eng' ? 'English description' : 
+                field === 'description_fr' ? 'French description' : 
+                'Spanish description'
+            );
+        }
+    }
+
+    return missingDescriptions;
+}
+
+function isDescriptionEmpty(description) {
+    return !description || 
+           description.trim() === '' || 
+           description.trim().toLowerCase() === 'none';
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function updateStatus(businessId, newStatus, statusDisplay, statusDropdown = null) {
+    try {
+        // Validate descriptions based on new status
+        const missingDescriptions = validateDescriptions(newStatus);
+        
+        if (missingDescriptions.length > 0) {
+            toastr.error(`Cannot move to ${newStatus}: ${missingDescriptions.join(', ')} is missing.`);
+            if (statusDropdown) {
+                statusDropdown.value = '{{ business.status }}';
+            }
+            return;
+        }
+
+        const response = await fetch(`/update-business-status/${businessId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({
+                status: newStatus,
+                userId: '{{ request.user.id }}'
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP error! Status: ${response.status}`);
+        }
+
+        handleStatusUpdateResponse(data, statusDisplay, statusDropdown);
+
+    } catch (error) {
+        handleStatusUpdateError(error, statusDropdown);
+    }
+}
+
+function handleStatusUpdateResponse(data, statusDisplay, statusDropdown) {
+    if (data.status === 'success') {
+        updateStatusDisplay(data, statusDisplay);
+        updateStatusCounts(data);
+        toastr.success(`Status updated to ${data.new_status}`);
+        location.reload();
+    } else if (data.status === 'move-to-app-error') {
+        handleError(`Error moving to production: ${data.message}`, statusDropdown);
+    } else {
+        handleError(data.message || 'Error updating business status', statusDropdown);
+    }
+}
+
+function updateStatusDisplay(data, statusDisplay) {
+    statusDisplay.textContent = `${data.new_status} `;
+    const icon = document.createElement('i');
+    icon.className = 'bx bx-caret-down';
+    statusDisplay.appendChild(icon);
+}
+
+function updateStatusCounts(data) {
+    const oldStatusCount = document.querySelector(`[data-status-count="${data.old_status}"]`);
+    const newStatusCount = document.querySelector(`[data-status-count="${data.new_status}"]`);
+    
+    if (oldStatusCount) oldStatusCount.textContent = data.old_status_count;
+    if (newStatusCount) newStatusCount.textContent = data.new_status_count;
+}
+
+function handleStatusUpdateError(error, statusDropdown) {
+    console.error('Error:', error);
+    let errorMessage = error.message;
+
+    if (errorMessage.includes('time data')) {
+        errorMessage = 'Error processing business hours format. Please contact support.';
+    } else if (errorMessage.includes('HTTPS request')) {
+        errorMessage = 'Secure connection error. Please try again or contact support.';
+    }
+
+    handleError(errorMessage || 'An error occurred while updating the status', statusDropdown);
+}
+
+function handleError(message, statusDropdown) {
+    toastr.error(message);
+    if (statusDropdown) {
+        statusDropdown.value = '{{ business.status }}';
+    }
+}
+});
+
+</script>  
+<!-- End of JavaScript code for changing business status -->
+<!--UPDATE BUSINESS STATUS-->
+
+<!-- JavaScript for Handling Image Operations, edit -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const imageList = document.getElementById('image-list');
+
+    // Initialize Sortable.js for sorting images
+    const sortable = new Sortable(imageList, {
+        animation: 150,
+        onEnd: function () {
+            // Get the new order of image IDs after sorting
+            const sortedImageIds = Array.from(document.querySelectorAll('#image-list .draggable'))
+                                        .map(el => el.getAttribute('data-id'));
+
+            // Send AJAX request to update the order in the backend
+            updateImageOrder(sortedImageIds);
+        }
+    });
+
+    // Handle image approval using checkboxes
+    document.querySelectorAll('.approve-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('click', function (e) {
+            e.stopPropagation();  // Prevent interfering with drag functionality
+            const imageId = this.dataset.id;
+            const isApproved = this.checked;
+
+            // Update the approval status via AJAX
+            updateImageApproval(imageId, isApproved);
+        });
+    });
+
+    // Handle image deletion using SweetAlert
+    document.querySelectorAll('.delete-image-btn').forEach(button => {
+        button.addEventListener('click', function (e) {
+            const imageId = this.dataset.id;
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you really want to delete this image?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Call the function to delete the image
+                    deleteImage(imageId);
+                }
+            });
+        });
+    });
+
+    // Function to send AJAX request to update image approval status
+    function updateImageApproval(imageId, isApproved) {
+        const csrfToken = getCookie('csrftoken');
+
+        fetch('/update-image-approval/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                image_id: imageId,
+                is_approved: isApproved
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                toastr.success('Image approval status updated.');
+            } else {
+                toastr.error('Error updating image approval status: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error('An error occurred while updating approval status.');
+        });
+    }
+
+    // Function to delete an image via AJAX
+    function deleteImage(imageId) {
+        const csrfToken = getCookie('csrftoken');
+
+        fetch(`/delete-image/${imageId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Remove the image from the DOM
+                const imageCard = document.querySelector(`.image-card[data-id="${imageId}"]`);
+                if (imageCard) {
+                    imageCard.remove();
+                }
+                toastr.success('The image has been deleted.');
+            } else {
+                toastr.error('Error deleting image: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error('An error occurred while deleting the image.');
+        });
+    }
+
+    // Function to send the new order to the backend
+    function updateImageOrder(sortedImageIds) {
+        const csrfToken = getCookie('csrftoken');
+        const businessId = '{{ business.id }}';
+
+        fetch(`/update-image-order/${businessId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                order: sortedImageIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                toastr.success('Image order updated successfully.');
+            } else {
+                toastr.error('Error updating image order: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error('An error occurred while updating the image order.');
+        });
+    }
+
+    // Get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+
+
+</script>
+<!-- JavaScript for Handling Image Operations, edit -->
+
+<!--Edit-business-->   
+<script> 
+function getCookie(name) {
+let cookieValue = null;
+if (document.cookie) {
+    const cookies = document.cookie.split(';');
+    cookies.forEach(cookie => {
+        const trimmed = cookie.trim();
+        if (trimmed.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(trimmed.substring(name.length + 1));
+            return;
+        }
+    });
+}
+return cookieValue;
+}
+
+// Initialize the isOperatingHoursEditMode variable
+let isOperatingHoursEditMode = false;
+
+// Function to get ordered weekdays
+function getOrderedWeekdays(operatingHours) {
+const weekdayOrder = [
+    'monday', 'tuesday', 'wednesday', 'thursday',
+    'friday', 'saturday', 'sunday'
+];
+
+const orderedHours = {};
+weekdayOrder.forEach(day => {
+    if (operatingHours.hasOwnProperty(day)) {
+        orderedHours[day] = operatingHours[day];
+    }
+});
+
+return orderedHours;
+}
+
+// Function to toggle edit mode for a field
+function toggleEdit(field) {
+const displayElement = document.getElementById(`${field}-display`);
+const editElement = $(`#${field}-edit`);
+
+if (displayElement && editElement.length) {
+    const isVisible = editElement.is(':visible');
+    if (isVisible) {
+        // Hide the edit element
+        if (editElement.hasClass('select2-hidden-accessible')) {
+            // Destroy Select2 instance if initialized
+            editElement.select2('destroy');
+        }
+        editElement.hide();
+        displayElement.style.display = '';
+    } else {
+        // Show the edit element
+        displayElement.style.display = 'none';
+        editElement.show();
+        // Initialize Select2 only if the element has class 'select2'
+        if (editElement.hasClass('select2')) {
+            editElement.select2({
+                placeholder: "Select options",
+                allowClear: true,
+                width: '100%'
+            });
+        }
+    }
+}
+}
+
+// Function to render operating hours in order
+function renderOperatingHours(operatingHours) {
+const container = document.querySelector('.box-list');
+if (!container) return;
+
+// Clear existing content
+container.innerHTML = '';
+
+// Get ordered weekdays
+const orderedHours = getOrderedWeekdays(operatingHours);
+
+// Create HTML for each day
+Object.entries(orderedHours).forEach(([day, hours]) => {
+    const li = document.createElement('li');
+    li.className = 'd-flex align-items-center';
+    
+    const formattedDay = day.charAt(0).toUpperCase() + day.slice(1);
+    
+    li.innerHTML = `
+        <div id="${day}_display" class="flex-grow-1">
+            <strong>${formattedDay}:</strong> ${hours}
+        </div>
+        <input type="text" 
+               name="operating_hours[${day}]" 
+               id="${day}_edit" 
+               class="form-control ms-2" 
+               value="${hours}" 
+               style="display:none;">
+    `;
+    
+    container.appendChild(li);
+});
+}
+
+function editOperatingHours() {
+isOperatingHoursEditMode = !isOperatingHoursEditMode;
+localStorage.setItem('isOperatingHoursEditMode', isOperatingHoursEditMode);
+
+const operatingHours = {};
+document.querySelectorAll('#business-form .box-list li').forEach(li => {
+    const input = li.querySelector('input');
+    const day = input.name.replace('operating_hours[', '').replace(']', '');
+    operatingHours[day] = input.value;
+});
+
+// Re-render with ordered weekdays
+renderOperatingHours(operatingHours);
+
+// Apply edit mode to newly rendered elements
+document.querySelectorAll('#business-form .box-list li').forEach(li => {
+    const day = li.querySelector('input').name.replace('operating_hours[', '').replace(']', '');
+    const displayElem = document.getElementById(`${day}_display`);
+    const inputElem = document.getElementById(`${day}_edit`);
+
+    if (isOperatingHoursEditMode) {
+        displayElem.style.display = 'none';
+        inputElem.style.display = 'block';
+    } else {
+        displayElem.textContent = `${day.charAt(0).toUpperCase() + day.slice(1)}: ${inputElem.value}`;
+        displayElem.style.display = 'block';
+        inputElem.style.display = 'none';
+    }
+});
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+// Restore toggled edit states on page load
+const fields = [
+    'title', 'website', 'status', 'city', 'price', 'phone', 'address',
+    'postal_code', 'level_title', 'description', 'description-eng', 
+    'description-esp','description-fr', 'categories', 'main_category',  'types', 
+    'operating_hours', 'tailored_category'
+];
+fields.forEach(field => {
+    if (localStorage.getItem(`${field}-edit`) === 'true') {
+        toggleEdit(field);
+    }
+});
+
+// Restore operating hours edit state
+isOperatingHoursEditMode = localStorage.getItem('isOperatingHoursEditMode') === 'true';
+
+// Initial render of operating hours, ensuring weekday order
+const initialOperatingHours = {{ business.operating_hours|safe }};
+renderOperatingHours(initialOperatingHours);
+
+if (isOperatingHoursEditMode) {
+    document.querySelectorAll('#business-form .box-list li').forEach(li => {
+        const input = li.querySelector('input');
+        const display = li.querySelector('[id$="_display"]');
+        input.style.display = 'block';
+        display.style.display = 'none';
+    });
+}
+
+// Add event listener for the form submission
+const businessForm = document.getElementById('business-form');
+businessForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const formData = new FormData(this);
+
+    // Collect operating hours
+    const operatingHours = {};
+    document.querySelectorAll('#business-form .box-list input').forEach(input => {
+        const day = input.name.replace('operating_hours[', '').replace(']', '');
+        operatingHours[day] = input.value;
+    });
+
+    // Add operating hours to formData as a JSON string
+    formData.set('operating_hours', JSON.stringify(operatingHours));
+
+    // Collect categories
+    const categories = [];
+    document.querySelectorAll('input[name="categories"]:checked').forEach(input => {
+        categories.push(input.value);
+    });
+    formData.delete('categories'); // Remove existing categories entries
+    categories.forEach(id => {
+        formData.append('categories', id);
+    });
+
+    // Submit form via AJAX
+    fetch(this.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toastr.success('Business information updated successfully!');
+                location.reload();
+            } else {
+                toastr.error('There were errors: ' + JSON.stringify(data.errors));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error('An error occurred while updating the business.');
+        });
+});
+
+const generateDescriptionBtn = document.getElementById('generate-description-btn');
+if (generateDescriptionBtn) {
+    generateDescriptionBtn.addEventListener('click', function () {
+        // This is where you handle the logic to generate the description.
+        // You can access the business_id via a data attribute or by including it elsewhere in the code.
+        
+        const businessId = '{{ business.id }}'; // If available in the template context
+        
+        // Show loading UI
+        Swal.fire({
+            title: 'Generating Description',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        // Prepare data and send fetch request
+        const data = {
+            business_id: businessId,
+            title: '{{ business.title }}',
+            city: '{{ business.city }}',
+            country: '{{ business.form_country_name }}',
+            category: '{{ business.main_category }}',
+            tailored_category: '{{ business.tailored_category }}'
+        };
+
+        fetch('{% url "generate_description" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(result => {
+            Swal.close();
+            if (result.success) {
+                const descriptionEdit = document.getElementById('description-edit');
+                descriptionEdit.value = result.description;
+                descriptionEdit.style.display = 'block';
+                document.getElementById('description-display').style.display = 'none';
+                generateDescriptionBtn.style.display = 'none';
+                toastr.success('Description generated successfully!');
+            } else {
+                toastr.error('Error generating description: ' + result.error);
+            }
+        })
+        .catch(error => {
+            Swal.close();
+            console.error('Error:', error);
+            toastr.error('An error occurred while generating the description.');
+        });
+    });
+}
+});
+
+</script> 
+<!--Edit-business-->
+
+<!-- Main and Tailored categories-->
+<script>
+$(document).ready(function() { 
+    $('.select2').select2({
+        width: '100%',
+        placeholder: "Select categories",
+        allowClear: true
+    });
+
+    // Store previous selections
+    $('.select2').each(function() {
+        var $this = $(this);
+        $this.data('previous', $this.val() || []);
+    });
+
+    // Variables to store the category being removed and the select element
+    var categoryToRemove = null;
+    var $currentSelect = null;
+
+    // Handle change event
+    $('.select2').on('change', function(e) {
+        var $select = $(this);
+        var previous = $select.data('previous') || [];
+        var current = $select.val() || [];
+
+        // Determine what was removed
+        var removed = previous.filter(function(item) {
+            return current.indexOf(item) === -1;
+        });
+
+        if (removed.length > 0) {
+            categoryToRemove = removed[0]; // Handling one removal at a time
+            $currentSelect = $select;
+
+            // Update modal content
+            $('#category-to-remove').text(categoryToRemove);
+
+            // Show the modal
+            $('#confirmRemoveModal').modal('show');
+        } else {
+            // Update previous data
+            $select.data('previous', current);
+        }
+    });
+
+    // Handle modal confirmation
+    $('#confirmRemoveModal').on('click', '#confirm-remove-btn', function() {
+        if ($currentSelect && categoryToRemove) {
+            var current = $currentSelect.val() || [];
+            var index = current.indexOf(categoryToRemove);
+            if (index > -1) {
+                current.splice(index, 1);
+                $currentSelect.val(current).trigger('change.select2');
+            }
+        }
+
+        // Hide the modal
+        $('#confirmRemoveModal').modal('hide');
+
+        // Reset variables
+        categoryToRemove = null;
+        $currentSelect = null;
+    });
+
+    // Handle modal cancellation
+    $('#confirmRemoveModal').on('hidden.bs.modal', function () {
+        if ($currentSelect && categoryToRemove) {
+            // Re-add the category since it was not confirmed
+            var current = $currentSelect.val() || [];
+            if (current.indexOf(categoryToRemove) === -1) {
+                current.push(categoryToRemove);
+                $currentSelect.val(current).trigger('change.select2');
+            }
+        }
+
+        // Reset variables
+        categoryToRemove = null;
+        $currentSelect = null;
+    });
+
+    // Toggle Edit Mode on button click
+    $('.toggle-edit-btn').on('click', function() {
+        var categoryType = $(this).data('category-type');
+        toggleCatEdit(categoryType);
+    });
+});
+
+function toggleCatEdit(categoryType) {
+    const displayElement = document.getElementById(`${categoryType}-display`);
+    const editContainer = document.getElementById(`${categoryType}-edit-container`);
+    const selectElement = document.getElementById(`${categoryType}-edit`);
+    const toggleButton = event.currentTarget;
+
+    if (editContainer.style.display === 'none') {
+        // Enter Edit Mode
+        displayElement.style.display = 'none';
+        editContainer.style.display = 'block';
+        toggleButton.innerHTML = '<i class="fas fa-check"></i>';
+    } else {
+        // Exit Edit Mode
+        const selectedOptions = Array.from(selectElement.selectedOptions).map(option => option.value);
+        let badgesHtml = '';
+        const badgeClass = categoryType === 'main_category' ? 'badge-primary' : 'badge-success';
+
+        if (selectedOptions.length > 0) {
+            selectedOptions.forEach((cat, index) => {
+                badgesHtml += `<span class="badge ${badgeClass} badge-category">${cat}</span>`;
+                if (index !== selectedOptions.length - 1) {
+                    badgesHtml += ' ';
+                }
+            });
+        } else {
+            badgesHtml = `<span class="text-muted">No ${categoryType === 'main_category' ? 'categories' : 'sub-categories'} selected.</span>`;
+        }
+
+        displayElement.innerHTML = badgesHtml;
+        displayElement.style.display = 'block';
+        editContainer.style.display = 'none';
+        toggleButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+
+        // Update previous selections
+        const $select = $(selectElement);
+        $select.data('previous', $select.val() || []);
+    }
+}
+</script>
+<!-- Main and Tailored categories-->
+
+
+<!-- ENHANCE AND TRANSLATE -->
+<script>
+function enhanceAndTranslateDescription(businessId) {
+    Swal.fire({
+        title: 'Enhance and Translate Description',
+        text: 'Are you sure you want to enhance and translate the description?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, proceed',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading indicator
+            Swal.fire({
+                title: 'Processing',
+                html: '<i class="fa-solid fa-language fa-2x"></i><br>Enhancing and translating the description. Please wait...',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            fetch(`/enhance_translate_business/${businessId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ languages: ['spanish', 'eng', 'fr'] })
+            })
+            .then(response => response.json())
+            .then(data => {
+                Swal.close(); // Close the loading indicator
+
+                if (data.success) {
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success',
+                        text: 'Description has been enhanced and translated successfully.',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Update the descriptions on the page
+                        document.getElementById('description-display').innerText = data.description;
+                        // Update translated descriptions if they are displayed
+                        if (document.getElementById('description-eng-display')) {
+                            document.getElementById('description-eng-display').innerText = data.description_eng;
+                        }
+                        if (document.getElementById('description-esp-display')) {
+                            document.getElementById('description-esp-display').innerText = data.description_esp;
+                        }
+                        if (document.getElementById('description-fr-display')) {
+                            document.getElementById('description-fr-display').innerText = data.description_fr;
+                        }
+                        location.reload();
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Enhancement and translation could not be completed: ' + (data.message || 'Unknown error.'),
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.close(); // Close the loading indicator
+                Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while enhancing and translating the description.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+    });
+}
+</script>
+<!-- ENHANCE AND TRANSLATE -->
+
+<!--Feedback-->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('Feedback script loaded');
+
+    const feedbackButton = document.getElementById('feedback-button');
+    if (!feedbackButton) {
+        console.error('Feedback button not found');
+        return;
+    }
+
+    feedbackButton.addEventListener('click', function (event) {
+        event.preventDefault(); // Prevent form submission or default behavior
+        event.stopPropagation(); // Stop propagation of the click event
+        
+        Swal.fire({
+            title: `Feedback for {{ business.title }}`,
+            html: `
+                <form id="feedback-form">
+                    <div class="mb-3">
+                        <label for="feedback-content" class="form-label">Comment</label>
+                        <textarea id="feedback-content" class="form-control" rows="4" placeholder="Enter your feedback"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="feedback-status" class="form-label">Status</label>
+                        <select id="feedback-status" class="form-control">
+                            <option value="initial">Initial</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Submit',
+            preConfirm: () => {
+                const content = document.getElementById('feedback-content').value.trim();
+                const status = document.getElementById('feedback-status').value;
+
+                if (!content) {
+                    Swal.showValidationMessage('Feedback comment is required');
+                    return false;
+                }
+
+                return { content, status };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const feedbackData = result.value;
+
+                // Ensure `business.id` is available in this context
+                const businessId = '{{ business.id }}';
+
+                // Send feedback data to the server
+                fetch(`/feedback/${businessId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(feedbackData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Success!', 'Your feedback has been submitted.', 'success');
+                    } else {
+                        Swal.fire('Error', data.message || 'An error occurred while submitting feedback.', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', `An unexpected error occurred: ${error.message}`, 'error');
+                });
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}
+

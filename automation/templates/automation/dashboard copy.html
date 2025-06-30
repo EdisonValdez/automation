@@ -1,0 +1,763 @@
+<!-- templates/automation/dashboard.html -->
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>.modern-card{background:#fff;border-radius:.5rem;box-shadow:0 .15rem 1.75rem 0 rgb(58 59 69 / .15);transition:transform 0.2s ease-in-out}.modern-card:hover{transform:translateY(-3px)}.card-content{padding:1.25rem}.card-header-flex{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}.task-id{font-size:.875rem;color:#858796;font-weight:600}.status-badge{padding:.25rem .75rem;border-radius:1rem;font-size:.75rem;font-weight:600;text-transform:uppercase}.status-review{background:#f6c23e;color:#fff}.status-live{background:#1cc88a;color:#fff}.status-progress{background:#4e73df;color:#fff}.status-complete{background:#36b9cc;color:#fff}.status-failed{background:#e74a3b;color:#fff}.status-default{background:#858796;color:#fff}.task-title{display:block;color:#5a5c69;font-weight:600;font-size:1rem;margin-bottom:1rem;text-decoration:none;line-height:1.4;min-height:2.8em}.task-title:hover{color:#4e73df;text-decoration:none}.info-grid{display:grid;gap:.5rem}.info-row{display:flex;justify-content:space-between;align-items:center;font-size:.875rem}.info-label{color:#858796}.info-value{color:#5a5c69;font-weight:600}.text-truncate{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media (max-width:576px){.modern-card{margin-bottom:1rem}}.task-item {transition: transform 0.2s;}.task-item:hover {transform: translateY(-2px);box-shadow: 0 4px 8px rgba(0,0,0,0.1);}.badge {font-size: 0.75rem;padding: 0.25em 0.6em;}.card-header {background-color: #f8f9fc;border-bottom: 1px solid #e3e6f0;}.task-link {text-decoration: none; color: inherit;}.task-link:hover {text-decoration: none; color: #4e73df;}.modern-card {background: white;border-radius: 0.5rem;border: 1px solid rgba(0, 0, 0, 0.1);transition: all 0.2s ease;height: 100%;}.modern-card:hover {transform: translateY(-2px);box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);}.card-content {padding: 0.75rem;}.card-header-flex {display: flex;justify-content: space-between;align-items: center;margin-bottom: 0.5rem;}.task-id {font-size: 0.75rem;color: #6b7280;}.status-badge {font-size: 0.65rem;padding: 0.25rem 0.5rem;border-radius: 9999px;font-weight: 500;}.status-live {background-color: #ecfdf5;color: #059669;border: 1px solid #34d399;}.status-review {background-color: #fffbeb;color: #d97706;border: 1px solid #fbbf24;}.status-active {background-color: #eff6ff;color: #2563eb;border: 1px solid #60a5fa;}.status-pending {background-color: #f3f4f6;color: #4b5563;border: 1px solid #9ca3af;}.status-failed {background-color: #fef2f2;color: #dc2626;border: 1px solid #f87171;}.task-title {display: block;font-size: 0.875rem;font-weight: 500;color: #111827;text-decoration: none;margin-bottom: 0.75rem;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;line-height: 1.25;}.task-title:hover {color: #2563eb;}.info-grid {display: grid;gap: 0.25rem;font-size: 0.75rem;}.info-row {display: grid;grid-template-columns: 1fr 1fr;gap: 0.5rem;}.info-label {color: #6b7280;}.info-value {text-align: right;color: #111827;font-weight: 500;}@media (prefers-color-scheme: dark) {.modern-card {background: #1f2937;border-color: rgba(255, 255, 255, 0.1);}.task-id {color: #9ca3af;}.task-title {color: #f3f4f6;}.task-title:hover {color: #60a5fa;}.info-label {color: #9ca3af;}.info-value {color: #f3f4f6;}}.chart-summary-container{margin-top:2rem;padding:1.5rem;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgb(0 0 0 / .08)}.summary-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgb(0 0 0 / .1)}.summary-title{font-size:1.1rem;font-weight:600;color:#333;margin:0}.total-count{display:flex;flex-direction:column;align-items:flex-end}.total-label{font-size:.875rem;color:#666;margin-bottom:.25rem}.total-number{font-size:1.25rem;font-weight:600;color:#333}.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}.status-card{padding:1rem;background:rgb(0 0 0 / .02);border-radius:6px;transition:transform 0.2s ease,box-shadow 0.2s ease}.status-card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgb(0 0 0 / .05)}.status-info{display:flex;align-items:center;margin-bottom:.75rem}.status-dot{width:10px;height:10px;border-radius:50%;margin-right:8px}.status-label{font-size:.9rem;color:#555}.status-numbers{display:flex;justify-content:space-between;align-items:baseline}.status-count{font-size:1.25rem;font-weight:600;color:#333}.status-percentage{font-size:.875rem;color:#666}@media (max-width:768px){.status-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.summary-header{flex-direction:column;align-items:flex-start}.total-count{margin-top:1rem;align-items:flex-start}}</style>
+<div class="main-content project">   
+    <div class="overlay"></div>   
+    <!-- Dashboard Overview -->
+    <div class="container-fluid">
+        <!-- Page Title -->
+        <div class="row">
+            <div class="col-12">
+                <div class="page-title-wrapper">
+                    <h1 class="page-title">
+                        <span class="title-icon">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
+                        </span>
+                        <span class="title-text">Dashboard Overview</span>
+                    </h1>
+                </div>
+            </div>
+        </div>
+    
+        <div class="dashboard-container" data-user-role="{{ user.roles.first.role|lower }}"> 
+            <!-- Error Container -->
+            <div id="dashboardErrors" class="mb-4"></div> 
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h5 class="card-title">Task Timeline</h5>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="input-group">
+                                        <input type="date" id="start_date" class="form-control">
+                                        <input type="date" id="end_date" class="form-control">
+                                        <button id="filterDates" class="btn btn-primary">Filter</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                
+                        <div class="card-body">
+                            <!-- Timeline Chart -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h6 class="text-muted text-uppercase mb-4">Timeline Overview</h6>
+                                            <div class="chart-container" style="position: relative; height: 400px; width: 100%;">
+                                                <canvas id="timelineChart"></canvas>
+                                            </div>
+                                            <div id="timelineError" class="alert alert-danger mt-3 d-none"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                
+                            <div class="row mb-4">
+                                <!-- Total Tasks Card -->
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body text-center p-4">
+                                            <h6 class="text-muted text-uppercase mb-2">Total Tasks</h6>
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <h4 id="totalTasks" class="display-4 mb-0 font-weight-bold">0</h4>
+                                            </div>
+                                            <p class="text-muted small mb-0 mt-2">
+                                                <span id="tasksToday">0</span> tasks added today
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                
+                                <!-- Total Businesses Card -->
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body text-center p-4">
+                                            <h6 class="text-muted text-uppercase mb-2">Total Businesses</h6>
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <h4 id="totalBusinessesCount" class="display-4 mb-0 font-weight-bold">Loading...</h4>
+                                            </div>
+                                            <p class="text-muted small mb-0 mt-2">
+                                                <span id="businessesToday">0</span> businesses added today
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Chart.js -->
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        class TaskTimeline {
+                            constructor() {
+                                this.chart = null;
+                                this.initialize();
+                            }
+                
+                            async initialize() {
+                                this.initializeDatePickers();
+                                await this.loadTimelineData();
+                            }
+                
+                            initializeDatePickers() {
+                                const startDateInput = document.getElementById('start_date');
+                                const endDateInput = document.getElementById('end_date');
+                
+                                // Default values: last 30 days
+                                const today = new Date();
+                                const pastMonth = new Date();
+                                pastMonth.setDate(pastMonth.getDate() - 30);
+                                startDateInput.value = this.formatDate(pastMonth);
+                                endDateInput.value = this.formatDate(today);
+                
+                                document.getElementById('filterDates').addEventListener('click', async () => {
+                                    await this.loadTimelineData();
+                                });
+                            }
+                
+                            formatDate(date) {
+                                return date.toISOString().split('T')[0]; // Format YYYY-MM-DD
+                            }
+                
+                            async loadTimelineData() {
+                                try {
+                                    const startDate = document.getElementById('start_date').value;
+                                    const endDate = document.getElementById('end_date').value;
+                                    const response = await fetch(`/api/dashboard/task-timeline/?start_date=${startDate}&end_date=${endDate}`);
+                                    const result = await response.json();
+                
+                                    console.log("API Response:", result); // Debugging log
+                
+                                    if (result.status === 'success') {
+                                        this.updateChart(result.data);
+                                        this.updateTotalCounts(result.totals);
+                                    } else {
+                                        this.showError('Failed to load timeline data.');
+                                    }
+                                } catch (error) {
+                                    console.error('Error loading timeline data:', error);
+                                    this.showError('Error loading timeline data.');
+                                }
+                            }
+                
+                            updateChart(timelineData) {
+                                if (!timelineData || timelineData.length === 0) {
+                                    this.showError('No data available for the selected range.');
+                                    return;
+                                }
+                
+                                const labels = timelineData.map(entry => entry.date);
+                                const taskCounts = timelineData.map(entry => entry.tasks_count);
+                                const businessCounts = timelineData.map(entry => entry.businesses_count);
+                
+                                const ctx = document.getElementById('timelineChart').getContext('2d');
+                
+                                if (this.chart) {
+                                    this.chart.destroy();
+                                }
+                
+                                this.chart = new Chart(ctx, {
+                                    type: 'bar',  // Changed to bar chart
+                                    data: {
+                                        labels: labels,
+                                        datasets: [
+                                            {
+                                                label: 'Total Tasks',
+                                                data: taskCounts,
+                                                backgroundColor: 'rgba(33, 45, 148, 1)',
+                                                borderColor: 'rgba(33, 45, 148, 1)',
+                                                borderWidth: 1
+                                            },
+                                            {
+                                                label: 'Total Businesses',
+                                                data: businessCounts,
+                                                backgroundColor: 'rgba(244, 192, 49, 0.7)',
+                                                borderColor: 'rgba(244, 192, 49, 0.7)',
+                                                borderWidth: 1
+                                            }
+                                        ]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        scales: {
+                                            x: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'Date'
+                                                },
+                                                grid: { display: false }
+                                            },
+                                            y: {
+                                                title: {
+                                                    display: true,
+                                                    text: 'Count'
+                                                },
+                                                beginAtZero: true
+                                            }
+                                        },
+                                        plugins: {
+                                            legend: {
+                                                display: true
+                                            },
+                                            tooltip: {
+                                                mode: 'index',
+                                                intersect: false
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                
+                            updateTotalCounts(totals) {
+                                console.log("Total Counts Response:", totals); // Debugging log
+                
+                                // Ensuring correct counting and avoiding conflicts
+                                document.getElementById('totalTasks').textContent = totals?.total_tasks || 0;
+                                document.getElementById('totalBusinessesCount').textContent = totals?.total_businesses || 0;
+                                document.getElementById('tasksToday').textContent = totals?.tasks_today || 0;
+                                document.getElementById('businessesToday').textContent = totals?.businesses_today || 0;
+                            }
+                
+                            showError(message) {
+                                const errorDiv = document.getElementById('timelineError');
+                                errorDiv.textContent = message;
+                                errorDiv.classList.remove('d-none');
+                            }
+                        }
+                
+                        document.addEventListener('DOMContentLoaded', () => {
+                            new TaskTimeline();
+                        });
+                    </script>
+                </div>
+                
+                            
+            </div>
+        
+            <div class="row">
+                <!-- Date Filters and Totals -->
+                <div class="col-12">
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <div class="col">
+                                <h5 class="card-title">Business Status Distribution</h5>
+                            </div>
+                            <button id="refreshBusinessStats" class="btn btn-sm btn-primary">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="position: relative; height: 400px; width: 100%">
+                                <canvas id="businessStatusChart"></canvas>
+                            </div>
+                            <div id="chartSummary" class="mt-4">
+                                <div class="chart-summary-container">
+                                    <div class="summary-header">
+                                        <h6 class="summary-title">Status Distribution</h6>
+                                        <div class="total-count">
+                                            <span class="total-label">Total Businesses</span>
+                                            <span id="totalBusinesses" class="total-number">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="status-grid">
+                                        <div class="status-card">
+                                            <div class="status-info">
+                                                <div class="status-dot" style="background: rgba(220, 53, 69, 0.8)"></div>
+                                                <span class="status-label">Discarded</span>
+                                            </div>
+                                            <div class="status-numbers">
+                                                <span id="discardedCount" class="status-count">0</span>
+                                                <span id="discardedPercentage" class="status-percentage">0%</span>
+                                            </div>
+                                        </div>
+                                        <div class="status-card">
+                                            <div class="status-info">
+                                                <div class="status-dot" style="background: rgba(255, 193, 7, 0.8)"></div>
+                                                <span class="status-label">Pending</span>
+                                            </div>
+                                            <div class="status-numbers">
+                                                <span id="pendingCount" class="status-count">0</span>
+                                                <span id="pendingPercentage" class="status-percentage">0%</span>
+                                            </div>
+                                        </div>
+                                        <div class="status-card">
+                                            <div class="status-info">
+                                                <div class="status-dot" style="background: rgba(40, 167, 69, 0.8)"></div>
+                                                <span class="status-label">Reviewed</span>
+                                            </div>
+                                            <div class="status-numbers">
+                                                <span id="reviewedCount" class="status-count">0</span>
+                                                <span id="reviewedPercentage" class="status-percentage">0%</span>
+                                            </div>
+                                        </div>
+                                        <div class="status-card">
+                                            <div class="status-info">
+                                                <div class="status-dot" style="background: rgba(23, 162, 184, 0.8)"></div>
+                                                <span class="status-label">In Production</span>
+                                            </div>
+                                            <div class="status-numbers">
+                                                <span id="productionCount" class="status-count">0</span>
+                                                <span id="productionPercentage" class="status-percentage">0%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+ 
+                <script>
+                    class BusinessStatusChart {
+                        constructor() {
+                            this.chart = null;
+                            this.chartColors = {
+                                discarded: 'rgba(220, 53, 69, 0.8)',
+                                pending: 'rgba(255, 193, 7, 0.8)',
+                                reviewed: 'rgba(40, 167, 69, 0.8)',
+                                in_production: 'rgba(23, 162, 184, 0.8)'
+                            };
+                            this.initialize();
+                        }
+                
+                        async initialize() {
+                            await this.loadData();
+                            this.setupRefreshButton();
+                        }
+                
+                        setupRefreshButton() {
+                            document.getElementById('refreshBusinessStats')?.addEventListener('click', () => {
+                                this.loadData();
+                            });
+                        }
+                
+                        async loadData() {
+                            try {
+                                const response = await fetch('/api/dashboard/business-status/');
+                                const result = await response.json();
+                
+                                if (result.status === 'success') {
+                                    this.updateChart(result.data);
+                                    this.updateSummary(result.data);
+                                }
+                            } catch (error) {
+                                console.error('Error loading business status data:', error);
+                            }
+                        }
+                
+                        updateChart(data) {
+                            const ctx = document.getElementById('businessStatusChart');
+                            if (!ctx) return;
+                
+                            if (this.chart) {
+                                this.chart.destroy(); // Clear the existing chart
+                            }
+                
+                            this.chart = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: ['Discarded', 'Pending', 'Reviewed', 'In Production'],
+                                    datasets: [{
+                                        label: 'Number of Businesses',
+                                        data: [
+                                            data.discarded,
+                                            data.pending,
+                                            data.reviewed,
+                                            data.in_production
+                                        ],
+                                        backgroundColor: Object.values(this.chartColors),
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                stepSize: 1
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                
+                        updateSummary(data) {
+                            const total = data.discarded + data.pending + data.reviewed + data.in_production;
+                
+                            document.getElementById('totalBusinesses').textContent = total;
+                
+                            // Update individual counts and percentages
+                            this.updateStatusCard('discarded', data.discarded, total);
+                            this.updateStatusCard('pending', data.pending, total);
+                            this.updateStatusCard('reviewed', data.reviewed, total);
+                            this.updateStatusCard('production', data.in_production, total);
+                        }
+                
+                        updateStatusCard(status, count, total) {
+                            document.getElementById(`${status}Count`).textContent = count;
+                            const percentage = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+                            document.getElementById(`${status}Percentage`).textContent = `${percentage}%`;
+                        }
+                    }
+                
+                    document.addEventListener('DOMContentLoaded', () => {
+                        new BusinessStatusChart(); // Initialize the BusinessStatusChart
+                    });
+                </script>
+
+                <!-- RECENT PROJECTS -->
+
+                    <div class="col-12">
+                        <div class="card shadow mb-4">
+                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                <div class="col">
+                                    <h5 class="card-title">Recent Projects</h5>
+                                </div>
+                                <div>
+                                    <button id="refreshProjects" class="btn btn-sm btn-primary me-2">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                    <a href="/tasks/" class="btn btn-secondary btn-sm">View all tasks</a>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Add loading indicator -->
+                                <div id="projectsLoading" class="text-center d-none">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+
+                                <!-- Projects grid container -->
+                                <div id="recentProjectsGrid" class="row g-3"></div>
+
+                                <!-- Error message container -->
+                                <div id="projectsError" class="alert alert-danger d-none"></div>
+                            </div>
+                            
+                            <!-- Add "View More Analytics" button -->
+                            <div class="card-footer text-center">
+                                <a href="/business-analytics/" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-chart-bar"></i> View More Analytics
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                                
+                <script>
+                class RecentProjects {
+                    constructor() {
+                        this.apiUrl = '/api/dashboard/recent-tasks/';
+                        this.currentLimit = 12;  // Initial load
+                        this.incrementBy = 12;    
+                        this.projects = [];
+                        this.totalCount = 0;
+                        this.initialize();
+                    }
+
+                    async initialize() {
+                        await this.loadRecentProjects();
+                        this.setupRefreshButton();
+                        this.setupShowMoreButton();
+                        this.setupAutoRefresh();
+                    }
+
+                    setupRefreshButton() {
+                        const refreshBtn = document.getElementById('refreshProjects');
+                        if (refreshBtn) {
+                            refreshBtn.addEventListener('click', () => {
+                                this.currentLimit = 12;
+                                this.loadRecentProjects();
+                            });
+                        }
+                    }
+
+                    setupShowMoreButton() {
+                        let showMoreBtn = document.getElementById('showMoreProjects');
+                        if (!showMoreBtn) {
+                            const container = document.getElementById('recentProjectsGrid');
+                            showMoreBtn = document.createElement('button');
+                            showMoreBtn.id = 'showMoreProjects';
+                            showMoreBtn.className = 'btn btn-primary mt-3';
+                            showMoreBtn.textContent = 'Show More';
+                            container.parentNode.insertBefore(showMoreBtn, container.nextSibling);
+                        }
+
+                        showMoreBtn.addEventListener('click', () => {
+                            this.currentLimit += this.incrementBy;
+                            this.loadRecentProjects();
+                        });
+                    }
+
+                    setupAutoRefresh() {
+                        setInterval(() => this.loadRecentProjects(), 30000);
+                    }
+
+                    async loadRecentProjects() {
+                        try {
+                            const url = `${this.apiUrl}?limit=${this.currentLimit}`;
+                            console.log('Fetching from:', url);
+
+                            const response = await fetch(url);
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+
+                            const responseData = await response.json();
+                            console.log('Recent projects data received:', responseData);
+
+                            if (responseData.status === "success" && Array.isArray(responseData.data)) {
+                                this.projects = responseData.data;
+                                this.renderProjects(this.projects);
+                                this.updateShowMoreButton(responseData.total_count);
+                            } else {
+                                console.error('Unexpected data format:', responseData);
+                                this.showError('Unexpected response format from server.');
+                            }
+                        } catch (error) {
+                            console.error('Error loading recent projects:', error);
+                            this.showError('Failed to load recent projects');
+                        }
+                    }
+
+                    updateShowMoreButton(totalCount) {
+                        const showMoreBtn = document.getElementById('showMoreProjects');
+                        if (showMoreBtn) {
+                            if (this.projects.length >= totalCount) {
+                                showMoreBtn.style.display = 'none';
+                            } else {
+                                showMoreBtn.style.display = 'block';
+                                showMoreBtn.textContent = `Show ${this.incrementBy} More (${this.projects.length}/${totalCount})`;
+                            }
+                        }
+                    }
+
+                    renderProjects(projects) {
+                    const container = document.getElementById('recentProjectsGrid');
+                    if (!container) {
+                        console.error('Projects container not found');
+                        return;
+                    }
+
+                    if (!projects.length) {
+                        container.innerHTML = `
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    No projects found.
+                                </div>
+                            </div>`;
+                        return;
+                    }
+
+                    const projectsHtml = projects.map(project => `
+                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                            <div class="modern-card">
+                                <div class="card-content">
+                                    <div class="card-header-flex">
+                                        <span class="task-id">#${project.id}</span>
+                                        <span class="status-badge ${this.getStatusClass(project.status)}">
+                                            ${this.formatStatus(project.status, project.computed_status)}
+                                        </span>
+                                    </div>
+                                    <a href="/task/${project.id}/" class="task-title" title="${this.escapeHtml(project.project_title)}">
+                                        ${this.escapeHtml(project.project_title)}
+                                    </a>
+                                    <div class="info-grid">
+                                        <div class="info-row">
+                                            <span class="info-label">Destination:</span>
+                                            <span class="info-value">${this.escapeHtml(project.destination?.name || 'N/A')}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Created:</span>
+                                            <span class="info-value">${this.formatDate(project.created_at)}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Completed:</span>
+                                            <span class="info-value">${this.formatDate(project.completed_at)}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">User:</span>
+                                            <span class="info-value text-truncate" title="${this.escapeHtml(project.user?.username || 'N/A')}">
+                                                <strong>${this.escapeHtml(project.user?.username || 'N/A')}</strong>
+                                            </span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Businesses:</span>
+                                            <span class="info-value">${project.business_count || 0}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    container.innerHTML = projectsHtml;
+                }
+
+                getStatusClass(status) {
+                    const statusClasses = {
+                        'DONE': 'status-reviewed',
+                        'IN_PROGRESS': 'status-progress',
+                        'FAILED': 'status-failed',
+                        'PENDING': 'status-pending',
+                        'DONE': 'status-complete',
+                        'TASK_DONE': 'status-live'
+                    };
+                    return statusClasses[status] || 'status-default';
+                }
+
+                formatStatus(status, computed_status) {
+                    const statusDisplayMap = {
+                        'PENDING': 'PENDING',
+                        'IN_PROGRESS': 'IN PROGRESS',
+                        'FAILED': 'FAILED',
+                        'COMPLETED': 'READY TO REVIEW',
+                        'DONE': 'REVIEWED',
+                        'TASK_DONE': 'LIVE'
+                    };
+                    if (computed_status === 'TASK_DONE') {
+                        return 'LIVE';
+                    }
+                    return statusDisplayMap[status] || status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+                }
+
+                    formatDate(dateString) {
+                        if (!dateString) return 'N/A';
+                        try {
+                            const date = new Date(dateString.replace(' ', 'T'));
+                            return date.toLocaleString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        } catch (error) {
+                            console.error('Date formatting error:', error);
+                            return dateString;
+                        }
+                    }
+
+                    escapeHtml(unsafe) {
+                        if (!unsafe) return '';
+                        return unsafe.toString()
+                            .replace(/&/g, "&amp;")
+                            .replace(/</g, "&lt;")
+                            .replace(/>/g, "&gt;")
+                            .replace(/"/g, "&quot;")
+                            .replace(/'/g, "&#039;");
+                    }
+
+                    showError(message) {
+                        const container = document.getElementById('recentProjectsGrid');
+                        if (container) {
+                            container.innerHTML = `<p class="error-message">${message}</p>`;
+                        }
+                    }
+                }
+
+                // Initialize when DOM is loaded
+                document.addEventListener('DOMContentLoaded', () => {
+                    window.recentProjectsInstance = new RecentProjects();
+                });
+                
+                </script>
+                <!--RECENT PROJECTS-->
+        
+                    <!-- Ambassador Section (only visible for ambassadors) -->
+                    <div class="row ambassador-section" style="display: none;">
+                        <div class="col-12 mb-4">
+                            <div class="card shadow">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">My Destinations Overview</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="ambassadorDestinations">
+                                        <!-- Ambassador-specific content will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div> 
+
+        <!-- Modals -->
+        <div class="modal fade" id="taskDetailsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Task Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="taskDetailsContent">
+                        <!-- Task details will be populated here -->
+
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>    
+    <script>
+        // Define your dashboard configuration
+        const DASHBOARD_CONFIG = {
+            charts: {
+                colors: {
+                    primary: '#4e73df',
+                    success: '#1cc88a',
+                    info: '#36b9cc',
+                    warning: '#f6c23e',
+                    danger: '#e74a3b',
+                    dark: '#5a5c69',
+                    light: '#ffffff'
+                }
+            },
+            api: {
+                refreshInterval: 300000 // 5 minutes
+            },
+            errors: {
+                displayDuration: 5000 // 5 seconds
+            }
+        };
+    </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/dashboard/summary/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const parsedData = JSON.parse(data.data);
+                    document.getElementById('totalBusinesses').textContent = parsedData.total_businesses;
+                    document.getElementById('businessesToday').textContent = parsedData.timeline_data.businesses.slice(-1)[0] || 0;
+
+                    new DashboardStats(parsedData); // Initialize the stats with parsed data
+                }
+            })
+            .catch(error => console.error('Error fetching business count:', error));
+    });
+</script>
+
+
+</div>
+{% endblock %}
+
+
+

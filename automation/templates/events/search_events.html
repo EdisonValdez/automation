@@ -1,0 +1,245 @@
+<!-- templates/events/search_events.html -->
+{% extends "base.html" %}
+{% load static %}
+ 
+{% load custom_filters %}
+{% block title %}{{ business.title }}{% endblock %}
+{% block content %}
+<style>
+ .load-more-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: #007acc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.load-more-btn:hover {
+    background-color: #005fa3;
+}
+
+ .events-ul {
+    list-style-type: none;
+    padding: 0;
+}
+ 
+.events-li {
+    background-color: #fff;
+    margin: 15px auto;
+    padding: 20px;
+    max-width: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+[class*="col-"] {
+    padding: 0 15px;
+    margin-bottom: 10px;
+}
+.events-img {
+    display: block;
+    margin: 10px 0;
+    border-radius: 8px;
+    max-width: 100%;
+    width: 150px;
+    height: auto;
+}
+
+.no-events {
+    text-align: center;
+    color: #666;
+    font-size: 1.2em;
+    margin-top: 20px;
+}.image-management-container{display: flex;justify-content: center;padding: 10px}.image-container{width: 100%;padding: 15px;min-height: 300px}.images-wrapper{display: flex;flex-wrap: wrap;gap: 30px}.image-card{position: relative;display: flex;flex-direction: column;align-items: center;width: 250px;min-height: 200px;padding: 7px;border: 1px solid #ccc;border-radius: 8px;background-color: white;cursor: grab}.thumbnail{width: 100%;height: auto;object-fit: cover;border-radius: 5px}.checkbox-container{margin-top: 5px}.draggable.dragging{opacity: 0.5}.delete-image-btn{margin-top: 10px;padding: 5px 10px;background-color: #dc3545;border: none;color: white;border-radius: 5px;cursor: pointer}small{font-size: 10px }#taskDetailsContainer{transition: all 0.3s ease-in-out}.kanban-list.wide{min-width: 32.5%;width: 32.5%}.kanban-list.narrow{min-width: 24.5%;width: 24.5%}.edit{z-index: 1;width: 30px;height: 30px;position: absolute;right: 10px;top: 10px;background: rgba(246, 248, 253, 0.7);border-radius: 4px;display: flex;justify-content: center;align-items: center;transition: .3s}.thumbnail-container{width: 100%;height: 150px;max-height:350px;overflow: hidden;margin-bottom: 10px}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.thumbnail-placeholder{width: 100%;height: 150px;max-height:350px;background-color: #f0f0f0;display: flex;justify-content: center;align-items: center;color: #888;font-size: 14px}.kanban-box{display: flex;flex-direction: column;cursor:move}.content-box{flex-grow: 1;display: flex;flex-direction: column}.image-container{position: relative;overflow: hidden}.thumbnail-image{width: 100%;height: 150px;max-height:350px;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0, 0, 0, 0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 16px;position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);text-align: center;width: 90%}.business-stats{display: flex;justify-content: space-between;margin-top: 10px;font-size: 10px}.rank, .total-score{background-color: #f0f0f0;padding: 3px 6px;border-radius: 3px}.kanban-cont{display: flex;overflow-x: auto;padding-bottom: 20px}.kanban-list{min-width: 25%;width: 25%;margin-right: 10px;background-color: #f4f5f7;border-radius: 5px}.kanban-wrap{max-height: 1200px;overflow-y: auto}.kanban-header{margin-bottom: 10px;padding: 10px;background-color: #e4e6e9;border-radius: 5px}.panel{margin-bottom: 10px}.kanban-box{background-color: white;border-radius: 5px;padding: 10px;box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)}.load-more{width: 100%;margin-top: 10px}.image-container{position: relative;width: 100%;padding-top: 5%}.thumbnail-image{position: absolute;top: 0;left: 0;width: 100%;height: 100%;object-fit: cover}.image-overlay{position: absolute;bottom: 0;left: 0;right: 0;background-color: rgba(0,0,0,0.7);overflow: hidden;width: 100%;height: 0;transition: .5s ease}.image-container:hover .image-overlay{height: 100%}.overlay-title{color: white;font-size: 20px;position: absolute;top: 50%;left: 50%;-webkit-transform: translate(-50%, -50%);-ms-transform: translate(-50%, -50%);transform: translate(-50%, -50%);text-align: center}.business-title:hover::after{content: "";display: inline-block;background-image: url('');width: 150px;height: 150px;position: absolute;left: 100%;top: -10px;background-size: cover;background-position: center;box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1)}</style> 
+ 
+<div class="main-content">
+    <div class="row">
+        
+<!-- Dashboard Page -->
+<div class="page-title-wrapper">
+    <h1 class="page-title">
+        <span class="title-icon">
+            <i class="bx bxs-bolt"></i>
+        </span>
+        <span class="title-text">Search Events</span>
+    </h1>
+</div>
+    </div>
+    <div class="box">  
+        <!-- Search Form -->
+        <form method="get" action="{% url 'search_events' %}">
+            <div class="row">
+                <div class="col-xl-6 col-lg-6 col-md-6 col-xs-12">
+                    <label for="location">Location:</label>
+                    <input class="form-control" type="text" id="location" name="location" placeholder="e.g., Austin, TX" required>
+                    
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6 col-xs-12">
+                    <label for="date_filter">Date:</label>
+                    <select class="form-control" id="date_filter" name="date_filter">
+                        <option value="today">Today</option>
+                        <option value="tomorrow">Tomorrow</option>
+                        <option value="week" selected>This Week</option>
+                        <option value="next_week">Next Week</option>
+                        <option value="month">This Month</option>
+                        <option value="next_month">Next Month</option>
+                    </select>
+                                        
+                </div>
+                <div class="col-xl-3 col-lg-3 col-md-6 col-xs-12">
+                    <label for="event_type">Event Type:</label>
+                    <select class="form-control"  id="event_type" name="event_type">
+                        <option value="">All</option>
+                        <option value="Virtual-Event">Virtual Events</option>
+                    </select>  
+                </div>
+            </div>
+
+
+<div class="row">
+    <div class="col-12">
+        <button class="btn btn-primary"  type="submit">Search</button>
+    </div>
+</div>
+            
+           
+        </form>
+
+        <!-- Display Results -->
+        {% if events %}
+            <h2>Events in {{ query }}</h2>
+            <form id="events-form" method="post">
+                {% csrf_token %}
+                <ul class="events-ul" id="events-list">
+                    {% for event in events %}
+                        <li class="events-li">
+                            <div class="row">
+                                <div class="col-xl-1">
+                                    <input type="checkbox" class="event-checkbox" name="selected_events" value="{{ event.title }}">
+                                </div>
+                                <div class="col-xl-3">
+                                    {% if event.thumbnail %}
+                                        <img class="events-img" src="{{ event.thumbnail }}" alt="{{ event.title }}">
+                                    {% endif %}
+                                    <p><a href="{{ event.link }}" target="_blank">More Info</a></p>
+                                </div>
+                                <div class="col-xl-8">
+                                    <h3>{{ event.title }}</h3>
+                                    <p class="text-danger"><strong>Date:</strong> {{ event.date.when }}</p>
+                                    <p><strong>Address:</strong> {{ event.address|join:", " }}</p>
+                                    <p><strong>Venue:</strong> {{ event.venue.name }}</p>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                {% if has_more %}
+                    <button id="load-more" data-page="{{ next_page }}" class="load-more-btn">Load More</button>
+                {% endif %}
+            </form>
+
+            <!-- Button to submit selected events -->
+            <button type="button" id="save-selected" class="btn btn-primary">Save Selected Events</button>
+        {% else %}
+            <p>No events found for "{{ query }}".</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loadMoreButton = document.getElementById('load-more');
+        const eventsList = document.getElementById('events-list');
+        const saveButton = document.getElementById('save-selected');
+
+        // Load more functionality
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', function() {
+                const page = loadMoreButton.getAttribute('data-page');
+                const query = encodeURIComponent("{{ query }}");
+
+                fetch(`?location=${query}&page=${page}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    data.events.forEach(event => {
+                        const listItem = document.createElement('li');
+                        listItem.classList.add('events-li');
+                        listItem.innerHTML = `
+                            <div class="row">
+                                <div class="col-xl-1">
+                                    <input type="checkbox" class="event-checkbox" name="selected_events" value="${event.title}">
+                                </div>
+                                <div class="col-xl-3">
+                                    ${event.thumbnail ? `<img src="${event.thumbnail}" alt="${event.title}" class="events-img">` : ''}
+                                    <p><a href="${event.link}" target="_blank">More Info</a></p>
+                                </div>
+                                <div class="col-xl-8">
+                                    <h3>${event.title}</h3>
+                                    <p><strong>Date:</strong> ${event.date.when}</p>
+                                    <p><strong>Address:</strong> ${event.address.join(", ")}</p>
+                                    <p><strong>Venue:</strong> ${event.venue.name}</p>
+                                </div>
+                            </div>
+                        `;
+                        eventsList.appendChild(listItem);
+                    });
+
+                    if (data.has_more) {
+                        loadMoreButton.setAttribute('data-page', data.next_page);
+                    } else {
+                        loadMoreButton.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading more events:', error);
+                    alert("Failed to load more events. Please try again later.");
+                });
+            });
+        }
+
+        // Save selected events to the server
+        saveButton.addEventListener('click', function() {
+            const selectedEvents = [];
+            document.querySelectorAll('.event-checkbox:checked').forEach(checkbox => {
+                selectedEvents.push(checkbox.value);
+            });
+
+            if (selectedEvents.length === 0) {
+                alert("No events selected!");
+                return;
+            }
+
+            fetch("{% url 'save_selected_events' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ events: selectedEvents })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Selected events saved successfully!");
+                } else {
+                    alert("Failed to save events. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error('Error saving selected events:', error);
+                alert("An error occurred. Please try again.");
+            });
+        });
+    });
+</script>
+{% endblock %}
+ 

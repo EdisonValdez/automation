@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="main-content project">
+        <style> .main-title {font-size: 24px;font-weight: 600;color: #2c3e50;margin-bottom: 1.5rem;padding-bottom: 0.5rem;border-bottom: 2px solid #eee;}.box {background: #fff;border-radius: 8px;box-shadow: 0 2px 4px rgba(0,0,0,0.1);padding: 1.5rem;margin-bottom: 1.5rem;}.box-body {padding: 1rem 0;}.form-group {margin-bottom: 1.5rem;}.form-label {display: block;margin-bottom: 0.5rem;font-weight: 500;color: #2c3e50;}.form-control {width: 100%;padding: 0.75rem;border: 1px solid #ddd;border-radius: 4px;transition: border-color 0.2s ease;}.form-control:focus {border-color: #3498db;box-shadow: 0 0 0 2px rgba(52,152,219,0.2);outline: none;}.text-danger {color: #e74c3c;font-size: 0.875rem;margin-top: 0.25rem;}.action-buttons {display: flex;flex-wrap: wrap;gap: 1rem;justify-content: center;padding: 1.5rem;background: #f8f9fa;border-radius: 0 0 8px 8px;}.action-buttons .btn {flex: 1;min-width: 200px;max-width: 300px;padding: 0.75rem 1.5rem;font-size: 1rem;font-weight: 500;text-align: center;border-radius: 6px;transition: all 0.3s ease;text-decoration: none;border: none;cursor: pointer;display: inline-flex;align-items: center;justify-content: center;gap: 0.5rem;}.btn-primary {background-color: #3498db;color: white;}.btn-primary:hover {background-color: #2980b9;transform: translateY(-1px);}.btn-secondary {background-color: #95a5a6;color: white;}.btn-secondary:hover {background-color: #7f8c8d;transform: translateY(-1px);}.btn-warning {background-color: #f1c40f;color: #2c3e50;}.btn-warning:hover {background-color: #f39c12;transform: translateY(-1px);}@media (max-width: 768px) {.box {padding: 1rem;}.action-buttons {flex-direction: column;align-items: stretch;gap: 0.75rem;}.action-buttons .btn {max-width: 100%;width: 100%;}.mb-24 {margin-bottom: 1rem;}}.btn.loading {position: relative;color: transparent;}.btn.loading::after {content: "";position: absolute;width: 20px;height: 20px;border: 2px solid;border-radius: 50%;border-color: #fff #fff #fff transparent;animation: button-loading-spinner 1s linear infinite;}@keyframes button-loading-spinner {from {transform: rotate(0turn);}to {transform: rotate(1turn);}}</style>
+        {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %} 
+        <div class="row">
+            <div class="col-12">
+                <!-- Page Title --> 
+                        <div class="page-title-wrapper">
+                            <h1 class="page-title">
+                                <span class="title-icon">
+                                    <i class="fas fa-users-cog" aria-hidden="true"></i>
+                                </span>
+                                <span class="title-text">Create Users</span>
+                            </h1>
+                        </div> 
+                <div class="box">
+                    <div class="box-body">
+                        <form method="post" action="{% url 'create_user' %}" id="createUserForm">
+                            {% csrf_token %} 
+                            <div class="row">
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 mb-24">
+                                    <div class="form-group">
+                                        <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
+                                        {{ form.username }}
+                                        {% if form.username.errors %}
+                                            <div class="text-danger">{{ form.username.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 mb-24">
+                                    <div class="form-group">
+                                        <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
+                                        {{ form.email }}
+                                        {% if form.email.errors %}
+                                            <div class="text-danger">{{ form.email.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 mb-24">
+                                    <div class="form-group">
+                                        <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
+                                        {{ form.password1 }}
+                                        {% if form.password1.errors %}
+                                            <div class="text-danger">{{ form.password1.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 mb-24">
+                                    <div class="form-group">
+                                        <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                                        {{ form.password2 }}
+                                        {% if form.password2.errors %}
+                                            <div class="text-danger">{{ form.password2.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 mb-24">
+                                    <div class="form-group">
+                                        <label class="form-label" for="{{ form.mobile.id_for_label }}">Mobile</label>
+                                        {{ form.mobile }}
+                                        {% if form.mobile.errors %}
+                                            <div class="text-danger">{{ form.mobile.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div> 
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 mb-24"> 
+                                    <div class="form-group">
+                                        <label class="form-label" for="{{ form.role.id_for_label }}">Role</label>
+                                        {{ form.role }}
+                                        {% if form.role.errors %}
+                                            <div class="text-danger">{{ form.role.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+        
+                            </div>
+                            <!-- Destinations Field -->
+                            <br><br><br><br>
+                            <div class="row">
+                                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 mb-24 mt-15">
+                                    <div class="form-group">
+                                        <label class="form-label" for="{{ form.destinations.id_for_label }}">Destinations</label>
+                                        {{ form.destinations }}
+                                        {% if form.destinations.errors %}
+                                            <div class="text-danger">{{ form.destinations.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                                <!-- Updated button container -->
+
+                                <div class="action-buttons">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-user-plus"></i>
+                                        Create User
+                                    </button>
+                                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i>
+                                        Back to Dashboard
+                                    </a>
+                                    <a href="{% url 'user_management' %}" class="btn btn-warning te">
+                                        <i class="fas fa-cog"></i>
+                                        Destination Management
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+        </div>
+            
+            <script>
+            // Add loading state to form submission
+            document.getElementById('createUserForm').addEventListener('submit', function(e) {
+                const submitButton = this.querySelector('button[type="submit"]');
+                submitButton.classList.add('loading');
+                submitButton.disabled = true;
+            });
+            
+            // Disable form resubmission on page refresh
+            if (window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+            </script> 
+</div>
+
+
+<!-- Initialize Select2 -->
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.select2').select2({ 
+            placeholder: "Select destinations",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+
+<script>
+    $('.select2').select2({
+    theme: 'bootstrap-5',
+    placeholder: "Select destinations",
+    allowClear: true,
+    width: '100%'
+});
+
+</script>
+{% endblock %}
+
+ 

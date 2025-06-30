@@ -1,0 +1,265 @@
+<!-- templates/welcome.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - Business QA{% endblock %}
+
+{% block content %}
+<style>
+    /* Quick Access Section Styles */
+.quick-access-section {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.quick-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    justify-content: center;
+}
+
+.quick-link-card {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border: 1px solid #e9ecef;
+}
+
+.quick-link-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-decoration: none;
+}
+
+.card-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.card-icon i {
+    font-size: 1.25rem;
+    color: white;
+}
+
+.card-info {
+    flex-grow: 1;
+}
+
+.card-info h6 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.card-info p {
+    margin: 0.25rem 0 0;
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Role-specific styles */
+.quick-link-card.admin {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border-left: 4px solid #F4C031;
+}
+
+.quick-link-card.admin .card-icon {
+    background: #F4C031;
+}
+
+.quick-link-card.ambassador {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border-left: 4px solid #4CAF50;
+}
+
+.quick-link-card.ambassador .card-icon {
+    background: #4CAF50;
+}
+
+/* Default card style */
+.quick-link-card:not(.admin):not(.ambassador) {
+    background: linear-gradient(145deg, #f8f9fa, #ffffff);
+    border-left: 4px solid #F4C031;
+}
+
+.quick-link-card:not(.admin):not(.ambassador) .card-icon {
+    background: #F4C031;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .quick-access-section {
+        background: #1a1d20;
+    }
+
+    .section-title {
+        color: #e9ecef;
+    }
+
+    .quick-link-card {
+        background: #242830;
+        border-color: #2d3436;
+    }
+
+    .card-info h6 {
+        color: #e9ecef;
+    }
+
+    .card-info p {
+        color: #adb5bd;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .quick-links-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-link-card {
+        padding: 1rem;
+    }
+}
+
+</style>
+<div class="main-content project">
+    <div class="row">
+        <div class="container">
+            <div class="welcome-dashboard">
+                <div class="welcome-header">
+             
+                    <div class="welcome-content text-center mb-4">
+                        {% if user.is_authenticated %}
+                            <h1 class="welcome-title mb-4">Business Quality Control Center</h1>
+                            <p class="welcome-user">
+                                Welcome back, <span style="font-weight: 600;" class="user-name">{{ user.get_full_name|default:user.username }}</span> 
+                                <span class="wave-emoji">👋</span>
+                            </p>
+                            <p class="welcome-subtitle">Monitor and optimize business data quality in real-time</p>
+                        {% else %}
+                            <p class="auth-message">Please <a href="{% url 'login' %}">log in</a> to continue.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <br /><br /><br />
+
+                {% if user.is_authenticated %}
+                <div class="quick-access-section mt-4">
+                    <h5 class="section-title">Quick Access</h5>
+                    <div class="quick-links-grid">
+                        {% if user.is_admin %}
+                        <!-- Admin Links -->
+                        <a href="{% url 'dashboard' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Dashboard</h6>
+                                <p>Manage content stats</p>
+                            </div>
+                        </a>
+ 
+                        <a href="{% url 'upload_file' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-spinner"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Add New Content</h6>
+                                <p>Business gathering tasks</p>
+                            </div>
+                        </a>
+
+                        <a href="{% url 'user_management' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-users-cog"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>User Management</h6>
+                                <p>Manage system users and roles</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'task_list' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Content List</h6>
+                                <p>Monitor and manage tasks</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'feedback_list' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Comments</h6>
+                                <p>Manage business feedback</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'admin:index' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Django Backend</h6>
+                                <p>Manage backend operations</p>
+                            </div>
+                        </a>
+
+
+                        {% endif %}
+                
+                        {% if 'AMBASSADOR' in user.get_roles %}
+                        <!-- Ambassador Links -->
+                        <a href="{% url 'business_list' %}" class="quick-link-card ambassador">
+                            <div class="card-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>My Places</h6>
+                                <p>View assigned businesses</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'task_list' %}" class="quick-link-card admin">
+                            <div class="card-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="card-info">
+                                <h6>Content List</h6>
+                                <p>Monitor and manage tasks</p>
+                            </div>
+                        </a>
+
+                        {% endif %}
+
+                    </div>
+                </div>
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
