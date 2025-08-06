@@ -1594,6 +1594,7 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'singapore': r'\b\d{6}\b',
         'belgium': r'\b\d{4}\b',
         
+        
         'morocco': r'\b\d{5}\b',  
         'south africa': r'\b\d{4}\b',   
         'brazil': r'\b\d{5}-?\d{3}\b',  
@@ -1607,10 +1608,47 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'norway': r'\b\d{4}\b',  
         'finland': r'\b\d{5}\b', 
 
+        'greece': r'\b\d{5}\b',  # Covers Athens (10431-11523) and other cities
+        'colombia': r'\b\d{6}\b',  # Covers Barranquilla, Bogotá, Cartagena
+        'romania': r'\b\d{6}\b',  # Covers Bucharest (010011-060042)
+        'hungary': r'\b\d{4}\b',  # Covers Budapest (1011-1239)
+        'panama': r'\b\d{4}\b',  # Covers Panama City (0801-0819)
+        'egypt': r'\b\d{5}\b',  # Covers Cairo (11311-11938)
+        'turkey': r'\b\d{5}\b',  # Covers Istanbul (34000-34990)
+        'malta': r'\b[A-Z]{3} ?\d{4}\b',  # Covers Malta format (VLT 1111)
+        'czech republic': r'\b\d{5}\b',  # Covers Prague (10000-19900)
+        'costa rica': r'\b\d{5}\b',  # Covers Puerto Limón (70101-70111)
+        'uruguay': r'\b\d{5}\b',  # Covers Punta del Este (20100-20200)
+        'iceland': r'\b\d{3}\b',  # Covers Reykjavík (101-155)
+        'chile': r'\b\d{7}\b',  # Covers Santiago (8320000-8329999)
+        'dominican republic': r'\b\d{5}\b',  # Covers Santo Domingo (10101-10212)
+        'south korea': r'\b\d{5}\b',  # Covers Seoul (04500-08800)
+        'bulgaria': r'\b\d{4}\b',  # Covers Sofia (1000-1429)
+        'israel': r'\b\d{5}\b',  # Covers Tel Aviv (61000-69999)
+        'tunisia': r'\b\d{4}\b',  # Covers Tunis (1000-2099)
+        'poland': r'\b\d{2}-\d{3}\b',  # Covers Warsaw (00-001-04-999)
+        'austria': r'\b\d{4}\b',  # Covers Vienna (1010-1230)
+        'united arab emirates': None,  # Dubai uses P.O. Boxes, no standard format
+        'saint maarten': r'\b\d{5}\b',  # Covers Saint Maarten (97750)
+        'sardinia': r'\b0[7-9]\d{3}\b',  # Specific pattern for Sardinia (07000-09170)
+        'sardegna': r'\b0[7-9]\d{3}\b',  # Alternative name for Sardinia
+
         'default': r'\b\d{5}\b'
     }
     
-    return patterns.get(country.lower(), patterns['default'])
+    country_aliases = {
+        'czechia': 'czech republic',
+        'uae': 'united arab emirates',
+        'dominican rep': 'dominican republic',
+        'korea': 'south korea',
+        'korea south': 'south korea',
+        'isola di sardegna': 'sardinia',
+        'isle of sardinia': 'sardinia',
+    }
+    
+    # First check if there's an alias, then get the pattern
+    country_key = country_aliases.get(country.lower(), country.lower())
+    return patterns.get(country_key, patterns['default'])
  
 def extract_address_components(address_string: string, country: str = None):
     """

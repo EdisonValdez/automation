@@ -674,7 +674,7 @@ class RecentTasksView(APIView):
                     'project_title': task.project_title,
                     'status': task.status,
                     'created_at': task.created_at.strftime('%Y-%m-%d %H:%M'),
-                    'completed_at': task.completed_at.strftime('%Y-%m-%d %H:%M'),
+                    'completed_at': task.completed_at.strftime('%Y-%m-%d %H:%M') if task.completed_at else None,
                     'destination': {
                         'id': task.destination.id if task.destination else None,
                         'name': task.destination.name if task.destination else 'N/A'
