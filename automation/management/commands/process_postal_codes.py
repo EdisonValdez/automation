@@ -1,7 +1,9 @@
 # automation/management/commands/process_postal_codes.py 
 
 from django.core.management.base import BaseCommand
-from django.db.models import Q
+from typing import List, Dict, Optional, Tuple
+
+from django.db.models import Q, Count
 from django.db import transaction
 from automation.models import Business
 from typing import Optional, Dict, List
@@ -13,12 +15,13 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-POSTAL_CODE_DEFAULTS = {
-    'CONFIDENCE_THRESHOLD': 'MEDIUM',
-    'ALLOW_FALLBACK': True,
-    'LOG_LEVEL': 'INFO'
+POSTAL_CODE_SETTINGS = {
+    'GPT_BATCH_SIZE': 5,
+    'BATCH_DELAY': 1,  # seconds
+    'DEFAULT_STATUS': 'PENDING',
+    'GPT_MAX_RETRIES': 3
 }
-
+ 
 class PostalCodeProcessor:      
 
     def __init__(self):
@@ -232,25 +235,67 @@ class PostalCodeProcessor:
         if not pattern:
             return True  # If no pattern exists, accept any format
         return bool(re.match(pattern, postal_code))
- 
+
+    def process_batch_with_gpt(self, businesses: List[Dict]) -> List[Tuple[int, str]]:
+        """Process multiple businesses in a single GPT call"""
+        try:
+            # Build combined prompt
+            prompts = []
+            for business in businesses:
+                prompts.append(self._build_gpt_prompt(business))
+            
+            combined_prompt = "\n---\n".join(prompts)
+            
+            # Call GPT-3.5 with combined prompt
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": """You are a postal code expert. 
+                    For each location separated by ---, return its postal code in the format:
+                    ID|POSTAL_CODE|CONFIDENCE(HIGH/MEDIUM/LOW)
+                    If you can't determine a postal code, return: ID|NONE|LOW
+                    Respond with one result per line."""},
+                    {"role": "user", "content": combined_prompt}
+                ],
+                temperature=0.1,
+                max_tokens=100 * len(businesses)  # Scale tokens with batch size
+            )
+            
+            # Process results
+            results = []
+            response_lines = response.choices[0].message.content.strip().split('\n')
+            
+            for line in response_lines:
+                try:
+                    business_id, postal_code, confidence = line.strip().split('|')
+                    if postal_code.upper() != 'NONE' and confidence in ['HIGH', 'MEDIUM']:
+                        results.append((int(business_id), postal_code))
+                except ValueError:
+                    logger.error(f"Invalid GPT response format: {line}")
+                    continue
+                    
+            return results
+            
+        except Exception as e:
+            logger.error(f"GPT batch processing error: {str(e)}")
+            return []
     def _build_gpt_prompt(self, business: Dict) -> str:
-        """Build prompt for GPT"""
+        """Build prompt for a single business"""
         components = [
-            f"Find the postal code for this location:",
+            f"ID: {business['id']}",
+            f"Location:",
             f"Address: {business['address']}",
             f"Street: {business['street']}",
             f"City: {business['city']}",
             f"Country: {business['country']}"
         ]
         
-        # Add coordinates if available
         if business['latitude'] and business['longitude']:
             components.append(
                 f"Coordinates: {business['latitude']}, {business['longitude']}"
             )
             
         return "\n".join(components)
-
  
     def get_postal_code_via_gpt(self, business: Dict) -> Optional[str]:
         """Enhanced version with multiple fallback mechanisms"""
@@ -294,6 +339,7 @@ class PostalCodeProcessor:
             logger.error(f"GPT API error: {str(e)}")
             # 5. Emergency fallback
             return self.get_default_postal_code(business)
+    
     def get_city_default_postal_code(self, business: Dict) -> Optional[str]:
         """Get default postal code for a city with fuzzy matching"""
         city_name = business['city'].lower()
@@ -310,6 +356,7 @@ class PostalCodeProcessor:
             return city_info['postal_code']
         
         return None
+    
     def get_default_postal_code(self, business: Dict) -> Optional[str]:
         """Get a valid default postal code based on country/city"""
         country = business['country'].lower()
@@ -330,6 +377,7 @@ class PostalCodeProcessor:
                 return str(start)  # Use start of range as default
                 
         return None
+    
     def validate_and_format_postal_code(self, postal_code: str, business: Dict) -> Optional[str]:
         """Validate and format postal code according to country/city rules"""
         country = business['country'].lower()
@@ -352,6 +400,7 @@ class PostalCodeProcessor:
             return postal_code
             
         return None
+    
     def _build_enhanced_gpt_prompt(self, business: Dict) -> str:
         """Build an enhanced prompt with more context"""
         components = [
@@ -387,10 +436,9 @@ class PostalCodeProcessor:
             )
             
         return "\n".join(components)
- 
-class Command(BaseCommand):
-    help = 'Process and update missing postal codes for businesses using GPT-3.5'
 
+class Command(BaseCommand):
+    help = 'Process and update missing postal codes for non-discarded businesses'
     def add_arguments(self, parser):
         parser.add_argument(
             '--country', 
@@ -410,106 +458,151 @@ class Command(BaseCommand):
         parser.add_argument(
             '--batch-size',
             type=int,
-            default=50,
-            help='Number of businesses to process in each batch'
+            default=5,  # Smaller default batch size for GPT calls
+            help='Number of businesses to process in each GPT call'
+        )
+        parser.add_argument(
+            '--status',
+            type=str,
+            choices=['PENDING', 'REVIEWED', 'IN_PRODUCTION'],
+            help='Filter by specific status'
         )
 
     def get_businesses_without_postal_code(
         self, 
         country: Optional[str] = None, 
-        city: Optional[str] = None
+        city: Optional[str] = None,
+        status: Optional[str] = None
     ):
-        """Fetch businesses without postal codes"""
+        """Fetch businesses without postal codes, excluding DISCARDED status"""
         query = Business.objects.filter(
             Q(postal_code__isnull=True) | Q(postal_code='')
         ).filter(
             is_deleted=False
+        ).exclude(
+            status='DISCARDED'
         )
 
         if country:
             query = query.filter(country__iexact=country)
         if city:
             query = query.filter(city__iexact=city)
+        if status:
+            query = query.filter(status=status)
+        else:
+            query = query.filter(
+                status__in=['PENDING', 'REVIEWED', 'IN_PRODUCTION']
+            )
 
-        return query
-
+        return query.values(
+            'id', 
+            'title', 
+            'address', 
+            'street', 
+            'city', 
+            'country',
+            'postal_code', 
+            'latitude', 
+            'longitude', 
+            'status'
+        )
+    
     @transaction.atomic
     def process_batch(
         self, 
-        businesses: List[Business], 
+        businesses: List[Dict], 
         processor: PostalCodeProcessor,
         dry_run: bool
     ) -> Dict:
         """Process a batch of businesses"""
         stats = {'processed': 0, 'updated': 0, 'failed': 0}
         
-        for business in businesses:
-            stats['processed'] += 1
+        try:
+            # Businesses are already in dict format since we used values()
+            business_data = businesses  # No need to convert anymore
             
-            try:
-                # Convert business to dict for processor
-                business_data = {
-                    'id': business.id,
-                    'title': business.title,
-                    'address': business.address,
-                    'street': business.street,
-                    'city': business.city,
-                    'country': business.country,
-                    'latitude': business.latitude,
-                    'longitude': business.longitude
-                }
-                
-                postal_code = processor.get_postal_code_via_gpt(business_data)
-                
-                if postal_code:
+            # Process batch with GPT
+            results = processor.process_batch_with_gpt(business_data)
+            
+            # Update businesses with results
+            for business_id, postal_code in results:
+                try:
                     if dry_run:
+                        business = next(b for b in businesses if b['id'] == business_id)  # Use dict access
                         self.stdout.write(
-                            f"Would update {business.title} "
+                            f"Would update {business['title']} "  # Use dict access
                             f"with postal code: {postal_code}"
                         )
                     else:
-                        business.postal_code = postal_code
-                        business.save()
+                        Business.objects.filter(id=business_id).update(
+                            postal_code=postal_code
+                        )
                         logger.info(
-                            f"Updated postal code for {business.title}: "
+                            f"Updated postal code for business {business_id}: "
                             f"{postal_code}"
                         )
                     stats['updated'] += 1
-                else:
-                    logger.warning(
-                        f"Could not find postal code for: {business.title}"
+                except Exception as e:
+                    logger.error(
+                        f"Error updating business {business_id}: {str(e)}"
                     )
                     stats['failed'] += 1
                 
-                # Add delay to avoid hitting API limits
-                sleep(0.5)
-                
-            except Exception as e:
-                logger.error(
-                    f"Error processing business {business.title}: {str(e)}"
-                )
-                stats['failed'] += 1
-                
+            stats['processed'] = len(businesses)
+            
+        except Exception as e:
+            logger.error(f"Batch processing error: {str(e)}")
+            stats['failed'] = len(businesses)
+            stats['processed'] = len(businesses)
+            
         return stats
+
+    def _build_gpt_prompt(self, business: Dict) -> str:
+        """Build prompt for a single business"""
+        components = [
+            f"ID: {business['id']}",  # Use dict access
+            f"Location:",
+            f"Address: {business['address']}",  # Use dict access
+            f"Street: {business['street']}",    # Use dict access
+            f"City: {business['city']}",        # Use dict access
+            f"Country: {business['country']}"    # Use dict access
+        ]
+        
+        if business['latitude'] and business['longitude']:  # Use dict access
+            components.append(
+                f"Coordinates: {business['latitude']}, {business['longitude']}"
+            )
+            
+        return "\n".join(components)
 
     def handle(self, *args, **options):
         try:
             processor = PostalCodeProcessor()
             country = options['country']
             city = options['city']
+            status = options['status']
             dry_run = options['dry_run']
             batch_size = options['batch_size']
-
             # Get businesses
-            businesses = self.get_businesses_without_postal_code(country, city)
+            businesses = self.get_businesses_without_postal_code(
+                country, city, status
+            )
             total = businesses.count()
-
-            self.stdout.write(f"\nProcessing {total} businesses...")
+            # Show initial stats
+            self.stdout.write(f"\nProcessing {total} non-discarded businesses...")
+            if total > 0:
+                status_counts = businesses.values('status').annotate(
+                    count=Count('id')
+                )
+                self.stdout.write("Status breakdown:")
+                for status_info in status_counts:
+                    self.stdout.write(
+                        f"  {status_info['status']}: {status_info['count']}"
+                    )
             if dry_run:
                 self.stdout.write(
                     self.style.WARNING("DRY RUN - No changes will be made")
                 )
-
             # Process in batches
             total_stats = {'processed': 0, 'updated': 0, 'failed': 0}
             
@@ -527,31 +620,32 @@ class Command(BaseCommand):
                     f"({total_stats['updated']} updated, "
                     f"{total_stats['failed']} failed)"
                 )
-
+                
+                # Add delay between batches
+                if i + batch_size < total:
+                    sleep(1)  # Prevent rate limiting
             # Final summary
             self.stdout.write(self.style.SUCCESS("\nProcessing completed:"))
             self.stdout.write(f"Total processed: {total_stats['processed']}")
             self.stdout.write(f"Successfully updated: {total_stats['updated']}")
             self.stdout.write(f"Failed: {total_stats['failed']}")
-
         except Exception as e:
             logger.error(f"Command error: {str(e)}")
             self.stdout.write(self.style.ERROR(f"Error: {str(e)}"))
 
-
 """
-# Get all businesses without postal codes
+# Process all eligible businesses
 python manage.py process_postal_codes
 
-# Filter by country
-python manage.py process_postal_codes --country Greece
+# Process specific status
+python manage.py process_postal_codes --status REVIEWED
 
-# Filter by city
-python manage.py process_postal_codes --country Greece --city Athens
+# Process with custom batch size
+python manage.py process_postal_codes --batch-size 3
 
-# Export as JSON instead of CSV
-python manage.py process_postal_codes --format json
+# Dry run for specific country and status
+python manage.py process_postal_codes --country Greece --status PENDING --dry-run
 
-# Just see statistics
-python manage.py process_postal_codes --stats
 """
+ 
+
