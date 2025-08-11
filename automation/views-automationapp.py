@@ -2013,11 +2013,7 @@ def update_business_status(request, business_id):
 
         business_data = model_to_dict(business)
         business_data['types'] = processed_types
-        # Before processing TranslatedSite
-        if not business_data.get('language'):
-            business_data['language'] = 'en'  # Default language
-
-    
+        
         logger.info(f"Processed types for business {business_id}: {processed_types}")
 
         # Description validation logic
@@ -2160,7 +2156,6 @@ def update_business_status(request, business_id):
                 try:
                     logger.info(f"First attempt to move business {business_id} with types: {original_types}")
                     RequestClient().request('move-to-app', app_data)
-                    print(app_data)
                     
                     return JsonResponse({
                         'status': 'success',

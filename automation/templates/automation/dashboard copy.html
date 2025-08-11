@@ -94,7 +94,7 @@
                         </div>
                     </div>
                 
-                    <!-- Task Timeline Chart.js -->
+                    <!-- Chart.js -->
                     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                     <script>
                         class TaskTimeline {
@@ -102,41 +102,41 @@
                                 this.chart = null;
                                 this.initialize();
                             }
-                    
+                
                             async initialize() {
                                 this.initializeDatePickers();
                                 await this.loadTimelineData();
                             }
-                    
+                
                             initializeDatePickers() {
                                 const startDateInput = document.getElementById('start_date');
                                 const endDateInput = document.getElementById('end_date');
-                    
+                
                                 // Default values: last 30 days
                                 const today = new Date();
                                 const pastMonth = new Date();
                                 pastMonth.setDate(pastMonth.getDate() - 30);
                                 startDateInput.value = this.formatDate(pastMonth);
                                 endDateInput.value = this.formatDate(today);
-                    
+                
                                 document.getElementById('filterDates').addEventListener('click', async () => {
                                     await this.loadTimelineData();
                                 });
                             }
-                    
+                
                             formatDate(date) {
                                 return date.toISOString().split('T')[0]; // Format YYYY-MM-DD
                             }
-                    
+                
                             async loadTimelineData() {
                                 try {
                                     const startDate = document.getElementById('start_date').value;
                                     const endDate = document.getElementById('end_date').value;
                                     const response = await fetch(`/api/dashboard/task-timeline/?start_date=${startDate}&end_date=${endDate}`);
                                     const result = await response.json();
-                    
+                
                                     console.log("API Response:", result); // Debugging log
-                    
+                
                                     if (result.status === 'success') {
                                         this.updateChart(result.data);
                                         this.updateTotalCounts(result.totals);
@@ -148,23 +148,23 @@
                                     this.showError('Error loading timeline data.');
                                 }
                             }
-                    
+                
                             updateChart(timelineData) {
                                 if (!timelineData || timelineData.length === 0) {
                                     this.showError('No data available for the selected range.');
                                     return;
                                 }
-                    
+                
                                 const labels = timelineData.map(entry => entry.date);
                                 const taskCounts = timelineData.map(entry => entry.tasks_count);
                                 const businessCounts = timelineData.map(entry => entry.businesses_count);
-                    
+                
                                 const ctx = document.getElementById('timelineChart').getContext('2d');
-                    
+                
                                 if (this.chart) {
                                     this.chart.destroy();
                                 }
-                    
+                
                                 this.chart = new Chart(ctx, {
                                     type: 'bar',  // Changed to bar chart
                                     data: {
@@ -217,29 +217,24 @@
                                     }
                                 });
                             }
-                    
+                
                             updateTotalCounts(totals) {
                                 console.log("Total Counts Response:", totals); // Debugging log
-                    
+                
                                 // Ensuring correct counting and avoiding conflicts
-                                if (totals) {
-                                    document.getElementById('totalTasks').textContent = totals.total_tasks || 0;
-                                    document.getElementById('totalBusinessesCount').textContent = totals.total_businesses || 0;
-                                    document.getElementById('tasksToday').textContent = totals.tasks_today || 0;
-                                    document.getElementById('businessesToday').textContent = totals.businesses_today || 0;
-                                } else {
-                                    console.error("Totals object is undefined or null");
-                                    this.showError('No totals data available.');
-                                }
+                                document.getElementById('totalTasks').textContent = totals?.total_tasks || 0;
+                                document.getElementById('totalBusinessesCount').textContent = totals?.total_businesses || 0;
+                                document.getElementById('tasksToday').textContent = totals?.tasks_today || 0;
+                                document.getElementById('businessesToday').textContent = totals?.businesses_today || 0;
                             }
-                    
+                
                             showError(message) {
                                 const errorDiv = document.getElementById('timelineError');
                                 errorDiv.textContent = message;
                                 errorDiv.classList.remove('d-none');
                             }
                         }
-                    
+                
                         document.addEventListener('DOMContentLoaded', () => {
                             new TaskTimeline();
                         });
