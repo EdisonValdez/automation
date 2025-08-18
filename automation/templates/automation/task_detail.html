@@ -234,11 +234,13 @@
                 <i class="fas fa-sync"></i> Translate
             </a>
             {% elif task.translation_status == 'PENDING_TRANSLATION' %}
-            <a class="btn btn-outline-primary start-translating-btn" href="#" data-task-id="{{ task.id }}">
-                <i class="fas fa-sync danger"></i> Translate
+            <a class="btn btn-outline-warning start-translating-btn disabled" href="#" data-task-id="{{ task.id }}">
+                <i class="fas fa-spinner fa-spin"></i> Translating...
             </a>
             {% elif task.translation_status == 'TRANSLATED' %}
-            <span class="badge badge-secondary badge-category mt-11">This project has been TRANSLATED!</span>
+            <a class="btn btn-outline-success start-translating-btn" href="#" data-task-id="{{ task.id }}">
+                <i class="fas fa-sync"></i> Re-translate
+            </a>
             {% endif %} 
         </div>
         
@@ -1314,18 +1316,20 @@ $(document).ready(function() {
     }
 </script>
 
-                // Show a generic message to the user
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Translation Running',
-                    text: 'Translation is still running in the background. Please check back later for updates.'
-                });
+<script>
+    // Additional translation helper functions
+    function showTranslationRunningMessage(button, originalText) {
+        // Show a generic message to the user
+        Swal.fire({
+            icon: 'info',
+            title: 'Translation Running',
+            text: 'Translation is still running in the background. Please check back later for updates.'
+        });
 
-                resetButton(button, originalText);
-            }
-        }
+        resetButton(button, originalText);
+    }
 
-        function handleTranslationResponse(response) {
+    function handleTranslationResponse(response) {
         const data = response.details || {};
         
         let message = `
@@ -1366,7 +1370,7 @@ $(document).ready(function() {
         });
     }
         
-        function handleSuccess(data, button) {
+    function handleSuccess(data, button) {
         button.innerHTML = '<i class="fas fa-check"></i> Translation Complete';
         
         const taskId = button.getAttribute('data-task-id');
@@ -1518,18 +1522,15 @@ $(document).ready(function() {
     function reportIssue(errorData) {
             console.log('Reporting issue:', errorData);
             // Implement your issue reporting logic here
-            Swal.fire({
-                icon: 'info',
-                title: 'Issue Reported',
-                text: 'The issue has been logged for investigation.',
-                confirmButtonText: 'OK'
-            });
-        }
-    });
+        Swal.fire({
+            icon: 'info',
+            title: 'Issue Reported',
+            text: 'The issue has been logged for investigation.',
+            confirmButtonText: 'OK'
+        });
+    }
 </script>
-<!--Translate Tasks-->
- 
-<!-- Based description task-->
+<!--Translate Tasks--><!-- Based description task-->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Enhanced UI State Management
