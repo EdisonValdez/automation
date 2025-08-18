@@ -1097,9 +1097,21 @@ def validate_business_content(business):
         logger.error(f"Business {business.id} missing title")
         return False
     
+    # Check for types (Google types/tags) - use category as fallback
     if not business.types:
-        logger.error(f"Business {business.id} missing tags or google types")
-        return False
+        # If no types, use main_category as fallback
+        if business.main_category:
+            logger.info(f"Business {business.id} missing types, using main_category '{business.main_category}' as fallback")
+            business.types = business.main_category
+            business.save(update_fields=['types'])
+        elif business.tailored_category:
+            logger.info(f"Business {business.id} missing types, using tailored_category '{business.tailored_category}' as fallback")
+            business.types = business.tailored_category
+            business.save(update_fields=['types'])
+        else:
+            logger.warning(f"Business {business.id} missing types and categories - using default 'business' type")
+            business.types = "business"
+            business.save(update_fields=['types'])
     
     if not business.description and not business.description_eng and not business.description_esp and not business.description_fr:
         logger.error(f"Business {business.id} missing all descriptions")
@@ -1569,73 +1581,83 @@ class TranslationMetrics(models.Model):
         ]
 
 #####################DESCRIPTION TRANSLATE##################################
- 
+
 def get_postal_code_pattern(country: str) -> Optional[str]:
     patterns = {
+        # European Union
         'spain': r'\b\d{5}\b',
         'portugal': r'\b\d{4}(?:-\d{3})?\b',
         'france': r'\b\d{5}\b',
         'germany': r'\b\d{5}\b',
         'italy': r'\b\d{5}\b',
-        'uk': r'\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b', 
-        'united kingdom': r'\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b', 
+        'uk': r'\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b',
+        'united kingdom': r'\b[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}\b',
         'ireland': r'\b[A-Z]\d{2} ?[A-Z\d]{4}\b',
+        'greece': r'\b\d{5}\b',  # Covers Athens (10431-11523) and other cities
+        'romania': r'\b\d{6}\b',  # Covers Bucharest (010011-060042)
+        'hungary': r'\b\d{4}\b',  # Covers Budapest (1011-1239)
+        'malta': r'\b[A-Z]{3} ?\d{4}\b',  # Covers Malta format (VLT 1111)
+        'czech republic': r'\b\d{5}\b',  # Covers Prague (10000-19900)
+        'poland': r'\b\d{2}-\d{3}\b',  # Covers Warsaw (00-001-04-999)
+        'austria': r'\b\d{4}\b',  # Covers Vienna (1010-1230)
+        'belgium': r'\b\d{4}\b',
+        'netherlands': r'\b\d{4} ?[A-Z]{2}\b',
+        'denmark': r'\b\d{4}\b',
+        'sweden': r'\b\d{3} ?\d{2}\b',
+        'norway': r'\b\d{4}\b',
+        'finland': r'\b\d{5}\b',
+        'bulgaria': r'\b\d{4}\b',  # Covers Sofia (1000-1429)
 
+        # North America
         'usa': r'\b\d{5}(?:-\d{4})?\b',
         'united states of america': r'\b\d{5}(?:-\d{4})?\b',
         'us': r'\b\d{5}(?:-\d{4})?\b',
-        'canada': r'\b[A-Z]\d[A-Z] ?\d[A-Z]\d\b', 
+        'canada': r'\b[A-Z]\d[A-Z] ?\d[A-Z]\d\b',
+        'mexico': r'\b\d{5}\b',
 
-        'australia': r'\b\d{4}\b',
-        'new zealand': r'\b\d{4}\b',
+        # South America
+        'argentina': r'\b[R]?\d{4}[A-Z]{3}\b',
+        'san carlos de bariloche': r'\b[R]?8[4-5][0-9][0-9][A-Z]{3}\b',
+        'brazil': r'\b\d{5}-?\d{3}\b',
+        'chile': r'\b\d{7}\b',  # Covers Santiago (8320000-8329999)
+        'colombia': r'\b\d{6}\b',  # Covers Barranquilla, Bogotá, Cartagena
+        'costa rica': r'\b\d{5}\b',  # Covers Puerto Limón (70101-70111)
+        'panama': r'\b\d{4}\b',  # Covers Panama City (0801-0819)
+        'uruguay': r'\b\d{5}\b',  # Covers Punta del Este (20100-20200)
+        'dominican republic': r'\b\d{5}\b',  # Covers Santo Domingo (10101-10212)
+
+        # Asia
         'japan': r'\b\d{3}-?\d{4}\b',
         'china': r'\b\d{6}\b',
         'india': r'\b\d{6}\b',
         'singapore': r'\b\d{6}\b',
-        'belgium': r'\b\d{4}\b',
-        
-        
-        'morocco': r'\b\d{5}\b',  
-        'south africa': r'\b\d{4}\b',   
-        'brazil': r'\b\d{5}-?\d{3}\b',  
-        'argentina': r'\b[ABCEGHJLNPQRSTVWXY]\d{4}[A-Z]{3}\b',   
-        'mexico': r'\b\d{5}\b',  
-        'russia': r'\b\d{6}\b',   
-        'switzerland': r'\b\d{4}\b',  
-        'netherlands': r'\b\d{4} ?[A-Z]{2}\b',  
-        'denmark': r'\b\d{4}\b',  
-        'sweden': r'\b\d{3} ?\d{2}\b',  
-        'norway': r'\b\d{4}\b',  
-        'finland': r'\b\d{5}\b', 
-
-        'greece': r'\b\d{5}\b',  # Covers Athens (10431-11523) and other cities
-        'colombia': r'\b\d{6}\b',  # Covers Barranquilla, Bogotá, Cartagena
-        'romania': r'\b\d{6}\b',  # Covers Bucharest (010011-060042)
-        'hungary': r'\b\d{4}\b',  # Covers Budapest (1011-1239)
-        'panama': r'\b\d{4}\b',  # Covers Panama City (0801-0819)
-        'egypt': r'\b\d{5}\b',  # Covers Cairo (11311-11938)
-        'turkey': r'\b\d{5}\b',  # Covers Istanbul (34000-34990)
-        'malta': r'\b[A-Z]{3} ?\d{4}\b',  # Covers Malta format (VLT 1111)
-        'czech republic': r'\b\d{5}\b',  # Covers Prague (10000-19900)
-        'costa rica': r'\b\d{5}\b',  # Covers Puerto Limón (70101-70111)
-        'uruguay': r'\b\d{5}\b',  # Covers Punta del Este (20100-20200)
-        'iceland': r'\b\d{3}\b',  # Covers Reykjavík (101-155)
-        'chile': r'\b\d{7}\b',  # Covers Santiago (8320000-8329999)
-        'dominican republic': r'\b\d{5}\b',  # Covers Santo Domingo (10101-10212)
+        'russia': r'\b\d{6}\b',
         'south korea': r'\b\d{5}\b',  # Covers Seoul (04500-08800)
-        'bulgaria': r'\b\d{4}\b',  # Covers Sofia (1000-1429)
         'israel': r'\b\d{5}\b',  # Covers Tel Aviv (61000-69999)
+        'turkey': r'\b\d{5}\b',  # Covers Istanbul (34000-34990)
+
+        # Oceania
+        'australia': r'\b\d{4}\b',
+        'new zealand': r'\b\d{4}\b',
+
+        # Africa
+        'morocco': r'\b\d{5}\b',
+        'south africa': r'\b\d{4}\b',
+        'egypt': r'\b\d{5}\b',  # Covers Cairo (11311-11938)
         'tunisia': r'\b\d{4}\b',  # Covers Tunis (1000-2099)
-        'poland': r'\b\d{2}-\d{3}\b',  # Covers Warsaw (00-001-04-999)
-        'austria': r'\b\d{4}\b',  # Covers Vienna (1010-1230)
+
+        # Special Regions and Territories
         'united arab emirates': None,  # Dubai uses P.O. Boxes, no standard format
         'saint maarten': r'\b\d{5}\b',  # Covers Saint Maarten (97750)
         'sardinia': r'\b0[7-9]\d{3}\b',  # Specific pattern for Sardinia (07000-09170)
         'sardegna': r'\b0[7-9]\d{3}\b',  # Alternative name for Sardinia
+        'iceland': r'\b\d{3}\b',  # Covers Reykjavík (101-155)
 
+        # Default pattern
         'default': r'\b\d{5}\b'
     }
-    
+
+    # Country aliases for alternative names
     country_aliases = {
         'czechia': 'czech republic',
         'uae': 'united arab emirates',
@@ -1644,12 +1666,14 @@ def get_postal_code_pattern(country: str) -> Optional[str]:
         'korea south': 'south korea',
         'isola di sardegna': 'sardinia',
         'isle of sardinia': 'sardinia',
+        'bariloche': 'san carlos de bariloche',
+        'scb': 'san carlos de bariloche'
     }
-    
+
     # First check if there's an alias, then get the pattern
     country_key = country_aliases.get(country.lower(), country.lower())
     return patterns.get(country_key, patterns['default'])
- 
+
 def extract_address_components(address_string: string, country: str = None):
     """
     Extract address components from a full address string with country-specific postal code formats.

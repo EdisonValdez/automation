@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
-from automation.api.views import DestinationListAPI, TaskFilterOptionsView, TaskFilterView, TaskListAPI, TaskTimelineView
+from automation.api.views import DestinationListAPI, TaskFilterOptionsView, TaskFilterView, TaskListAPI
  
 from . import views
 
@@ -114,8 +114,7 @@ urlpatterns = [
     path('api/destination-categories/', views.DestinationCategoriesView.as_view(), name='destination_categories'),
  
     path('api/dashboard/business-stats/',  views.get_business_stats, name='business_stats'),
-    path('api/dashboard/tasks-timeline/',  views.get_tasks_timeline, name='tasks_timeline'),   
-    path('api/dashboard/task-timeline/', TaskTimelineView.as_view(), name='task-timeline'),
+    path('api/dashboard/tasks-timeline/',  views.get_tasks_timeline, name='tasks_timeline'),
 
     path('api/tasks/filters/',  TaskFilterOptionsView.as_view(), name='task-filter-options'),
     path('api/tasks/filter/',  TaskFilterView.as_view(), name='task-filter'),
@@ -126,6 +125,7 @@ urlpatterns = [
     path('search-destinations/', views.search_destinations, name='search_destinations'),
 
     path('health/', views.health_check, name='health_check'),
+    path('tasks/heartbeat/', views.heartbeat, name='heartbeat'),
     path('', views.welcome_view, name='welcome'),
 
  

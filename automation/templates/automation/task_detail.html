@@ -3,6 +3,27 @@
 {% load static %}
 {% block title %}{{ task.project_title }}{% endblock %}
 {% block content %}
+
+<!-- Critical Process Status Bar -->
+<div id="processStatusBar" class="position-fixed w-100 d-none" style="top: 0; left: 0; z-index: 9999; background: linear-gradient(45deg, #dc3545, #ffc107); border-bottom: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+    <div class="container-fluid py-2">
+        <div class="row align-items-center text-white">
+            <div class="col-auto">
+                <div class="spinner-border spinner-border-sm text-light" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="col">
+                <strong id="processStatusText">Process in Progress</strong>
+                <small class="d-block" id="processStatusDetails">Do not leave this page</small>
+            </div>
+            <div class="col-auto">
+                <small id="processStatusTimer" class="text-light">00:00</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .alert-info {
     background-color: #f8f9fa;
@@ -93,7 +114,54 @@
         }
     }
     
-.status-legend{background:#fff;border:1px solid #e9ecef;border-radius:6px;padding:.75rem;margin-bottom:1.5rem}.legend-container{display:flex;align-items:center;flex-wrap:wrap;gap:1.5rem}.legend-section{display:flex;align-items:center;gap:1rem}.legend-title{font-weight:600;color:#495057;font-size:.9rem}.legend-item{display:flex;align-items:center;gap:.5rem;padding:.25rem .75rem;background:#f8f9fa;border-radius:4px}.legend-item i{font-size:1rem}.legend-item span{font-size:.875rem;color:#6c757d}.legend-divider{width:1px;height:24px;background:#dee2e6}@media (max-width:768px){.legend-container{flex-direction:column;align-items:flex-start;gap:1rem}.legend-divider{width:100%;height:1px}.legend-section{flex-wrap:wrap}}.business-title .bx{font-size:16px}.business-title{gap:4px}.task-navigation{background-color:#f8f9fa;padding:20px 0;border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;bottom:0;left:0;right:0;z-index:1000}.task-nav-btn{min-width:150px;text-align:center;position:relative;padding:10px 15px}.task-nav-btn small{font-size:.75rem;opacity:.8}.task-navigation-info{padding:0 20px}.current-task-label{font-size:.8rem;text-transform:uppercase;color:#6c757d;display:block;margin-bottom:5px}main{margin-bottom:100px}@media (max-width:768px){.task-nav-btn small{display:none!important}.task-navigation-info h5{font-size:1rem}.task-navigation-info small{font-size:.7rem}}.btn.disabled{opacity:.65;cursor:not-allowed;pointer-events:none}.business-title{font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}.business-link{display:block;color:inherit;text-decoration:none;padding:5px 0;width:100%}.business-link:hover{color:#F4C031;text-decoration:underline}small{font-size:10px}#taskDetailsContainer{transition:all 0.3s ease-in-out}.kanban-cont{display:flex;overflow-x:auto;padding-bottom:10px;gap:10px}.kanban-list{flex:1 1 30%;min-width:250px;max-width:100%;background-color:#f4f5f7;border-radius:5px;margin:5px}.kanban-box{border-radius:5px;padding:10px;box-shadow:0 1px 3px rgb(0 0 0 / .12),0 1px 2px rgb(0 0 0 / .24);display:flex;flex-direction:column;cursor:move}.image-container{position:relative;overflow:hidden;width:100%;height:auto}.thumbnail-image{width:100%;height:auto;max-height:200px;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:0.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:16px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%}.business-stats{display:flex;justify-content:space-between;margin-top:10px;font-size:10px;background-color:#f4c031}.kanban-header{background-color:#e4e6e9;border-bottom:2px solid #ccc;padding:10px;display:flex;justify-content:space-between;align-items:center}.kanban-wrap{max-height:800px;overflow-y:auto}.load-more{width:100%;margin-top:10px}@media (max-width:768px){.kanban-list{flex-basis:100%;min-width:100%;margin-right:0}.kanban-header,.kanban-box{padding:8px}.overlay-title{font-size:14px}}@media (max-width:576px){.kanban-cont{padding:0;gap:5px}.kanban-box{padding:5px}.thumbnail-image{max-height:150px}.business-stats{font-size:8px}.overlay-title{font-size:12px}}.card-title{font-weight:700;font-size:1.2rem}.bulk-move-dropdown{margin-left:10px;padding:5px 10px;width:50%;border-radius:4px;border:1px solid #212d94;background-color:#fff;cursor:pointer}.bulk-move-dropdown:hover{border-color:#0056b3}.bulk-move-dropdown:focus{outline:none;border-color:#0056b3}</style>
+.status-legend{background:#fff;border:1px solid #e9ecef;border-radius:6px;padding:.75rem;margin-bottom:1.5rem}.legend-container{display:flex;align-items:center;flex-wrap:wrap;gap:1.5rem}.legend-section{display:flex;align-items:center;gap:1rem}.legend-title{font-weight:600;color:#495057;font-size:.9rem}.legend-item{display:flex;align-items:center;gap:.5rem;padding:.25rem .75rem;background:#f8f9fa;border-radius:4px}.legend-item i{font-size:1rem}.legend-item span{font-size:.875rem;color:#6c757d}.legend-divider{width:1px;height:24px;background:#dee2e6}@media (max-width:768px){.legend-container{flex-direction:column;align-items:flex-start;gap:1rem}.legend-divider{width:100%;height:1px}.legend-section{flex-wrap:wrap}}.business-title .bx{font-size:16px}.business-title{gap:4px}.task-navigation{background-color:#f8f9fa;padding:20px 0;border-top:1px solid #dee2e6;border-bottom:1px solid #dee2e6;bottom:0;left:0;right:0;z-index:1000}.task-nav-btn{min-width:150px;text-align:center;position:relative;padding:10px 15px}.task-nav-btn small{font-size:.75rem;opacity:.8}.task-navigation-info{padding:0 20px}.current-task-label{font-size:.8rem;text-transform:uppercase;color:#6c757d;display:block;margin-bottom:5px}main{margin-bottom:100px}@media (max-width:768px){.task-nav-btn small{display:none!important}.task-navigation-info h5{font-size:1rem}.task-navigation-info small{font-size:.7rem}}.btn.disabled{opacity:.65;cursor:not-allowed;pointer-events:none}.business-title{font-size:1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0}.business-link{display:block;color:inherit;text-decoration:none;padding:5px 0;width:100%}.business-link:hover{color:#F4C031;text-decoration:underline}small{font-size:10px}#taskDetailsContainer{transition:all 0.3s ease-in-out}.kanban-cont{display:flex;overflow-x:auto;padding-bottom:10px;gap:10px}.kanban-list{flex:1 1 30%;min-width:250px;max-width:100%;background-color:#f4f5f7;border-radius:5px;margin:5px}.kanban-box{border-radius:5px;padding:10px;box-shadow:0 1px 3px rgb(0 0 0 / .12),0 1px 2px rgb(0 0 0 / .24);display:flex;flex-direction:column;cursor:move}.image-container{position:relative;overflow:hidden;width:100%;height:auto}.thumbnail-image{width:100%;height:auto;max-height:200px;object-fit:cover}.image-overlay{position:absolute;bottom:0;left:0;right:0;background-color:rgb(0 0 0 / .7);overflow:hidden;width:100%;height:0;transition:0.5s ease}.image-container:hover .image-overlay{height:100%}.overlay-title{color:#fff;font-size:16px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%}.business-stats{display:flex;justify-content:space-between;margin-top:10px;font-size:10px;background-color:#f4c031}.kanban-header{background-color:#e4e6e9;border-bottom:2px solid #ccc;padding:10px;display:flex;justify-content:space-between;align-items:center}.kanban-wrap{max-height:800px;overflow-y:auto}.load-more{width:100%;margin-top:10px}@media (max-width:768px){.kanban-list{flex-basis:100%;min-width:100%;margin-right:0}.kanban-header,.kanban-box{padding:8px}.overlay-title{font-size:14px}}@media (max-width:576px){.kanban-cont{padding:0;gap:5px}.kanban-box{padding:5px}.thumbnail-image{max-height:150px}.business-stats{font-size:8px}.overlay-title{font-size:12px}}.card-title{font-weight:700;font-size:1.2rem}.bulk-move-dropdown{margin-left:10px;padding:5px 10px;width:50%;border-radius:4px;border:1px solid #212d94;background-color:#fff;cursor:pointer}.bulk-move-dropdown:hover{border-color:#0056b3}.bulk-move-dropdown:focus{outline:none;border-color:#0056b3}
+
+/* Custom SweetAlert styles for better error display */
+.swal-wide {
+    width: 600px !important;
+}
+
+.swal2-popup.swal-wide .swal2-html-container {
+    max-height: 400px;
+    overflow-y: auto;
+    text-align: left;
+    white-space: pre-line;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.bulk-move-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.status-update-progress {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10000;
+    min-width: 250px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #28a745;
+    transition: width 0.3s ease;
+}</style>
 <div id="loading-spinner" style="display: none;">
     <div class="spinner-border text-primary" role="status">
         <span class="sr-only">Loading...</span>
@@ -504,70 +572,224 @@ function moveBulkBusinesses(selectElement, currentStatus) {
         const businessElements = document.querySelectorAll(`#kanban-wrap-${currentStatus} .panel`);
         const businessIds = Array.from(businessElements).map(el => el.getAttribute('data-id'));
 
-        // Create a fetch request for each business to update their status
-        const updateRequests = businessIds.map(businessId =>
-            fetch(`/update-business-status/${businessId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({
-                    status: newStatus,
-                    userId: userId  // Assuming userId is defined in your context
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Successfully updated, update the UI
-                    updateStatusCount(currentStatus, -1); // Decrease old status count
-                    updateStatusCount(newStatus, 1);      // Increase new status count
-                    document.querySelector(`.panel[data-id="${businessId}"]`).dataset.status = newStatus; 
-                    location.reload(); 
-                } else {
-                    // Handle errors
-                    if (data.status === 'move-to-app-error') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: data.message,
-                            confirmButtonText: 'OK'
-                        });
-                        revertToOldColumn(businessId, currentStatus);
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Cannot move to the next column. Business description is missing.',
-                            confirmButtonText: 'OK'
-                        });
-                        revertToOldColumn(businessId, currentStatus);
-                    }
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Unable to validate business details. Please try again.',
-                    confirmButtonText: 'OK'
-                });
-                revertToOldColumn(businessId, currentStatus);
-            })
-        );
-
-        // Wait for all requests to complete
-        Promise.all(updateRequests)
-            .then(() => {
-                // After all requests, refresh the page or provide additional UI feedback
-                selectElement.value = "";  // Reset the dropdown
-                location.reload(); // Optional: refresh to show updates
-            })
-            .catch(err => {
-                console.error('Error with bulk update:', err);
+        if (businessIds.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Businesses',
+                text: 'No businesses found in this column to move.',
+                confirmButtonText: 'OK'
             });
+            selectElement.value = "";
+            return;
+        }
+
+        // Show confirmation dialog
+        const statusName = selectElement.options[selectElement.selectedIndex].text;
+        Swal.fire({
+            title: 'Confirm Bulk Move',
+            text: `Are you sure you want to move ${businessIds.length} business${businessIds.length > 1 ? 'es' : ''} to ${statusName}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Move All',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading state
+                Swal.fire({
+                    title: 'Processing...',
+                    text: `Moving ${businessIds.length} business${businessIds.length > 1 ? 'es' : ''} to ${statusName}`,
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Use the bulk endpoint
+                fetch('/update_business_statuses/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        business_ids: businessIds,
+                        new_status: newStatus,
+                        userId: userId
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    selectElement.value = ""; // Reset dropdown
+                    
+                    if (data.success) {
+                        // Handle successful bulk update
+                        if (data.partial_success) {
+                            // Partial success - some succeeded, some failed
+                            showPartialSuccessMessage(data, statusName);
+                        } else {
+                            // Complete success
+                            showCompleteSuccessMessage(data, statusName);
+                        }
+                        
+                        // Reload page to reflect changes
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                        
+                    } else {
+                        // Handle validation errors or complete failure
+                        if (data.validation_errors) {
+                            showValidationErrors(data);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Bulk Move Failed',
+                                text: data.error || 'An unexpected error occurred during bulk move.',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Bulk move error:', error);
+                    selectElement.value = "";
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error',
+                        text: 'Unable to communicate with the server. Please check your connection and try again.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            } else {
+                // User cancelled
+                selectElement.value = "";
+            }
+        });
     }
+}
+
+function showCompleteSuccessMessage(data, statusName) {
+    let message = `Successfully moved ${data.updated_count} business${data.updated_count > 1 ? 'es' : ''} to ${statusName}.`;
+    
+    // Add move to app specific information
+    if (data.moved_to_app_count !== undefined) {
+        message += `\n\n${data.moved_to_app_count} business${data.moved_to_app_count > 1 ? 'es' : ''} successfully transferred to Local Secrets.`;
+        
+        // Show warnings for businesses moved without types
+        const businessesWithWarnings = data.moved_to_app_businesses?.filter(b => b.warning) || [];
+        if (businessesWithWarnings.length > 0) {
+            message += `\n\nNote: ${businessesWithWarnings.length} business${businessesWithWarnings.length > 1 ? 'es' : ''} moved without types data.`;
+        }
+    }
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Bulk Move Completed',
+        text: message,
+        confirmButtonText: 'OK'
+    });
+}
+
+function showPartialSuccessMessage(data, statusName) {
+    const successCount = data.updated_count || 0;
+    const totalRequested = data.total_requested || 0;
+    const failureCount = totalRequested - successCount;
+    
+    let message = `Bulk move partially completed:\n\n`;
+    message += `✅ ${successCount} business${successCount > 1 ? 'es' : ''} successfully moved to ${statusName}\n`;
+    message += `❌ ${failureCount} business${failureCount > 1 ? 'es' : ''} failed to move\n\n`;
+    
+    // Add move to app specific information
+    if (data.moved_to_app_count !== undefined) {
+        message += `📤 ${data.moved_to_app_count} transferred to Local Secrets\n`;
+        if (data.move_to_app_failed_count > 0) {
+            message += `⚠️ ${data.move_to_app_failed_count} failed to transfer to Local Secrets\n`;
+        }
+    }
+    
+    message += `\nClick "View Details" to see specific error information.`;
+
+    Swal.fire({
+        icon: 'warning',
+        title: 'Partial Success',
+        text: message,
+        showCancelButton: true,
+        confirmButtonText: 'View Details',
+        cancelButtonText: 'OK'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            showDetailedErrorReport(data);
+        }
+    });
+}
+
+function showValidationErrors(data) {
+    let errorMessage = `Cannot move ${data.failed_validations} business${data.failed_validations > 1 ? 'es' : ''} to production due to missing required information:\n\n`;
+    
+    data.validation_errors.forEach(error => {
+        errorMessage += `• ${error.business_title || 'Business ' + error.business_id}:\n`;
+        if (error.missing_fields) {
+            errorMessage += `  Missing: ${error.missing_fields.join(', ')}\n`;
+        } else if (error.error) {
+            errorMessage += `  Error: ${error.error}\n`;
+        }
+        errorMessage += '\n';
+    });
+    
+    errorMessage += 'Please complete the missing information before moving to production.';
+
+    Swal.fire({
+        icon: 'error',
+        title: 'Validation Failed',
+        text: errorMessage,
+        confirmButtonText: 'OK',
+        customClass: {
+            popup: 'swal-wide'
+        }
+    });
+}
+
+function showDetailedErrorReport(data) {
+    let errorDetails = '';
+    
+    // Show general errors
+    if (data.errors && data.errors.length > 0) {
+        errorDetails += 'General Errors:\n';
+        data.errors.forEach(error => {
+            errorDetails += `• Business ${error.business_id}: ${error.error}\n`;
+        });
+        errorDetails += '\n';
+    }
+    
+    // Show move to app specific errors
+    if (data.move_to_app_errors && data.move_to_app_errors.length > 0) {
+        errorDetails += 'Move to App Errors:\n';
+        data.move_to_app_errors.forEach(error => {
+            errorDetails += `• ${error.business_title}: ${error.error}\n`;
+        });
+        errorDetails += '\n';
+    }
+    
+    // Show warnings
+    const businessesWithWarnings = data.moved_to_app_businesses?.filter(b => b.warning) || [];
+    if (businessesWithWarnings.length > 0) {
+        errorDetails += 'Warnings:\n';
+        businessesWithWarnings.forEach(business => {
+            errorDetails += `• ${business.business_title}: ${business.warning}\n`;
+        });
+    }
+
+    Swal.fire({
+        icon: 'info',
+        title: 'Detailed Error Report',
+        text: errorDetails || 'No specific error details available.',
+        confirmButtonText: 'OK',
+        customClass: {
+            popup: 'swal-wide'
+        }
+    });
 }
 
 function revertToOldColumn(businessId, oldStatus) {
@@ -929,74 +1151,168 @@ $(document).ready(function() {
  
 <!--Translate Tasks-->
 <script>
+    // Note: Translation functionality is now integrated into TaskWorkflowManager above
+    // This section is kept for compatibility and fallback scenarios
+    
     document.addEventListener('DOMContentLoaded', function() {
-        const translatingButtons = document.querySelectorAll('.start-translating-btn');
-    
-        translatingButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-    
-            if (this.classList.contains('disabled')) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Process in Progress',
-                    text: 'Please wait for the current operation to complete.'
+        // Check if TaskWorkflowManager is available
+        if (typeof TaskWorkflowManager === 'undefined') {
+            console.warn('TaskWorkflowManager not found, using fallback translation handling');
+            
+            // Fallback translation handling
+            const translatingButtons = document.querySelectorAll('.start-translating-btn');
+        
+            translatingButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+            
+                    if (this.classList.contains('disabled')) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Process in Progress',
+                            text: 'Please wait for the current operation to complete.'
+                        });
+                        return;
+                    }
+            
+                    const taskId = this.getAttribute('data-task-id');
+                    const originalText = this.innerHTML;
+                    handleFallbackTranslation(this, taskId, originalText);
                 });
-                return;
-            }
-    
-            const taskId = this.getAttribute('data-task-id');
-            const originalText = this.innerHTML;
-            handleTranslation(this, taskId, originalText);
-        });
+            });
+        }
     });
-    
 
-        async function handleTranslation(button, taskId, originalText) {
-            try {
-                Swal.fire({
-                    title: 'Translation in Progress',
-                    html: 'Please wait while we process your request...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+    async function handleFallbackTranslation(button, taskId, originalText) {
+        try {
+            Swal.fire({
+                title: 'Translation in Progress',
+                html: 'Please wait while we process your request...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
 
-                button.classList.add('disabled');
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+            button.classList.add('disabled');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
 
-                const response = await fetch(`/tasks/${taskId}/translate/`, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json'
-                    }
-                });
+            const response = await fetch(`/tasks/${taskId}/translate/`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            });
 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    console.warn('Unexpected response received. Translation is continuing in the background.');
+            const data = await response.json();
+            Swal.close();
+
+            if (!response.ok) {
+                // Enhanced error handling for specific error codes
+                if (data.error_code === 'DESCRIPTIONS_NOT_READY') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Descriptions Not Ready',
+                        html: `
+                            <div class="alert alert-warning">
+                                <strong>${data.message}</strong><br><br>
+                                <small>Please generate descriptions first and wait a moment before attempting translation.</small>
+                            </div>
+                        `,
+                        confirmButtonText: 'Understood'
+                    });
+                } else if (data.error_code === 'DESCRIPTIONS_STILL_PROCESSING') {
                     Swal.fire({
                         icon: 'info',
-                        title: 'Translation in Progress',
-                        text: 'The process is running in the background. You will be notified once completed.',
-                        timer: 5000
+                        title: 'Please Wait',
+                        html: `
+                            <div class="alert alert-info">
+                                <strong>${data.message}</strong><br><br>
+                                <small>Please wait a few more seconds and try again.</small>
+                            </div>
+                        `,
+                        timer: 5000,
+                        showConfirmButton: true,
+                        confirmButtonText: 'Try Again'
                     });
-                    return;
-                }
-
-                const data = await response.json();
-
-                if (!response.ok) {
+                } else {
                     throw new Error(data.message || 'Translation process failed');
                 }
+                return;
+            }
 
-                handleTranslationResponse(data, button, originalText);
+            handleTranslationResponse(data);
 
-            } catch (error) {
-                console.error('Translation error:', error);
+        } catch (error) {
+            console.error('Translation error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Translation Failed',
+                html: `
+                    <div class="alert alert-danger">
+                        ${error.message || 'An unexpected error occurred'}
+                        <br><br>
+                        <small class="text-muted">
+                            If this problem persists, please ensure descriptions are generated first 
+                            and wait a few seconds before attempting translation.
+                        </small>
+                    </div>
+                `,
+                confirmButtonText: 'Close'
+            });
+        } finally {
+            resetButton(button, originalText);
+        }
+    }
+    
+    function handleTranslationResponse(response) {
+        if (response.status === 'success') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Translation Successful',
+                html: `
+                    <div class="translation-summary">
+                        <p>${response.message}</p>
+                        <div class="mt-3">
+                            <small class="text-muted">Translation process completed successfully</small>
+                        </div>
+                    </div>
+                `,
+                confirmButtonText: 'Refresh Page'
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Translation Failed',
+                text: response.message || 'Translation failed'
+            });
+        }
+    }
+    
+    function resetButton(button, originalText) {
+        button.classList.remove('disabled');
+        button.innerHTML = originalText;
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 
                 // Show a generic message to the user
                 Swal.fire({
@@ -1216,141 +1532,696 @@ $(document).ready(function() {
 <!-- Based description task-->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Constants and Elements
-    const generateBtn = document.getElementById('generateDescriptionsBtn');
-    if (!generateBtn) return; // Exit if button not found
-    
-    // Event Listeners
-    generateBtn.addEventListener('click', handleGenerateDescriptions);
-    
-    // Main handler function
-    async function handleGenerateDescriptions(e) {
-        e.preventDefault();
+    // Enhanced UI State Management
+    const TaskWorkflowManager = {
+        // State tracking
+        isGeneratingDescriptions: false,
+        isTranslating: false,
         
-        // Check if button is disabled
-        if (this.classList.contains('disabled')) {
-            return;
-        }
+        // Elements
+        generateBtn: document.getElementById('generateDescriptionsBtn'),
+        translateBtn: document.querySelector('.start-translating-btn'),
         
-        const taskId = this.getAttribute('data-task-id');
-        if (!taskId) {
-            showError('Task ID not found');
-            return;
-        }
-        
-        try {
-            // Show loading state
-            showLoadingState();
+        init() {
+            if (!this.generateBtn) return;
             
-            // Make API call
-            const response = await makeApiCall(taskId);
-            
-            // Handle response
-            handleApiResponse(response, this);
-            
-        } catch (error) {
-            console.error('Error in description generation:', error);
-            showError('An error occurred while generating descriptions');
-        }
-    }
-    
-    // Helper Functions
-    function showLoadingState() {
-        Swal.fire({
-            title: 'Generating Descriptions',
-            html: `
-                <div class="d-flex flex-column align-items-center">
-                    <p>Please wait while we generate descriptions...</p>
-                    <p class="text-muted small">This may take a few minutes</p>
-                </div>
-            `,
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-    }
-    
-    async function makeApiCall(taskId) {
-        const response = await fetch(`/tasks/${taskId}/generate-descriptions/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        return await response.json();
-    }
-    
-    function handleApiResponse(data, button) {
-        Swal.close();
-        
-        if (data.success) {
-            // Prepare success message
-            let message = data.message;
-            if (data.warnings?.length > 0) {
-                message += '<br><br><strong>Warnings:</strong><br>' + 
-                          data.warnings.join('<br>');
+            // Bind events
+            this.generateBtn.addEventListener('click', this.handleGenerateDescriptions.bind(this));
+            if (this.translateBtn) {
+                this.translateBtn.addEventListener('click', this.handleTranslateClick.bind(this));
             }
             
-            // Show success message
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                html: message,
-                confirmButtonText: 'OK'
-            }).then(() => {
-                window.location.reload();
+            // Set up page leave protection
+            this.setupPageLeaveProtection();
+            
+            // Initialize status bar elements
+            this.statusBar = document.getElementById('processStatusBar');
+            this.statusText = document.getElementById('processStatusText');
+            this.statusDetails = document.getElementById('processStatusDetails');
+            this.statusTimer = document.getElementById('processStatusTimer');
+            this.processStartTime = null;
+        },
+        
+        setupPageLeaveProtection() {
+            // Warn users before leaving during critical operations
+            window.addEventListener('beforeunload', (e) => {
+                if (this.isGeneratingDescriptions || this.isTranslating) {
+                    const message = this.isTranslating 
+                        ? 'Translation is in progress. Leaving now will cancel the process and you\'ll need to start over.'
+                        : 'Description generation is in progress. Leaving now will cancel the process.';
+                    
+                    e.preventDefault();
+                    e.returnValue = message;
+                    return message;
+                }
             });
             
-            // Update button state
-            updateButtonState(button, data.has_empty_descriptions);
+            // Handle navigation away from page
+            window.addEventListener('pagehide', () => {
+                if (this.isGeneratingDescriptions || this.isTranslating) {
+                    console.log('User left page during operation - process may be interrupted');
+                }
+            });
+        },
+        
+        showProcessStatusBar(title, details) {
+            if (!this.statusBar) return;
             
-        } else {
-            showError(data.error || 'An error occurred while generating descriptions');
-        }
-    }
-    
-    function updateButtonState(button, hasEmptyDescriptions) {
-        if (!hasEmptyDescriptions) {
-            button.classList.add('disabled');
-            button.disabled = true;
-            // Update badge if exists
-            const badge = button.querySelector('.badge');
-            if (badge) badge.remove();
-        }
-    }
-    
-    function showError(message) {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: message,
-            confirmButtonText: 'Close'
-        });
-    }
-    
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                cookie = cookie.trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+            this.statusText.textContent = title;
+            this.statusDetails.textContent = details;
+            this.statusBar.classList.remove('d-none');
+            this.processStartTime = Date.now();
+            
+            // Start timer
+            this.statusTimerInterval = setInterval(() => {
+                if (this.processStartTime) {
+                    const elapsed = Math.floor((Date.now() - this.processStartTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                    const seconds = (elapsed % 60).toString().padStart(2, '0');
+                    this.statusTimer.textContent = `${minutes}:${seconds}`;
+                }
+            }, 1000);
+            
+            // Ensure body has top padding to account for status bar
+            document.body.style.paddingTop = '60px';
+        },
+        
+        hideProcessStatusBar() {
+            if (!this.statusBar) return;
+            
+            this.statusBar.classList.add('d-none');
+            if (this.statusTimerInterval) {
+                clearInterval(this.statusTimerInterval);
+            }
+            this.processStartTime = null;
+            document.body.style.paddingTop = '0';
+        },
+        
+        async handleGenerateDescriptions(e) {
+            e.preventDefault();
+            
+            // Prevent concurrent operations
+            if (this.isGeneratingDescriptions || this.isTranslating) {
+                this.showOperationInProgress();
+                return;
+            }
+            
+            if (this.generateBtn.classList.contains('disabled')) {
+                return;
+            }
+            
+            const taskId = this.generateBtn.getAttribute('data-task-id');
+            if (!taskId) {
+                this.showError('Task ID not found');
+                return;
+            }
+            
+            try {
+                // Set state and UI
+                this.setGeneratingState(true);
+                
+                // Show both status bar and modal
+                this.showProcessStatusBar('Generating Descriptions', 'Please stay on this page during generation');
+                this.showDescriptionLoadingState();
+                
+                // Make API call
+                const response = await this.makeApiCall(taskId);
+                
+                // Handle response
+                this.handleApiResponse(response);
+                
+            } catch (error) {
+                console.error('Error in description generation:', error);
+                this.showError('An error occurred while generating descriptions');
+            } finally {
+                this.setGeneratingState(false);
+                this.hideProcessStatusBar();
+            }
+        },
+        
+        handleTranslateClick(e) {
+            e.preventDefault();
+            
+            // Check if descriptions are still being generated
+            if (this.isGeneratingDescriptions) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Wait for Description Generation',
+                    html: `
+                        <div class="alert alert-warning">
+                            <strong>Please wait!</strong><br>
+                            Descriptions are currently being generated.<br>
+                            The translate button will be enabled automatically once generation is complete.
+                        </div>
+                    `,
+                    confirmButtonText: 'Understood'
+                });
+                return;
+            }
+            
+            // Check if translate button should be disabled
+            if (this.translateBtn.classList.contains('disabled') || this.isTranslating) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Process in Progress',
+                    text: 'Please wait for the current operation to complete.'
+                });
+                return;
+            }
+            
+            // Show critical warning before starting translation
+            Swal.fire({
+                icon: 'warning',
+                title: 'Important: Stay on This Page',
+                html: `
+                    <div class="alert alert-danger mb-3">
+                        <strong><i class="fas fa-exclamation-triangle"></i> Critical Notice</strong><br>
+                        <strong>DO NOT leave this page</strong> during translation!
+                    </div>
+                    <div class="text-left">
+                        <strong>Why this matters:</strong><br>
+                        • Translation process requires continuous connection<br>
+                        • Leaving the page will cancel the entire process<br>
+                        • You'll lose progress and need to start over<br>
+                        • Process may take 5-10 minutes depending on business count
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <strong>Stay engaged:</strong> Progress updates will be shown to keep you informed
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'I Understand - Start Translation',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545',
+                width: '600px'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Proceed with translation
+                    const taskId = this.translateBtn.getAttribute('data-task-id');
+                    const originalText = this.translateBtn.innerHTML;
+                    this.handleTranslation(taskId, originalText);
+                }
+            });
+        },
+        
+        setGeneratingState(isGenerating) {
+            this.isGeneratingDescriptions = isGenerating;
+            
+            if (isGenerating) {
+                // Disable both buttons during generation
+                this.generateBtn.classList.add('disabled');
+                this.generateBtn.disabled = true;
+                this.generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                
+                if (this.translateBtn) {
+                    this.translateBtn.classList.add('disabled');
+                    this.translateBtn.style.pointerEvents = 'none';
+                    this.translateBtn.title = 'Please wait for description generation to complete';
+                }
+            } else {
+                // Re-enable generate button
+                this.generateBtn.classList.remove('disabled');
+                this.generateBtn.disabled = false;
+                this.generateBtn.innerHTML = '<i class="fas fa-language"></i> Descriptions';
+                
+                // Translate button state will be updated based on API response
+            }
+        },
+        
+        setTranslateState(isTranslating, enableTranslate = false) {
+            this.isTranslating = isTranslating;
+            
+            if (!this.translateBtn) return;
+            
+            if (isTranslating) {
+                this.translateBtn.classList.add('disabled');
+                this.translateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+                this.translateBtn.style.pointerEvents = 'none';
+            } else {
+                if (enableTranslate) {
+                    this.translateBtn.classList.remove('disabled');
+                    this.translateBtn.style.pointerEvents = 'auto';
+                    this.translateBtn.innerHTML = '<i class="fas fa-sync"></i> Translate';
+                    this.translateBtn.title = 'Ready to translate';
+                } else {
+                    this.translateBtn.classList.add('disabled');
+                    this.translateBtn.style.pointerEvents = 'none';
+                    this.translateBtn.title = 'Generate descriptions first';
                 }
             }
-        }
-        return cookieValue;
-    }
-});
+        },
+        
+        showOperationInProgress() {
+            const currentOp = this.isGeneratingDescriptions ? 'generating descriptions' : 'translating';
+            Swal.fire({
+                icon: 'info',
+                title: 'Operation in Progress',
+                html: `
+                    <div class="alert alert-info">
+                        <strong>Please wait!</strong><br>
+                        Currently ${currentOp}...<br>
+                        <small class="text-muted">Multiple operations cannot run simultaneously.</small>
+                    </div>
+                `,
+                confirmButtonText: 'OK'
+            });
+        },
+        
+        showLoadingState(title, message) {
+            Swal.fire({
+                title: title,
+                html: `<div class="d-flex flex-column align-items-center">${message}</div>`,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        },
+        
+        showDescriptionLoadingState() {
+            const businessCount = document.querySelectorAll('.panel[data-status]').length;
+            
+            Swal.fire({
+                title: 'Generating Descriptions',
+                html: `
+                    <div class="text-center">
+                        <div class="spinner-border text-success mb-3" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mb-3">Processing ${businessCount} businesses...</p>
+                        
+                        <div class="alert alert-info">
+                            <strong><i class="fas fa-info-circle"></i> Please stay on this page</strong><br>
+                            Leaving will interrupt the generation process
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                 role="progressbar" style="width: 100%">
+                                <span class="progress-text">Generating...</span>
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Estimated time: ${Math.ceil(businessCount / 15)} - ${Math.ceil(businessCount / 8)} minutes
+                        </small>
+                    </div>
+                `,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    const modal = Swal.getContainer();
+                    modal.style.fontSize = '0.9rem';
+                }
+            });
+        },
+        
+        async makeApiCall(taskId) {
+            const response = await fetch(`/tasks/${taskId}/generate-descriptions/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return await response.json();
+        },
+        
+        handleApiResponse(data) {
+            Swal.close();
+            
+            if (data.success) {
+                // Prepare success message
+                let message = data.message;
+                if (data.warnings && data.warnings.length > 0) {
+                    message += '<br><br><strong>Warnings:</strong><br>' + data.warnings.join('<br>');
+                }
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    html: message,
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Update UI based on response
+                    this.updateUIAfterGeneration(data);
+                    
+                    // Optionally reload page if major changes
+                    if (data.db_commit_delay || data.businesses_updated > 0) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                });
+                
+                // Update button states
+                this.updateButtonStates(data);
+                
+            } else {
+                this.showError(data.error || 'An error occurred while generating descriptions');
+            }
+        },
+        
+        updateButtonStates(data) {
+            // Update generate button
+            if (!data.needs_description) {
+                this.generateBtn.classList.add('disabled');
+                this.generateBtn.disabled = true;
+                const badge = this.generateBtn.querySelector('.badge');
+                if (badge) badge.remove();
+            }
+            
+            // Update translate button based on API response
+            const enableTranslate = data.enable_translate || false;
+            this.setTranslateState(false, enableTranslate);
+            
+            if (enableTranslate) {
+                // Add visual indicator that translate is ready
+                this.showTranslateReadyIndicator();
+            }
+        },
+        
+        updateUIAfterGeneration(data) {
+            // Update any count displays
+            if (data.businesses_updated > 0) {
+                console.log(`Updated ${data.businesses_updated} business descriptions`);
+            }
+            
+            // Show specific feedback about database commit delay
+            if (data.db_commit_delay) {
+                console.log('Description generation completed with database commit verification');
+            }
+        },
+        
+        showTranslateReadyIndicator() {
+            if (!this.translateBtn) return;
+            
+            // Add a temporary visual indicator
+            this.translateBtn.style.animation = 'pulse 1s ease-in-out 3';
+            setTimeout(() => {
+                this.translateBtn.style.animation = '';
+            }, 3000);
+        },
+        
+        async handleTranslation(taskId, originalText) {
+            try {
+                this.setTranslateState(true);
+                
+                // Show both status bar and modal
+                this.showProcessStatusBar('Translation in Progress', 'DO NOT leave this page during translation!');
+                this.showTranslationLoadingState();
 
+                // Set up connection monitoring
+                const connectionMonitor = this.startConnectionMonitoring();
+
+                const response = await fetch(`/tasks/${taskId}/translate/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': this.getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    },
+                    // Add timeout to prevent hanging
+                    signal: AbortSignal.timeout(600000) // 10 minutes max
+                });
+
+                // Clear connection monitoring
+                clearInterval(connectionMonitor);
+
+                const data = await response.json();
+                Swal.close();
+                this.hideProcessStatusBar();
+
+                if (!response.ok) {
+                    // Handle specific error codes
+                    if (data.error_code === 'DESCRIPTIONS_NOT_READY') {
+                        this.showDescriptionsNotReadyError(data);
+                    } else if (data.error_code === 'DESCRIPTIONS_STILL_PROCESSING') {
+                        this.showDescriptionsProcessingError(data);
+                    } else if (data.status === 'info' || data.status === 'warning') {
+                        // Handle informational responses that come with 400 status
+                        this.handleTranslationResponse(data);
+                    } else {
+                        throw new Error(data.message || 'Translation process failed');
+                    }
+                    return;
+                }
+
+                this.handleTranslationResponse(data);
+
+            } catch (error) {
+                console.error('Translation error:', error);
+                this.hideProcessStatusBar();
+                
+                let errorMessage = 'An unexpected error occurred';
+                let errorDetails = '';
+                
+                if (error.name === 'TimeoutError') {
+                    errorMessage = 'Translation process timed out';
+                    errorDetails = '• Process took longer than 10 minutes<br>• This may indicate a server issue<br>• Some translations may have completed';
+                } else if (error.name === 'AbortError') {
+                    errorMessage = 'Translation was cancelled';
+                    errorDetails = '• Process was interrupted<br>• This happens when leaving the page<br>• You can try again safely';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Connection lost during translation';
+                    errorDetails = '• Network connection was interrupted<br>• Page may have been refreshed<br>• Check your internet connection';
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Translation Failed',
+                    html: `
+                        <div class="alert alert-danger">
+                            <strong>Error:</strong> ${errorMessage}<br><br>
+                            <small><strong>Details:</strong><br>${errorDetails}</small>
+                        </div>
+                        <div class="alert alert-info">
+                            <strong>Recovery:</strong> You can try the translation again. Any completed translations will not be lost.
+                        </div>
+                    `,
+                    confirmButtonText: 'Close'
+                });
+            } finally {
+                this.setTranslateState(false, false);
+                this.hideProcessStatusBar();
+                // Restore original button text
+                if (this.translateBtn) {
+                    this.translateBtn.innerHTML = originalText;
+                }
+            }
+        },
+        
+        startConnectionMonitoring() {
+            // Simple heartbeat to keep connection alive and detect page state
+            return setInterval(() => {
+                if (this.isTranslating) {
+                    // Small heartbeat request to ensure connection is alive
+                    fetch('/tasks/heartbeat/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': this.getCookie('csrftoken'),
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ status: 'translating' })
+                    }).catch(() => {
+                        // Connection issue detected, but don't interrupt process
+                        console.warn('Heartbeat failed - connection may be unstable');
+                    });
+                }
+            }, 30000); // Every 30 seconds
+        },
+        
+        showTranslationLoadingState() {
+            const businessCount = document.querySelectorAll('.panel[data-status]').length;
+            
+            Swal.fire({
+                title: 'Translation in Progress',
+                html: `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <p class="mb-3">Processing ${businessCount} businesses...</p>
+                        
+                        <div class="alert alert-warning">
+                            <strong><i class="fas fa-exclamation-triangle"></i> Stay on this page!</strong><br>
+                            Leaving will cancel the translation process
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" style="width: 100%">
+                                <span class="progress-text">Translating businesses...</span>
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> Estimated time: ${Math.ceil(businessCount / 10)} - ${Math.ceil(businessCount / 5)} minutes<br>
+                            <i class="fas fa-info-circle"></i> This process cannot run in background on this platform
+                        </small>
+                    </div>
+                `,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    // Add extra styling
+                    const modal = Swal.getContainer();
+                    modal.style.fontSize = '0.9rem';
+                }
+            });
+        },
+        
+        showDescriptionsNotReadyError(data) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Descriptions Not Ready',
+                html: `
+                    <div class="alert alert-warning">
+                        <strong>${data.message}</strong><br><br>
+                        <small><strong>Missing:</strong> ${data.details.missing_count} businesses</small><br>
+                        <small><strong>Suggestion:</strong> ${data.details.suggestion}</small>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Generate Descriptions First',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed && this.generateBtn && !this.generateBtn.disabled) {
+                    // Trigger description generation
+                    this.generateBtn.click();
+                }
+            });
+        },
+        
+        showDescriptionsProcessingError(data) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Please Wait',
+                html: `
+                    <div class="alert alert-info">
+                        <strong>${data.message}</strong><br><br>
+                        <small>${data.details.suggestion}</small>
+                    </div>
+                `,
+                timer: 5000,
+                showConfirmButton: true,
+                confirmButtonText: 'Try Again Now'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Retry translation
+                    const taskId = this.translateBtn.getAttribute('data-task-id');
+                    const originalText = this.translateBtn.innerHTML;
+                    setTimeout(() => {
+                        this.handleTranslation(taskId, originalText);
+                    }, 1000);
+                }
+            });
+        },
+        
+        handleTranslationResponse(data) {
+            // Handle different response statuses
+            if (data.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Translation Successful',
+                    html: `
+                        <div class="translation-summary">
+                            <p>${data.message}</p>
+                            <div class="mt-3">
+                                <small class="text-muted">Translation process completed successfully</small>
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'Refresh Page'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else if (data.status === 'info') {
+                // Handle case where all businesses are already translated
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Already Translated',
+                    html: `
+                        <div class="alert alert-info">
+                            <strong>${data.message}</strong><br><br>
+                            <small><strong>Details:</strong><br>
+                            • Total reviewed businesses: ${data.details?.total_reviewed || 'N/A'}<br>
+                            • Already translated: ${data.details?.already_translated || 'N/A'}</small>
+                        </div>
+                        <div class="alert alert-success">
+                            <strong>Good news:</strong> All your businesses have complete translations in English, Spanish, and French!
+                        </div>
+                    `,
+                    confirmButtonText: 'Great!'
+                });
+            } else if (data.status === 'warning') {
+                // Handle warning cases (like task already translated but with some issues)
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Translation Notice',
+                    html: `
+                        <div class="alert alert-warning">
+                            <strong>${data.message}</strong>
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">Check the details above and take action if needed.</small>
+                        </div>
+                    `,
+                    confirmButtonText: 'Understood'
+                });
+            } else {
+                this.showError(data.message || 'Translation failed');
+            }
+        },
+        
+        showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message,
+                confirmButtonText: 'Close'
+            });
+        },
+        
+        getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    };
+    
+    // Initialize the workflow manager
+    TaskWorkflowManager.init();
+    
+    // Add CSS for pulse animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    `;
+    document.head.appendChild(style);
+});
 </script>
  
 <!-- Previous - NEXT buttons -->

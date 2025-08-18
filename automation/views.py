@@ -1,5 +1,6 @@
 import threading
 import traceback
+import time
 from django.conf import settings
 from django.db import DatabaseError, IntegrityError
 from django.views import View
@@ -42,6 +43,8 @@ from django.template.loader import render_to_string
 from automation.api.serializers import BusinessSerializer, TimelineDataSerializer
 from automation.services.ls_backend import LSBackendClient
 from automation.services.dashboard_service import DashboardService
+from automation.utils import process_scraped_types
+from automation.tasks import format_operating_hours
  
 from .tasks import * 
 from .permissions import IsAdminOrAmbassadorForDestination
@@ -489,6 +492,11 @@ class TranslateBusinessesView(View):
         try:
             task = get_object_or_404(ScrapingTask, id=task_id)
             
+            # Enhanced pre-translation validation
+            pre_validation_result = self.validate_descriptions_ready(task)
+            if pre_validation_result:
+                return pre_validation_result
+            
             # Get initial business counts and status
             business_stats = self.get_business_stats(task)
             logger.info(f"Initial business stats for task {task_id}: {business_stats}")
@@ -498,17 +506,34 @@ class TranslateBusinessesView(View):
             if validation_result:
                 return validation_result
 
+            # Get businesses that actually need translation
             businesses = task.businesses.filter(
-                status='REVIEWED'  
+                status='REVIEWED'
+            ).filter(
+                Q(description_eng__isnull=True) | Q(description_eng='') |
+                Q(description_esp__isnull=True) | Q(description_esp='') |
+                Q(description_fr__isnull=True) | Q(description_fr='')
             ).select_related('task')
+            
+            # If no businesses need translation, return early
+            if not businesses.exists():
+                return JsonResponse({
+                    'status': 'info',
+                    'message': 'All reviewed businesses already have complete translations.',
+                    'details': {
+                        'total_reviewed': task.businesses.filter(status='REVIEWED').count(),
+                        'already_translated': task.businesses.filter(status='REVIEWED').count()
+                    }
+                })
+
+            logger.info(f"Found {businesses.count()} businesses needing translation for task {task_id}")
 
             # Start translation process
             task.translation_status = 'PENDING_TRANSLATION'
             task.save(update_fields=['translation_status'])
 
-            # Process translations
-            #results = self.process_translations(businesses, request.user)
-            results = self.process_translations(businesses, request)
+            # Process translations with retry mechanism
+            results = self.process_translations_with_retry(businesses, request)
             
             # Update final status
             task.translation_status = self.determine_final_status(results)
@@ -584,6 +609,217 @@ class TranslateBusinessesView(View):
 
         return results
 
+    def validate_descriptions_ready(self, task):
+        """Enhanced validation to ensure descriptions are ready for translation"""
+        try:
+            # Check if descriptions generation was recently completed
+            empty_description_query = get_empty_description_query()
+            missing_descriptions = task.businesses.filter(
+                status='REVIEWED'
+            ).filter(empty_description_query)
+            
+            if missing_descriptions.exists():
+                missing_count = missing_descriptions.count()
+                missing_businesses = list(missing_descriptions.values_list('id', 'title')[:5])  # Sample first 5
+                
+                return JsonResponse({
+                    'status': 'error',
+                    'error_code': 'DESCRIPTIONS_NOT_READY',
+                    'message': f'Translation cannot proceed: {missing_count} businesses are missing descriptions.',
+                    'details': {
+                        'missing_count': missing_count,
+                        'sample_businesses': missing_businesses,
+                        'suggestion': 'Please generate descriptions first, then wait a moment before attempting translation.'
+                    }
+                }, status=400)
+            
+            return None  # Validation passed
+            
+        except Exception as e:
+            logger.error(f"Error in description validation for task {task.id}: {str(e)}")
+            return JsonResponse({
+                'status': 'error',
+                'error_code': 'VALIDATION_ERROR',
+                'message': f'Validation failed: {str(e)}'
+            }, status=500)
+
+    def process_translations_with_retry(self, businesses, request):
+        """Process translations with enhanced retry logic and error handling"""
+        results = {
+            'total': businesses.count(),
+            'success': 0,
+            'failed': 0,
+            'skipped': 0,
+            'details': [],
+            'retry_attempts': {}
+        }
+
+        max_retries = 3
+        base_delay = 1  # seconds
+
+        for business in businesses:
+            business_id = business.id
+            retry_count = 0
+            success = False
+            
+            while retry_count <= max_retries and not success:
+                try:
+                    logger.info(f"Processing business {business_id} (attempt {retry_count + 1}/{max_retries + 1}): {business.title}")
+                    
+                    # Validate business has description
+                    if not business.description or business.description.strip() == '':
+                        logger.warning(f"Business {business_id} has no description for translation")
+                        results['skipped'] += 1
+                        results['details'].append({
+                            'id': business_id,
+                            'status': 'skipped',
+                            'message': 'No description available for translation'
+                        })
+                        break  # Skip this business entirely
+                    
+                    # Attempt translation
+                    if self.translate_business_with_retry(business, retry_count):
+                        results['success'] += 1
+                        results['details'].append({
+                            'id': business_id,
+                            'status': 'success',
+                            'message': f'Translation completed successfully (attempt {retry_count + 1})'
+                        })
+                        success = True
+                    else:
+                        retry_count += 1
+                        if retry_count <= max_retries:
+                            # Exponential backoff delay
+                            delay = base_delay * (2 ** retry_count)
+                            logger.info(f"Retrying business {business_id} in {delay} seconds...")
+                            import time
+                            time.sleep(delay)
+                        
+                except Exception as e:
+                    logger.error(f"Exception during translation of business {business_id}, attempt {retry_count + 1}: {str(e)}")
+                    retry_count += 1
+                    if retry_count <= max_retries:
+                        delay = base_delay * (2 ** retry_count)
+                        time.sleep(delay)
+            
+            # Record retry information
+            if retry_count > 0:
+                results['retry_attempts'][business_id] = retry_count
+            
+            # If all retries failed
+            if not success and retry_count > max_retries:
+                results['failed'] += 1
+                results['details'].append({
+                    'id': business_id,
+                    'status': 'error',
+                    'message': f'Translation failed after {max_retries + 1} attempts',
+                    'retry_count': retry_count
+                })
+
+        return results
+
+    def translate_business_with_retry(self, business, attempt_number):
+        """Enhanced translation method with better error handling"""
+        try:
+            # Double-check description exists before translation attempt
+            business.refresh_from_db()
+            if not business.description or business.description.strip() == '':
+                logger.error(f"Business {business.id} description is empty on translation attempt {attempt_number + 1}")
+                return False
+            
+            # Construct URL using reverse (consistent with original method)
+            from django.urls import reverse
+            relative_url = reverse('enhance_translate_business', kwargs={'business_id': business.id})
+            translate_url = f"{self.base_url}{relative_url}"
+            logger.debug(f"Attempting translation for business {business.id}, attempt {attempt_number + 1}")
+            logger.debug(f"URL: {translate_url}")
+            
+            response = requests.post(
+                translate_url,
+                json={'languages': ['spanish', 'eng', 'fr']},
+                headers={'Content-Type': 'application/json'},
+                timeout=45  # Increased timeout for retries
+            )
+            
+            logger.debug(f"Response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                if response_data.get('success'):
+                    logger.info(f"Translation successful for business {business.id} on attempt {attempt_number + 1}")
+                    return True
+                else:
+                    error_msg = response_data.get('message', 'Unknown error')
+                    logger.error(f"Translation API returned error for business {business.id}: {error_msg}")
+                    return False
+            elif response.status_code == 429:  # Rate limit
+                logger.warning(f"Rate limit hit for business {business.id}, attempt {attempt_number + 1}")
+                return False
+            elif response.status_code >= 500:  # Server error, retryable
+                logger.warning(f"Server error {response.status_code} for business {business.id}, attempt {attempt_number + 1}")
+                return False
+            else:  # Client error, not retryable
+                logger.error(f"Client error {response.status_code} for business {business.id}: {response.text[:200]}")
+                return False
+                
+        except requests.Timeout:
+            logger.warning(f"Timeout for business {business.id}, attempt {attempt_number + 1}")
+            return False
+        except requests.RequestException as e:
+            logger.warning(f"Request exception for business {business.id}, attempt {attempt_number + 1}: {str(e)}")
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error translating business {business.id}, attempt {attempt_number + 1}: {str(e)}")
+            return False
+
+    def process_translations(self, businesses, request):
+        """Original process_translations method (keeping for compatibility)"""
+
+        results = {
+            'total': businesses.count(),
+            'success': 0,
+            'failed': 0,
+            'skipped': 0,
+            'details': []
+        }
+
+        for business in businesses:
+            try:
+                logger.info(f"Processing business {business.id}: {business.title}")
+                
+                # Generate description if missing
+                if not business.description:
+                    logger.info(f"Generating missing description for business {business.id}")
+                    if not self.generate_description(business):
+                        results['failed'] += 1
+                        continue
+
+                # Perform translation
+                if self.translate_business(business):
+                    results['success'] += 1
+                    results['details'].append({
+                        'id': business.id,
+                        'status': 'success',
+                        'message': 'Translation completed successfully'
+                    })
+                else:
+                    results['failed'] += 1
+                    results['details'].append({
+                        'id': business.id,
+                        'status': 'error',
+                        'message': 'Translation failed'
+                    })
+            except Exception as e:
+                results['failed'] += 1
+                results['details'].append({
+                    'id': business.id,
+                    'status': 'error',
+                    'message': str(e)
+                })
+                logger.error(f"Failed to process business {business.id}: {str(e)}")
+
+        return results
+
 
     def generate_description(self, business):
         """Generate description for a business"""
@@ -627,6 +863,15 @@ class TranslateBusinessesView(View):
             logger.error(f"Error generating description for business {business.id}: {str(e)}")
             return False
         
+    def business_needs_translation(self, business):
+        """Check if a business needs translation"""
+        # Check if any translation fields are missing or empty
+        return (
+            not business.description_eng or business.description_eng.strip() == '' or
+            not business.description_esp or business.description_esp.strip() == '' or 
+            not business.description_fr or business.description_fr.strip() == ''
+        )
+
     def translate_business(self, business):
         """Translate a single business"""
         try:
@@ -636,6 +881,11 @@ class TranslateBusinessesView(View):
             if business.status != 'REVIEWED':
                 logger.warning(f"Skipping translation for business {business.id}: Not in REVIEWED status")
                 return False
+            
+            # Check if business actually needs translation
+            if not self.business_needs_translation(business):
+                logger.info(f"Business {business.id} already has complete translations. Skipping.")
+                return True  # Return True because it's "successfully" already translated
                        
             # Construct URL using reverse
             relative_url = reverse('enhance_translate_business', kwargs={'business_id': business.id})
@@ -741,13 +991,33 @@ class TranslateBusinessesView(View):
                         }
                     }, status=400)
 
-        # Check if already translated
+        # Check if already translated - but allow re-translation if there are untranslated businesses
         if task.translation_status == 'TRANSLATED':
-            return JsonResponse({
-                'status': 'warning',
-                'message': 'Task has already been translated.',
-                'details': stats
-            }, status=400)
+            # Check if there are actually businesses that still need translation
+            businesses_needing_translation = task.businesses.filter(
+                status='REVIEWED'
+            ).filter(
+                Q(description_eng__isnull=True) | Q(description_eng='') |
+                Q(description_esp__isnull=True) | Q(description_esp='') |
+                Q(description_fr__isnull=True) | Q(description_fr='')
+            )
+            
+            if not businesses_needing_translation.exists():
+                return JsonResponse({
+                    'status': 'info',
+                    'message': 'All businesses have already been translated successfully.',
+                    'details': {
+                        **stats,
+                        'suggestion': 'All reviewed businesses have complete translations. No action needed.'
+                    }
+                }, status=400)
+            else:
+                # Allow re-translation for incomplete businesses
+                incomplete_count = businesses_needing_translation.count()
+                logger.info(f"Task {task.id} marked as TRANSLATED but has {incomplete_count} businesses needing translation")
+                # Reset status to allow translation of incomplete businesses
+                task.translation_status = 'PENDING_TRANSLATION'
+                task.save(update_fields=['translation_status'])
  
         # Check for translatable businesses
         translatable = stats['reviewed']
@@ -2230,7 +2500,8 @@ def update_business_statuses(request):
         try:
             data = json.loads(request.body)
             business_ids = data.get('business_ids', [])
-            new_status = data.get('new_status')
+            new_status = data.get('new_status', '').strip()
+            user_id = data.get('userId')
  
             if not business_ids:
                 return JsonResponse({
@@ -2243,58 +2514,321 @@ def update_business_statuses(request):
                     'success': False,
                     'error': 'New status not provided'
                 }, status=400)
+
+            if not user_id:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'User ID is required'
+                }, status=400)
  
             affected_tasks = set()
             updated_businesses = []
-            errors = [] 
+            errors = []
+            moved_to_app_businesses = []
+            validation_errors = []
+            move_to_app_errors = []
+
+            # Pre-validation phase for IN_PRODUCTION moves
+            if new_status == 'IN_PRODUCTION':
+                for business_id in business_ids:
+                    try:
+                        business = get_object_or_404(Business, id=business_id)
+                        missing_descriptions = []
+
+                        # Validate required descriptions
+                        if not business.description or not business.description.strip():
+                            missing_descriptions.append('Original description')
+                        if not business.description_eng or not business.description_eng.strip():
+                            missing_descriptions.append('English description')
+                        if not business.description_esp or not business.description_esp.strip():
+                            missing_descriptions.append('Spanish description')
+                        if not business.description_fr or not business.description_fr.strip():
+                            missing_descriptions.append('French description')
+
+                        if missing_descriptions:
+                            validation_errors.append({
+                                'business_id': business_id,
+                                'business_title': business.title or f"Business {business_id}",
+                                'missing_fields': missing_descriptions
+                            })
+
+                    except Business.DoesNotExist:
+                        validation_errors.append({
+                            'business_id': business_id,
+                            'error': 'Business not found'
+                        })
+
+                # If there are validation errors, return them without processing
+                if validation_errors:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Validation failed for move to production',
+                        'validation_errors': validation_errors,
+                        'total_businesses': len(business_ids),
+                        'failed_validations': len(validation_errors)
+                    }, status=400)
+
+            # Main processing phase
             with transaction.atomic():
                 for business_id in business_ids:
                     try:
-                        business = get_object_or_404(Business, id=business_id) 
-                        old_status = business.status 
-                        business.status = new_status
-                        business.save() 
-                        if business.task:
-                            affected_tasks.add(business.task)
-                        
-                        updated_businesses.append({
-                            'id': business.id,
-                            'old_status': old_status,
-                            'new_status': new_status
-                        })
-                        
-                        logger.info(
-                            f"Business {business_id} status updated: "
-                            f"{old_status} -> {new_status}"
-                        )
+                        business = get_object_or_404(Business, id=business_id)
+                        old_status = business.status
+
+                        # Handle IN_PRODUCTION logic
+                        if new_status == 'IN_PRODUCTION':
+                            try:
+                                # Process types
+                                types_sources = [
+                                    business.types,
+                                    getattr(business, 'types_eng', None),
+                                    getattr(business, 'types_esp', None),
+                                    getattr(business, 'types_fr', None)
+                                ]
+                                
+                                all_types = []
+                                for types_str in types_sources:
+                                    if types_str:
+                                        types_list = [t.strip() for t in types_str.split(',')]
+                                        all_types.extend(types_list)
+
+                                processed_types = process_scraped_types(all_types, business.main_category)
+
+                                # Prepare business data
+                                business_data = model_to_dict(business)
+                                business_data['types'] = processed_types
+                                
+                                if not business_data.get('language'):
+                                    business_data['language'] = 'en'
+
+                                # Format operating hours
+                                if business_data.get('operating_hours'):
+                                    try:
+                                        formatted_hours = format_operating_hours(business_data['operating_hours'])
+                                        business_data['operating_hours'] = formatted_hours
+                                    except Exception as e:
+                                        logger.error(f"Error formatting operating hours for business {business_id}: {str(e)}")
+                                        move_to_app_errors.append({
+                                            'business_id': business_id,
+                                            'business_title': business.title or f"Business {business_id}",
+                                            'error': f"Operating hours formatting error: {str(e)}"
+                                        })
+                                        continue
+
+                                # Add required IDs and relationships
+                                task_obj = business.task
+                                business_data["level_id"] = task_obj.level.ls_id
+
+                                # Category handling
+                                try:
+                                    task_level = business.task.level
+                                    
+                                    # Handle main category
+                                    main_category = get_category_by_title(
+                                        title=business.main_category,
+                                        level=task_level
+                                    )
+                                    
+                                    if not main_category:
+                                        move_to_app_errors.append({
+                                            'business_id': business_id,
+                                            'business_title': business.title or f"Business {business_id}",
+                                            'error': f"Main category not found: {business.main_category}"
+                                        })
+                                        continue
+                                        
+                                    business_data["category_id"] = main_category.ls_id
+                                    
+                                    # Handle subcategory
+                                    if business.tailored_category:
+                                        sub_category = get_category_by_title(
+                                            title=business.tailored_category,
+                                            level=task_level,
+                                            parent=main_category
+                                        )
+                                        
+                                        if sub_category:
+                                            business_data["sub_category_id"] = sub_category.ls_id
+                                        else:
+                                            logger.warning(
+                                                f"Subcategory not found for business {business_id}: {business.tailored_category}"
+                                            )
+
+                                except Exception as e:
+                                    move_to_app_errors.append({
+                                        'business_id': business_id,
+                                        'business_title': business.title or f"Business {business_id}",
+                                        'error': f"Category processing error: {str(e)}"
+                                    })
+                                    continue
+
+                                # City and Country handling
+                                try:
+                                    destination = get_object_or_404(Destination, name__iexact=business.city)
+                                    business_data["city_id"] = destination.ls_id
+                                    
+                                    country_obj = get_object_or_404(Country, name__iexact=business.country)
+                                    business_data["country_id"] = country_obj.ls_id
+                                    country_data = model_to_dict(country_obj)
+                                except Exception as e:
+                                    move_to_app_errors.append({
+                                        'business_id': business_id,
+                                        'business_title': business.title or f"Business {business_id}",
+                                        'error': f"Location mapping error: {str(e)}"
+                                    })
+                                    continue
+
+                                # User and images
+                                try:
+                                    user = CustomUser.objects.filter(id=int(user_id)).first()
+                                    if not user:
+                                        move_to_app_errors.append({
+                                            'business_id': business_id,
+                                            'business_title': business.title or f"Business {business_id}",
+                                            'error': f"User {user_id} not found"
+                                        })
+                                        continue
+
+                                    user_data = model_to_dict(user)
+                                    image_urls = list(
+                                        Image.objects.filter(
+                                            business=business_id,
+                                            is_approved=True
+                                        ).values_list('image_url', flat=True)
+                                    )
+
+                                    result_data = {
+                                        **business_data,
+                                        'country': country_data,
+                                        'user': user_data,
+                                        'images_urls': image_urls
+                                    }
+
+                                    app_data = json.dumps(result_data, default=datetime_serializer)
+                                    
+                                    # Attempt to move to Local Secrets
+                                    try:
+                                        RequestClient().request('move-to-app', app_data)
+                                        moved_to_app_businesses.append({
+                                            'business_id': business_id,
+                                            'business_title': business.title or f"Business {business_id}"
+                                        })
+                                        logger.info(f"Successfully moved business {business_id} to Local Secrets")
+                                        
+                                    except Exception as first_error:
+                                        # Retry without types
+                                        try:
+                                            result_data_without_types = result_data.copy()
+                                            removed_types = result_data_without_types.pop('types', '')
+                                            
+                                            app_data_without_types = json.dumps(result_data_without_types, default=datetime_serializer)
+                                            RequestClient().request('move-to-app', app_data_without_types)
+                                            
+                                            moved_to_app_businesses.append({
+                                                'business_id': business_id,
+                                                'business_title': business.title or f"Business {business_id}",
+                                                'warning': f'Moved without types: {removed_types}'
+                                            })
+                                            logger.warning(f"Business {business_id} moved to Local Secrets without types")
+                                            
+                                        except Exception as second_error:
+                                            move_to_app_errors.append({
+                                                'business_id': business_id,
+                                                'business_title': business.title or f"Business {business_id}",
+                                                'error': f"Failed to move to Local Secrets: {str(second_error)}"
+                                            })
+                                            logger.error(f"Failed to move business {business_id} to Local Secrets: {str(second_error)}")
+                                            continue
+
+                                except Exception as e:
+                                    move_to_app_errors.append({
+                                        'business_id': business_id,
+                                        'business_title': business.title or f"Business {business_id}",
+                                        'error': f"Data preparation error: {str(e)}"
+                                    })
+                                    continue
+
+                            except Exception as e:
+                                move_to_app_errors.append({
+                                    'business_id': business_id,
+                                    'business_title': business.title or f"Business {business_id}",
+                                    'error': f"Processing error: {str(e)}"
+                                })
+                                continue
+
+                        # Update status only if IN_PRODUCTION processing succeeded or for other statuses
+                        if new_status != 'IN_PRODUCTION' or any(item['business_id'] == business_id for item in moved_to_app_businesses):
+                            business.status = new_status
+                            business.save()
+                            
+                            if business.task:
+                                affected_tasks.add(business.task)
+                            
+                            updated_businesses.append({
+                                'id': business.id,
+                                'old_status': old_status,
+                                'new_status': new_status,
+                                'title': business.title or f"Business {business_id}"
+                            })
+                            
+                            logger.info(f"Business {business_id} status updated: {old_status} -> {new_status}")
                     
                     except Business.DoesNotExist:
                         error_msg = f"Business {business_id} not found"
-                        errors.append(error_msg)
+                        errors.append({
+                            'business_id': business_id,
+                            'error': error_msg
+                        })
                         logger.error(error_msg)
                     except Exception as e:
                         error_msg = f"Error updating business {business_id}: {str(e)}"
-                        errors.append(error_msg)
+                        errors.append({
+                            'business_id': business_id,
+                            'error': error_msg
+                        })
                         logger.error(error_msg, exc_info=True)
  
+            # Update task statuses
             for task in affected_tasks:
                 try:
                     update_task_status_signal(task, None) 
                 except Exception as e:
                     error_msg = f"Error updating task {task.id} status: {str(e)}"
-                    errors.append(error_msg)
+                    errors.append({
+                        'task_id': task.id,
+                        'error': error_msg
+                    })
                     logger.error(error_msg, exc_info=True)
  
+            # Prepare comprehensive response
             response_data = {
                 'success': len(updated_businesses) > 0,
                 'updated_count': len(updated_businesses),
                 'updated_businesses': updated_businesses,
                 'affected_tasks': list(task.id for task in affected_tasks),
+                'total_requested': len(business_ids)
             }
+
+            # Add move to app specific data
+            if new_status == 'IN_PRODUCTION':
+                response_data.update({
+                    'moved_to_app_count': len(moved_to_app_businesses),
+                    'moved_to_app_businesses': moved_to_app_businesses,
+                    'move_to_app_errors': move_to_app_errors,
+                    'move_to_app_failed_count': len(move_to_app_errors)
+                })
 
             if errors:
                 response_data['errors'] = errors
-                response_data['partial_success'] = True 
+                response_data['error_count'] = len(errors)
+
+            # Determine overall success status
+            if new_status == 'IN_PRODUCTION':
+                total_success = len(moved_to_app_businesses)
+                total_failures = len(move_to_app_errors) + len(errors)
+                response_data['partial_success'] = total_success > 0 and total_failures > 0
+            else:
+                response_data['partial_success'] = len(updated_businesses) > 0 and len(errors) > 0
 
             logger.info(
                 f"Bulk status update completed: "
@@ -2972,7 +3506,7 @@ def generate_task_descriptions(request, task_id):
     return check_description_status(task)
 
 def handle_description_generation(task):
-    """Handle POST request for description generation"""
+    """Handle POST request for description generation with enhanced validation"""
     try:
         # Check for businesses needing descriptions
         empty_description_query = get_empty_description_query()
@@ -2984,31 +3518,43 @@ def handle_description_generation(task):
                 'status': 'already_generated',
                 'message': 'All businesses already have descriptions generated.',
                 'needs_description': False,
-                'info_type': 'info'  # Add this to trigger info alert in frontend
+                'enable_translate': True,  # Signal frontend to enable translate button
+                'info_type': 'info'
             })
 
-        # Generate descriptions
+        # Generate descriptions with enhanced tracking
         generator = BusinessDescriptionGenerator(task.id)
         generator.process_businesses()
         results = generator.get_results()
 
-        # Recheck remaining empty descriptions
+        # Recheck remaining empty descriptions after generation
         remaining_empty = task.businesses.filter(empty_description_query).count()
+        
+        # Add a small delay to ensure database commit completion
+        import time
+        time.sleep(0.5)  # 500ms delay to ensure database writes are committed
+        
+        # Final verification that descriptions were saved
+        task.refresh_from_db()
+        final_empty_count = task.businesses.filter(empty_description_query).count()
 
         return JsonResponse({
             'success': True,
-            'message': f"Generated {results['businesses_updated']} descriptions",
+            'message': f"Generated {results['businesses_updated']} descriptions successfully",
             'businesses_updated': results['businesses_updated'],
             'businesses_skipped': results['businesses_skipped'],
-            'remaining_empty': remaining_empty,
-            'needs_description': remaining_empty > 0
+            'remaining_empty': final_empty_count,
+            'needs_description': final_empty_count > 0,
+            'enable_translate': final_empty_count == 0,  # Only enable if all descriptions are generated
+            'db_commit_delay': True  # Signal that there was a database commit delay
         })
 
     except Exception as e:
         logger.error(f"Error generating descriptions for task {task.id}: {str(e)}", exc_info=True)
         return JsonResponse({
             'success': False,
-            'error': str(e)
+            'error': f'Description generation failed: {str(e)}',
+            'enable_translate': False  # Ensure translate button stays disabled on error
         }, status=500)
 
 def check_description_status(task):
@@ -4128,3 +4674,28 @@ def get_recent_tasks(request):
         return JsonResponse({
             'error': 'Failed to fetch recent tasks'
         }, status=500)
+
+
+@csrf_exempt
+def heartbeat(request):
+    """
+    Simple heartbeat endpoint to keep connections alive during long-running processes
+    """
+    if request.method == 'POST':
+        try:
+            import json
+            data = json.loads(request.body) if request.body else {}
+            status = data.get('status', 'unknown')
+            
+            return JsonResponse({
+                'status': 'alive',
+                'timestamp': timezone.now().isoformat(),
+                'received_status': status
+            })
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=400)
+    
+    return JsonResponse({'status': 'alive', 'method': 'GET'})
