@@ -1097,9 +1097,21 @@ def validate_business_content(business):
         logger.error(f"Business {business.id} missing title")
         return False
     
+    # Check for types (Google types/tags) - use category as fallback
     if not business.types:
-        logger.error(f"Business {business.id} missing tags or google types")
-        return False
+        # If no types, use main_category as fallback
+        if business.main_category:
+            logger.info(f"Business {business.id} missing types, using main_category '{business.main_category}' as fallback")
+            business.types = business.main_category
+            business.save(update_fields=['types'])
+        elif business.tailored_category:
+            logger.info(f"Business {business.id} missing types, using tailored_category '{business.tailored_category}' as fallback")
+            business.types = business.tailored_category
+            business.save(update_fields=['types'])
+        else:
+            logger.warning(f"Business {business.id} missing types and categories - using default 'business' type")
+            business.types = "business"
+            business.save(update_fields=['types'])
     
     if not business.description and not business.description_eng and not business.description_esp and not business.description_fr:
         logger.error(f"Business {business.id} missing all descriptions")

@@ -51,9 +51,16 @@ class DashboardService:
         """
         Get timeline data for the specified date range
         """
-        # Ensure we're working with dates
-        start_date = start_date.date() if isinstance(start_date, datetime) else start_date
-        end_date = end_date.date() if isinstance(end_date, datetime) else end_date
+        # Ensure we're working with date objects
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        elif isinstance(start_date, datetime):
+            start_date = start_date.date()
+            
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        elif isinstance(end_date, datetime):
+            end_date = end_date.date()
 
         # Query tasks and businesses for the entire date range
         tasks_data = ScrapingTask.objects.filter(
@@ -86,21 +93,28 @@ class DashboardService:
         
         current_date = start_date
         while current_date <= end_date:
-            # Add date to dates array
+            # Add date to dates array  
             dates.append(current_date.strftime('%Y-%m-%d'))
             
             # Get counts for current date (default to 0 if no data)
             tasks.append(tasks_dict.get(current_date, 0))
             businesses.append(businesses_dict.get(current_date, 0))
             
-            current_date += timezone.timedelta(days=1)
+            current_date += timedelta(days=1)
+
+        # Get today's counts
+        today = timezone.now().date()
+        tasks_today = ScrapingTask.objects.filter(created_at__date=today).count()
+        businesses_today = Business.objects.filter(task__created_at__date=today).count()
 
         return {
             'dates': dates,
             'tasks': tasks,
             'businesses': businesses,
             'total_tasks': sum(tasks),
-            'total_businesses': sum(businesses)
+            'total_businesses': sum(businesses),
+            'tasks_today': tasks_today,
+            'businesses_today': businesses_today
         }
 
     def get_debug_info(self, start_date=None, end_date=None):

@@ -902,11 +902,19 @@ class TaskTimelineView(APIView):
             ).order_by('date')
 
             # Convert queryset to list and format dates
-            formatted_data = [{
-                'date': item['date'].strftime('%Y-%m-%d'),
-                'tasks_count': item['tasks_count'],
-                'businesses_count': item['businesses_count']
-            } for item in tasks_data]
+            formatted_data = []
+            for item in tasks_data:
+                # Handle both date objects and string dates
+                if isinstance(item['date'], str):
+                    date_str = item['date']
+                else:
+                    date_str = item['date'].strftime('%Y-%m-%d')
+                
+                formatted_data.append({
+                    'date': date_str,
+                    'tasks_count': item['tasks_count'],
+                    'businesses_count': item['businesses_count']
+                })
 
             # Calculate totals
             total_tasks = sum(item['tasks_count'] for item in formatted_data)
@@ -949,16 +957,52 @@ class DashboardStatsView(APIView):
 class TimelineDataView(APIView):
     def get(self, request):
         try:
-            start_date = request.query_params.get('start_date')
-            end_date = request.query_params.get('end_date')
+            start_date_str = request.query_params.get('start_date')
+            end_date_str = request.query_params.get('end_date')
+            
+            # Parse dates from strings
+            if start_date_str:
+                start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            else:
+                start_date = (timezone.now() - timezone.timedelta(days=30)).date()
+                
+            if end_date_str:
+                end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            else:
+                end_date = timezone.now().date()
             
             service = DashboardService()
-            timeline_data = service.get_timeline_data(start_date, end_date)
-            serializer = TimelineDataSerializer(timeline_data)
-            return Response(serializer.data)
+            raw_data = service.get_timeline_data(start_date, end_date)
+            
+            # Transform data to match frontend expectations
+            timeline_data = []
+            for i, date in enumerate(raw_data['dates']):
+                timeline_data.append({
+                    'date': date,
+                    'tasks_count': raw_data['tasks'][i],
+                    'businesses_count': raw_data['businesses'][i]
+                })
+            
+            response_data = {
+                'status': 'success',
+                'data': timeline_data,
+                'totals': {
+                    'total_tasks': raw_data['total_tasks'],
+                    'total_businesses': raw_data['total_businesses'],
+                    'tasks_today': raw_data['tasks_today'],
+                    'businesses_today': raw_data['businesses_today']
+                }
+            }
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
         except Exception as e:
+            logger.error(f"Error in TimelineDataView: {str(e)}", exc_info=True)
             return Response(
-                {'error': str(e)},
+                {
+                    'status': 'error', 
+                    'error': str(e)
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 

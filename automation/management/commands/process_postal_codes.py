@@ -634,7 +634,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR(f"Error: {str(e)}"))
 
 """
-# Process all eligible businesses
+# Process all eligible businesses0
 python manage.py process_postal_codes
 
 # Process specific status

@@ -32,6 +32,7 @@ urlpatterns = [
     path('dashboard/categories/<str:destination>/',  DestinationCategoriesView.as_view(), name='api-destination-categories'),
     path('dashboard/recent-projects/', views.RecentProjectsView.as_view(), name='api-recent-projects'),
     path('dashboard/timeline/', views.TimelineDataView.as_view(), name='api-timeline-data'),
+    path('dashboard/task-timeline/', views.TimelineDataView.as_view(), name='api-task-timeline'),
     path('dashboard/recent-tasks/', views.RecentTasksView.as_view(), name='api-recent-tasks'),
  
     path('dashboard/admin-stats/', views.AdminStatsView.as_view(), name='api-admin-stats'),

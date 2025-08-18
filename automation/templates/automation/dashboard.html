@@ -149,17 +149,15 @@
                                 }
                             }
                     
-                            updateChart(timelineData) {
-                                if (!timelineData || timelineData.length === 0) {
-                                    this.showError('No data available for the selected range.');
-                                    return;
-                                }
-                    
-                                const labels = timelineData.map(entry => entry.date);
-                                const taskCounts = timelineData.map(entry => entry.tasks_count);
-                                const businessCounts = timelineData.map(entry => entry.businesses_count);
-                    
-                                const ctx = document.getElementById('timelineChart').getContext('2d');
+            updateChart(timelineData) {
+                if (!timelineData || timelineData.length === 0) {
+                    this.showError('No data available for the selected range.');
+                    return;
+                }
+
+                const labels = timelineData.map(entry => entry.date);
+                const taskCounts = timelineData.map(entry => entry.tasks_count);
+                const businessCounts = timelineData.map(entry => entry.businesses_count);                                const ctx = document.getElementById('timelineChart').getContext('2d');
                     
                                 if (this.chart) {
                                     this.chart.destroy();
@@ -407,6 +405,7 @@
                         updateSummary(data) {
                             const total = data.discarded + data.pending + data.reviewed + data.in_production;
                 
+                            // Update only the business status chart total (not the main dashboard total)
                             document.getElementById('totalBusinesses').textContent = total;
                 
                             // Update individual counts and percentages
@@ -745,18 +744,8 @@
     </script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-        fetch('/api/dashboard/summary/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const parsedData = JSON.parse(data.data);
-                    document.getElementById('totalBusinesses').textContent = parsedData.total_businesses;
-                    document.getElementById('businessesToday').textContent = parsedData.timeline_data.businesses.slice(-1)[0] || 0;
-
-                    new DashboardStats(parsedData); // Initialize the stats with parsed data
-                }
-            })
-            .catch(error => console.error('Error fetching business count:', error));
+        // This is handled by the BusinessStatusChart class above
+        console.log('Dashboard initialized');
     });
 </script>
 
